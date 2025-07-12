@@ -170,4 +170,54 @@
             <!-- Le contenu sera généré par JavaScript -->
         </div>
     </div>
-</div> 
+</div>
+
+<style>
+/* ✅ NOUVEAU : Styles pour les boutons favoris SCI (inspirés du système DPE) */
+.favorite-btn, .fav-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: #ccc;
+    transition: color 0.3s ease;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+.favorite-btn.active, .fav-btn.favori {
+    color: #ff6b6b;
+}
+
+.favorite-btn:hover, .fav-btn:hover {
+    color: #ff6b6b;
+    background: #f0f0f0;
+}
+
+/* ✅ NOUVEAU : Styles pour les boutons favoris dans le tableau */
+.sci-table .favorite-btn, .sci-table .fav-btn {
+    font-size: 16px;
+    padding: 3px;
+}
+
+.sci-table .favorite-btn.active, .sci-table .fav-btn.favori {
+    color: #ffd700;
+}
+
+.sci-table .favorite-btn:not(.active), .sci-table .fav-btn:not(.favori) {
+    color: #ccc;
+}
+
+/* ✅ NOUVEAU : Responsive pour les boutons favoris */
+@media (max-width: 768px) {
+    .favorite-btn, .fav-btn {
+        font-size: 16px;
+    }
+    
+    .sci-table .favorite-btn, .sci-table .fav-btn {
+        font-size: 14px;
+    }
+}
+</style>
+
+<!-- ✅ Le système de favoris SCI est géré par le fichier favoris.js amélioré --> 

@@ -1489,9 +1489,9 @@ class SCI_Shortcodes {
             'atts' => $atts
         );
         
-        // Charger le template DPE
+        // Charger le template DPE (version simplifiée qui fonctionne)
         ob_start();
-        sci_load_template('dpe-panel', $context);
+        sci_load_template('dpe-panel-simple', $context);
         return ob_get_clean();
     }
     

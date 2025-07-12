@@ -2,10 +2,20 @@ document.addEventListener('DOMContentLoaded', function() {
     let favoris = [];
     let isInitialized = false;
 
+    // ✅ NOUVEAU : Diagnostic au chargement
+    console.log('🔍 DIAGNOSTIC FAVORIS SCI - Début du script');
+    console.log('🔍 Variables AJAX disponibles:', typeof sci_ajax !== 'undefined' ? '✅' : '❌');
+    if (typeof sci_ajax !== 'undefined') {
+        console.log('🔍 sci_ajax.ajax_url:', sci_ajax.ajax_url);
+        console.log('🔍 sci_ajax.nonce:', sci_ajax.nonce ? '✅' : '❌');
+    }
+
     function updateFavButtons() {
+        console.log('🔄 updateFavButtons appelée');
+        
         // ✅ AMÉLIORÉ : Vérifier que les favoris sont chargés
         if (!Array.isArray(favoris)) {
-            console.log('⚠️ Favoris non encore chargés, tentative de chargement...');
+            console.log('⚠️ Favoris SCI non encore chargés, tentative de chargement...');
             // Si les favoris ne sont pas encore chargés, les charger d'abord
             syncFavorisWithDB('get')
                 .then(() => {
@@ -13,33 +23,52 @@ document.addEventListener('DOMContentLoaded', function() {
                     setTimeout(updateFavButtons, 50);
                 })
                 .catch(error => {
-                    console.warn('⚠️ Erreur lors du chargement des favoris:', error);
+                    console.warn('⚠️ Erreur lors du chargement des favoris SCI:', error);
                 });
             return;
         }
         
-        const favButtons = document.querySelectorAll('.fav-btn');
-        console.log(`🔄 Mise à jour de ${favButtons.length} boutons favoris avec ${favoris.length} favoris chargés`);
+        const favButtons = document.querySelectorAll('.fav-btn, .favorite-btn');
+        console.log(`🔄 Mise à jour de ${favButtons.length} boutons favoris SCI avec ${favoris.length} favoris chargés`);
         
+        if (favButtons.length === 0) {
+            console.log('⚠️ Aucun bouton favori trouvé dans le DOM');
+            return;
+        }
+        
+        let updatedCount = 0;
         favButtons.forEach(btn => {
             const siren = btn.getAttribute('data-siren');
             if (!siren) {
+                console.warn('⚠️ Bouton favori sans data-siren:', btn);
                 return;
             }
             const isFavori = favoris.some(fav => fav.siren === siren);
+            const wasFavori = btn.classList.contains('favori');
+            
             if (isFavori) {
                 btn.textContent = '★';
-                btn.classList.add('favori');
+                btn.classList.add('favori', 'active');
                 btn.title = 'Retirer des favoris';
+                if (!wasFavori) updatedCount++;
             } else {
                 btn.textContent = '☆';
-                btn.classList.remove('favori');
+                btn.classList.remove('favori', 'active');
                 btn.title = 'Ajouter aux favoris';
+                if (wasFavori) updatedCount++;
             }
         });
+        
+        console.log(`✅ ${updatedCount} boutons favoris mis à jour`);
     }
 
     function syncFavorisWithDB(action, sciData = null) {
+        // ✅ NOUVEAU : Diagnostic des variables AJAX
+        if (typeof sci_ajax === 'undefined') {
+            console.error('❌ Variables AJAX non disponibles');
+            return Promise.reject(new Error('Variables AJAX non disponibles'));
+        }
+
         const formData = new FormData();
         formData.append('action', 'sci_manage_favoris');
         formData.append('operation', action);
@@ -47,12 +76,19 @@ document.addEventListener('DOMContentLoaded', function() {
         if (sciData) {
             formData.append('sci_data', JSON.stringify(sciData));
         }
+
+        console.log(`🔄 Appel AJAX: ${action}`, sciData ? `avec SIREN: ${sciData.siren}` : '');
+        
         return fetch(sci_ajax.ajax_url, {
             method: 'POST',
             body: formData
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log('📡 Réponse AJAX reçue:', response.status);
+            return response.json();
+        })
         .then(data => {
+            console.log('📡 Données AJAX reçues:', data);
             if (data.success) {
                 if (action === 'get') {
                     favoris = data.data || [];
@@ -64,15 +100,20 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
         .catch(error => {
+            console.error('❌ Erreur AJAX:', error);
             throw error;
         });
     }
 
     function toggleFavori(btn) {
+        console.log('🖱️ Clic sur bouton favori détecté');
         const siren = btn.getAttribute('data-siren');
         if (!siren) {
+            console.error('❌ Pas de SIREN trouvé sur le bouton');
             return;
         }
+        console.log('🔄 Toggle favori pour SIREN:', siren);
+        
         const sciData = {
             siren: siren,
             denomination: btn.getAttribute('data-denomination') || '',
@@ -83,6 +124,8 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         const isCurrentlyFavori = favoris.some(fav => fav.siren === siren);
         const action = isCurrentlyFavori ? 'remove' : 'add';
+        console.log(`🔄 Action: ${action} (actuellement favori: ${isCurrentlyFavori})`);
+        
         if (isCurrentlyFavori) {
             favoris = favoris.filter(fav => fav.siren !== siren);
         } else {
@@ -90,15 +133,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         updateFavButtons();
         syncFavorisWithDB(action, sciData)
-            .then(() => {})
+            .then(() => {
+                console.log('✅ Toggle favori réussi');
+            })
             .catch(error => {
+                console.error('❌ Erreur lors du toggle favori:', error);
                 if (isCurrentlyFavori) {
                     favoris.push(sciData);
                 } else {
                     favoris = favoris.filter(fav => fav.siren !== siren);
                 }
                 updateFavButtons();
-                alert('Erreur lors de la synchronisation des favoris: ' + error.message);
+                alert('Erreur lors de la synchronisation des favoris SCI: ' + error.message);
             });
     }
 
@@ -133,25 +179,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function initializeFavoris() {
         if (isInitialized) {
-            console.log('✅ Favoris déjà initialisés');
+            console.log('✅ Favoris SCI déjà initialisés');
             return;
         }
         
-        console.log('🔄 Initialisation des favoris...');
+        console.log('🔄 Initialisation des favoris SCI...');
         syncFavorisWithDB('get')
             .then(() => {
-                console.log(`✅ Favoris initialisés avec succès: ${favoris.length} favoris chargés`);
-                attachFavorisListeners();
-                updateContactStatus();
-                updateFavButtons(); // ✅ NOUVEAU : Mettre à jour les boutons après initialisation
-                isInitialized = true;
+                        console.log(`✅ Favoris SCI initialisés avec succès: ${favoris.length} favoris chargés`);
+        attachFavorisListeners();
+        setupFavorisObserver(); // ✅ NOUVEAU : Configurer le MutationObserver
+        updateContactStatus();
+        updateFavButtons(); // ✅ NOUVEAU : Mettre à jour les boutons après initialisation
+        isInitialized = true;
             })
             .catch(error => {
-                console.error('❌ Erreur lors de l\'initialisation des favoris:', error);
+                console.error('❌ Erreur lors de l\'initialisation des favoris SCI:', error);
                 // ✅ NOUVEAU : Réessayer après un délai
                 setTimeout(() => {
                     if (!isInitialized) {
-                        console.log('🔄 Nouvelle tentative d\'initialisation des favoris...');
+                        console.log('🔄 Nouvelle tentative d\'initialisation des favoris SCI...');
                         initializeFavoris();
                     }
                 }, 2000);
@@ -159,32 +206,169 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function attachFavorisListeners() {
-        const favButtons = document.querySelectorAll('.fav-btn');
-        favButtons.forEach(btn => {
-            btn.removeEventListener('click', handleFavoriClick);
-            btn.addEventListener('click', handleFavoriClick);
+        // ✅ NOUVEAU : Utiliser la délégation d'événements au lieu d'attacher des listeners individuels
+        console.log('🔗 Configuration de la délégation d\'événements pour les favoris SCI');
+        
+        // Supprimer l'ancien listener de délégation s'il existe
+        document.removeEventListener('click', handleFavoriClickDelegated);
+        
+        // Ajouter le nouveau listener de délégation
+        document.addEventListener('click', handleFavoriClickDelegated);
+        
+        console.log('✅ Délégation d\'événements configurée pour les favoris SCI');
+    }
+
+    // ✅ NOUVEAU : Gestionnaire de clic avec délégation d'événements
+    function handleFavoriClickDelegated(event) {
+        // Vérifier si le clic vient d'un bouton favori
+        const target = event.target;
+        if (target.matches('.fav-btn, .favorite-btn')) {
+            event.preventDefault();
+            console.log('🖱️ Clic sur bouton favori détecté (délégation)');
+            toggleFavori(target);
+        }
+    }
+
+
+
+    // ✅ NOUVEAU : Test manuel des boutons favoris
+    function testFavorisButtons() {
+        console.log('🧪 TEST MANUEL DES BOUTONS FAVORIS');
+        const favButtons = document.querySelectorAll('.fav-btn, .favorite-btn');
+        console.log(`🧪 ${favButtons.length} boutons favoris trouvés`);
+        
+        // ✅ NOUVEAU : Vérifier la délégation d'événements
+        const hasDelegation = document.onclick !== null || document.addEventListener !== undefined;
+        console.log(`🧪 Délégation d'événements configurée: ${hasDelegation ? '✅' : '❌'}`);
+        
+        favButtons.forEach((btn, index) => {
+            const siren = btn.getAttribute('data-siren');
+            const hasClickListener = btn.onclick !== null;
+            console.log(`🧪 Bouton ${index + 1}: SIREN=${siren}, Listener individuel=${hasClickListener ? '✅' : '❌'} (délégation d'événements utilisée)`);
         });
     }
 
-    function handleFavoriClick(event) {
-        event.preventDefault();
-        toggleFavori(this);
+    // ✅ NOUVEAU : MutationObserver pour détecter automatiquement les nouveaux boutons favoris
+    function setupFavorisObserver() {
+        console.log('👁️ Configuration du MutationObserver pour les favoris SCI');
+        
+        // Supprimer l'ancien observer s'il existe
+        if (window.favorisObserver) {
+            window.favorisObserver.disconnect();
+        }
+        
+        // Créer un nouvel observer
+        window.favorisObserver = new MutationObserver((mutations) => {
+            let shouldUpdate = false;
+            
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'childList') {
+                    mutation.addedNodes.forEach((node) => {
+                        if (node.nodeType === Node.ELEMENT_NODE) {
+                            // Vérifier si le nœud ajouté contient des boutons favoris
+                            if (node.matches && (node.matches('.fav-btn, .favorite-btn') || node.querySelector('.fav-btn, .favorite-btn'))) {
+                                shouldUpdate = true;
+                            }
+                            // Vérifier aussi les enfants du nœud
+                            if (node.querySelector && node.querySelector('.fav-btn, .favorite-btn')) {
+                                shouldUpdate = true;
+                            }
+                        }
+                    });
+                }
+            });
+            
+            if (shouldUpdate) {
+                console.log('👁️ Nouveaux boutons favoris détectés, mise à jour...');
+                setTimeout(() => {
+                    updateFavButtons();
+                }, 100);
+            }
+        });
+        
+        // Observer les changements dans le tableau des résultats
+        const resultsTable = document.querySelector('#results-table, .sci-table');
+        if (resultsTable) {
+            window.favorisObserver.observe(resultsTable, {
+                childList: true,
+                subtree: true
+            });
+            console.log('✅ MutationObserver configuré sur le tableau des résultats');
+        } else {
+            console.warn('⚠️ Tableau des résultats non trouvé pour le MutationObserver');
+        }
+    }
+
+    // ✅ NOUVEAU : Test AJAX simple
+    function testAjaxHandler() {
+        console.log('🧪 TEST AJAX HANDLER');
+        if (typeof sci_ajax === 'undefined') {
+            console.error('❌ Variables AJAX non disponibles');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('action', 'sci_manage_favoris');
+        formData.append('operation', 'get');
+        formData.append('nonce', sci_ajax.nonce);
+
+        console.log('🧪 Envoi requête AJAX de test...');
+        
+        fetch(sci_ajax.ajax_url, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            console.log('🧪 Réponse AJAX de test:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('🧪 Données AJAX de test:', data);
+            if (data.success) {
+                console.log('✅ Handler AJAX fonctionne correctement');
+            } else {
+                console.error('❌ Handler AJAX retourne une erreur:', data.data);
+            }
+        })
+        .catch(error => {
+            console.error('❌ Erreur lors du test AJAX:', error);
+        });
     }
 
     initializeFavoris();
     
+    // ✅ NOUVEAU : Test après un délai
+    setTimeout(() => {
+        testFavorisButtons();
+        testAjaxHandler();
+    }, 2000);
+    
     // ✅ NOUVEAU : Fonction pour forcer la mise à jour des favoris
     function forceUpdateFavoris() {
-        console.log('🔄 Forçage de la mise à jour des favoris...');
+        console.log('🔄 Forçage de la mise à jour des favoris SCI...');
         syncFavorisWithDB('get')
             .then(() => {
+                console.log('✅ Favoris SCI rechargés, mise à jour des boutons...');
                 updateFavButtons();
                 updateContactStatus();
-                console.log('✅ Mise à jour forcée des favoris terminée');
+                attachFavorisListeners();
+                console.log('✅ Mise à jour forcée des favoris SCI terminée');
             })
             .catch(error => {
-                console.error('❌ Erreur lors de la mise à jour forcée des favoris:', error);
+                console.error('❌ Erreur lors de la mise à jour forcée des favoris SCI:', error);
+                // ✅ NOUVEAU : Fallback - essayer de mettre à jour avec les favoris actuels
+                console.log('🔄 Fallback: mise à jour avec les favoris actuels...');
+                updateFavButtons();
             });
+    }
+
+    // ✅ NOUVEAU : Fonction pour réinitialiser après changement de page
+    function refreshFavorisAfterPageChange() {
+        console.log('🔄 Réinitialisation des favoris SCI après changement de page...');
+        updateFavButtons();
+        attachFavorisListeners();
+        updateContactStatus();
+        console.log('✅ Réinitialisation des favoris SCI terminée');
     }
     
     // Exposer les fonctions globalement
@@ -195,4 +379,8 @@ document.addEventListener('DOMContentLoaded', function() {
     window.toggleFavori = toggleFavori;
     window.initializeFavoris = initializeFavoris;
     window.forceUpdateFavoris = forceUpdateFavoris; // ✅ NOUVEAU : Fonction de mise à jour forcée
+    window.refreshFavorisAfterPageChange = refreshFavorisAfterPageChange; // ✅ NOUVEAU : Fonction de réinitialisation après changement de page
+    window.testFavorisButtons = testFavorisButtons; // ✅ NOUVEAU : Fonction de test
+    window.testAjaxHandler = testAjaxHandler; // ✅ NOUVEAU : Fonction de test AJAX
+    window.setupFavorisObserver = setupFavorisObserver; // ✅ NOUVEAU : Fonction de configuration du MutationObserver
 });

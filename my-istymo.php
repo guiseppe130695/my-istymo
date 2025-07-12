@@ -443,6 +443,8 @@ function sci_enqueue_admin_scripts() {
             true
         );
 
+
+
         // ✅ NOUVEAU : Script pour les fonctionnalités avancées (TEMPORAIREMENT DÉSACTIVÉ)
         /*
         wp_enqueue_script(
@@ -514,6 +516,8 @@ function sci_enqueue_admin_scripts() {
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('dpe_favoris_nonce')
         ));
+
+
 
         // Facultatif : ajouter ton CSS si besoin
         wp_enqueue_style(
@@ -969,7 +973,7 @@ function dpe_afficher_panel() {
         'atts' => [] // ✅ AJOUTÉ : Variable atts pour éviter l'erreur
     ];
 
-    // ✅ CHANGÉ : Utiliser le template simplifié basé sur votre code
+    // ✅ CHANGÉ : Utiliser le template simplifié qui fonctionne
     sci_load_template('dpe-panel-simple', $context);
 }
 

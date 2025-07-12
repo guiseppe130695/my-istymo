@@ -310,15 +310,28 @@
     }
     
     function reinitializeJavaScriptFeatures() {
+        console.log('🔄 Début reinitializeJavaScriptFeatures');
+        
         setTimeout(() => {
+            console.log('⏰ Timeout reinitializeJavaScriptFeatures exécuté');
+            
+            // ✅ SIMPLIFIÉ : Avec la délégation d'événements, on n'a plus besoin d'attacher des listeners individuels
             if (typeof window.attachFavorisListeners === 'function') {
                 window.attachFavorisListeners();
-                console.log('✅ Listeners favoris réinitialisés');
+                console.log('✅ Délégation d\'événements favoris configurée');
             } else {
                 console.warn('⚠️ Fonction attachFavorisListeners non disponible');
             }
             
-            // ✅ NOUVEAU : Mettre à jour l'affichage des boutons favoris
+            // ✅ NOUVEAU : Configurer le MutationObserver pour détecter automatiquement les nouveaux boutons
+            if (typeof window.setupFavorisObserver === 'function') {
+                window.setupFavorisObserver();
+                console.log('✅ MutationObserver favoris configuré');
+            } else {
+                console.warn('⚠️ Fonction setupFavorisObserver non disponible');
+            }
+            
+            // ✅ Mettre à jour l'affichage des boutons favoris
             if (typeof window.forceUpdateFavoris === 'function') {
                 window.forceUpdateFavoris();
                 console.log('✅ Mise à jour forcée des favoris lancée');
@@ -348,7 +361,7 @@
             } else {
                 console.warn('⚠️ Fonction updateSelectedCount non disponible');
             }
-        }, 100);
+        }, 1000); // ✅ AUGMENTÉ : Délai plus long pour s'assurer que les boutons sont créés
     }
     
     function displayError(message) {
