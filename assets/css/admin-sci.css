@@ -1,0 +1,193 @@
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Styles pour la pagination */
+#pagination-controls button:hover:not(:disabled) {
+    background: #0073aa !important;
+    color: white !important;
+    border-color: #0073aa !important;
+}
+
+#pagination-controls button:disabled {
+    background: #f0f0f0 !important;
+    color: #999 !important;
+    cursor: not-allowed !important;
+    border-color: #ddd !important;
+}
+
+#pagination-controls button:active:not(:disabled) {
+    background: #005a87 !important;
+    transform: translateY(1px);
+}
+
+.pagination-main {
+    margin-bottom: 10px;
+}
+
+/* Styles pour aligner le formulaire et le bouton */
+.form-group-left {
+    display: flex;
+    align-items: flex-end;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.form-group {
+    flex: 1;
+    max-width: 300px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-group select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    height: 40px;
+    box-sizing: border-box;
+    line-height: 1.2;
+}
+
+#search-btn {
+    height: 40px;
+    padding: 8px 20px;
+    white-space: nowrap;
+    box-sizing: border-box;
+    line-height: 1.2;
+    align-self: flex-end;
+}
+
+/* ✅ TAILLE DE POLICE 12PX POUR TOUS LES ÉLÉMENTS DU TABLEAU */
+.sci-table,
+.sci-table th,
+.sci-table td,
+.sci-table button,
+.sci-table input,
+.sci-table a,
+.sci-table span {
+    font-size: 12px !important;
+}
+
+/* ✅ TAILLE DE POLICE 12PX POUR TOUS LES ÉLÉMENTS DU POPUP */
+#letters-popup,
+#letters-popup h2,
+#letters-popup h3,
+#letters-popup h4,
+#letters-popup p,
+#letters-popup label,
+#letters-popup input,
+#letters-popup textarea,
+#letters-popup button,
+#letters-popup select,
+#letters-popup li,
+#letters-popup span,
+#letters-popup div,
+#letters-popup code,
+#letters-popup ul,
+#letters-popup ol {
+    font-size: 12px !important;
+}
+
+/* ✅ EXCEPTIONS POUR LES TITRES PRINCIPAUX DU POPUP */
+#letters-popup h2 {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+}
+
+/* ✅ NOUVEAUX STYLES POUR LES BOUTONS */
+/* Boutons standards (fond blanc, hover vert) */
+.sci-button:not(.secondary):not([id*="send-letters"]):not([id*="to-step"]):not([id*="send-campaign"]):not([id*="back-to-step"]) {
+    background: white !important;
+    color: #333 !important;
+    border: 1px solid #ddd !important;
+    transition: all 0.3s ease !important;
+}
+
+.sci-button:not(.secondary):not([id*="send-letters"]):not([id*="to-step"]):not([id*="send-campaign"]):not([id*="back-to-step"]):hover {
+    background: #28a745 !important;
+    color: white !important;
+    border-color: #28a745 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+/* Boutons d'action (gardent le style vert) */
+.sci-button.secondary,
+#send-letters-btn,
+#to-step-2,
+#send-campaign,
+#back-to-step-1 {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important;
+    color: white !important;
+    border: none !important;
+}
+
+.sci-button.secondary:hover,
+#send-letters-btn:hover,
+#to-step-2:hover,
+#send-campaign:hover,
+#back-to-step-1:hover {
+    background: linear-gradient(135deg, #218838 0%, #1e7e34 100%) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+}
+
+/* Boutons de pagination (style spécial) */
+#pagination-controls button {
+    background: white !important;
+    color: #333 !important;
+    border: none !important;
+    transition: all 0.3s ease !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}
+
+#pagination-controls button:hover:not(:disabled) {
+    background: #28a745 !important;
+    color: white !important;
+    border: none !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* ✅ STYLE POUR LE BOUTON DE PAIEMENT WOOCOMMERCE */
+.woocommerce #payment #place_order,
+.woocommerce #payment input[type="submit"],
+.woocommerce #payment button[type="submit"],
+.woocommerce #payment .button,
+.woocommerce #payment .button.alt,
+.woocommerce #payment .checkout-button,
+.woocommerce #payment .place-order .button,
+.woocommerce #payment .place-order input[type="submit"],
+.woocommerce #payment .place-order button[type="submit"] {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important;
+    color: white !important;
+    border: none !important;
+    transition: all 0.3s ease !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+.woocommerce #payment #place_order:hover,
+.woocommerce #payment input[type="submit"]:hover,
+.woocommerce #payment button[type="submit"]:hover,
+.woocommerce #payment .button:hover,
+.woocommerce #payment .button.alt:hover,
+.woocommerce #payment .checkout-button:hover,
+.woocommerce #payment .place-order .button:hover,
+.woocommerce #payment .place-order input[type="submit"]:hover,
+.woocommerce #payment .place-order button[type="submit"]:hover {
+    background: linear-gradient(135deg, #218838 0%, #1e7e34 100%) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4) !important;
+} 
