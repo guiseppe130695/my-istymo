@@ -5,7 +5,9 @@ var currentPage = 1;
 var totalPages = 1;
 var totalResults = 0;
 var currentSearchParams = {
-    codePostal: ''
+    codePostal: '',
+    buildingType: '',
+    keywordSearch: ''
 };
 
 // Variables pour la pagination
@@ -15,9 +17,9 @@ var currentPageUrl = null;
 
 // Fonction pour construire l'URL de l'API
 function buildApiUrl(page = 1) {
-    var baseUrl = 'https://data.ademe.fr/data-fair/api/v1/datasets/dpe03existant/lines?size=50&sort=-date_reception_dpe&q_mode=complete&q_fields=code_postal_ban,type_batiment';
+    var baseUrl = 'https://data.ademe.fr/data-fair/api/v1/datasets/dpe03existant/lines?size=50&sort=-date_reception_dpe&q_mode=complete&q_fields=code_postal_ban,type_batiment,adresse_ban,adresse_brut';
     
-    // Construire la requête structurée
+    // Construire la requête structurée pour les filtres
     var queryString = 'code_postal_ban:"' + currentSearchParams.codePostal + '"';
     
     // Ajouter le type de bâtiment si sélectionné
@@ -25,7 +27,18 @@ function buildApiUrl(page = 1) {
         queryString += ' AND type_batiment:"' + currentSearchParams.buildingType.toLowerCase() + '"';
     }
     
+    // Ajouter le paramètre qs pour les filtres structurés
     baseUrl += '&qs=' + encodeURIComponent(queryString);
+    
+    // Ajouter la recherche textuelle avec le paramètre q si un mot-clé est spécifié
+    if (currentSearchParams.keywordSearch && currentSearchParams.keywordSearch.trim()) {
+        var keyword = currentSearchParams.keywordSearch.trim();
+        baseUrl += '&q=' + encodeURIComponent(keyword);
+    }
+
+    // Afficher l'URL dans la console pour debug
+    console.log('URL de recherche DPE:', baseUrl);
+    console.log('Paramètres de recherche:', currentSearchParams);
 
     return baseUrl;
 }
@@ -56,18 +69,64 @@ function fetchDataFromApi(url, successCallback, errorCallback) {
     xhr.send();
 }
 
+// Fonction pour filtrer les résultats selon les critères exacts
+function filterResults(results) {
+    if (!results || results.length === 0) {
+        return [];
+    }
+    
+    return results.filter(function(result) {
+        // Vérifier le code postal
+        var resultCodePostal = result.code_postal_ban || result.code_postal_brut || '';
+        if (currentSearchParams.codePostal && resultCodePostal !== currentSearchParams.codePostal) {
+            return false;
+        }
+        
+        // Vérifier le type de bâtiment
+        if (currentSearchParams.buildingType) {
+            var resultBuildingType = (result.type_batiment || '').toLowerCase();
+            var searchBuildingType = currentSearchParams.buildingType.toLowerCase();
+            if (resultBuildingType !== searchBuildingType) {
+                return false;
+            }
+        }
+        
+        // Vérifier le mot-clé d'adresse
+        if (currentSearchParams.keywordSearch && currentSearchParams.keywordSearch.trim()) {
+            var keyword = currentSearchParams.keywordSearch.trim().toLowerCase();
+            var resultAdresse = (result.adresse_ban || result.adresse_brut || '').toLowerCase();
+            
+            // Vérifier si le mot-clé est présent dans l'adresse
+            if (!resultAdresse.includes(keyword)) {
+                return false;
+            }
+        }
+        
+        return true;
+    });
+}
+
 // Fonction pour afficher les résultats
 function displayResults(data) {
     var tbody = document.getElementById('results-tbody');
     tbody.innerHTML = '';
 
     if (data.results && data.results.length > 0) {
-        totalResults = data.total;
+        // Filtrer les résultats selon les critères exacts
+        var filteredResults = filterResults(data.results);
+        
+        if (filteredResults.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 20px; color: #666;">Aucun résultat trouvé correspondant exactement aux critères</td></tr>';
+            hidePaginationControls();
+            return;
+        }
+        
+        totalResults = filteredResults.length;
         
         // Calculer le nombre total de pages (approximatif)
         totalPages = Math.ceil(totalResults / 50);
 
-        data.results.forEach(function (result) {
+        filteredResults.forEach(function (result) {
             var row = document.createElement('tr');
             
             // Bouton favoris
@@ -228,6 +287,7 @@ function hidePaginationControls() {
 function performSearch() {
     var codePostal = document.getElementById('codePostal').value;
     var buildingType = document.getElementById('buildingType').value;
+    var keywordSearch = document.getElementById('keywordSearch').value;
     
     if (!codePostal) {
         alert('Veuillez sélectionner un code postal');
@@ -236,6 +296,7 @@ function performSearch() {
     
     currentSearchParams.codePostal = codePostal;
     currentSearchParams.buildingType = buildingType;
+    currentSearchParams.keywordSearch = keywordSearch;
     currentPage = 1;
     
     // Réinitialiser la pagination

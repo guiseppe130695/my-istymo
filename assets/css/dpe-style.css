@@ -46,6 +46,16 @@
     min-width: 200px;
 }
 
+/* Style spécifique pour le champ de recherche par mot-clé */
+input#keywordSearch {
+    height: 22px;
+}
+
+/* Style spécifique pour le bouton de recherche */
+button#search-btn {
+    margin-left: 25px;
+}
+
 .dpe-button {
     background: linear-gradient(135deg, #0073aa 0%, #005a87 100%);
     color: white;

@@ -156,19 +156,12 @@ class DPE_Shortcodes {
             <!-- Information pour les utilisateurs -->
             <div class="dpe-info" style="background: #e7f3ff; border: 1px solid #bee5eb; border-radius: 8px; padding: 15px; margin-bottom: 20px; color: #004085;">
                 <p style="margin: 0; font-size: 16px; line-height: 1.5;">
-                    Recherchez les diagnostics de performance énergétique (DPE) par code postal. Consultez les étiquettes énergétiques et les informations détaillées.
+                    <strong>Aide à la prospection Lead DPE</strong><br><br>
+                    L'obligation du Diagnostic de Performance Énergétique concerne toute personne désirant mettre en vente un bien immobilier. Facilitez votre prospection et anticipez les ventes à venir en consultant la liste des DPE réalisés sur vos secteurs d'activité.
                 </p>
             </div>
             
-            <!-- Affichage du code postal par défaut -->
-            <?php if (!empty($codesPostauxArray)): ?>
-            <div class="dpe-default-postal" style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 12px; margin-bottom: 15px; color: #155724;">
-                <p style="margin: 0; font-size: 14px; line-height: 1.4;">
-                    <strong>Codes postaux disponibles :</strong> <?php echo esc_html(implode(', ', $codesPostauxArray)); ?>
-                    <span style="color: #0c5460; font-style: italic;">(le premier sera sélectionné automatiquement)</span>
-                </p>
-            </div>
-            <?php endif; ?>
+
             
             <!-- Affichage des avertissements de configuration -->
             <?php
@@ -200,6 +193,10 @@ class DPE_Shortcodes {
                             <option value="Appartement">Appartement</option>
                             <option value="Immeuble">Immeuble</option>
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="keywordSearch">Recherche par adresse :</label>
+                        <input type="text" name="keywordSearch" id="keywordSearch" placeholder="Ex: rue de la paix, avenue victor hugo..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                     </div>
                     <button type="submit" id="search-btn" class="dpe-button">
                         Rechercher les DPE
@@ -278,7 +275,9 @@ class DPE_Shortcodes {
         var totalPages = 1;
         var totalResults = 0;
         var currentSearchParams = {
-            codePostal: '<?php echo esc_js(!empty($codesPostauxArray) ? reset($codesPostauxArray) : ""); ?>'
+            codePostal: '<?php echo esc_js(!empty($codesPostauxArray) ? reset($codesPostauxArray) : ""); ?>',
+            buildingType: '',
+            keywordSearch: ''
         };
 
         // Variables pour la pagination
@@ -288,9 +287,9 @@ class DPE_Shortcodes {
 
         // Fonction pour construire l'URL de l'API
         function buildApiUrl(page = 1) {
-            var baseUrl = 'https://data.ademe.fr/data-fair/api/v1/datasets/dpe03existant/lines?size=50&sort=-date_reception_dpe&q_mode=complete&q_fields=code_postal_ban,type_batiment';
+            var baseUrl = 'https://data.ademe.fr/data-fair/api/v1/datasets/dpe03existant/lines?size=50&sort=-date_reception_dpe&q_mode=complete&q_fields=code_postal_ban,type_batiment,adresse_ban,adresse_brut';
             
-            // Construire la requête structurée
+            // Construire la requête structurée pour les filtres
             var queryString = 'code_postal_ban:"' + currentSearchParams.codePostal + '"';
             
             // Ajouter le type de bâtiment si sélectionné
@@ -298,7 +297,18 @@ class DPE_Shortcodes {
                 queryString += ' AND type_batiment:"' + currentSearchParams.buildingType.toLowerCase() + '"';
             }
             
+            // Ajouter le paramètre qs pour les filtres structurés
             baseUrl += '&qs=' + encodeURIComponent(queryString);
+            
+            // Ajouter la recherche textuelle avec le paramètre q si un mot-clé est spécifié
+            if (currentSearchParams.keywordSearch && currentSearchParams.keywordSearch.trim()) {
+                var keyword = currentSearchParams.keywordSearch.trim();
+                baseUrl += '&q=' + encodeURIComponent(keyword);
+            }
+
+            // Afficher l'URL dans la console pour debug
+            console.log('URL de recherche DPE:', baseUrl);
+            console.log('Paramètres de recherche:', currentSearchParams);
 
             return baseUrl;
         }
@@ -337,18 +347,64 @@ class DPE_Shortcodes {
             xhr.send();
         }
 
+        // Fonction pour filtrer les résultats selon les critères exacts
+        function filterResults(results) {
+            if (!results || results.length === 0) {
+                return [];
+            }
+            
+            return results.filter(function(result) {
+                // Vérifier le code postal
+                var resultCodePostal = result.code_postal_ban || result.code_postal_brut || '';
+                if (currentSearchParams.codePostal && resultCodePostal !== currentSearchParams.codePostal) {
+                    return false;
+                }
+                
+                // Vérifier le type de bâtiment
+                if (currentSearchParams.buildingType) {
+                    var resultBuildingType = (result.type_batiment || '').toLowerCase();
+                    var searchBuildingType = currentSearchParams.buildingType.toLowerCase();
+                    if (resultBuildingType !== searchBuildingType) {
+                        return false;
+                    }
+                }
+                
+                // Vérifier le mot-clé d'adresse
+                if (currentSearchParams.keywordSearch && currentSearchParams.keywordSearch.trim()) {
+                    var keyword = currentSearchParams.keywordSearch.trim().toLowerCase();
+                    var resultAdresse = (result.adresse_ban || result.adresse_brut || '').toLowerCase();
+                    
+                    // Vérifier si le mot-clé est présent dans l'adresse
+                    if (!resultAdresse.includes(keyword)) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            });
+        }
+
         // Fonction pour afficher les résultats
         function displayResults(data) {
             var tbody = document.getElementById('results-tbody');
             tbody.innerHTML = '';
 
             if (data.results && data.results.length > 0) {
-                totalResults = data.total;
+                // Filtrer les résultats selon les critères exacts
+                var filteredResults = filterResults(data.results);
+                
+                if (filteredResults.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 20px; color: #666;">Aucun résultat trouvé correspondant exactement aux critères</td></tr>';
+                    hidePaginationControls();
+                    return;
+                }
+                
+                totalResults = filteredResults.length;
                 
                 // Calculer le nombre total de pages (approximatif)
                 totalPages = Math.ceil(totalResults / 50);
 
-                data.results.forEach(function (result) {
+                filteredResults.forEach(function (result) {
                     var row = document.createElement('tr');
                     
                     // Bouton favoris
@@ -521,6 +577,7 @@ class DPE_Shortcodes {
         function performSearch() {
             var codePostal = document.getElementById('codePostal').value;
             var buildingType = document.getElementById('buildingType').value;
+            var keywordSearch = document.getElementById('keywordSearch').value;
             
             if (!codePostal) {
                 alert('Veuillez sélectionner un code postal');
@@ -529,6 +586,7 @@ class DPE_Shortcodes {
             
             currentSearchParams.codePostal = codePostal;
             currentSearchParams.buildingType = buildingType;
+            currentSearchParams.keywordSearch = keywordSearch;
             currentPage = 1;
             
             // Réinitialiser la pagination
