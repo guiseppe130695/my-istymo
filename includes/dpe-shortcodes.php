@@ -282,11 +282,11 @@ class DPE_Shortcodes {
             keywordSearch: ''
         };
 
-        // Variables pour la pagination
+        // Variables pour la pagination - Version simplifiée et corrigée
         var nextPageUrl = null;
         var previousPageUrls = [];
         var currentPageUrl = null;
-        var pageHistory = []; // Historique des pages pour un calcul plus précis
+        var currentPageNumber = 1; // Numéro de page actuel
 
         // Fonction pour construire l'URL de l'API
         function buildApiUrl(page = 1) {
@@ -360,6 +360,11 @@ class DPE_Shortcodes {
                 
                 // Calculer le nombre total de pages (approximatif)
                 totalPages = Math.ceil(totalResults / 50);
+                
+                // Si c'est la première recherche, initialiser la page à 1
+                if (previousPageUrls.length === 0 && !currentPageUrl) {
+                    currentPageNumber = 1;
+                }
 
                 data.results.forEach(function (result) {
                     var row = document.createElement('tr');
@@ -502,9 +507,8 @@ class DPE_Shortcodes {
         // Fonction pour mettre à jour les informations de pagination
         function updatePaginationInfo() {
             var pageInfo = document.getElementById('page-info');
-            // Calculer la page actuelle basée sur l'historique plutôt que sur l'incrémentation manuelle
-            var actualPage = pageHistory.length + 1;
-            pageInfo.textContent = actualPage + '/' + totalPages;
+            // Utiliser le numéro de page actuel directement
+            pageInfo.textContent = currentPageNumber + '/' + totalPages;
             
             var paginationInfo = document.getElementById('pagination-info');
             paginationInfo.textContent = totalResults + ' résultat(s) trouvé(s)';
@@ -551,7 +555,7 @@ class DPE_Shortcodes {
             nextPageUrl = null;
             previousPageUrls = [];
             currentPageUrl = null;
-            pageHistory = []; // Réinitialiser l'historique des pages
+            currentPageNumber = 1; // Réinitialiser le numéro de page
             
             showLoading();
             hideError();
@@ -610,8 +614,8 @@ class DPE_Shortcodes {
                     nextPageUrl = currentPageUrl;
                 }
                 
-                // Retirer la page actuelle de l'historique
-                pageHistory.pop();
+                // Décrémenter le numéro de page
+                currentPageNumber--;
                 
                 showLoading();
                 fetchDataFromApi(previousUrl, function(data) {
@@ -631,8 +635,8 @@ class DPE_Shortcodes {
                     previousPageUrls.push(currentPageUrl);
                 }
                 
-                // Ajouter la page actuelle à l'historique
-                pageHistory.push(currentPageUrl);
+                // Incrémenter le numéro de page
+                currentPageNumber++;
                 
                 showLoading();
                 fetchDataFromApi(nextPageUrl, function(data) {
