@@ -149,7 +149,9 @@ class DPE_Shortcodes {
         ob_start();
         ?>
         <div class="dpe-frontend-wrapper">
-            <h1><?php echo !empty($atts['title']) ? esc_html($atts['title']) : 'DPE – Recherche de Diagnostics'; ?></h1>
+            <?php if (!empty($atts['title'])): ?>
+                <h1><?php echo esc_html($atts['title']); ?></h1>
+            <?php endif; ?>
 
             <!-- ✅ Les styles CSS sont maintenant chargés depuis le fichier externe dpe-style.css -->
 
