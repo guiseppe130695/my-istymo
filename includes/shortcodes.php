@@ -162,6 +162,14 @@ class SCI_Shortcodes {
                 '1.0.3' // Version incrémentée pour forcer le rechargement
             );
         }
+
+        // Charger le CSS spécifique aux campagnes
+        wp_enqueue_style(
+            'sci-campaigns-style',
+            plugin_dir_url(dirname(__FILE__)) . 'assets/css/campaigns.css',
+            array('sci-frontend-style'),
+            '1.0.1'
+        );
         
 
         if (!wp_script_is('sci-frontend-favoris', 'enqueued')) {

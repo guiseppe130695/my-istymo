@@ -12,17 +12,88 @@
 
 <?php if ($view_mode && $campaign_details): ?>
     <!-- Mode vue détaillée d'une campagne -->
+    <!-- DEBUG: CSS Campaigns chargé -->
     <div class="sci-frontend-wrapper">
-        <h1>📬 Détails de la campagne : <?php echo esc_html($campaign_details['title']); ?></h1>
+        <style>
+.campaign-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 22px;
+    margin-bottom: 32px;
+    margin-top: 10px;
+}
+
+.campaign-stat-card {
+    background: #fff;
+    border-radius: 14px;
+    /* box-shadow: 0 2px 12px rgba(0,0,0,0.07); */
+    padding: 22px 18px 18px 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    border: none;
+    position: relative;
+    min-width: 0;
+    transition: box-shadow 0.2s;
+}
+.campaign-stat-card.status    { border-left: 4px solid #0073aa; }
+.campaign-stat-card.total     { border-left: 4px solid #28a745; }
+.campaign-stat-card.sent      { border-left: 4px solid #1e7e34; }
+.campaign-stat-card.errors    { border-left: 4px solid #dc3545; }
+
+.campaign-stat-label {
+    font-size: 13px;
+    color: #6c757d;
+    font-weight: 500;
+    margin-bottom: 7px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.campaign-stat-value {
+    font-size: 2.1em;
+    font-weight: 700;
+    color: #222;
+    margin: 0;
+    line-height: 1.1;
+    letter-spacing: -1px;
+}
+
+@media (max-width: 700px) {
+    .campaign-stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+    .campaign-stat-card {
+        padding: 14px 10px 12px 10px;
+    }
+}
+@media (max-width: 480px) {
+    .campaign-stats-grid {
+        grid-template-columns: 1fr;
+    }
+    .campaign-stat-card {
+        padding: 12px 6vw 10px 6vw;
+    }
+    .campaign-stat-value {
+        font-size: 1.4em;
+    }
+}
+</style>
+        <!-- En-tête avec navigation -->
+        <div class="campaign-page-header">
+            <h1 class="campaign-page-title">📬 <?php echo esc_html($campaign_details['title']); ?></h1>
+            <a href="<?php echo remove_query_arg('view', get_permalink()); ?>" class="campaign-back-link">
+                ← Retour
+            </a>
+        </div>
         
-        <a href="?view=" class="sci-button"
-           style="background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%) !important; color: white !important; border: none !important; text-decoration: none !important; display: inline-block !important; padding: 8px 16px !important; border-radius: 6px !important; margin-bottom: 20px !important;">
-            ← Retour aux campagnes
-        </a>
-        
-        <div style="background: #fff; padding: 25px; margin: 20px 0; border: 1px solid #e9ecef; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-            <h3 style="color: #1e1e1e; font-size: 1.3em; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #e9ecef; display: flex; align-items: center; gap: 8px;">📊 Résumé</h3>
-            <p><strong>Statut :</strong> 
+        <!-- Section Résumé avec cartes -->
+        <div class="campaign-stats-grid">
+            <!-- Carte Statut -->
+            <div class="campaign-stat-card status">
+                <h4 class="campaign-stat-label">Statut</h4>
+                <p class="campaign-stat-value">
                 <?php
                 $status_labels = [
                     'draft' => '📝 Brouillon',
@@ -33,18 +104,89 @@
                 echo $status_labels[$campaign_details['status']] ?? $campaign_details['status'];
                 ?>
             </p>
-            <p><strong>Total lettres :</strong> <?php echo intval($campaign_details['total_letters']); ?></p>
-            <p><strong>Envoyées :</strong> <?php echo intval($campaign_details['sent_letters']); ?></p>
-            <p><strong>Erreurs :</strong> <?php echo intval($campaign_details['failed_letters']); ?></p>
-            <p><strong>Date création :</strong> <?php echo date('d/m/Y H:i:s', strtotime($campaign_details['created_at'])); ?></p>
+            </div>
             
-            <h4 style="color: #495057; font-size: 1.1em; margin: 20px 0 10px 0; display: flex; align-items: center; gap: 8px;">📝 Contenu de la lettre :</h4>
-            <div style="background: #f8f9fa; padding: 20px; border-left: 4px solid #0073aa; border-radius: 4px; margin: 15px 0; font-size: 14px; line-height: 1.6; color: #495057;">
-                <?php echo nl2br(esc_html($campaign_details['content'])); ?>
+            <!-- Carte Total -->
+            <div class="campaign-stat-card total">
+                <h4 class="campaign-stat-label">Total lettres</h4>
+                <p class="campaign-stat-value"><?php echo intval($campaign_details['total_letters']); ?></p>
+            </div>
+            
+            <!-- Carte Envoyées -->
+            <div class="campaign-stat-card sent">
+                <h4 class="campaign-stat-label">Envoyées</h4>
+                <p class="campaign-stat-value"><?php echo intval($campaign_details['sent_letters']); ?></p>
+            </div>
+            
+            <!-- Carte Erreurs -->
+            <div class="campaign-stat-card errors">
+                <h4 class="campaign-stat-label">Erreurs</h4>
+                <p class="campaign-stat-value"><?php echo intval($campaign_details['failed_letters']); ?></p>
             </div>
         </div>
         
-        <h3>📋 Détail des envois</h3>
+        <!-- Section Contenu de la lettre avec popup -->
+        <div class="campaign-letter-section">
+            <div class="campaign-letter-header">
+                <h3 class="campaign-letter-title">📝 Contenu de la lettre</h3>
+                <button id="show-letter-popup" class="letter-popup-trigger">
+                    👁️ Voir le contenu
+                </button>
+            </div>
+            <p class="campaign-letter-date">
+                <strong>Date création :</strong> <?php echo date('d/m/Y H:i:s', strtotime($campaign_details['created_at'])); ?>
+            </p>
+        </div>
+
+        <!-- Popup pour le contenu de la lettre (modale identique à sci-panel.php) -->
+        <div id="letter-content-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.6)!important; z-index:10000; justify-content:center; align-items:center;">
+            <div style="background:#fff!important; padding:25px!important; width:700px; max-width:80vw; max-height:80vh; overflow-y:auto; border-radius:12px; display:flex; flex-direction:column;">
+                <h3 style="margin:0 0 20px 0; color:#1e1e1e; font-size:1.3em;">📝 Contenu de la lettre</h3>
+                <div style="background:#f9f9f9; padding:15px; border:1px solid #ddd; border-radius:6px; font-size:14px; line-height:1.7; color:#495057; white-space:pre-wrap; font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; margin-bottom:20px;">
+                    <?php echo esc_html($campaign_details['content']); ?>
+                </div>
+                <div style="text-align:center; margin-top:auto;">
+                    <button id="close-letter-content-modal" style="background:linear-gradient(135deg, #28a745 0%, #1e7e34 100%); color:white; border:none; padding:12px 24px; border-radius:6px; cursor:pointer; font-size:14px; font-weight:600; transition:all 0.2s;">
+                        Fermer
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const showButton = document.getElementById('show-letter-popup');
+            const modal = document.getElementById('letter-content-modal');
+            const closeBtn = document.getElementById('close-letter-content-modal');
+
+            if (showButton && modal) {
+                showButton.addEventListener('click', function() {
+                    modal.style.display = 'flex';
+                    document.body.style.overflow = 'hidden';
+                });
+                if (closeBtn) closeBtn.addEventListener('click', function() {
+                    modal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                });
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.style.display = 'none';
+                        document.body.style.overflow = 'auto';
+                    }
+                });
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && modal.style.display === 'flex') {
+                        modal.style.display = 'none';
+                        document.body.style.overflow = 'auto';
+                    }
+                });
+            }
+        });
+        </script>
+        
+        <!-- Section Détail des envois -->
+        <div class="campaign-details-section">
+            <h3 class="campaign-details-title">📋 Détail des envois</h3>
         <table class="sci-table">
             <thead>
                 <tr>
@@ -88,8 +230,8 @@
                         <td>
                             <?php if ($letter['error_message']): ?>
                                                         <span style="color: #dc3545; font-size: 11px; font-weight: 500;">
-                            <?php echo esc_html($letter['error_message']); ?>
-                        </span>
+                                    <?php echo esc_html($letter['error_message']); ?>
+                                </span>
                             <?php else: ?>
                                 -
                             <?php endif; ?>
@@ -98,12 +240,12 @@
                 <?php endforeach; ?>
             </tbody>
         </table>
+        </div>
     </div>
 
 <?php else: ?>
     <!-- Mode liste des campagnes -->
     <div class="sci-frontend-wrapper">
-        <h1><?php echo esc_html($title ?? '📬 Mes Campagnes de Lettres'); ?></h1>
         
         <?php if (empty($campaigns)): ?>
             <div class="sci-info" style="background: #e7f3ff; border: 1px solid #bee5eb; border-radius: 8px; padding: 15px; margin-bottom: 20px; color: #004085;">
@@ -144,7 +286,7 @@
                             <td><?php echo intval($campaign['failed_letters']); ?></td>
                             <td><?php echo date('d/m/Y H:i', strtotime($campaign['created_at'])); ?></td>
                             <td>
-                                <a href="?view=<?php echo intval($campaign['id']); ?>" 
+                                <a href="<?php echo add_query_arg('view', intval($campaign['id']), get_permalink()); ?>" 
                                    class="sci-button"
                                    style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important; color: white !important; border: none !important; text-decoration: none !important; display: inline-block !important; padding: 8px 16px !important; border-radius: 6px !important;">
                                     👁️ Voir détails

@@ -1,0 +1,109 @@
+/* =========================================
+   POPUP LETTRE CAMPAGNE (overlay + contenu)
+   ========================================= */
+
+.popup-overlay-campaign {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.6);
+    z-index: 10000;
+    opacity: 0;
+    transition: opacity 0.25s;
+}
+.popup-overlay-campaign.active {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 1;
+}
+
+.popup-campaign-container {
+    background: #fff !important;
+    border-radius: 14px;
+    padding: 32px 28px;
+    max-width: 700px;
+    width: 95vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.10);
+    position: relative;
+    animation: popup-fadein 0.25s;
+}
+
+@keyframes popup-fadein {
+    from { transform: scale(0.97) translateY(20px); opacity: 0; }
+    to   { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.popup-campaign-title {
+    margin: 0 0 18px 0;
+    font-size: 1.25em;
+    color: #222;
+    font-weight: 600;
+}
+
+.popup-campaign-content {
+    background: #f9f9f9;
+    border: 1px solid #e9ecef;
+    border-radius: 7px;
+    padding: 18px;
+    font-size: 15px;
+    color: #333;
+    margin-bottom: 24px;
+    white-space: pre-wrap;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.popup-campaign-close {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    background: none;
+    border: none;
+    font-size: 26px;
+    color: #888;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+.popup-campaign-close:hover {
+    background: #f0f0f0;
+    color: #222;
+}
+
+.popup-campaign-footer {
+    text-align: center;
+}
+
+.popup-campaign-btn {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+    color: #fff;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 7px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.popup-campaign-btn:hover {
+    background: linear-gradient(135deg, #1e7e34 0%, #155724 100%);
+}
+
+@media (max-width: 600px) {
+    .popup-campaign-container {
+        padding: 16px 6vw;
+        max-width: 99vw;
+    }
+    .popup-campaign-title {
+        font-size: 1.1em;
+    }
+    .popup-campaign-content {
+        font-size: 14px;
+        padding: 12px;
+    }
+} 
