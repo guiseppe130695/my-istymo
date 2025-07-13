@@ -15,14 +15,20 @@ if (!defined('ABSPATH')) exit;
  */
 if (!function_exists('sci_plugin_log')) {
     function sci_plugin_log($message) {
-        $upload_dir = wp_upload_dir();
-        $log_dir = $upload_dir['basedir'] . '/lettre-laposte';
-        if (!file_exists($log_dir)) {
-            wp_mkdir_p($log_dir);
+        // Utiliser la nouvelle fonction de log universelle si disponible
+        if (function_exists('my_istymo_log')) {
+            my_istymo_log($message, 'popup');
+        } else {
+            // Fallback vers l'ancien système
+            $upload_dir = wp_upload_dir();
+            $log_dir = $upload_dir['basedir'] . '/lettre-laposte';
+            if (!file_exists($log_dir)) {
+                wp_mkdir_p($log_dir);
+            }
+            $logfile = $log_dir . '/logs.txt';
+            $datetime = date('Y-m-d H:i:s');
+            error_log("[$datetime] $message\n", 3, $logfile);
         }
-        $logfile = $log_dir . '/logs.txt';
-        $datetime = date('Y-m-d H:i:s');
-        error_log("[$datetime] $message\n", 3, $logfile);
     }
 }
 

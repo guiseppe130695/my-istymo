@@ -102,10 +102,10 @@ class DPE_Handler {
         $url = add_query_arg($params, $api_url);
         
         // Log pour debug
-        lettre_laposte_log("=== RECHERCHE DPE API ===");
-        lettre_laposte_log("URL: $url");
-        lettre_laposte_log("Code postal: $code_postal");
-        lettre_laposte_log("Adresse: $adresse");
+        my_istymo_log("=== RECHERCHE DPE API ===", 'dpe');
+        my_istymo_log("URL: $url", 'dpe');
+        my_istymo_log("Code postal: $code_postal", 'dpe');
+        my_istymo_log("Adresse: $adresse", 'dpe');
         
         // Effectuer la requête
         $response = wp_remote_get($url, array(
@@ -117,7 +117,7 @@ class DPE_Handler {
         ));
         
         if (is_wp_error($response)) {
-            lettre_laposte_log("❌ Erreur réseau DPE: " . $response->get_error_message());
+            my_istymo_log("❌ Erreur réseau DPE: " . $response->get_error_message(), 'dpe');
             return new WP_Error('api_error', 'Erreur de connexion à l\'API ADEME: ' . $response->get_error_message());
         }
         
@@ -125,41 +125,41 @@ class DPE_Handler {
         $body = wp_remote_retrieve_body($response);
         $headers = wp_remote_retrieve_headers($response);
         
-        lettre_laposte_log("Code HTTP DPE: $status_code");
-        lettre_laposte_log("Content-Type: " . $headers->get('content-type'));
-        lettre_laposte_log("Body preview: " . substr($body, 0, 200) . "...");
+        my_istymo_log("Code HTTP DPE: $status_code", 'dpe');
+        my_istymo_log("Content-Type: " . $headers->get('content-type'), 'dpe');
+        my_istymo_log("Body preview: " . substr($body, 0, 200) . "...", 'dpe');
         
         if ($status_code !== 200) {
-            lettre_laposte_log("❌ Erreur HTTP DPE: $status_code");
+            my_istymo_log("❌ Erreur HTTP DPE: $status_code", 'dpe');
             return new WP_Error('api_error', 'Erreur API ADEME (HTTP ' . $status_code . ')');
         }
         
         // Vérifier si le contenu est du JSON
         $content_type = $headers->get('content-type');
         if (strpos($content_type, 'application/json') === false) {
-            lettre_laposte_log("❌ Content-Type invalide: $content_type");
-            lettre_laposte_log("❌ Body complet reçu: " . substr($body, 0, 500));
+            my_istymo_log("❌ Content-Type invalide: $content_type", 'dpe');
+            my_istymo_log("❌ Body complet reçu: " . substr($body, 0, 500), 'dpe');
             return new WP_Error('content_type_error', 'L\'API a retourné du HTML au lieu du JSON attendu. Vérifiez l\'URL de l\'API dans la configuration.');
         }
         
         $data = json_decode($body, true);
         
         if (json_last_error() !== JSON_ERROR_NONE) {
-            lettre_laposte_log("❌ Erreur JSON DPE: " . json_last_error_msg());
-            lettre_laposte_log("Body complet: $body");
+            my_istymo_log("❌ Erreur JSON DPE: " . json_last_error_msg(), 'dpe');
+            my_istymo_log("Body complet: $body", 'dpe');
             return new WP_Error('json_error', 'Erreur de décodage JSON: ' . json_last_error_msg());
         }
         
         // Vérifier la structure des données
         if (!isset($data['results']) || !is_array($data['results'])) {
-            lettre_laposte_log("❌ Structure de données invalide");
+            my_istymo_log("❌ Structure de données invalide", 'dpe');
             return new WP_Error('data_error', 'Structure de données invalide - résultats manquants');
         }
         
-        lettre_laposte_log("✅ Recherche DPE réussie: " . count($data['results']) . " résultats");
+        my_istymo_log("✅ Recherche DPE réussie: " . count($data['results']) . " résultats", 'dpe');
         
         // ✅ DEBUG : Logger la structure complète des données
-        lettre_laposte_log("Structure JSON complète: " . json_encode($data, JSON_PRETTY_PRINT));
+        my_istymo_log("Structure JSON complète: " . json_encode($data, JSON_PRETTY_PRINT), 'dpe');
         
         // Préparer les informations de pagination
         $pagination = array(

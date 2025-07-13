@@ -40,11 +40,11 @@ function sci_get_user_postal_codes($user_id = null) {
     return $codesPostauxArray;
 }
 
-// ✅ NOUVEAU : Fonction de logging pour les lettres La Poste
-function lettre_laposte_log($message) {
+// ✅ NOUVEAU : Fonction de log universelle pour tout le plugin
+function my_istymo_log($message, $context = 'general') {
     $upload_dir = wp_upload_dir();
-    $log_dir = $upload_dir['basedir'] . '/lettre-laposte/';
-    $log_file = $log_dir . 'logs.txt';
+    $log_dir = $upload_dir['basedir'] . '/my-istymo-logs/';
+    $log_file = $log_dir . $context . '-logs.txt';
     
     // Créer le dossier s'il n'existe pas
     if (!file_exists($log_dir)) {
@@ -53,10 +53,17 @@ function lettre_laposte_log($message) {
     
     // Formater le message avec timestamp
     $timestamp = current_time('Y-m-d H:i:s');
-    $log_entry = "[$timestamp] $message" . PHP_EOL;
+    $log_entry = "[$timestamp][$context] $message" . PHP_EOL;
     
     // Écrire dans le fichier de log
     file_put_contents($log_file, $log_entry, FILE_APPEND | LOCK_EX);
+}
+
+// ✅ ALIAS pour compatibilité avec le code existant
+if (!function_exists('lettre_laposte_log')) {
+    function lettre_laposte_log($message) {
+        my_istymo_log($message, 'laposte');
+    }
 }
 require_once plugin_dir_path(__FILE__) . 'lib/tcpdf/tcpdf.php';
 require_once plugin_dir_path(__FILE__) . 'includes/favoris-handler.php';
@@ -184,22 +191,22 @@ function sci_inpi_search_ajax() {
     $page = max(1, $page);
     $page_size = max(1, min(100, $page_size)); // Limiter à 100 max
     
-    lettre_laposte_log("=== RECHERCHE AJAX INPI ===");
-    lettre_laposte_log("Code postal: $code_postal");
-    lettre_laposte_log("Page: $page");
-    lettre_laposte_log("Taille page: $page_size");
+    my_istymo_log("=== RECHERCHE AJAX INPI ===", 'inpi');
+    my_istymo_log("Code postal: $code_postal", 'inpi');
+    my_istymo_log("Page: $page", 'inpi');
+    my_istymo_log("Taille page: $page_size", 'inpi');
     
     // Appeler la fonction de recherche avec pagination
     $resultats = sci_fetch_inpi_data_with_pagination($code_postal, $page, $page_size);
     
     if (is_wp_error($resultats)) {
-        lettre_laposte_log("❌ Erreur recherche AJAX: " . $resultats->get_error_message());
+        my_istymo_log("❌ Erreur recherche AJAX: " . $resultats->get_error_message(), 'inpi');
         wp_send_json_error($resultats->get_error_message());
         return;
     }
     
     if (empty($resultats['data'])) {
-        lettre_laposte_log("⚠️ Aucun résultat trouvé");
+        my_istymo_log("⚠️ Aucun résultat trouvé", 'inpi');
         wp_send_json_error('Aucun résultat trouvé pour ce code postal');
         return;
     }
@@ -207,8 +214,8 @@ function sci_inpi_search_ajax() {
     // Formater les résultats
     $formatted_results = sci_format_inpi_results($resultats['data']);
     
-    lettre_laposte_log("✅ Recherche AJAX réussie: " . count($formatted_results) . " résultats formatés");
-    lettre_laposte_log("Pagination: " . json_encode($resultats['pagination']));
+    my_istymo_log("✅ Recherche AJAX réussie: " . count($formatted_results) . " résultats formatés", 'inpi');
+    my_istymo_log("Pagination: " . json_encode($resultats['pagination']), 'inpi');
     
     wp_send_json_success([
         'results' => $formatted_results,
@@ -247,16 +254,16 @@ function sci_fetch_inpi_data_with_pagination($code_postal, $page = 1, $page_size
         'timeout' => 30
     ];
 
-    lettre_laposte_log("=== REQUÊTE API INPI AVEC PAGINATION ===");
-    lettre_laposte_log("URL: $url");
-    lettre_laposte_log("Token: " . substr($token, 0, 20) . "...");
+    my_istymo_log("=== REQUÊTE API INPI AVEC PAGINATION ===", 'inpi');
+    my_istymo_log("URL: $url", 'inpi');
+    my_istymo_log("Token: " . substr($token, 0, 20) . "...", 'inpi');
 
     // Effectue la requête HTTP GET via WordPress HTTP API
     $reponse = wp_remote_get($url, $args);
 
     // Vérifie s'il y a une erreur réseau
     if (is_wp_error($reponse)) {
-        lettre_laposte_log("❌ Erreur réseau INPI: " . $reponse->get_error_message());
+        my_istymo_log("❌ Erreur réseau INPI: " . $reponse->get_error_message(), 'inpi');
         return new WP_Error('requete_invalide', 'Erreur lors de la requête : ' . $reponse->get_error_message());
     }
 
@@ -265,18 +272,18 @@ function sci_fetch_inpi_data_with_pagination($code_postal, $page = 1, $page_size
     $corps     = wp_remote_retrieve_body($reponse);
     $headers   = wp_remote_retrieve_headers($reponse);
 
-    lettre_laposte_log("Code HTTP INPI: $code_http");
-    lettre_laposte_log("Headers INPI: " . json_encode($headers->getAll()));
+    my_istymo_log("Code HTTP INPI: $code_http", 'inpi');
+    my_istymo_log("Headers INPI: " . json_encode($headers->getAll()), 'inpi');
 
     // ✅ NOUVEAU : Gestion automatique des erreurs d'authentification
     if ($code_http === 401 || $code_http === 403) {
-        lettre_laposte_log("🔄 Erreur d'authentification INPI détectée, tentative de régénération du token...");
+        my_istymo_log("🔄 Erreur d'authentification INPI détectée, tentative de régénération du token...", 'inpi');
         
         // Tenter de régénérer le token
         $new_token = $inpi_token_manager->handle_auth_error();
         
         if ($new_token) {
-            lettre_laposte_log("✅ Nouveau token généré, nouvelle tentative de requête...");
+            my_istymo_log("✅ Nouveau token généré, nouvelle tentative de requête...", 'inpi');
             
             // Refaire la requête avec le nouveau token
             $args['headers']['Authorization'] = 'Bearer ' . $new_token;
@@ -290,7 +297,7 @@ function sci_fetch_inpi_data_with_pagination($code_postal, $page = 1, $page_size
             $corps = wp_remote_retrieve_body($reponse);
             $headers = wp_remote_retrieve_headers($reponse);
             
-            lettre_laposte_log("Code HTTP après régénération: $code_http");
+            my_istymo_log("Code HTTP après régénération: $code_http", 'inpi');
         } else {
             return new WP_Error('token_regeneration_failed', 'Impossible de régénérer le token INPI. Vérifiez vos identifiants.');
         }
@@ -298,7 +305,7 @@ function sci_fetch_inpi_data_with_pagination($code_postal, $page = 1, $page_size
 
     // Si le code HTTP n'est toujours pas 200 OK, retourne une erreur
     if ($code_http !== 200) {
-        lettre_laposte_log("❌ Erreur API INPI finale: Code $code_http - $corps");
+        my_istymo_log("❌ Erreur API INPI finale: Code $code_http - $corps", 'inpi');
         return new WP_Error('api_inpi', "Erreur de l'API INPI (code $code_http) : $corps");
     }
 
@@ -313,9 +320,9 @@ function sci_fetch_inpi_data_with_pagination($code_postal, $page = 1, $page_size
         'total_pages' => intval($headers['pagination-max-page'] ?? 1)
     ];
 
-    lettre_laposte_log("✅ Requête INPI réussie");
-    lettre_laposte_log("Données: " . (is_array($donnees) ? count($donnees) : 0) . " résultats");
-    lettre_laposte_log("Pagination: " . json_encode($pagination_info));
+    my_istymo_log("✅ Requête INPI réussie", 'inpi');
+    my_istymo_log("Données: " . (is_array($donnees) ? count($donnees) : 0) . " résultats", 'inpi');
+    my_istymo_log("Pagination: " . json_encode($pagination_info), 'inpi');
 
     return [
         'data' => $donnees,
@@ -606,17 +613,17 @@ function sci_envoyer_lettre_laposte_ajax() {
     // Logger le payload avant envoi (sans le PDF pour éviter les logs trop volumineux)
     $payload_for_log = $payload;
     $payload_for_log['fichier']['contenu_base64'] = '[PDF_BASE64_CONTENT_' . strlen($pdf_base64) . '_CHARS]';
-    lettre_laposte_log("=== ENVOI LETTRE POUR {$entry['denomination']} ===");
-    lettre_laposte_log("Payload envoyé: " . json_encode($payload_for_log, JSON_PRETTY_PRINT));
+    my_istymo_log("=== ENVOI LETTRE POUR {$entry['denomination']} ===", 'laposte');
+    my_istymo_log("Payload envoyé: " . json_encode($payload_for_log, JSON_PRETTY_PRINT), 'laposte');
 
     // Envoyer via l'API La Poste
     $response = envoyer_lettre_via_api_la_poste_my_istymo($payload, $token);
 
     // Logger la réponse complète
-    lettre_laposte_log("Réponse complète API: " . json_encode($response, JSON_PRETTY_PRINT));
+    my_istymo_log("Réponse complète API: " . json_encode($response, JSON_PRETTY_PRINT), 'laposte');
 
     if ($response['success']) {
-        lettre_laposte_log("✅ SUCCÈS pour {$entry['denomination']} - UID: " . ($response['uid'] ?? 'N/A'));
+        my_istymo_log("✅ SUCCÈS pour {$entry['denomination']} - UID: " . ($response['uid'] ?? 'N/A'), 'laposte');
         
         // Mettre à jour le statut dans la base de données
         if ($campaign_id > 0) {
@@ -643,9 +650,9 @@ function sci_envoyer_lettre_laposte_ajax() {
             $error_msg .= 'Erreur inconnue';
         }
 
-        lettre_laposte_log("❌ ERREUR pour {$entry['denomination']}: $error_msg");
-        lettre_laposte_log("Code HTTP: " . ($response['code'] ?? 'N/A'));
-        lettre_laposte_log("Message détaillé: " . json_encode($response['message'] ?? [], JSON_PRETTY_PRINT));
+        my_istymo_log("❌ ERREUR pour {$entry['denomination']}: $error_msg", 'laposte');
+        my_istymo_log("Code HTTP: " . ($response['code'] ?? 'N/A'), 'laposte');
+        my_istymo_log("Message détaillé: " . json_encode($response['message'] ?? [], JSON_PRETTY_PRINT), 'laposte');
         
         // Mettre à jour le statut d'erreur dans la base de données
         if ($campaign_id > 0) {
@@ -683,16 +690,16 @@ function envoyer_lettre_via_api_la_poste_my_istymo($payload, $token) {
     ];
 
     // Logger la requête (sans le body pour éviter les logs trop volumineux)
-    lettre_laposte_log("=== REQUÊTE API LA POSTE ===");
-    lettre_laposte_log("URL: $api_url");
-    lettre_laposte_log("Headers: " . json_encode($headers, JSON_PRETTY_PRINT));
-    lettre_laposte_log("Body size: " . strlen($body) . " caractères");
+    my_istymo_log("=== REQUÊTE API LA POSTE ===", 'laposte');
+    my_istymo_log("URL: $api_url", 'laposte');
+    my_istymo_log("Headers: " . json_encode($headers, JSON_PRETTY_PRINT), 'laposte');
+    my_istymo_log("Body size: " . strlen($body) . " caractères", 'laposte');
 
     $response = wp_remote_post($api_url, $args);
 
     // Gestion des erreurs WordPress
     if (is_wp_error($response)) {
-        lettre_laposte_log("❌ Erreur WordPress HTTP: " . $response->get_error_message());
+        my_istymo_log("❌ Erreur WordPress HTTP: " . $response->get_error_message(), 'laposte');
         return [
             'success' => false,
             'error'   => $response->get_error_message(),
@@ -704,25 +711,25 @@ function envoyer_lettre_via_api_la_poste_my_istymo($payload, $token) {
     $response_headers = wp_remote_retrieve_headers($response);
     
     // Logger la réponse complète
-    lettre_laposte_log("=== RÉPONSE API LA POSTE ===");
-    lettre_laposte_log("Code HTTP: $code");
-    lettre_laposte_log("Headers de réponse: " . json_encode($response_headers->getAll(), JSON_PRETTY_PRINT));
-    lettre_laposte_log("Body de réponse: $response_body");
+    my_istymo_log("=== RÉPONSE API LA POSTE ===", 'laposte');
+    my_istymo_log("Code HTTP: $code", 'laposte');
+    my_istymo_log("Headers de réponse: " . json_encode($response_headers->getAll(), JSON_PRETTY_PRINT), 'laposte');
+    my_istymo_log("Body de réponse: $response_body", 'laposte');
 
     $data = json_decode($response_body, true);
     
     // Logger les données décodées
-    lettre_laposte_log("Données JSON décodées: " . json_encode($data, JSON_PRETTY_PRINT));
+    my_istymo_log("Données JSON décodées: " . json_encode($data, JSON_PRETTY_PRINT), 'laposte');
 
     if ($code >= 200 && $code < 300) {
-        lettre_laposte_log("✅ Succès API (code $code)");
+        my_istymo_log("✅ Succès API (code $code)", 'laposte');
         return [
             'success' => true,
             'data'    => $data,
             'uid'     => $data['uid'] ?? null, // ✅ Extraction de l'UID
         ];
     } else {
-        lettre_laposte_log("❌ Erreur API (code $code)");
+        my_istymo_log("❌ Erreur API (code $code)", 'laposte');
         return [
             'success' => false,
             'code'    => $code,
@@ -777,7 +784,28 @@ function sci_campaigns_page() {
 // --- PAGE POUR AFFICHER LES LOGS D'API ---
 function sci_logs_page() {
     $upload_dir = wp_upload_dir();
-    $log_file = $upload_dir['basedir'] . '/lettre-laposte/logs.txt';
+    $log_dir = $upload_dir['basedir'] . '/my-istymo-logs/';
+    
+    // ✅ NOUVEAU : Récupérer tous les fichiers de logs disponibles
+    $log_files = [];
+    if (file_exists($log_dir)) {
+        $files = scandir($log_dir);
+        foreach ($files as $file) {
+            if (pathinfo($file, PATHINFO_EXTENSION) === 'txt') {
+                $context = str_replace('-logs.txt', '', $file);
+                $log_files[$context] = [
+                    'path' => $log_dir . $file,
+                    'name' => $context,
+                    'size' => filesize($log_dir . $file),
+                    'modified' => filemtime($log_dir . $file)
+                ];
+            }
+        }
+    }
+    
+    // ✅ NOUVEAU : Sélectionner le fichier de log à afficher
+    $selected_log = $_GET['log'] ?? 'laposte';
+    $log_file = $log_files[$selected_log]['path'] ?? $log_dir . 'laposte-logs.txt';
     
     // Préparer les données pour le template
     $log_content = '';
@@ -801,18 +829,23 @@ function sci_logs_page() {
     $context = [
         'log_file' => $log_file,
         'log_content' => $log_content,
-        'log_stats' => $log_stats
+        'log_stats' => $log_stats,
+        'log_files' => $log_files,
+        'selected_log' => $selected_log
     ];
     
     // Charger le template des logs
     sci_load_template('sci-logs', $context);
     
-    // Gestion de l'effacement des logs
+    // ✅ NOUVEAU : Gestion de l'effacement des logs avec sélection
     if (isset($_GET['clear']) && $_GET['clear'] == '1') {
-        if (file_exists($log_file)) {
-            unlink($log_file);
-            echo '<div class="notice notice-success"><p>Logs effacés avec succès.</p></div>';
-            echo '<script>window.location.href = "' . admin_url('admin.php?page=sci-logs') . '";</script>';
+        $log_to_clear = $_GET['log'] ?? 'laposte';
+        $file_to_clear = $log_dir . $log_to_clear . '-logs.txt';
+        
+        if (file_exists($file_to_clear)) {
+            unlink($file_to_clear);
+            echo '<div class="notice notice-success"><p>Logs ' . esc_html($log_to_clear) . ' effacés avec succès.</p></div>';
+            echo '<script>window.location.href = "' . admin_url('admin.php?page=sci-logs&log=' . $log_to_clear) . '";</script>';
         }
     }
 }
@@ -839,21 +872,21 @@ function sci_generer_pdfs() {
         return;
     }
 
-    lettre_laposte_log("=== DÉBUT GÉNÉRATION PDFs ===");
-    lettre_laposte_log("Titre campagne: " . ($data['title'] ?? 'N/A'));
-    lettre_laposte_log("Nombre d'entrées: " . count($data['entries']));
+    my_istymo_log("=== DÉBUT GÉNÉRATION PDFs ===", 'pdf');
+    my_istymo_log("Titre campagne: " . ($data['title'] ?? 'N/A'), 'pdf');
+    my_istymo_log("Nombre d'entrées: " . count($data['entries']), 'pdf');
 
     // Créer la campagne en base de données
     $campaign_manager = sci_campaign_manager();
     $campaign_id = $campaign_manager->create_campaign($data['title'], $data['content'], $data['entries']);
     
     if (is_wp_error($campaign_id)) {
-        lettre_laposte_log("❌ Erreur création campagne: " . $campaign_id->get_error_message());
+        my_istymo_log("❌ Erreur création campagne: " . $campaign_id->get_error_message(), 'pdf');
         wp_send_json_error("Erreur lors de la création de la campagne : " . $campaign_id->get_error_message());
         return;
     }
 
-    lettre_laposte_log("✅ Campagne créée avec ID: $campaign_id");
+    my_istymo_log("✅ Campagne créée avec ID: $campaign_id", 'pdf');
 
     // Inclure TCPDF
     if (!class_exists('TCPDF')) {
@@ -867,14 +900,14 @@ function sci_generer_pdfs() {
     // Créer le dossier s'il n'existe pas
     if (!file_exists($pdf_dir)) {
         wp_mkdir_p($pdf_dir);
-        lettre_laposte_log("📁 Dossier créé: $pdf_dir");
+        my_istymo_log("📁 Dossier créé: $pdf_dir", 'pdf');
     }
 
     $pdf_links = [];
 
     foreach ($data['entries'] as $index => $entry) {
         try {
-            lettre_laposte_log("📄 Génération PDF " . ($index + 1) . "/" . count($data['entries']) . " pour: " . ($entry['denomination'] ?? 'N/A'));
+            my_istymo_log("📄 Génération PDF " . ($index + 1) . "/" . count($data['entries']) . " pour: " . ($entry['denomination'] ?? 'N/A'), 'pdf');
             
             $nom = $entry['dirigeant'] ?? 'Dirigeant';
             $texte = str_replace('[NOM]', $nom, $data['content']);
@@ -917,23 +950,23 @@ function sci_generer_pdfs() {
                     'path' => $filepath
                 ];
                 
-                lettre_laposte_log("✅ PDF généré avec succès : $filename pour {$entry['denomination']}");
+                my_istymo_log("✅ PDF généré avec succès : $filename pour {$entry['denomination']}", 'pdf');
             } else {
-                lettre_laposte_log("❌ Erreur : PDF non créé pour {$entry['denomination']}");
+                my_istymo_log("❌ Erreur : PDF non créé pour {$entry['denomination']}", 'pdf');
             }
 
         } catch (Exception $e) {
-            lettre_laposte_log("❌ Erreur lors de la génération PDF pour {$entry['denomination']}: " . $e->getMessage());
+            my_istymo_log("❌ Erreur lors de la génération PDF pour {$entry['denomination']}: " . $e->getMessage(), 'pdf');
         }
     }
 
     if (empty($pdf_links)) {
-        lettre_laposte_log("❌ Aucun PDF généré");
+        my_istymo_log("❌ Aucun PDF généré", 'pdf');
         wp_send_json_error('Aucun PDF n\'a pu être généré');
         return;
     }
 
-    lettre_laposte_log("✅ Génération terminée : " . count($pdf_links) . " PDFs créés sur " . count($data['entries']) . " demandés");
+    my_istymo_log("✅ Génération terminée : " . count($pdf_links) . " PDFs créés sur " . count($data['entries']) . " demandés", 'pdf');
 
     wp_send_json_success([
         'files' => $pdf_links,

@@ -9,11 +9,26 @@
 ?>
 
 <div class="wrap">
-    <h1>📋 Logs API La Poste</h1>
-    <p>Consultez ici les logs détaillés des appels à l'API La Poste pour diagnostiquer les erreurs.</p>
+    <h1>📋 Logs My Istymo</h1>
+    <p>Consultez ici les logs détaillés de toutes les fonctionnalités du plugin pour diagnostiquer les erreurs.</p>
+    
+    <?php if (!empty($log_files)): ?>
+    <div style="background: #e7f3ff; padding: 15px; border-radius: 5px; margin: 20px 0;">
+        <h3>📁 Sélectionner un fichier de log</h3>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <?php foreach ($log_files as $context => $file_info): ?>
+                <a href="<?php echo admin_url('admin.php?page=sci-logs&log=' . $context); ?>" 
+                   class="button <?php echo ($selected_log === $context) ? 'button-primary' : 'button-secondary'; ?>">
+                    📄 <?php echo esc_html(ucfirst($context)); ?> 
+                    <small>(<?php echo size_format($file_info['size']); ?>)</small>
+                </a>
+            <?php endforeach; ?>
+        </div>
+    </div>
+    <?php endif; ?>
     
     <div style="background: #f1f1f1; padding: 15px; border-radius: 5px; margin: 20px 0;">
-        <h3>🔍 Derniers logs</h3>
+        <h3>🔍 Derniers logs - <?php echo esc_html(ucfirst($selected_log)); ?></h3>
         <?php if (file_exists($log_file)): ?>
             <div style="background: #fff; padding: 10px; border: 1px solid #ccc; max-height: 500px; overflow-y: auto; font-family: monospace; font-size: 12px; white-space: pre-wrap;">
                 <?php echo esc_html($log_content); ?>
@@ -44,10 +59,10 @@
     </div>
     
     <div style="margin-top: 20px;">
-        <a href="<?php echo admin_url('admin.php?page=sci-logs&clear=1'); ?>" 
+        <a href="<?php echo admin_url('admin.php?page=sci-logs&clear=1&log=' . $selected_log); ?>" 
            class="button button-secondary"
-           onclick="return confirm('Êtes-vous sûr de vouloir effacer tous les logs ?')">
-            🗑️ Effacer les logs
+           onclick="return confirm('Êtes-vous sûr de vouloir effacer les logs <?php echo esc_js(ucfirst($selected_log)); ?> ?')">
+            🗑️ Effacer les logs <?php echo esc_html(ucfirst($selected_log)); ?>
         </a>
     </div>
 </div> 

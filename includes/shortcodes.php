@@ -46,22 +46,22 @@ class SCI_Shortcodes {
         $page = max(1, $page);
         $page_size = max(1, min(100, $page_size)); // Limiter à 100 max
         
-        lettre_laposte_log("=== RECHERCHE AJAX INPI FRONTEND ===");
-        lettre_laposte_log("Code postal: $code_postal");
-        lettre_laposte_log("Page: $page");
-        lettre_laposte_log("Taille page: $page_size");
+        my_istymo_log("=== RECHERCHE AJAX INPI FRONTEND ===", 'inpi');
+        my_istymo_log("Code postal: $code_postal", 'inpi');
+        my_istymo_log("Page: $page", 'inpi');
+        my_istymo_log("Taille page: $page_size", 'inpi');
         
         // Appeler la fonction de recherche avec pagination
         $resultats = sci_fetch_inpi_data_with_pagination($code_postal, $page, $page_size);
         
         if (is_wp_error($resultats)) {
-            lettre_laposte_log("Erreur recherche AJAX frontend: " . $resultats->get_error_message());
+            my_istymo_log("Erreur recherche AJAX frontend: " . $resultats->get_error_message(), 'inpi');
             wp_send_json_error($resultats->get_error_message());
             return;
         }
         
         if (empty($resultats['data'])) {
-            lettre_laposte_log("Aucun résultat trouvé (frontend)");
+            my_istymo_log("Aucun résultat trouvé (frontend)", 'inpi');
             wp_send_json_error('Aucun résultat trouvé pour ce code postal');
             return;
         }
@@ -69,8 +69,8 @@ class SCI_Shortcodes {
         // Formater les résultats
         $formatted_results = sci_format_inpi_results($resultats['data']);
         
-        lettre_laposte_log("Recherche AJAX frontend réussie: " . count($formatted_results) . " résultats formatés");
-        lettre_laposte_log("Pagination: " . json_encode($resultats['pagination']));
+        my_istymo_log("Recherche AJAX frontend réussie: " . count($formatted_results) . " résultats formatés", 'inpi');
+        my_istymo_log("Pagination: " . json_encode($resultats['pagination']), 'inpi');
         
         wp_send_json_success([
             'results' => $formatted_results,

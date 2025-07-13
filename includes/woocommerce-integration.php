@@ -892,16 +892,16 @@ class SCI_WooCommerce_Integration {
         
         foreach ($campaign_data['entries'] as $index => $entry) {
             try {
-                sci_plugin_log("=== TRAITEMENT LETTRE " . ($index + 1) . "/" . count($campaign_data['entries']) . " ===");
-                sci_plugin_log("SCI: " . ($entry['denomination'] ?? 'N/A'));
+                my_istymo_log("=== TRAITEMENT LETTRE " . ($index + 1) . "/" . count($campaign_data['entries']) . " ===", 'woocommerce');
+                my_istymo_log("SCI: " . ($entry['denomination'] ?? 'N/A'), 'woocommerce');
                 
                 // ✅ ÉTAPE 1: GÉNÉRATION DU PDF
                 $nom = $entry['dirigeant'] ?? 'Dirigeant';
                 $texte = str_replace('[NOM]', $nom, $campaign_data['content']);
                 
-                sci_plugin_log("Génération PDF pour: " . $entry['denomination']);
-                sci_plugin_log("Dirigeant: $nom");
-                sci_plugin_log("Contenu (extrait): " . substr($texte, 0, 100) . "...");
+                my_istymo_log("Génération PDF pour: " . $entry['denomination'], 'woocommerce');
+                my_istymo_log("Dirigeant: $nom", 'woocommerce');
+                my_istymo_log("Contenu (extrait): " . substr($texte, 0, 100) . "...", 'woocommerce');
                 
                 $pdf = new TCPDF();
                 $pdf->SetCreator('SCI Plugin');
@@ -923,16 +923,16 @@ class SCI_WooCommerce_Integration {
                 $pdf->Output($pdf_tmp_path, 'F');
                 
                 if (!file_exists($pdf_tmp_path)) {
-                    sci_plugin_log("❌ Échec génération PDF pour: " . $entry['denomination']);
+                    my_istymo_log("❌ Échec génération PDF pour: " . $entry['denomination'], 'woocommerce');
                     $error_count++;
                     continue;
                 }
                 
-                sci_plugin_log("✅ PDF généré: $filename (" . filesize($pdf_tmp_path) . " bytes)");
+                my_istymo_log("✅ PDF généré: $filename (" . filesize($pdf_tmp_path) . " bytes)", 'woocommerce');
                 
                 // ✅ ÉTAPE 3: ENCODAGE BASE64 (COMME DANS VOTRE ANCIEN SYSTÈME)
                 $pdf_base64 = base64_encode(file_get_contents($pdf_tmp_path));
-                sci_plugin_log("✅ PDF encodé en base64: " . strlen($pdf_base64) . " caractères");
+                my_istymo_log("✅ PDF encodé en base64: " . strlen($pdf_base64) . " caractères", 'woocommerce');
                 
                 // ✅ ÉTAPE 4: PRÉPARATION DU PAYLOAD
                 $laposte_params = $config_manager->get_laposte_payload_params();
@@ -958,10 +958,10 @@ class SCI_WooCommerce_Integration {
                 // Logger le payload (sans le PDF pour éviter les logs trop volumineux)
                 $payload_for_log = $payload;
                 $payload_for_log['fichier']['contenu_base64'] = '[PDF_BASE64_' . strlen($pdf_base64) . '_CHARS]';
-                sci_plugin_log("Payload pour {$entry['denomination']}: " . json_encode($payload_for_log, JSON_PRETTY_PRINT));
+                my_istymo_log("Payload pour {$entry['denomination']}: " . json_encode($payload_for_log, JSON_PRETTY_PRINT), 'woocommerce');
                 
                 // ✅ ÉTAPE 5: ENVOI VIA L'API LA POSTE
-                sci_plugin_log("🚀 Envoi vers l'API La Poste...");
+                my_istymo_log("🚀 Envoi vers l'API La Poste...", 'woocommerce');
                 $response = envoyer_lettre_via_api_la_poste_my_istymo($payload, $config_manager->get_laposte_token());
                 
                 // ✅ ÉTAPE 6: TRAITEMENT DE LA RÉPONSE
@@ -973,7 +973,7 @@ class SCI_WooCommerce_Integration {
                         $response['uid'] ?? null
                     );
                     $success_count++;
-                    sci_plugin_log("✅ Lettre envoyée avec succès - UID: " . ($response['uid'] ?? 'N/A'));
+                    my_istymo_log("✅ Lettre envoyée avec succès - UID: " . ($response['uid'] ?? 'N/A'), 'woocommerce');
                 } else {
                     $error_msg = isset($response['message']) ? json_encode($response['message']) : ($response['error'] ?? 'Erreur inconnue');
                     $campaign_manager->update_letter_status(
@@ -984,13 +984,13 @@ class SCI_WooCommerce_Integration {
                         $error_msg
                     );
                     $error_count++;
-                    sci_plugin_log("❌ Erreur envoi: $error_msg");
+                    my_istymo_log("❌ Erreur envoi: $error_msg", 'woocommerce');
                 }
                 
                 // ✅ ÉTAPE 7: NETTOYAGE DU FICHIER TEMPORAIRE
                 if (file_exists($pdf_tmp_path)) {
                     unlink($pdf_tmp_path);
-                    sci_plugin_log("🗑️ Fichier temporaire supprimé: $filename");
+                    my_istymo_log("🗑️ Fichier temporaire supprimé: $filename", 'woocommerce');
                 }
                 
                 // Pause entre les envois pour éviter de surcharger l'API
