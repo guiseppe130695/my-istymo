@@ -91,7 +91,7 @@ class DPE_Shortcodes {
             'dpe-frontend-style',
             plugin_dir_url(dirname(__FILE__)) . 'assets/css/dpe-style.css',
             array(),
-            '1.0.4'
+            '1.0.5'
         );
         
         // ✅ CHANGÉ : Charger les deux scripts nécessaires
@@ -99,7 +99,7 @@ class DPE_Shortcodes {
             'dpe-favoris-script',
             plugin_dir_url(dirname(__FILE__)) . 'assets/js/dpe-favoris.js',
             array('jquery'),
-            '1.0.3',
+            '1.0.4',
             true
         );
         
@@ -108,7 +108,7 @@ class DPE_Shortcodes {
             'dpe-frontend-script',
             plugin_dir_url(dirname(__FILE__)) . 'assets/js/dpe-frontend.js',
             array('jquery', 'dpe-favoris-script'),
-            '1.0.3',
+            '1.0.4',
             true
         );
         
