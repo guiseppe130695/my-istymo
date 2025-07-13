@@ -51,6 +51,15 @@
                     <?php endforeach; ?>
                 </select>
             </div>
+            <div class="form-group">
+                <label for="buildingType">Type de bâtiment :</label>
+                <select name="buildingType" id="buildingType">
+                    <option value="">— Tous les types —</option>
+                    <option value="Maison">Maison</option>
+                    <option value="Appartement">Appartement</option>
+                    <option value="Immeuble">Immeuble</option>
+                </select>
+            </div>
             <button type="submit" id="search-btn" class="dpe-button">
                 🔍 Rechercher les DPE
             </button>
@@ -79,7 +88,6 @@
                     <th>Date DPE</th>
                     <th>Adresse</th>
                     <th>Commune</th>
-                    <th>Code postal</th>
                     <th>Surface</th>
                     <th>Étiquette DPE</th>
                     <th>Étiquette GES</th>
@@ -237,7 +245,30 @@
 .dpe-label.F { background-color: #8b0000; color: white; }
 .dpe-label.G { background-color: #4a4a4a; color: white; }
 
-/* Boutons et liens */
+/* ✅ NOUVEAU : Styles pour les liens de géolocalisation */
+.maps-link {
+    color: #0073aa !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+    font-size: 12px !important;
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    display: inline !important;
+}
+
+.maps-link:hover {
+    text-decoration: underline !important;
+    color: #005a87 !important;
+    background: none !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Boutons et liens (anciens styles pour compatibilité) */
 .map-it-link {
     color: #0073aa;
     text-decoration: none;
@@ -258,11 +289,11 @@
 }
 
 .favorite-btn.active {
-    color: #ff6b6b;
+    color: #FFD700 !important; /* Couleur dorée */
 }
 
 .favorite-btn:hover {
-    color: #ff6b6b;
+    color: #FFD700; /* Couleur dorée */
 }
 
 /* Loading spinner */
@@ -300,6 +331,23 @@
     margin-bottom: 20px;
 }
 
+/* Lien de géolocalisation simplifié */
+.maps-link {
+    color: #0073aa !important;
+    text-decoration: underline !important;
+    background: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    font-size: 14px !important;
+}
+
+.maps-link:hover {
+    color: #005a87 !important;
+    text-decoration: none !important;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .form-group-left {
@@ -314,6 +362,10 @@
     .dpe-table th,
     .dpe-table td {
         padding: 8px 4px;
+    }
+    
+    .maps-link {
+        font-size: 12px !important;
     }
 }
 </style>
@@ -334,7 +386,23 @@ var currentPageUrl = null;
 
 // Fonction pour construire l'URL de l'API
 function buildApiUrl(page = 1) {
-    return 'https://data.ademe.fr/data-fair/api/v1/datasets/dpe03existant/lines?size=50&sort=-date_reception_dpe&q=' + encodeURIComponent(currentSearchParams.codePostal) + '&q_mode=simple&q_fields=code_postal_ban';
+    var baseUrl = 'https://data.ademe.fr/data-fair/api/v1/datasets/dpe03existant/lines?size=50&sort=-date_reception_dpe&q_mode=complete&q_fields=code_postal_ban,type_batiment';
+    
+    // Construire la requête structurée
+    var queryString = 'code_postal_ban:"' + currentSearchParams.codePostal + '"';
+    
+    // Ajouter le type de bâtiment si sélectionné
+    if (currentSearchParams.buildingType) {
+        queryString += ' AND type_batiment:"' + currentSearchParams.buildingType.toLowerCase() + '"';
+    }
+    
+    baseUrl += '&qs=' + encodeURIComponent(queryString);
+
+    console.log('URL API construite:', baseUrl);
+    console.log('Paramètres de recherche:', currentSearchParams);
+    console.log('Query string:', queryString);
+
+    return baseUrl;
 }
 
 // Fonction pour récupérer les données de l'API
@@ -411,9 +479,6 @@ function displayResults(data) {
             // Commune
             row.appendChild(createCell(result.nom_commune_ban || result.nom_commune_brut || 'Non spécifié'));
             
-            // Code postal
-            row.appendChild(createCell(result.code_postal_ban || result.code_postal_brut || 'Non spécifié'));
-            
             // Surface
             row.appendChild(createCell(result.surface_habitable_logement ? result.surface_habitable_logement + ' m²' : 'Non spécifié'));
             
@@ -433,15 +498,17 @@ function displayResults(data) {
             gesCell.appendChild(gesLabel);
             row.appendChild(gesCell);
             
-            // Géolocalisation
+            // ✅ NOUVEAU : Géolocalisation avec adresse simple
             var geoCell = document.createElement('td');
-            if (result.adresse_ban) {
+            
+            if (result.adresse_ban && result.adresse_ban.trim()) {
                 var geoLink = document.createElement('a');
-                geoLink.className = 'map-it-link';
-                geoLink.href = 'https://www.google.com/maps/place/' + encodeURIComponent(result.adresse_ban);
+                geoLink.className = 'maps-link';
+                geoLink.href = 'https://www.google.com/maps/place/' + encodeURIComponent(result.adresse_ban.trim());
                 geoLink.target = '_blank';
                 geoLink.rel = 'noopener noreferrer';
-                geoLink.textContent = 'Localiser';
+                geoLink.innerHTML = 'Localiser';
+                geoLink.title = 'Localiser sur Google Maps';
                 geoCell.appendChild(geoLink);
             } else {
                 geoCell.textContent = 'Non disponible';
@@ -465,7 +532,7 @@ function displayResults(data) {
             }
         }
     } else {
-        tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px; color: #666;">Aucun résultat trouvé</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 20px; color: #666;">Aucun résultat trouvé</td></tr>';
         hidePaginationControls();
     }
 }
@@ -477,15 +544,32 @@ function createCell(content) {
     return cell;
 }
 
-// Fonction pour formater la date
+// ✅ NOUVEAU : Fonction pour formater la date en format dd/MM/YY
 function formatDate(dateString) {
     if (!dateString) return 'Non spécifié';
     
+    // Essayer de parser la date dans différents formats
     var dateObj = new Date(dateString);
-    if (isNaN(dateObj.getTime())) return dateString;
+    if (isNaN(dateObj.getTime())) {
+        // Essayer le format YYYY-MM-DD
+        var parts = dateString.split('-');
+        if (parts.length === 3) {
+            dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+        } else {
+            return dateString; // Retourner la chaîne originale si pas de date valide
+        }
+    }
     
-    var options = { year: 'numeric', month: 'numeric', day: 'numeric' };
-    return dateObj.toLocaleDateString('fr-FR', options);
+    if (isNaN(dateObj.getTime()) || dateObj.getFullYear() < 1900) {
+        return dateString;
+    }
+    
+    // Formater en dd/MM/YY
+    var day = String(dateObj.getDate()).padStart(2, '0');
+    var month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    var year = String(dateObj.getFullYear()).slice(-2); // Prendre seulement les 2 derniers chiffres
+    
+    return day + '/' + month + '/' + year;
 }
 
 // Fonction pour mettre à jour les informations de pagination
@@ -522,6 +606,9 @@ function hidePaginationControls() {
 // Fonction pour effectuer une recherche
 function performSearch() {
     var codePostal = document.getElementById('codePostal').value;
+    var buildingType = document.getElementById('buildingType').value;
+    
+    console.log('Recherche lancée avec:', { codePostal: codePostal, buildingType: buildingType });
     
     if (!codePostal) {
         alert('Veuillez sélectionner un code postal');
@@ -529,6 +616,7 @@ function performSearch() {
     }
     
     currentSearchParams.codePostal = codePostal;
+    currentSearchParams.buildingType = buildingType;
     currentPage = 1;
     
     // Réinitialiser la pagination

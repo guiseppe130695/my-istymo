@@ -187,11 +187,11 @@ document.addEventListener('DOMContentLoaded', function() {
         syncFavorisWithDB('get')
             .then(() => {
                         console.log(`✅ Favoris SCI initialisés avec succès: ${favoris.length} favoris chargés`);
-        attachFavorisListeners();
+                attachFavorisListeners();
         setupFavorisObserver(); // ✅ NOUVEAU : Configurer le MutationObserver
-        updateContactStatus();
-        updateFavButtons(); // ✅ NOUVEAU : Mettre à jour les boutons après initialisation
-        isInitialized = true;
+                updateContactStatus();
+                updateFavButtons(); // ✅ NOUVEAU : Mettre à jour les boutons après initialisation
+                isInitialized = true;
             })
             .catch(error => {
                 console.error('❌ Erreur lors de l\'initialisation des favoris SCI:', error);

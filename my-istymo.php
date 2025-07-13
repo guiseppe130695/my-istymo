@@ -71,6 +71,7 @@ require_once plugin_dir_path(__FILE__) . 'includes/template-loader.php';
 require_once plugin_dir_path(__FILE__) . 'includes/dpe-config-manager.php';
 require_once plugin_dir_path(__FILE__) . 'includes/dpe-favoris-handler.php';
 require_once plugin_dir_path(__FILE__) . 'includes/dpe-handler.php';
+require_once plugin_dir_path(__FILE__) . 'includes/dpe-shortcodes.php';
 
 
 // --- Ajout du menu SCI dans l'admin WordPress ---
@@ -961,6 +962,14 @@ function sci_force_create_dpe_tables() {
 
 // --- AFFICHAGE DU PANNEAU DPE ---
 function dpe_afficher_panel() {
+    // ✅ NOUVEAU : Charger le CSS DPE pour l'admin
+    wp_enqueue_style(
+        'dpe-admin-style',
+        plugin_dir_url(__FILE__) . 'assets/css/dpe-style.css',
+        array(),
+        '1.0.2'
+    );
+    
     // Récupérer les codes postaux de l'utilisateur
     $codesPostauxArray = sci_get_user_postal_codes();
 
@@ -979,6 +988,14 @@ function dpe_afficher_panel() {
 
 // --- PAGE POUR AFFICHER LES FAVORIS DPE ---
 function dpe_favoris_page() {
+    // ✅ NOUVEAU : Charger le CSS DPE pour l'admin
+    wp_enqueue_style(
+        'dpe-admin-style',
+        plugin_dir_url(__FILE__) . 'assets/css/dpe-style.css',
+        array(),
+        '1.0.2'
+    );
+    
     $user_id = get_current_user_id();
     if (!$user_id) {
         echo '<div class="wrap"><div class="notice notice-error"><p>Vous devez être connecté pour voir vos favoris DPE.</p></div></div>';

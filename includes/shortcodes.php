@@ -13,8 +13,7 @@ class SCI_Shortcodes {
         add_shortcode('sci_campaigns', array($this, 'sci_campaigns_shortcode'));
         
         // ✅ NOUVEAU : Shortcodes DPE
-        add_shortcode('dpe_panel', array($this, 'dpe_panel_shortcode'));
-        add_shortcode('dpe_favoris', array($this, 'dpe_favoris_shortcode'));
+        // ✅ SUPPRIMÉ : Shortcodes DPE déplacés vers dpe-shortcodes.php
 
         add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_scripts'), 5);
         add_action('wp_head', array($this, 'force_enqueue_on_shortcode_pages'), 1);
@@ -196,6 +195,8 @@ class SCI_Shortcodes {
                 true
             );
         }
+
+        // ✅ SUPPRIMÉ : Chargement DPE déplacé vers dpe-shortcodes.php
         
         if (!wp_script_is('sci-frontend-lettre', 'enqueued')) {
             wp_enqueue_script(
@@ -251,6 +252,8 @@ class SCI_Shortcodes {
                 'ajax_url' => admin_url('admin-ajax.php'),
                 'nonce' => wp_create_nonce('sci_search_nonce')
             ));
+
+            // ✅ SUPPRIMÉ : Variables DPE déplacées vers dpe-shortcodes.php
             
             $localized = true;
         }
@@ -1469,62 +1472,9 @@ class SCI_Shortcodes {
     }
     
     /**
-     * ✅ NOUVEAU : Shortcode pour le panneau DPE
+     * ✅ SUPPRIMÉ : Shortcodes DPE déplacés vers dpe-shortcodes.php
+     * Les shortcodes DPE sont maintenant gérés dans un fichier séparé pour éviter les conflits
      */
-    public function dpe_panel_shortcode($atts) {
-        $atts = shortcode_atts(array(
-            'title' => 'Recherche DPE',
-            'show_stats' => 'true'
-        ), $atts);
-        
-        // Récupérer les codes postaux de l'utilisateur
-        $codesPostauxArray = sci_get_user_postal_codes();
-        
-        // Préparer le contexte
-        $context = array(
-            'codesPostauxArray' => $codesPostauxArray,
-            'config_manager' => dpe_config_manager(),
-            'favoris_handler' => dpe_favoris_handler(),
-            'dpe_handler' => dpe_handler(),
-            'atts' => $atts
-        );
-        
-        // Charger le template DPE (version simplifiée qui fonctionne)
-        ob_start();
-        sci_load_template('dpe-panel-simple', $context);
-        return ob_get_clean();
-    }
-    
-    /**
-     * ✅ NOUVEAU : Shortcode pour les favoris DPE
-     */
-    public function dpe_favoris_shortcode($atts) {
-        $atts = shortcode_atts(array(
-            'title' => 'Mes Favoris DPE',
-            'show_actions' => 'true'
-        ), $atts);
-        
-        $user_id = get_current_user_id();
-        if (!$user_id) {
-            return '<div class="dpe-error">Vous devez être connecté pour voir vos favoris DPE.</div>';
-        }
-        
-        // Récupérer les favoris
-        $favoris = dpe_favoris_handler()->get_user_favoris($user_id);
-        
-        // Préparer le contexte
-        $context = array(
-            'favoris' => $favoris,
-            'favoris_handler' => dpe_favoris_handler(),
-            'dpe_handler' => dpe_handler(),
-            'atts' => $atts
-        );
-        
-        // Charger le template des favoris DPE
-        ob_start();
-        sci_load_template('dpe-favoris', $context);
-        return ob_get_clean();
-    }
     
     /**
      * ✅ SUPPRIMÉ : AJAX handler pour la recherche DPE (géré dans dpe-handler.php)

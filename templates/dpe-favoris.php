@@ -15,6 +15,54 @@ function dpe_class($val) {
     $val = strtoupper(trim($val));
     return in_array($val, ['A','B','C','D','E','F','G']) ? $val : '';
 }
+
+/**
+ * ✅ NOUVEAU : Fonction pour formater les dates en format dd/MM/YY
+ */
+function formatDateFr($dateString) {
+    if (empty($dateString)) {
+        return 'Non spécifié';
+    }
+    
+    // Essayer de parser la date
+    $date = DateTime::createFromFormat('Y-m-d', $dateString);
+    if (!$date) {
+        $date = DateTime::createFromFormat('d/m/Y', $dateString);
+    }
+    if (!$date) {
+        $date = new DateTime($dateString);
+    }
+    
+    if (!$date || $date->format('Y') < 1900) {
+        return $dateString; // Retourner la chaîne originale si pas de date valide
+    }
+    
+    // Formater en dd/MM/YY
+    return $date->format('d/m/Y');
+}
+
+/**
+ * ✅ NOUVEAU : Fonction pour créer le lien Google Maps
+ */
+function createGoogleMapsLink($adresse, $codePostal, $commune) {
+    if (empty($adresse)) {
+        return 'Non disponible';
+    }
+    
+    $adresseSimple = trim($adresse);
+    $adresseSimple = preg_replace('/\s+/', ' ', $adresseSimple); // Nettoyer les espaces multiples
+    
+    if (empty($adresseSimple)) {
+        return 'Non disponible';
+    }
+    
+    $mapsUrl = 'https://www.google.com/maps/place/' . urlencode($adresseSimple);
+    
+    return sprintf(
+        '<a href="%s" target="_blank" rel="noopener noreferrer" class="maps-link" title="Localiser sur Google Maps">Localiser</a>',
+        esc_url($mapsUrl)
+    );
+}
 ?>
 
 <div class="sci-frontend-wrapper">
@@ -78,34 +126,16 @@ function dpe_class($val) {
                                     <?php echo esc_html($favori->etiquette_ges ?: 'Non spécifié'); ?>
                                 </span>
                             </td>
-                            <td class="date-dpe">
-                                <?php 
-                                if ($favori->date_etablissement_dpe) {
-                                    $date = DateTime::createFromFormat('Y-m-d', $favori->date_etablissement_dpe);
-                                    if ($date) {
-                                        echo $date->format('d/m/Y');
-                                    } else {
-                                        echo esc_html($favori->date_etablissement_dpe);
-                                    }
-                                } else {
-                                    echo 'Non spécifié';
-                                }
-                                ?>
-                            </td>
+                            <td class="date-dpe"><?php echo formatDateFr($favori->date_etablissement_dpe); ?></td>
                             <td class="geolocalisation">
                                 <?php 
-                                $adresse_complete = trim($favori->adresse_ban . ', ' . $favori->code_postal_ban . ' ' . $favori->nom_commune_ban);
-                                $adresse_complete = rtrim($adresse_complete, ', ');
-                                
-                                if ($favori->coordonnee_cartographique_x_ban && $favori->coordonnee_cartographique_y_ban): 
-                                    $maps_url = 'https://www.google.com/maps/place/' . urlencode($adresse_complete);
+                                // ✅ NOUVEAU : Utiliser la fonction pour créer le lien Google Maps
+                                echo createGoogleMapsLink(
+                                    $favori->adresse_ban,
+                                    $favori->code_postal_ban,
+                                    $favori->nom_commune_ban
+                                );
                                 ?>
-                                    <a href="<?php echo $maps_url; ?>" target="_blank" title="Localiser sur Google Maps" style="color: #0073aa; text-decoration: none;">
-                                        Localiser
-                                    </a>
-                                <?php else: ?>
-                                    Non disponible
-                                <?php endif; ?>
                             </td>
                             <td style="text-align:center;">
                                 <button type="button" class="btn-remove-favori" title="Supprimer ce favori" onclick="removeFavori('<?php echo esc_js($favori->dpe_id); ?>')" style="background:none;border:none;cursor:pointer;font-size:18px;color:#e30613;">
@@ -121,6 +151,19 @@ function dpe_class($val) {
 </div>
 
 <style>
+/* ✅ NOUVEAU : Styles pour les liens de géolocalisation */
+.maps-link {
+    color: #0073aa;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 12px;
+}
+
+.maps-link:hover {
+    text-decoration: underline;
+    color: #005a87;
+}
+
 /* Styles pour les étiquettes DPE et GES */
 .dpe-label, .ges-label {
     padding: 4px 8px;
@@ -173,19 +216,6 @@ function dpe_class($val) {
     color: #ccc;
 }
 
-/* Styles pour les liens de géolocalisation */
-.geolocalisation a {
-    color: #0073aa !important;
-    text-decoration: none !important;
-    font-weight: 500;
-    transition: color 0.2s ease;
-}
-
-.geolocalisation a:hover {
-    color: #005a87 !important;
-    text-decoration: underline !important;
-}
-
 /* Responsive pour le tableau */
 @media (max-width: 768px) {
     .sci-table {
@@ -202,8 +232,8 @@ function dpe_class($val) {
         padding: 2px 4px;
     }
     
-    .geolocalisation a {
-        font-size: 11px;
+    .maps-link {
+        font-size: 10px;
     }
 }
 </style>

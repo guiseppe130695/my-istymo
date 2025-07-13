@@ -1,0 +1,401 @@
+/* 
+ * Styles spécifiques pour le plugin DPE
+ * Version: 1.0.2 - Forcer le rechargement
+ */
+
+/* Wrapper principal DPE */
+.dpe-frontend-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 20px !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+/* Titres */
+.dpe-frontend-wrapper h1 {
+    color: #333 !important;
+    margin-bottom: 30px !important;
+    font-size: 28px !important;
+    font-weight: 600 !important;
+}
+
+.dpe-frontend-wrapper h2 {
+    color: #444 !important;
+    margin-bottom: 20px !important;
+    font-size: 22px !important;
+    font-weight: 500 !important;
+}
+
+/* Messages d'information et d'erreur */
+.dpe-info {
+    background: #e7f3ff !important;
+    border: 1px solid #bee5eb !important;
+    border-radius: 8px !important;
+    padding: 15px !important;
+    margin-bottom: 20px !important;
+    color: #004085 !important;
+}
+
+.dpe-error {
+    background: #f8d7da !important;
+    border: 1px solid #f5c6cb !important;
+    color: #721c24 !important;
+    padding: 15px !important;
+    border-radius: 8px !important;
+    margin: 20px 0 !important;
+}
+
+.dpe-warning {
+    background: #fff3cd !important;
+    border: 1px solid #ffeaa7 !important;
+    color: #856404 !important;
+    padding: 15px !important;
+    border-radius: 8px !important;
+    margin: 20px 0 !important;
+}
+
+.dpe-success {
+    background: #d4edda !important;
+    border: 1px solid #c3e6cb !important;
+    color: #155724 !important;
+    padding: 15px !important;
+    border-radius: 8px !important;
+    margin: 20px 0 !important;
+}
+
+/* Styles pour les paragraphes dans les messages */
+.dpe-info p,
+.dpe-error p,
+.dpe-warning p,
+.dpe-success p {
+    margin: 0 !important;
+    font-size: 16px !important;
+    line-height: 1.5 !important;
+}
+
+.dpe-success p {
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+}
+
+.dpe-success p span {
+    color: #0c5460 !important;
+    font-style: italic !important;
+}
+
+/* Formulaire de recherche */
+.dpe-form {
+    background: #f8f9fa !important;
+    padding: 20px !important;
+    border-radius: 8px !important;
+    margin-bottom: 20px !important;
+    border: 1px solid #e9ecef !important;
+}
+
+.form-group-left {
+    display: flex !important;
+    align-items: end !important;
+    gap: 15px !important;
+    flex-wrap: wrap !important;
+}
+
+.form-group {
+    flex: 1 !important;
+    min-width: 200px !important;
+}
+
+.form-group label {
+    display: block !important;
+    margin-bottom: 5px !important;
+    font-weight: 500 !important;
+    color: #333 !important;
+    font-size: 12px !important;
+}
+
+.form-group select {
+    width: 100% !important;
+    padding: 10px !important;
+    border: 1px solid #ddd !important;
+    border-radius: 4px !important;
+    background: white !important;
+    font-size: 12px !important;
+}
+
+/* Boutons */
+.dpe-button {
+    padding: 12px 24px !important;
+    border: none !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    transition: all 0.2s ease !important;
+    white-space: nowrap !important;
+    background: #000064 !important;
+    color: white !important;
+}
+
+.dpe-button:hover {
+    opacity: 0.9 !important;
+    transform: translateY(-1px) !important;
+}
+
+.dpe-button:disabled {
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+}
+
+/* Zone de chargement */
+#search-loading {
+    text-align: center !important;
+    padding: 20px !important;
+    color: #666 !important;
+}
+
+.loading-spinner {
+    border: 3px solid #f3f3f3 !important;
+    border-top: 3px solid #0073aa !important;
+    border-radius: 50% !important;
+    width: 30px !important;
+    height: 30px !important;
+    animation: spin 1s linear infinite !important;
+    margin: 0 auto 10px !important;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Tableau des résultats */
+.dpe-table {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-collapse: collapse !important;
+    margin-top: 20px !important;
+    background: white !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+    table-layout: fixed !important;
+}
+
+.dpe-table th,
+.dpe-table td {
+    padding: 12px !important;
+    text-align: left !important;
+    border-bottom: 1px solid #e9ecef !important;
+    font-size: 14px !important;
+}
+
+.dpe-table th {
+    background: #f8f9fa !important;
+    font-weight: 600 !important;
+    color: #333 !important;
+    font-size: 12px !important;
+}
+
+.dpe-table tr:hover {
+    background: #f8f9fa !important;
+}
+
+/* Boutons favoris */
+.favorite-btn {
+    background: none !important;
+    border: none !important;
+    cursor: pointer !important;
+    font-size: 20px !important;
+    padding: 5px !important;
+    border-radius: 50% !important;
+    transition: all 0.2s ease !important;
+}
+
+.favorite-btn:hover {
+    color: #FFD700 !important; /* Couleur dorée au hover */
+}
+
+.favorite-btn.favorited {
+    color: #FFD700 !important; /* Couleur dorée */
+}
+
+.favorite-btn.active {
+    color: #FFD700 !important; /* Couleur dorée */
+}
+
+
+/* Pagination */
+#pagination-controls {
+    margin-top: 20px !important;
+    text-align: center !important;
+    padding: 15px !important;
+    background: #f8f9fa !important;
+    border-radius: 8px !important;
+    border: 1px solid #e9ecef !important;
+}
+
+.pagination-main {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 15px !important;
+}
+
+#pagination-controls button {
+    padding: 10px 20px !important;
+    font-size: 10px !important;
+    font-weight: 500 !important;
+    border-radius: 5px !important;
+    background: #fff !important;
+    color: #000064 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    border: 1px solid #ddd !important;
+}
+
+#pagination-controls button:hover:not(:disabled) {
+    background: #0073aa !important;
+    color: white !important;
+    border-color: #0073aa !important;
+}
+
+#pagination-controls button:disabled {
+    background: #f0f0f0 !important;
+    color: #999 !important;
+    cursor: not-allowed !important;
+}
+
+#page-info {
+    background: #0073aa !important;
+    color: white !important;
+    padding: 8px 15px !important;
+    border-radius: 4px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+}
+
+/* Liens de géolocalisation */
+.dpe-table a {
+    color: #0073aa !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+}
+
+.dpe-table a:hover {
+    text-decoration: underline !important;
+}
+
+/* Étiquettes DPE avec couleurs officielles */
+.dpe-label {
+    padding: 4px 8px !important;
+    border-radius: 4px !important;
+    font-weight: bold !important;
+    font-size: 12px !important;
+    text-align: center !important;
+    min-width: 30px !important;
+    display: inline-block !important;
+    color: white !important;
+}
+
+.dpe-label.A { background-color: #009639 !important; }
+.dpe-label.B { background-color: #85bb2f !important; }
+.dpe-label.C { background-color: #ffcc02 !important; color: black !important; }
+.dpe-label.D { background-color: #f68b1f !important; }
+.dpe-label.E { background-color: #e30613 !important; }
+.dpe-label.F { background-color: #8b0000 !important; }
+.dpe-label.G { background-color: #4a4a4a !important; }
+
+/* Étiquettes GES */
+.ges-label {
+    padding: 4px 8px !important;
+    border-radius: 4px !important;
+    font-weight: bold !important;
+    font-size: 12px !important;
+    text-align: center !important;
+    min-width: 30px !important;
+    display: inline-block !important;
+    color: white !important;
+    background-color: #0073aa !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .dpe-frontend-wrapper {
+        padding: 10px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    .form-group-left {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+    
+    .dpe-table {
+        font-size: 12px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    .dpe-table th,
+    .dpe-table td {
+        padding: 8px !important;
+    }
+    
+    .pagination-main {
+        flex-direction: column !important;
+        gap: 10px !important;
+    }
+}
+
+/* Styles pour les favoris */
+.dpe-favoris-wrapper {
+    margin: 20px 0 !important;
+}
+
+.dpe-favoris-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
+    gap: 15px !important;
+    margin-top: 20px !important;
+}
+
+.dpe-favori-item {
+    background: white !important;
+    border: 1px solid #e9ecef !important;
+    border-radius: 8px !important;
+    padding: 15px !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+.favori-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 10px !important;
+}
+
+.favori-id {
+    font-weight: 600 !important;
+    color: #333 !important;
+}
+
+.favori-date {
+    color: #666 !important;
+    font-size: 14px !important;
+}
+
+.remove-favori {
+    background: none !important;
+    border: none !important;
+    cursor: pointer !important;
+    font-size: 16px !important;
+    padding: 5px !important;
+    border-radius: 50% !important;
+    transition: all 0.2s ease !important;
+}
+
+.remove-favori:hover {
+    background: #f0f0f0 !important;
+} 
