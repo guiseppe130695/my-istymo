@@ -196,7 +196,7 @@ class DPE_Shortcodes {
                     </div>
                     <div class="form-group">
                         <label for="keywordSearch">Recherche par adresse :</label>
-                        <input type="text" name="keywordSearch" id="keywordSearch" placeholder="Ex: rue de la paix, avenue victor hugo..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <input type="text" name="keywordSearch" id="keywordSearch" placeholder="Ex: rue de la paix, avenue victor hugo...">
                     </div>
                     <button type="submit" id="search-btn" class="dpe-button">
                         Rechercher les DPE
@@ -347,64 +347,18 @@ class DPE_Shortcodes {
             xhr.send();
         }
 
-        // Fonction pour filtrer les résultats selon les critères exacts
-        function filterResults(results) {
-            if (!results || results.length === 0) {
-                return [];
-            }
-            
-            return results.filter(function(result) {
-                // Vérifier le code postal
-                var resultCodePostal = result.code_postal_ban || result.code_postal_brut || '';
-                if (currentSearchParams.codePostal && resultCodePostal !== currentSearchParams.codePostal) {
-                    return false;
-                }
-                
-                // Vérifier le type de bâtiment
-                if (currentSearchParams.buildingType) {
-                    var resultBuildingType = (result.type_batiment || '').toLowerCase();
-                    var searchBuildingType = currentSearchParams.buildingType.toLowerCase();
-                    if (resultBuildingType !== searchBuildingType) {
-                        return false;
-                    }
-                }
-                
-                // Vérifier le mot-clé d'adresse
-                if (currentSearchParams.keywordSearch && currentSearchParams.keywordSearch.trim()) {
-                    var keyword = currentSearchParams.keywordSearch.trim().toLowerCase();
-                    var resultAdresse = (result.adresse_ban || result.adresse_brut || '').toLowerCase();
-                    
-                    // Vérifier si le mot-clé est présent dans l'adresse
-                    if (!resultAdresse.includes(keyword)) {
-                        return false;
-                    }
-                }
-                
-                return true;
-            });
-        }
-
         // Fonction pour afficher les résultats
         function displayResults(data) {
             var tbody = document.getElementById('results-tbody');
             tbody.innerHTML = '';
 
             if (data.results && data.results.length > 0) {
-                // Filtrer les résultats selon les critères exacts
-                var filteredResults = filterResults(data.results);
-                
-                if (filteredResults.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 20px; color: #666;">Aucun résultat trouvé correspondant exactement aux critères</td></tr>';
-                    hidePaginationControls();
-                    return;
-                }
-                
-                totalResults = filteredResults.length;
+                totalResults = data.total;
                 
                 // Calculer le nombre total de pages (approximatif)
                 totalPages = Math.ceil(totalResults / 50);
 
-                filteredResults.forEach(function (result) {
+                data.results.forEach(function (result) {
                     var row = document.createElement('tr');
                     
                     // Bouton favoris
