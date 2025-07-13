@@ -8,6 +8,10 @@
  * - $title : titre de la page (optionnel)
  * - $show_empty_message : afficher le message si vide (optionnel)
  */
+
+// Debug: Vérifier les variables reçues
+// echo "<!-- DEBUG: view_mode = " . ($view_mode ? 'true' : 'false') . " -->";
+// echo "<!-- DEBUG: campaign_details = " . (isset($campaign_details) ? 'set' : 'not set') . " -->";
 ?>
 
 <?php if ($view_mode && $campaign_details): ?>
@@ -83,7 +87,7 @@
         <!-- En-tête avec navigation -->
         <div class="campaign-page-header">
             <h1 class="campaign-page-title">📬 <?php echo esc_html($campaign_details['title']); ?></h1>
-            <a href="<?php echo remove_query_arg('view', get_permalink()); ?>" class="campaign-back-link">
+            <a href="<?php echo esc_url(remove_query_arg('view')); ?>" class="campaign-back-link">
                 ← Retour
             </a>
         </div>
@@ -286,7 +290,7 @@
                             <td><?php echo intval($campaign['failed_letters']); ?></td>
                             <td><?php echo date('d/m/Y H:i', strtotime($campaign['created_at'])); ?></td>
                             <td>
-                                <a href="<?php echo add_query_arg('view', intval($campaign['id']), get_permalink()); ?>" 
+                                <a href="<?php echo esc_url(add_query_arg('view', intval($campaign['id']))); ?>" 
                                    class="sci-button"
                                    style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important; color: white !important; border: none !important; text-decoration: none !important; display: inline-block !important; padding: 8px 16px !important; border-radius: 6px !important;">
                                     👁️ Voir détails

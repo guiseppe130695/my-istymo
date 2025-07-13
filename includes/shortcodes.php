@@ -1150,10 +1150,16 @@ class SCI_Shortcodes {
         $view_mode = false;
         $campaign_details = null;
         
+        // Debug temporaire
+        // error_log("DEBUG: GET params: " . print_r($_GET, true));
+        
         if (isset($_GET['view']) && is_numeric($_GET['view'])) {
             $campaign_details = $campaign_manager->get_campaign_details(intval($_GET['view']));
             if ($campaign_details) {
                 $view_mode = true;
+                // error_log("DEBUG: Campaign details found for ID: " . $_GET['view']);
+            } else {
+                // error_log("DEBUG: No campaign details found for ID: " . $_GET['view']);
             }
         }
         
