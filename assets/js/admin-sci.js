@@ -115,7 +115,7 @@
         updateCache('codePostal', codePostal);
         updateCache('pageSize', pageSize);
         
-        console.log('🚀 Lancement recherche - Page demandée:', page, 'Code postal:', codePostal);
+                        // Logs supprimés pour la production
         elements.searchLoading.style.display = 'block';
         elements.searchResults.style.display = 'none';
         elements.searchError.style.display = 'none';
@@ -175,9 +175,7 @@
         if (!elements) return;
         const { results, pagination } = data;
         
-        console.log('📊 Données de pagination reçues:', pagination);
-        console.log('📄 Page actuelle dans les données:', pagination.current_page);
-        console.log('📄 Total pages dans les données:', pagination.total_pages);
+                        // Logs supprimés pour la production
         
         // ✅ VALIDATION : Vérifier que les données de pagination sont valides
         if (!pagination || typeof pagination.current_page === 'undefined' || typeof pagination.total_pages === 'undefined') {
@@ -195,12 +193,7 @@
         updateCache('totalResults', pagination.total_count);
         updateCache('codePostal', currentCodePostal);
         
-        console.log('✅ Cache mis à jour:', {
-            currentPage: cache.currentPage,
-            totalPages: cache.totalPages,
-            totalResults: cache.totalResults,
-            codePostal: cache.codePostal
-        });
+                        // Logs supprimés pour la production
         
         // Afficher la zone des résultats
         elements.searchResults.style.display = 'block';
@@ -285,7 +278,7 @@
         const elements = getElements();
         if (!elements) return;
         
-        console.log('🔧 Mise à jour pagination - Page:', cache.currentPage, 'Total:', cache.totalPages);
+        // Logs supprimés pour la production
         
         // Boutons précédent
         const shouldDisablePrev = cache.currentPage <= 1;

@@ -323,7 +323,7 @@ class SCIEnhancedFeatures {
         if (typeof sciAutoSearch !== 'undefined' && sciAutoSearch.auto_search_enabled) {
             // ✅ AMÉLIORÉ : Ne pas lancer de recherche automatique si elle est déjà gérée par le script principal
             // Le script principal (my-istymo.php) gère déjà la recherche automatique
-            console.log('✅ Recherche automatique gérée par le script principal');
+            // Recherche automatique gérée par le script principal
             
             // Afficher une notification pour informer l'utilisateur
             setTimeout(() => {
@@ -348,8 +348,8 @@ document.addEventListener('DOMContentLoaded', function() {
         window.sciEnhancedFeatures.updateStats();
     };
     
-    console.log('✅ Fonctionnalités avancées SCI initialisées');
+            // Fonctionnalités avancées SCI initialisées
 });
 
 // Fonctionnalités avancées pour le plugin SCI
-console.log('Chargement des fonctionnalités avancées SCI...'); 
+    // Chargement des fonctionnalités avancées SCI... 

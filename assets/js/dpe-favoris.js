@@ -16,12 +16,9 @@
      */
     function initDpeFavoris() {
         if (isInitialized) {
-            console.log('✅ Système de favoris DPE déjà initialisé');
             return;
         }
 
-        console.log('🚀 Initialisation du système de favoris DPE...');
-        
         // Charger les favoris depuis le localStorage
         loadDpeFavoris();
         
@@ -35,7 +32,6 @@
         updateDpeFavButtons();
         
         isInitialized = true;
-        console.log('✅ Système de favoris DPE initialisé avec succès');
     }
 
     /**
@@ -44,7 +40,6 @@
     function loadDpeFavoris() {
         // Vérifier que les variables AJAX sont disponibles
         if (typeof dpe_ajax === 'undefined') {
-            console.error('❌ Variables AJAX DPE non disponibles');
             dpeFavoris = [];
             return;
         }
@@ -62,15 +57,12 @@
         .then(data => {
             if (data.success) {
                 dpeFavoris = data.data || [];
-                console.log('📋 Favoris DPE chargés depuis la DB:', dpeFavoris.length, 'éléments');
                 updateDpeFavButtons();
             } else {
-                console.error('❌ Erreur lors du chargement des favoris DPE:', data.data);
                 dpeFavoris = [];
             }
         })
         .catch(error => {
-            console.error('❌ Erreur lors du chargement des favoris DPE:', error);
             dpeFavoris = [];
         });
     }
@@ -80,7 +72,6 @@
      */
     function saveDpeFavoris() {
         // Cette fonction n'est plus utilisée car on sauvegarde directement via AJAX
-        console.log('💾 Sauvegarde des favoris DPE gérée via AJAX');
     }
 
     /**
@@ -102,8 +93,6 @@
                 }
             }
         });
-
-        console.log('🎯 Listeners de favoris DPE attachés avec délégation d\'événements');
     }
 
     /**
@@ -111,7 +100,6 @@
      */
     function setupDpeFavorisObserver() {
         if (!window.MutationObserver) {
-            console.warn('⚠️ MutationObserver non supporté, fallback sur mise à jour manuelle');
             return;
         }
 
@@ -133,7 +121,6 @@
             });
             
             if (shouldUpdate) {
-                console.log('🔄 Nouveaux boutons favoris DPE détectés, mise à jour...');
                 setTimeout(updateDpeFavButtons, 100);
             }
         });
@@ -143,8 +130,6 @@
             childList: true,
             subtree: true
         });
-
-        console.log('👁️ Observer de favoris DPE configuré');
     }
 
     /**
@@ -171,10 +156,8 @@
         // Mettre à jour l'état local immédiatement pour le feedback visuel
         if (isCurrentlyFavori) {
             dpeFavoris.splice(index, 1);
-            console.log('🗑️ DPE retiré des favoris:', numeroDpe);
         } else {
             dpeFavoris.push(favoriData);
-            console.log('⭐ DPE ajouté aux favoris:', numeroDpe);
         }
         
         // Mettre à jour l'affichage immédiatement
@@ -187,7 +170,6 @@
         
         // Synchroniser avec la base de données via AJAX
         if (typeof dpe_ajax === 'undefined') {
-            console.error('❌ Variables AJAX DPE non disponibles');
             return;
         }
         
@@ -204,9 +186,8 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                console.log(`✅ Favori DPE ${action === 'add' ? 'ajouté' : 'supprimé'} avec succès`);
+                // Succès silencieux
             } else {
-                console.error(`❌ Erreur lors de l'${action === 'add' ? 'ajout' : 'suppression'} du favori DPE:`, data.data);
                 // Annuler les changements locaux en cas d'erreur
                 if (isCurrentlyFavori) {
                     dpeFavoris.push(favoriData);
@@ -221,7 +202,6 @@
             }
         })
         .catch(error => {
-            console.error(`❌ Erreur AJAX lors de l'${action === 'add' ? 'ajout' : 'suppression'} du favori DPE:`, error);
             // Annuler les changements locaux en cas d'erreur
             if (isCurrentlyFavori) {
                 dpeFavoris.push(favoriData);
@@ -270,7 +250,7 @@
             }
         });
         
-        console.log('🔄 État des boutons favoris DPE mis à jour:', buttons.length, 'boutons');
+        // Logs supprimés pour la production
     }
 
     /**
@@ -303,7 +283,6 @@
         if (index !== -1) {
             dpeFavoris.splice(index, 1);
             updateDpeFavButtons();
-            console.log('🗑️ Favori DPE supprimé:', numeroDpe);
             return true;
         }
         return false;
@@ -315,14 +294,12 @@
     function clearDpeFavoris() {
         dpeFavoris = [];
         updateDpeFavButtons();
-        console.log('🗑️ Tous les favoris DPE supprimés');
     }
 
     /**
      * ✅ Fonction de rafraîchissement après changement de page
      */
     function refreshDpeFavorisAfterPageChange() {
-        console.log('🔄 Rafraîchissement des favoris DPE après changement de page...');
         updateDpeFavButtons();
     }
 
@@ -353,6 +330,6 @@
     // ✅ Initialisation différée pour les cas où le script est chargé après le DOM
     setTimeout(initDpeFavoris, 100);
 
-    console.log('📦 Module de favoris DPE chargé et prêt');
+    // Module de favoris DPE chargé et prêt
 
 })(); 

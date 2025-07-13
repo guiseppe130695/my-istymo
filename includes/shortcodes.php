@@ -7,10 +7,8 @@ if (!defined('ABSPATH')) exit;
 class SCI_Shortcodes {
     
     public function __construct() {
-        // Enregistrer les shortcodes existants
+        // Enregistrer uniquement le shortcode principal
         add_shortcode('sci_panel', array($this, 'sci_panel_shortcode'));
-        add_shortcode('sci_favoris', array($this, 'sci_favoris_shortcode'));
-        add_shortcode('sci_campaigns', array($this, 'sci_campaigns_shortcode'));
 
         add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_scripts'), 5);
         add_action('wp_head', array($this, 'force_enqueue_on_shortcode_pages'), 1);
@@ -46,31 +44,23 @@ class SCI_Shortcodes {
         $page = max(1, $page);
         $page_size = max(1, min(100, $page_size)); // Limiter à 100 max
         
-        my_istymo_log("=== RECHERCHE AJAX INPI FRONTEND ===", 'inpi');
-        my_istymo_log("Code postal: $code_postal", 'inpi');
-        my_istymo_log("Page: $page", 'inpi');
-        my_istymo_log("Taille page: $page_size", 'inpi');
+        // Logs supprimés pour la production
         
         // Appeler la fonction de recherche avec pagination
         $resultats = sci_fetch_inpi_data_with_pagination($code_postal, $page, $page_size);
         
         if (is_wp_error($resultats)) {
-            my_istymo_log("Erreur recherche AJAX frontend: " . $resultats->get_error_message(), 'inpi');
             wp_send_json_error($resultats->get_error_message());
             return;
         }
         
         if (empty($resultats['data'])) {
-            my_istymo_log("Aucun résultat trouvé (frontend)", 'inpi');
             wp_send_json_error('Aucun résultat trouvé pour ce code postal');
             return;
         }
         
         // Formater les résultats
         $formatted_results = sci_format_inpi_results($resultats['data']);
-        
-        my_istymo_log("Recherche AJAX frontend réussie: " . count($formatted_results) . " résultats formatés", 'inpi');
-        my_istymo_log("Pagination: " . json_encode($resultats['pagination']), 'inpi');
         
         wp_send_json_success([
             'results' => $formatted_results,
@@ -84,12 +74,8 @@ class SCI_Shortcodes {
     public function force_enqueue_on_shortcode_pages() {
         global $post;
         
-        // Vérifier si on est sur une page avec un shortcode SCI
-        if (is_a($post, 'WP_Post') && (
-            has_shortcode($post->post_content, 'sci_panel') ||
-            has_shortcode($post->post_content, 'sci_favoris') ||
-            has_shortcode($post->post_content, 'sci_campaigns')
-        )) {
+        // Vérifier si on est sur une page avec le shortcode SCI principal
+        if (is_a($post, 'WP_Post') && has_shortcode($post->post_content, 'sci_panel')) {
             // Forcer le chargement immédiat
             $this->force_enqueue_assets([]);
         }
@@ -101,11 +87,7 @@ class SCI_Shortcodes {
     public function ensure_scripts_loaded() {
         global $post;
         
-        if (is_a($post, 'WP_Post') && (
-            has_shortcode($post->post_content, 'sci_panel') ||
-            has_shortcode($post->post_content, 'sci_favoris') ||
-            has_shortcode($post->post_content, 'sci_campaigns')
-        )) {
+        if (is_a($post, 'WP_Post') && has_shortcode($post->post_content, 'sci_panel')) {
             // Vérifier si les scripts sont chargés, sinon les charger
             if (!wp_script_is('sci-frontend-favoris', 'done')) {
                 $this->force_enqueue_assets([]);
@@ -122,11 +104,7 @@ class SCI_Shortcodes {
         $should_load = false;
         
         // Méthode 1 : Vérifier le post actuel
-        if (is_a($post, 'WP_Post') && (
-            has_shortcode($post->post_content, 'sci_panel') ||
-            has_shortcode($post->post_content, 'sci_favoris') ||
-            has_shortcode($post->post_content, 'sci_campaigns')
-        )) {
+        if (is_a($post, 'WP_Post') && has_shortcode($post->post_content, 'sci_panel')) {
             $should_load = true;
         }
         
@@ -751,7 +729,7 @@ class SCI_Shortcodes {
                 updateCache('codePostal', codePostal);
                 updateCache('pageSize', pageSize);
                 
-                console.log('🚀 Lancement recherche - Page demandée:', page, 'Code postal:', codePostal);
+                // Logs supprimés pour la production
                 elements.searchLoading.style.display = 'block';
                 elements.searchResults.style.display = 'none';
                 elements.searchError.style.display = 'none';
@@ -810,13 +788,10 @@ class SCI_Shortcodes {
                 if (!elements) return;
                 const { results, pagination } = data;
                 
-                console.log('📊 Données de pagination reçues:', pagination);
-                console.log('📄 Page actuelle dans les données:', pagination.current_page);
-                console.log('📄 Total pages dans les données:', pagination.total_pages);
+                // Logs supprimés pour la production
                 
                 // ✅ VALIDATION : Vérifier que les données de pagination sont valides
                 if (!pagination || typeof pagination.current_page === 'undefined' || typeof pagination.total_pages === 'undefined') {
-                    console.error('❌ Données de pagination invalides:', pagination);
                     displayError('Erreur: données de pagination manquantes');
                     return;
                 }
@@ -829,8 +804,7 @@ class SCI_Shortcodes {
                 const newPage = parseInt(pagination.current_page) || 1;
                 const newTotalPages = parseInt(pagination.total_pages) || 1;
                 
-                console.log('💾 Mise à jour cache - Ancienne page:', cache.currentPage, '→ Nouvelle page:', newPage);
-                console.log('💾 Mise à jour cache - Ancien total:', cache.totalPages, '→ Nouveau total:', newTotalPages);
+                // Logs supprimés pour la production
                 
                 const titleChanged = hasDataChanged('title', newTitle);
                 const pageChanged = hasDataChanged('currentPage', newPage);
@@ -843,12 +817,7 @@ class SCI_Shortcodes {
                 updateCache('totalResults', pagination.total_count);
                 updateCache('codePostal', currentCodePostal);
                 
-                console.log('✅ Cache mis à jour:', {
-                    currentPage: cache.currentPage,
-                    totalPages: cache.totalPages,
-                    totalResults: cache.totalResults,
-                    codePostal: cache.codePostal
-                });
+                // Logs supprimés pour la production
                 
                 // ✅ AMÉLIORÉ : Afficher la zone de résultats seulement si cachée
                 if (elements.searchResults.style.display === 'none') {
@@ -929,11 +898,8 @@ class SCI_Shortcodes {
                 return row;
             }
             function updatePaginationControls() {
-                console.log('🔧 Mise à jour pagination shortcode - Page:', cache.currentPage, 'Total:', cache.totalPages);
-                
                 const elements = getElements();
                 if (!elements || !elements.pageInfo) {
-                    console.log('⚠️ Éléments pagination non trouvés dans updatePaginationControls');
                     return;
                 }
                 
@@ -942,7 +908,6 @@ class SCI_Shortcodes {
                 
                 if (currentPageText !== newPageText) {
                     elements.pageInfo.textContent = newPageText;
-                    console.log('📄 Info page mise à jour:', newPageText);
                 }
                 
                 const prevShouldBeDisabled = cache.currentPage <= 1;
@@ -950,17 +915,14 @@ class SCI_Shortcodes {
                 
                 if (elements.prevPageBtn.disabled !== prevShouldBeDisabled) {
                     elements.prevPageBtn.disabled = prevShouldBeDisabled;
-                    console.log('⬅️ Bouton précédent disabled:', prevShouldBeDisabled);
                 }
                 if (elements.nextPageBtn.disabled !== nextShouldBeDisabled) {
                     elements.nextPageBtn.disabled = nextShouldBeDisabled;
-                    console.log('➡️ Bouton suivant disabled:', nextShouldBeDisabled);
                 }
                 
                 const paginationControls = document.getElementById('pagination-controls');
                 if (paginationControls && paginationControls.style.display === 'none') {
                     paginationControls.style.display = 'block';
-                    console.log('👁️ Contrôles de pagination affichés');
                 }
             }
             function reinitializeJavaScriptFeatures() {
@@ -1012,15 +974,7 @@ class SCI_Shortcodes {
                 }
                 
                 function autoLoadFirstCodePostal() {
-                    console.log('🚀 Début autoLoadFirstCodePostal (frontend)');
-                    console.log('🔍 sciAutoSearch disponible:', typeof sciAutoSearch !== 'undefined');
-                    
-                    if (typeof sciAutoSearch !== 'undefined') {
-                        console.log('🔍 sciAutoSearch.auto_search_enabled:', sciAutoSearch.auto_search_enabled);
-                        console.log('🔍 sciAutoSearch.default_postal_code:', sciAutoSearch.default_postal_code);
-                    }
-                    
-                    // ✅ AMÉLIORÉ : Vérifier si la recherche automatique est activée
+                    // Vérifier si la recherche automatique est activée
                     if (typeof sciAutoSearch !== 'undefined' && sciAutoSearch.auto_search_enabled && sciAutoSearch.default_postal_code) {
                         // Utiliser le premier code postal de l'utilisateur
                         const defaultCodePostal = sciAutoSearch.default_postal_code;
@@ -1028,24 +982,15 @@ class SCI_Shortcodes {
                         // S'assurer que le premier code postal est sélectionné
                         elements.codePostalSelect.value = defaultCodePostal;
                         
-                        console.log('🔄 Chargement automatique du premier code postal (frontend):', defaultCodePostal);
-                        console.log('🔍 elements.codePostalSelect.value après sélection:', elements.codePostalSelect.value);
-                        
                         // Lancer automatiquement la recherche
-                        console.log('🚀 Lancement de performSearch (frontend) avec:', defaultCodePostal, 1, cache.pageSize);
                         performSearch(defaultCodePostal, 1, cache.pageSize);
                     } else if (elements.codePostalSelect.options.length > 1) {
                         // Fallback : sélectionner automatiquement le premier code postal disponible
                         elements.codePostalSelect.selectedIndex = 1;
                         const firstCodePostal = elements.codePostalSelect.value;
                         
-                        console.log('🔄 Chargement automatique du premier code postal disponible (frontend):', firstCodePostal);
-                        
                         // Lancer automatiquement la recherche
                         performSearch(firstCodePostal, 1, cache.pageSize);
-                    } else {
-                        console.log('⚠️ Aucun code postal configuré pour le chargement automatique (frontend)');
-                        console.log('🔍 elements.codePostalSelect.options.length:', elements.codePostalSelect.options.length);
                     }
                 }
                 
@@ -1070,49 +1015,24 @@ class SCI_Shortcodes {
                 
 
                 
-                // ✅ AMÉLIORÉ : Vérifier que les boutons de pagination existent
-                console.log('🔍 Éléments pagination shortcode trouvés:');
-                console.log('- Bouton précédent:', elements.prevPageBtn ? '✅' : '❌');
-                console.log('- Bouton suivant:', elements.nextPageBtn ? '✅' : '❌');
-                console.log('- Info page:', elements.pageInfo ? '✅' : '❌');
-                
                 if (elements.prevPageBtn) {
                     elements.prevPageBtn.addEventListener('click', function() {
-                        console.log('🔄 Clic bouton précédent (shortcode)');
-                        console.log('📊 État du cache:', {
-                            currentPage: cache.currentPage,
-                            totalPages: cache.totalPages,
-                            codePostal: cache.codePostal,
-                            pageSize: cache.pageSize
-                        });
-                        console.log('🔍 Bouton désactivé?', elements.prevPageBtn.disabled);
-                        
                         const codePostal = elements.codePostalSelect ? elements.codePostalSelect.value : cache.codePostal;
                         const prevPage = cache.currentPage - 1;
                         
-                        console.log('🧮 Calcul: Page actuelle', cache.currentPage, '- 1 =', prevPage);
-                        console.log('✅ Condition prevPage >= 1:', prevPage >= 1);
-                        
                         if (prevPage >= 1) {
-                            console.log('✅ Navigation vers page:', prevPage, 'avec code postal:', codePostal);
                             performSearch(codePostal, prevPage, cache.pageSize);
-                        } else {
-                            console.log('⚠️ Déjà sur la première page - navigation bloquée');
                         }
                     });
                 }
                 
                 if (elements.nextPageBtn) {
                     elements.nextPageBtn.addEventListener('click', function() {
-                        console.log('🔄 Clic bouton suivant (shortcode) - Page actuelle:', cache.currentPage, 'Total pages:', cache.totalPages);
                         const codePostal = elements.codePostalSelect ? elements.codePostalSelect.value : cache.codePostal;
                         const nextPage = cache.currentPage + 1;
                         
                         if (nextPage <= cache.totalPages) {
-                            console.log('✅ Navigation vers page:', nextPage);
                             performSearch(codePostal, nextPage, cache.pageSize);
-                        } else {
-                            console.log('⚠️ Déjà sur la dernière page');
                         }
                     });
                 }
@@ -1125,11 +1045,7 @@ class SCI_Shortcodes {
             
             // ✅ SUPPRIMÉ : Fonctions de sélections exposées (gérées par lettre.js)
             
-            // ✅ NOUVEAU : Exposer les fonctions de débogage (optionnel)
-            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                window.forceUpdatePagination = forceUpdatePagination;
-                window.sciCache = cache;
-            }
+            // Fonctions de débogage supprimées pour la production
             
             window.sciFrontendInitialized = true;
         })();
@@ -1138,315 +1054,11 @@ class SCI_Shortcodes {
         return ob_get_clean();
     }
     
-    /**
-     * Shortcode [sci_favoris] - Liste des favoris
-     */
-    public function sci_favoris_shortcode($atts) {
-        // ✅ FORCER LE CHARGEMENT DES ASSETS
-        $this->force_enqueue_assets([]);
-        
-        $atts = shortcode_atts(array(
-            'title' => '',
-            'show_empty_message' => 'true'
-        ), $atts);
-        
-        if (!is_user_logged_in()) {
-            return '<div class="sci-error">Vous devez être connecté pour voir vos favoris.</div>';
-        }
-        
-        global $sci_favoris_handler;
-        $favoris = $sci_favoris_handler->get_favoris();
-        
-        ob_start();
-        ?>
-        <div class="sci-frontend-wrapper">
-            <h1><?php echo esc_html($atts['title']); ?></h1>
-            
-            <?php if (empty($favoris) && $atts['show_empty_message'] === 'true'): ?>
-                <div class="sci-info">
-                    <p>Aucun favori pour le moment. Ajoutez des SCI à vos favoris depuis la recherche pour les retrouver ici facilement.</p>
-                </div>
-            <?php else: ?>
-                <table class="sci-table" id="table-favoris">
-                    <thead>
-                        <tr>
-                            <th>Dénomination</th>
-                            <th>Dirigeant</th>
-                            <th>SIREN</th>
-                            <th>Adresse</th>
-                            <th>Ville</th>
-                            <th>Géolocalisation</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($favoris as $fav): ?>
-                            <tr>
-                                <td><?php echo esc_html($fav['denomination']); ?></td>
-                                <td><?php echo esc_html($fav['dirigeant']); ?></td>
-                                <td><?php echo esc_html($fav['siren']); ?></td>
-                                <td><?php echo esc_html($fav['adresse']); ?></td>
-                                <td><?php echo esc_html($fav['ville']); ?></td>
-                                <td>
-                                    <?php 
-                                    $maps_query = urlencode($fav['adresse'] . ' ' . $fav['code_postal'] . ' ' . $fav['ville']);
-                                    $maps_url = 'https://www.google.com/maps/place/' . $maps_query;
-                                    ?>
-                                    <a href="<?php echo esc_url($maps_url); ?>" 
-                                       target="_blank" 
-                                       class="maps-link"
-                                       title="Localiser <?php echo esc_attr($fav['denomination']); ?> sur Google Maps">
-                                        Localiser SCI
-                                    </a>
-                                </td>
-                                <td>
-                                    <button class="remove-fav-btn sci-button" 
-                                            data-siren="<?php echo esc_attr($fav['siren']); ?>"
-                                            style="    box-shadow: none !important; background: #fff!important; color:#000064!important; font-size: 12px; padding: 6px 12px;">
-                                        ❌
-                                    </button>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            <?php endif; ?>
-        </div>
-        
-        <script>
-        // Vérifier que les variables AJAX sont disponibles
-        if (typeof sci_ajax === 'undefined') {
-            window.sci_ajax = {
-                ajax_url: '<?php echo admin_url('admin-ajax.php'); ?>',
-                nonce: '<?php echo wp_create_nonce('sci_favoris_nonce'); ?>'
-            };
-        }
-        
-        document.addEventListener('DOMContentLoaded', function () {
-            document.querySelectorAll('.remove-fav-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    if (!confirm('Êtes-vous sûr de vouloir supprimer ce favori ?')) {
-                        return;
-                    }
 
-                    const siren = btn.getAttribute('data-siren');
-                    const formData = new FormData();
-                    formData.append('action', 'sci_manage_favoris');
-                    formData.append('operation', 'remove');
-                    formData.append('nonce', sci_ajax.nonce);
-                    formData.append('sci_data', JSON.stringify({siren: siren}));
+    
 
-                    fetch(sci_ajax.ajax_url, {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            location.reload();
-                        } else {
-                            alert('Erreur lors de la suppression : ' + data.data);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Erreur:', error);
-                        alert('Erreur réseau');
-                    });
-                });
-            });
-        });
-        </script>
-        <?php
-        return ob_get_clean();
-    }
     
-    /**
-     * Shortcode [sci_campaigns] - Liste des campagnes
-     */
-    public function sci_campaigns_shortcode($atts) {
-        // ✅ FORCER LE CHARGEMENT DES ASSETS
-        $this->force_enqueue_assets([]);
-        
-        $atts = shortcode_atts(array(
-            'title' => '',
-            'show_empty_message' => 'true'
-        ), $atts);
-        
-        if (!is_user_logged_in()) {
-            return '<div class="sci-error">Vous devez être connecté pour voir vos campagnes.</div>';
-        }
-        
-        $campaign_manager = sci_campaign_manager();
-        $config_manager = sci_config_manager();
-        
-        // Gestion de l'affichage des détails d'une campagne
-        if (isset($_GET['sci_view']) && $_GET['sci_view'] === 'campaign' && isset($_GET['id']) && is_numeric($_GET['id'])) {
-            $campaign_details = $campaign_manager->get_campaign_details(intval($_GET['id']));
-            if ($campaign_details) {
-                return $this->display_campaign_details_frontend($campaign_details, $atts);
-            }
-        }
-        
-        $campaigns = $campaign_manager->get_user_campaigns();
-        
-        ob_start();
-        ?>
-        <div class="sci-frontend-wrapper">
-            <h1><?php echo esc_html($atts['title']); ?></h1>
-            
-            <?php if (empty($campaigns) && $atts['show_empty_message'] === 'true'): ?>
-                <div class="sci-info">
-                    <p>Aucune campagne trouvée. Créez votre première campagne depuis la recherche SCI.</p>
-                </div>
-            <?php else: ?>
-                <table class="sci-table">
-                    <thead>
-                        <tr>
-                            <th>Titre</th>
-                            <th>Statut</th>
-                            <th>Total</th>
-                            <th>Envoyées</th>
-                            <th>Erreurs</th>
-                            <th>Date création</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($campaigns as $campaign): ?>
-                            <tr>
-                                <td><strong><?php echo esc_html($campaign['title']); ?></strong></td>
-                                <td>
-                                    <?php
-                                    $status_labels = [
-                                        'draft' => '📝 Brouillon',
-                                        'processing' => '⏳ En cours',
-                                        'completed' => '✅ Terminée',
-                                        'completed_with_errors' => '⚠️ Terminée avec erreurs'
-                                    ];
-                                    echo $status_labels[$campaign['status']] ?? $campaign['status'];
-                                    ?>
-                                </td>
-                                <td><?php echo intval($campaign['total_letters']); ?></td>
-                                <td><?php echo intval($campaign['sent_letters']); ?></td>
-                                <td><?php echo intval($campaign['failed_letters']); ?></td>
-                                <td><?php echo date('d/m/Y H:i', strtotime($campaign['created_at'])); ?></td>
-                                <td>
-                                    <a href="<?php echo add_query_arg(array('sci_view' => 'campaign', 'id' => $campaign['id'])); ?>" 
-                                       class="sci-button" style="font-size: 12px; padding: 6px 12px;">
-                                        👁️ Voir détails
-                                    </a>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            <?php endif; ?>
-        </div>
-        <?php
-        return ob_get_clean();
-    }
-    
-    /**
-     * Affichage des détails d'une campagne pour le frontend
-     */
-    private function display_campaign_details_frontend($campaign, $atts) {
-        $config_manager = sci_config_manager();
-        
-        ob_start();
-        ?>
-        <div class="sci-frontend-wrapper">
-           
-            <a href="<?php echo $config_manager->get_sci_campaigns_page_url(); ?>" class="sci-button" style="background:#FFF!important; color:#000064!important; box-shadow:none!important; font-size:14px!important;">
-                ← Retour aux campagnes
-            </a>
-            
-            <h4>Détails : <?php echo esc_html($campaign['title']); ?></h4>
-            <br><br>
-            <div style="background: #f9f9f9; padding: 20px; margin: 20px 0; border-radius: 6px; border: 1px solid #ddd;">
-                <h3>📊 Résumé</h3>
-                <p><strong>Statut :</strong> 
-                    <?php
-                    $status_labels = [
-                        'draft' => '📝 Brouillon',
-                        'processing' => '⏳ En cours',
-                        'completed' => '✅ Terminée',
-                        'completed_with_errors' => '⚠️ Terminée avec erreurs'
-                    ];
-                    echo $status_labels[$campaign['status']] ?? $campaign['status'];
-                    ?>
-                </p>
-                <p><strong>Total lettres :</strong> <?php echo intval($campaign['total_letters']); ?></p>
-                <p><strong>Envoyées :</strong> <?php echo intval($campaign['sent_letters']); ?></p>
-                <p><strong>Erreurs :</strong> <?php echo intval($campaign['failed_letters']); ?></p>
-                <p><strong>Date création :</strong> <?php echo date('d/m/Y H:i:s', strtotime($campaign['created_at'])); ?></p>
-                
-                <h4>📝 Contenu de la lettre :</h4>
-                <div style="background: white; padding: 15px; border-left: 4px solid #0073aa; border-radius: 4px;">
-                    <?php echo nl2br(esc_html($campaign['content'])); ?>
-                </div>
-            </div>
-            <br><br>
-            
-            <h3>📋 Détail des envois</h3>
-            <table class="sci-table">
-                <thead>
-                    <tr>
-                        <th>SCI</th>
-                        <th>Dirigeant</th>
-                        <th>SIREN</th>
-                        <th>Adresse</th>
-                        <th>Statut</th>
-                        <th>UID La Poste</th>
-                        <th>Date envoi</th>
-                        <th>Erreur</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($campaign['letters'] as $letter): ?>
-                        <tr>
-                            <td><?php echo esc_html($letter['sci_denomination']); ?></td>
-                            <td><?php echo esc_html($letter['sci_dirigeant']); ?></td>
-                            <td><?php echo esc_html($letter['sci_siren']); ?></td>
-                            <td><?php echo esc_html($letter['sci_adresse'] . ', ' . $letter['sci_code_postal'] . ' ' . $letter['sci_ville']); ?></td>
-                            <td>
-                                <?php
-                                $status_icons = [
-                                    'pending' => '⏳ En attente',
-                                    'sent' => '✅ Envoyée',
-                                    'failed' => '❌ Erreur'
-                                ];
-                                echo $status_icons[$letter['status']] ?? $letter['status'];
-                                ?>
-                            </td>
-                            <td>
-                                <?php if ($letter['laposte_uid']): ?>
-                                    <code style="background: #f1f1f1; padding: 2px 4px; border-radius: 3px; font-size: 12px;">
-                                        <?php echo esc_html($letter['laposte_uid']); ?>
-                                    </code>
-                                <?php else: ?>
-                                    -
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <?php echo $letter['sent_at'] ? date('d/m/Y H:i', strtotime($letter['sent_at'])) : '-'; ?>
-                            </td>
-                            <td>
-                                <?php if ($letter['error_message']): ?>
-                                    <span style="color: #dc3545; font-size: 12px;">
-                                        <?php echo esc_html($letter['error_message']); ?>
-                                    </span>
-                                <?php else: ?>
-                                    -
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
-        <?php
-        return ob_get_clean();
-    }
+
     
     /**
      * AJAX handler pour la recherche frontend

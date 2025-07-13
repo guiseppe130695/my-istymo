@@ -366,10 +366,7 @@ Dans l’attente de votre retour, je vous remercie de l’attention portée à m
         add: (id) => SCISelection.toggle(id),
         isSelected: (id) => SCISelection.isSelected(id),
         showStorage: () => {
-            console.log('localStorage data:', {
-                data: localStorage.getItem(SCISelection.storageKey),
-                expiry: localStorage.getItem(SCISelection.expiryKey)
-            });
+                    // localStorage data supprimé pour la production
         }
     };
 });

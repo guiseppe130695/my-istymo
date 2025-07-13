@@ -482,7 +482,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function handlePaymentSuccess(orderId) {
         // ✅ VÉRIFICATION ANTI-DOUBLON
         if (paymentProcessed) {
-            console.log('Paiement déjà traité, ignoré');
+            // Paiement déjà traité, ignoré
             return;
         }
         paymentProcessed = true;
@@ -665,7 +665,7 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         document.head.appendChild(style);
         
-        console.log('🚫 Menu contextuel désactivé');
+        // Menu contextuel désactivé
     }
     
     // ✅ NOUVELLE FONCTION : RÉACTIVER LE MENU CONTEXTUEL
@@ -699,7 +699,7 @@ document.addEventListener('DOMContentLoaded', function() {
             style.remove();
         }
         
-        console.log('✅ Menu contextuel réactivé');
+        // Menu contextuel réactivé
     }
     
     // ✅ FONCTIONS DE PRÉVENTION
