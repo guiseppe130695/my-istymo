@@ -39,29 +39,48 @@
     }
 
     /**
-     * ✅ Charger les favoris DPE depuis le localStorage
+     * ✅ Charger les favoris DPE depuis la base de données
      */
     function loadDpeFavoris() {
-        try {
-            const stored = localStorage.getItem('dpe_favoris');
-            dpeFavoris = stored ? JSON.parse(stored) : [];
-            console.log('📋 Favoris DPE chargés:', dpeFavoris.length, 'éléments');
-        } catch (error) {
+        // Vérifier que les variables AJAX sont disponibles
+        if (typeof dpe_ajax === 'undefined') {
+            console.error('❌ Variables AJAX DPE non disponibles');
+            dpeFavoris = [];
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('action', 'dpe_manage_favoris');
+        formData.append('operation', 'get');
+        formData.append('nonce', dpe_ajax.nonce);
+
+        fetch(dpe_ajax.ajax_url, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                dpeFavoris = data.data || [];
+                console.log('📋 Favoris DPE chargés depuis la DB:', dpeFavoris.length, 'éléments');
+                updateDpeFavButtons();
+            } else {
+                console.error('❌ Erreur lors du chargement des favoris DPE:', data.data);
+                dpeFavoris = [];
+            }
+        })
+        .catch(error => {
             console.error('❌ Erreur lors du chargement des favoris DPE:', error);
             dpeFavoris = [];
-        }
+        });
     }
 
     /**
-     * ✅ Sauvegarder les favoris DPE dans le localStorage
+     * ✅ Sauvegarder les favoris DPE dans la base de données
      */
     function saveDpeFavoris() {
-        try {
-            localStorage.setItem('dpe_favoris', JSON.stringify(dpeFavoris));
-            console.log('💾 Favoris DPE sauvegardés:', dpeFavoris.length, 'éléments');
-        } catch (error) {
-            console.error('❌ Erreur lors de la sauvegarde des favoris DPE:', error);
-        }
+        // Cette fonction n'est plus utilisée car on sauvegarde directement via AJAX
+        console.log('💾 Sauvegarde des favoris DPE gérée via AJAX');
     }
 
     /**
@@ -133,38 +152,88 @@
      */
     function toggleDpeFavori(numeroDpe, button) {
         const index = dpeFavoris.findIndex(fav => fav.numero_dpe === numeroDpe);
+        const isCurrentlyFavori = index !== -1;
+        const action = isCurrentlyFavori ? 'remove' : 'add';
         
-        if (index === -1) {
-            // Ajouter aux favoris
-            const favoriData = {
-                numero_dpe: numeroDpe,
-                type_batiment: button.getAttribute('data-type-batiment') || '',
-                adresse: button.getAttribute('data-adresse') || '',
-                commune: button.getAttribute('data-commune') || '',
-                code_postal: button.getAttribute('data-code-postal') || '',
-                surface: button.getAttribute('data-surface') || '',
-                etiquette_dpe: button.getAttribute('data-etiquette-dpe') || '',
-                etiquette_ges: button.getAttribute('data-etiquette-ges') || '',
-                date_dpe: button.getAttribute('data-date-dpe') || '',
-                date_ajout: new Date().toISOString()
-            };
-            
-            dpeFavoris.push(favoriData);
-            console.log('⭐ DPE ajouté aux favoris:', numeroDpe);
-        } else {
-            // Retirer des favoris
+        // Préparer les données du favori
+        const favoriData = {
+            numero_dpe: numeroDpe,
+            type_batiment: button.getAttribute('data-type-batiment') || '',
+            adresse: button.getAttribute('data-adresse') || '',
+            commune: button.getAttribute('data-commune') || '',
+            code_postal: button.getAttribute('data-code-postal') || '',
+            surface: button.getAttribute('data-surface') || '',
+            etiquette_dpe: button.getAttribute('data-etiquette-dpe') || '',
+            etiquette_ges: button.getAttribute('data-etiquette-ges') || '',
+            date_dpe: button.getAttribute('data-date-dpe') || ''
+        };
+        
+        // Mettre à jour l'état local immédiatement pour le feedback visuel
+        if (isCurrentlyFavori) {
             dpeFavoris.splice(index, 1);
             console.log('🗑️ DPE retiré des favoris:', numeroDpe);
+        } else {
+            dpeFavoris.push(favoriData);
+            console.log('⭐ DPE ajouté aux favoris:', numeroDpe);
         }
         
-        // Sauvegarder et mettre à jour l'affichage
-        saveDpeFavoris();
+        // Mettre à jour l'affichage immédiatement
         updateDpeFavButtons();
         
-        // ✅ Feedback visuel immédiat
+        // Feedback visuel immédiat
         if (button) {
-            updateDpeButtonState(button, index === -1);
+            updateDpeButtonState(button, !isCurrentlyFavori);
         }
+        
+        // Synchroniser avec la base de données via AJAX
+        if (typeof dpe_ajax === 'undefined') {
+            console.error('❌ Variables AJAX DPE non disponibles');
+            return;
+        }
+        
+        const formData = new FormData();
+        formData.append('action', 'dpe_manage_favoris');
+        formData.append('operation', action);
+        formData.append('nonce', dpe_ajax.nonce);
+        formData.append('dpe_data', JSON.stringify(favoriData));
+        
+        fetch(dpe_ajax.ajax_url, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log(`✅ Favori DPE ${action === 'add' ? 'ajouté' : 'supprimé'} avec succès`);
+            } else {
+                console.error(`❌ Erreur lors de l'${action === 'add' ? 'ajout' : 'suppression'} du favori DPE:`, data.data);
+                // Annuler les changements locaux en cas d'erreur
+                if (isCurrentlyFavori) {
+                    dpeFavoris.push(favoriData);
+                } else {
+                    dpeFavoris.splice(dpeFavoris.findIndex(fav => fav.numero_dpe === numeroDpe), 1);
+                }
+                updateDpeFavButtons();
+                if (button) {
+                    updateDpeButtonState(button, isCurrentlyFavori);
+                }
+                alert(`Erreur lors de l'${action === 'add' ? 'ajout' : 'suppression'} du favori DPE: ` + (data.data || 'Erreur inconnue'));
+            }
+        })
+        .catch(error => {
+            console.error(`❌ Erreur AJAX lors de l'${action === 'add' ? 'ajout' : 'suppression'} du favori DPE:`, error);
+            // Annuler les changements locaux en cas d'erreur
+            if (isCurrentlyFavori) {
+                dpeFavoris.push(favoriData);
+            } else {
+                dpeFavoris.splice(dpeFavoris.findIndex(fav => fav.numero_dpe === numeroDpe), 1);
+            }
+            updateDpeFavButtons();
+            if (button) {
+                updateDpeButtonState(button, isCurrentlyFavori);
+            }
+            alert(`Erreur de connexion lors de l'${action === 'add' ? 'ajout' : 'suppression'} du favori DPE: ` + error.message);
+        });
     }
 
     /**
@@ -191,7 +260,12 @@
         buttons.forEach(function(button) {
             const numeroDpe = button.getAttribute('data-numero-dpe');
             if (numeroDpe) {
-                const isFavori = dpeFavoris.some(fav => fav.numero_dpe === numeroDpe);
+                // Vérifier si le DPE est en favoris en utilisant le bon champ de la DB
+                const isFavori = dpeFavoris.some(fav => 
+                    fav.numero_dpe === numeroDpe || 
+                    fav.dpe_id === numeroDpe || 
+                    fav._id === numeroDpe
+                );
                 updateDpeButtonState(button, isFavori);
             }
         });
@@ -203,7 +277,11 @@
      * ✅ Vérifier si un DPE est en favoris
      */
     function isDpeFavori(numeroDpe) {
-        return dpeFavoris.some(fav => fav.numero_dpe === numeroDpe);
+        return dpeFavoris.some(fav => 
+            fav.numero_dpe === numeroDpe || 
+            fav.dpe_id === numeroDpe || 
+            fav._id === numeroDpe
+        );
     }
 
     /**
@@ -217,10 +295,13 @@
      * ✅ Supprimer un favori DPE
      */
     function removeDpeFavori(numeroDpe) {
-        const index = dpeFavoris.findIndex(fav => fav.numero_dpe === numeroDpe);
+        const index = dpeFavoris.findIndex(fav => 
+            fav.numero_dpe === numeroDpe || 
+            fav.dpe_id === numeroDpe || 
+            fav._id === numeroDpe
+        );
         if (index !== -1) {
             dpeFavoris.splice(index, 1);
-            saveDpeFavoris();
             updateDpeFavButtons();
             console.log('🗑️ Favori DPE supprimé:', numeroDpe);
             return true;
@@ -233,7 +314,6 @@
      */
     function clearDpeFavoris() {
         dpeFavoris = [];
-        saveDpeFavoris();
         updateDpeFavButtons();
         console.log('🗑️ Tous les favoris DPE supprimés');
     }

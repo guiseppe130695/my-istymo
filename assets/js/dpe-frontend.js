@@ -1,145 +1,11 @@
-<?php
-/**
- * Template pour le panneau principal DPE
- * Variables attendues dans $context :
- * - $codesPostauxArray : array des codes postaux de l'utilisateur
- * - $config_manager : instance du gestionnaire de configuration
- * - $favoris_handler : instance du gestionnaire de favoris
- * - $dpe_handler : instance du gestionnaire DPE
- */
-?>
+// Script pour les fonctionnalités DPE frontend
 
-<div class="dpe-frontend-wrapper">
-    <h1>DPE – Recherche de Diagnostics</h1>
-
-    <!-- Information pour les utilisateurs -->
-    <div class="dpe-info" style="background: #e7f3ff; border: 1px solid #bee5eb; border-radius: 8px; padding: 15px; margin-bottom: 20px; color: #004085;">
-        <p style="margin: 0; font-size: 16px; line-height: 1.5;">
-            Recherchez les diagnostics de performance énergétique (DPE) par code postal. Consultez les étiquettes énergétiques et les informations détaillées.
-        </p>
-    </div>
-    
-    <!-- Affichage du code postal par défaut -->
-    <?php if (!empty($codesPostauxArray)): ?>
-    <div class="dpe-default-postal" style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 12px; margin-bottom: 15px; color: #155724;">
-        <p style="margin: 0; font-size: 14px; line-height: 1.4;">
-            <strong>Codes postaux disponibles :</strong> <?php echo esc_html(implode(', ', $codesPostauxArray)); ?>
-            <span style="color: #0c5460; font-style: italic;">(le premier sera sélectionné automatiquement)</span>
-        </p>
-    </div>
-    <?php endif; ?>
-    
-    <!-- Affichage des avertissements de configuration -->
-    <?php
-    // Vérifier si la configuration API est complète
-    if (!$config_manager->is_configured()) {
-        echo '<div class="dpe-error"><strong>⚠️ Configuration manquante :</strong> Veuillez configurer vos tokens API dans l\'administration.</div>';
-    }
-    ?>
-
-    <!-- ✅ FORMULAIRE DE RECHERCHE AJAX -->
-    <form id="dpe-search-form" class="dpe-form">
-        <div class="form-group-left">
-            <div class="form-group">
-                <label for="codePostal">Sélectionnez votre code postal :</label>
-                <select name="codePostal" id="codePostal" required>
-                    <option value="">— Choisir un code postal —</option>
-                    <?php foreach ($codesPostauxArray as $index => $value): ?>
-                        <option value="<?php echo esc_attr($value); ?>" <?php echo ($index === 0) ? 'selected' : ''; ?>>
-                            <?php echo esc_html($value); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="buildingType">Type de bâtiment :</label>
-                <select name="buildingType" id="buildingType">
-                    <option value="">— Tous les types —</option>
-                    <option value="Maison">Maison</option>
-                    <option value="Appartement">Appartement</option>
-                    <option value="Immeuble">Immeuble</option>
-                </select>
-            </div>
-            <button type="submit" id="search-btn" class="dpe-button">
-                Rechercher les DPE
-            </button>
-        </div>
-    </form>
-
-    <!-- ✅ ZONE DE CHARGEMENT -->
-    <div id="search-loading" style="display: none;">
-        <div class="loading-spinner"></div>
-        <span>Recherche en cours...</span>
-    </div>
-
-    <!-- ✅ AFFICHAGE DE L'URL DE LA REQUÊTE -->
-    <div id="api-url-display" style="display: none; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; margin: 15px 0; font-family: monospace; font-size: 12px; word-break: break-all;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <strong>URL de la requête API :</strong>
-            <button type="button" onclick="document.getElementById('api-url-display').style.display='none'" style="background: #dc3545; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 10px; cursor: pointer;">Masquer</button>
-        </div>
-        <span id="current-api-url" style="color: #0073aa;"></span>
-    </div>
-
-    <!-- ✅ ZONE DES RÉSULTATS - STRUCTURE STABLE -->
-    <div id="search-results" style="display: none;">
-        <div id="results-header">
-            <h2 id="results-title">Résultats de recherche</h2>
-            <div id="pagination-info" style="display: none;"></div>
-        </div>
-        
-        <!-- ✅ TABLEAU DES RÉSULTATS - STRUCTURE STABLE -->
-        <table class="dpe-table" id="results-table">
-            <thead>
-                <tr>
-                    <th>Favoris</th>
-                    <th>Type bâtiment</th>
-                    <th>Date DPE</th>
-                    <th>Adresse</th>
-                    <th>Commune</th>
-                    <th>Surface</th>
-                    <th>Étiquette DPE</th>
-                    <th>Étiquette GES</th>
-                    <th>Géolocalisation</th>
-                </tr>
-            </thead>
-            <tbody id="results-tbody">
-                <!-- Les résultats seront insérés ici par JavaScript -->
-            </tbody>
-        </table>
-    </div>
-    
-    <!-- ✅ CONTRÔLES DE PAGINATION - HORS DE LA ZONE DES RÉSULTATS -->
-    <div id="pagination-controls" style="display: none; margin-top: 20px; text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
-        <div class="pagination-main" style="display: flex; align-items: center; justify-content: center; gap: 15px;">
-            <button id="prev-page" disabled style="padding: 10px 20px; font-size: 14px; font-weight: 500; border: none; border-radius: 0; background: #fff; color: #333; cursor: pointer; transition: all 0.2s ease; box-shadow: none;">Page précédente</button>
-            <span id="page-info" style="background: #0073aa; color: white; padding: 8px 15px; border-radius: 4px; font-size: 14px; font-weight: 500;">1/1</span>
-            <button id="next-page" disabled style="padding: 10px 20px; font-size: 14px; font-weight: 500; border: none; border-radius: 0; background: #fff; color: #333; cursor: pointer; transition: all 0.2s ease; box-shadow: none;">Page suivante</button>
-        </div>
-    </div>
-    
-    <!-- ✅ CACHE DES DONNÉES - ÉVITE LES RECHARGEMENTS -->
-    <div id="data-cache" style="display: none;">
-        <span id="cached-title"></span>
-        <span id="cached-page"></span>
-        <span id="cached-total"></span>
-    </div>
-
-    <!-- ✅ ZONE D'ERREUR -->
-    <div id="search-error" style="display: none;" class="dpe-error">
-        <p id="error-message"></p>
-    </div>
-</div>
-
-
-
-<script>
 // Variables globales
 var currentPage = 1;
 var totalPages = 1;
 var totalResults = 0;
 var currentSearchParams = {
-    codePostal: '<?php echo esc_js(!empty($codesPostauxArray) ? reset($codesPostauxArray) : ""); ?>'
+    codePostal: ''
 };
 
 // Variables pour la pagination
@@ -161,21 +27,11 @@ function buildApiUrl(page = 1) {
     
     baseUrl += '&qs=' + encodeURIComponent(queryString);
 
-
-
     return baseUrl;
 }
 
 // Fonction pour récupérer les données de l'API
 function fetchDataFromApi(url, successCallback, errorCallback) {
-    // Afficher l'URL de la requête
-    var urlDisplay = document.getElementById('api-url-display');
-    var urlSpan = document.getElementById('current-api-url');
-    if (urlDisplay && urlSpan) {
-        urlSpan.textContent = url;
-        urlDisplay.style.display = 'block';
-    }
-    
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url, true);
 
@@ -373,8 +229,6 @@ function performSearch() {
     var codePostal = document.getElementById('codePostal').value;
     var buildingType = document.getElementById('buildingType').value;
     
-
-    
     if (!codePostal) {
         alert('Veuillez sélectionner un code postal');
         return;
@@ -430,59 +284,85 @@ function hideError() {
     document.getElementById('search-error').style.display = 'none';
 }
 
-// Gestionnaires d'événements
-document.getElementById('dpe-search-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    performSearch();
-});
-
-document.getElementById('prev-page').addEventListener('click', function() {
-    if (previousPageUrls.length > 0) {
-        // Récupérer l'URL précédente
-        var previousUrl = previousPageUrls.pop();
-        
-        // Sauvegarder l'URL actuelle comme "next" pour pouvoir revenir
-        if (currentPageUrl) {
-            nextPageUrl = currentPageUrl;
-        }
-        
-        currentPage--;
-        
-        showLoading();
-        fetchDataFromApi(previousUrl, function(data) {
-            hideLoading();
-            displayResults(data);
-        }, function() {
-            hideLoading();
-            showError('Erreur lors de la récupération de la page précédente');
+// Initialisation quand le DOM est chargé
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialiser les codes postaux par défaut
+    var codePostalSelect = document.getElementById('codePostal');
+    if (codePostalSelect && codePostalSelect.value) {
+        currentSearchParams.codePostal = codePostalSelect.value;
+    }
+    
+    // Gestionnaire de soumission du formulaire
+    var searchForm = document.getElementById('dpe-search-form');
+    if (searchForm) {
+        searchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            performSearch();
         });
     }
-});
-
-document.getElementById('next-page').addEventListener('click', function() {
-    if (nextPageUrl) {
-        // Sauvegarder l'URL actuelle pour pouvoir revenir
-        if (currentPageUrl) {
-            previousPageUrls.push(currentPageUrl);
-        }
-        
-        currentPage++;
-        
-        showLoading();
-        fetchDataFromApi(nextPageUrl, function(data) {
-            hideLoading();
-            displayResults(data);
-        }, function() {
-            hideLoading();
-            showError('Erreur lors de la récupération de la page suivante');
+    
+    // Gestionnaire de changement de code postal
+    if (codePostalSelect) {
+        codePostalSelect.addEventListener('change', function() {
+            if (this.value) {
+                performSearch();
+            }
         });
     }
-});
-
-// Chargement initial
-window.onload = function () {
-    if (document.getElementById('codePostal').value) {
+    
+    // Gestionnaires de pagination
+    var prevBtn = document.getElementById('prev-page');
+    var nextBtn = document.getElementById('next-page');
+    
+    if (prevBtn) {
+        prevBtn.addEventListener('click', function() {
+            if (previousPageUrls.length > 0) {
+                // Récupérer l'URL précédente
+                var previousUrl = previousPageUrls.pop();
+                
+                // Sauvegarder l'URL actuelle comme "next" pour pouvoir revenir
+                if (currentPageUrl) {
+                    nextPageUrl = currentPageUrl;
+                }
+                
+                currentPage--;
+                
+                showLoading();
+                fetchDataFromApi(previousUrl, function(data) {
+                    hideLoading();
+                    displayResults(data);
+                }, function() {
+                    hideLoading();
+                    showError('Erreur lors de la récupération de la page précédente');
+                });
+            }
+        });
+    }
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', function() {
+            if (nextPageUrl) {
+                // Sauvegarder l'URL actuelle pour pouvoir revenir
+                if (currentPageUrl) {
+                    previousPageUrls.push(currentPageUrl);
+                }
+                
+                currentPage++;
+                
+                showLoading();
+                fetchDataFromApi(nextPageUrl, function(data) {
+                    hideLoading();
+                    displayResults(data);
+                }, function() {
+                    hideLoading();
+                    showError('Erreur lors de la récupération de la page suivante');
+                });
+            }
+        });
+    }
+    
+    // Chargement initial si un code postal est sélectionné
+    if (codePostalSelect && codePostalSelect.value) {
         performSearch();
     }
-};
-</script> 
+}); 

@@ -11,9 +11,6 @@ class SCI_Shortcodes {
         add_shortcode('sci_panel', array($this, 'sci_panel_shortcode'));
         add_shortcode('sci_favoris', array($this, 'sci_favoris_shortcode'));
         add_shortcode('sci_campaigns', array($this, 'sci_campaigns_shortcode'));
-        
-        // ✅ NOUVEAU : Shortcodes DPE
-        // ✅ SUPPRIMÉ : Shortcodes DPE déplacés vers dpe-shortcodes.php
 
         add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_scripts'), 5);
         add_action('wp_head', array($this, 'force_enqueue_on_shortcode_pages'), 1);
@@ -24,10 +21,6 @@ class SCI_Shortcodes {
         add_action('wp_ajax_nopriv_sci_frontend_search', array($this, 'frontend_search_ajax'));
         add_action('wp_ajax_sci_inpi_search_ajax', array($this, 'frontend_inpi_search_ajax'));
         add_action('wp_ajax_nopriv_sci_inpi_search_ajax', array($this, 'frontend_inpi_search_ajax'));
-        
-        // ✅ SUPPRIMÉ : Les actions AJAX DPE sont gérées dans dpe-handler.php
-        // add_action('wp_ajax_dpe_search_ajax', array($this, 'dpe_search_ajax'));
-        // add_action('wp_ajax_nopriv_dpe_search_ajax', array($this, 'dpe_search_ajax'));
     }
     
     /**
@@ -91,13 +84,11 @@ class SCI_Shortcodes {
     public function force_enqueue_on_shortcode_pages() {
         global $post;
         
-        // Vérifier si on est sur une page avec un shortcode SCI ou DPE
+        // Vérifier si on est sur une page avec un shortcode SCI
         if (is_a($post, 'WP_Post') && (
             has_shortcode($post->post_content, 'sci_panel') ||
             has_shortcode($post->post_content, 'sci_favoris') ||
-            has_shortcode($post->post_content, 'sci_campaigns') ||
-            has_shortcode($post->post_content, 'dpe_panel') ||
-            has_shortcode($post->post_content, 'dpe_favoris')
+            has_shortcode($post->post_content, 'sci_campaigns')
         )) {
             // Forcer le chargement immédiat
             $this->force_enqueue_assets([]);
@@ -113,9 +104,7 @@ class SCI_Shortcodes {
         if (is_a($post, 'WP_Post') && (
             has_shortcode($post->post_content, 'sci_panel') ||
             has_shortcode($post->post_content, 'sci_favoris') ||
-            has_shortcode($post->post_content, 'sci_campaigns') ||
-            has_shortcode($post->post_content, 'dpe_panel') ||
-            has_shortcode($post->post_content, 'dpe_favoris')
+            has_shortcode($post->post_content, 'sci_campaigns')
         )) {
             // Vérifier si les scripts sont chargés, sinon les charger
             if (!wp_script_is('sci-frontend-favoris', 'done')) {
@@ -136,9 +125,7 @@ class SCI_Shortcodes {
         if (is_a($post, 'WP_Post') && (
             has_shortcode($post->post_content, 'sci_panel') ||
             has_shortcode($post->post_content, 'sci_favoris') ||
-            has_shortcode($post->post_content, 'sci_campaigns') ||
-            has_shortcode($post->post_content, 'dpe_panel') ||
-            has_shortcode($post->post_content, 'dpe_favoris')
+            has_shortcode($post->post_content, 'sci_campaigns')
         )) {
             $should_load = true;
         }
@@ -146,8 +133,7 @@ class SCI_Shortcodes {
         // Méthode 2 : Vérifier via les paramètres GET (pour les pages dynamiques)
         if (!$should_load && (
             isset($_GET['sci_view']) || 
-            strpos($_SERVER['REQUEST_URI'] ?? '', 'sci') !== false ||
-            strpos($_SERVER['REQUEST_URI'] ?? '', 'dpe') !== false
+            strpos($_SERVER['REQUEST_URI'] ?? '', 'sci') !== false
         )) {
             $should_load = true;
         }
@@ -161,7 +147,7 @@ class SCI_Shortcodes {
         )) {
             // Vérifier le contenu de la page actuelle
             $content = get_the_content();
-            if (strpos($content, '[sci_') !== false || strpos($content, '[dpe_') !== false) {
+            if (strpos($content, '[sci_') !== false) {
                 $should_load = true;
             }
         }
@@ -196,7 +182,7 @@ class SCI_Shortcodes {
             );
         }
 
-        // ✅ SUPPRIMÉ : Chargement DPE déplacé vers dpe-shortcodes.php
+
         
         if (!wp_script_is('sci-frontend-lettre', 'enqueued')) {
             wp_enqueue_script(
@@ -239,13 +225,13 @@ class SCI_Shortcodes {
                 'nonce' => wp_create_nonce('sci_campaign_nonce'),
                 'unit_price' => $woocommerce_integration->get_unit_price(),
                 'woocommerce_ready' => $woocommerce_integration->is_woocommerce_ready(),
-                'campaigns_url' => $config_manager->get_sci_campaigns_page_url() // ✅ MODIFIÉ : Utilise l'URL stockée
+                'campaigns_url' => $config_manager->get_sci_campaigns_page_url()             // Utilise l'URL stockée
             ));
             
-            // ✅ Localisation pour lettre.js
+            // Localisation pour lettre.js
             wp_localize_script('sci-frontend-lettre', 'ajaxurl', admin_url('admin-ajax.php'));
             
-            // ✅ NOUVEAU : Variables pour la recherche automatique (frontend)
+            // Variables pour la recherche automatique (frontend)
             wp_localize_script('sci-frontend-favoris', 'sciAutoSearch', array(
                 'auto_search_enabled' => !empty($codesPostauxArray),
                 'default_postal_code' => !empty($codesPostauxArray) ? $codesPostauxArray[0] : '',
@@ -253,7 +239,7 @@ class SCI_Shortcodes {
                 'nonce' => wp_create_nonce('sci_search_nonce')
             ));
 
-            // ✅ SUPPRIMÉ : Variables DPE déplacées vers dpe-shortcodes.php
+
             
             $localized = true;
         }
@@ -263,7 +249,7 @@ class SCI_Shortcodes {
      * Shortcode [sci_panel] - Panneau principal de recherche SCI avec pagination AJAX
      */
     public function sci_panel_shortcode($atts) {
-        // ✅ Récupérer les codes postaux de l'utilisateur
+        // Récupérer les codes postaux de l'utilisateur
         $current_user = wp_get_current_user();
         $codePostal = get_field('code_postal_user', 'user_' . $current_user->ID);
         $codesPostauxArray = [];
@@ -273,7 +259,7 @@ class SCI_Shortcodes {
             $codesPostauxArray = explode(';', $codePostal);
         }
         
-        // ✅ FORCER LE CHARGEMENT DES ASSETS avec les codes postaux
+        // Forcer le chargement des assets avec les codes postaux
         $this->force_enqueue_assets($codesPostauxArray);
         
         $atts = shortcode_atts(array(
@@ -290,14 +276,14 @@ class SCI_Shortcodes {
         <div class="sci-frontend-wrapper">
             <h1><?php echo esc_html($atts['title']); ?></h1>
             
-            <!-- ✅ INFORMATION POUR LES UTILISATEURS -->
+            <!-- Information pour les utilisateurs -->
             <div class="sci-info" style="background: #e7f3ff; border: 1px solid #bee5eb; border-radius: 8px; padding: 15px; margin-bottom: 20px; color: #004085;">
                 <p style="margin: 0; font-size: 16px; line-height: 1.5;">
-                    💡 Prospectez directement les SCI. Vous avez également la possibilité de proposer vos services en envoyant un courrier.
+                    Prospectez directement les SCI. Vous avez également la possibilité de proposer vos services en envoyant un courrier.
                 </p>
             </div>
             
-            <!-- ✅ AFFICHAGE DES AVERTISSEMENTS DE CONFIGURATION -->
+            <!-- Affichage des avertissements de configuration -->
             <?php if ($atts['show_config_warnings'] === 'true'): ?>
                 <?php
                 // Vérifier si la configuration API est complète
@@ -1471,17 +1457,7 @@ class SCI_Shortcodes {
         wp_send_json_error('Non implémenté');
     }
     
-    /**
-     * ✅ SUPPRIMÉ : Shortcodes DPE déplacés vers dpe-shortcodes.php
-     * Les shortcodes DPE sont maintenant gérés dans un fichier séparé pour éviter les conflits
-     */
-    
-    /**
-     * ✅ SUPPRIMÉ : AJAX handler pour la recherche DPE (géré dans dpe-handler.php)
-     */
-    // public function dpe_search_ajax() {
-    //     // Cette fonction a été supprimée car elle est dupliquée dans dpe-handler.php
-    // }
+
 }
 
 // Initialiser les shortcodes
