@@ -14,6 +14,7 @@ var currentSearchParams = {
 var nextPageUrl = null;
 var previousPageUrls = [];
 var currentPageUrl = null;
+var pageHistory = []; // Historique des pages pour un calcul plus précis
 
 // Fonction pour construire l'URL de l'API
 function buildApiUrl(page = 1) {
@@ -209,7 +210,9 @@ function formatDate(dateString) {
 // Fonction pour mettre à jour les informations de pagination
 function updatePaginationInfo() {
     var pageInfo = document.getElementById('page-info');
-    pageInfo.textContent = currentPage + '/' + totalPages;
+    // Calculer la page actuelle basée sur l'historique plutôt que sur l'incrémentation manuelle
+    var actualPage = pageHistory.length + 1;
+    pageInfo.textContent = actualPage + '/' + totalPages;
     
     var paginationInfo = document.getElementById('pagination-info');
     paginationInfo.textContent = totalResults + ' résultat(s) trouvé(s)';
@@ -251,12 +254,12 @@ function performSearch() {
     currentSearchParams.codePostal = codePostal;
     currentSearchParams.buildingType = buildingType;
     currentSearchParams.keywordSearch = keywordSearch;
-    currentPage = 1;
     
     // Réinitialiser la pagination
     nextPageUrl = null;
     previousPageUrls = [];
     currentPageUrl = null;
+    pageHistory = []; // Réinitialiser l'historique des pages
     
     showLoading();
     hideError();
@@ -340,7 +343,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     nextPageUrl = currentPageUrl;
                 }
                 
-                currentPage--;
+                // Retirer la page actuelle de l'historique
+                pageHistory.pop();
                 
                 showLoading();
                 fetchDataFromApi(previousUrl, function(data) {
@@ -362,7 +366,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     previousPageUrls.push(currentPageUrl);
                 }
                 
-                currentPage++;
+                // Ajouter la page actuelle à l'historique
+                pageHistory.push(currentPageUrl);
                 
                 showLoading();
                 fetchDataFromApi(nextPageUrl, function(data) {
