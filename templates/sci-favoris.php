@@ -3,12 +3,14 @@
  * Template pour la page des favoris SCI
  * Variables attendues dans $context :
  * - $favoris : array des favoris de l'utilisateur
+ * - $title : titre de la page (optionnel)
+ * - $show_empty_message : afficher le message si vide (optionnel)
  */
 ?>
 
-<div class="wrap">
-    <h1>⭐ Mes SCI Favoris</h1>
-    <table id="table-favoris" class="widefat fixed striped">
+<div class="sci-frontend-wrapper">
+
+    <table id="table-favoris" class="sci-table">
         <thead>
             <tr>
                 <th>Dénomination</th>
@@ -24,7 +26,11 @@
         <tbody>
             <?php if (empty($favoris)): ?>
                 <tr>
-                    <td colspan="8" style="text-align:center;">Aucun favori pour le moment.</td>
+                    <td colspan="8" style="text-align:center;">
+                        <?php if ($show_empty_message ?? true): ?>
+                            Aucun favori pour le moment.
+                        <?php endif; ?>
+                    </td>
                 </tr>
             <?php else: ?>
                 <?php foreach ($favoris as $fav): ?>
@@ -43,15 +49,15 @@
                             ?>
                             <a href="<?php echo esc_url($maps_url); ?>" 
                                target="_blank" 
-                               class="maps-link"
+                               style="color: #4285f4; text-decoration: none; font-size: 12px;"
                                title="Localiser <?php echo esc_attr($fav['denomination']); ?> sur Google Maps">
                                 Localiser SCI
                             </a>
                         </td>
                         <td>
-                            <button style="background:#000064!important;" class="remove-fav-btn button button-small" 
-                                    data-siren="<?php echo esc_attr($fav['siren']); ?>">
-                                🗑️ Supprimer
+                            <button data-siren="<?php echo esc_attr($fav['siren']); ?>"
+                                    style="background: none!important; border: none!important; outline: none!important; box-shadow: none !important; color: #dc3545; font-size: 18px; cursor: pointer; padding: 0;">
+                                ❌
                             </button>
                         </td>
                     </tr>
@@ -63,12 +69,14 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.remove-fav-btn').forEach(btn => {
+    // Vérifier si les variables AJAX sont disponibles
+    if (typeof sci_ajax === 'undefined') {
+        console.warn('Variables AJAX non disponibles pour les favoris');
+        return;
+    }
+    
+    document.querySelectorAll('button[data-siren]').forEach(btn => {
         btn.addEventListener('click', () => {
-            if (!confirm('Êtes-vous sûr de vouloir supprimer ce favori ?')) {
-                return;
-            }
-
             const siren = btn.getAttribute('data-siren');
             const formData = new FormData();
             formData.append('action', 'sci_manage_favoris');

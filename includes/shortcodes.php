@@ -7,8 +7,10 @@ if (!defined('ABSPATH')) exit;
 class SCI_Shortcodes {
     
     public function __construct() {
-        // Enregistrer uniquement le shortcode principal
+        // Enregistrer tous les shortcodes SCI
         add_shortcode('sci_panel', array($this, 'sci_panel_shortcode'));
+        add_shortcode('sci_favoris', array($this, 'sci_favoris_shortcode'));
+        add_shortcode('sci_campaigns', array($this, 'sci_campaigns_shortcode'));
 
         add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_scripts'), 5);
         add_action('wp_head', array($this, 'force_enqueue_on_shortcode_pages'), 1);
@@ -74,8 +76,12 @@ class SCI_Shortcodes {
     public function force_enqueue_on_shortcode_pages() {
         global $post;
         
-        // Vérifier si on est sur une page avec le shortcode SCI principal
-        if (is_a($post, 'WP_Post') && has_shortcode($post->post_content, 'sci_panel')) {
+        // Vérifier si on est sur une page avec un shortcode SCI
+        if (is_a($post, 'WP_Post') && (
+            has_shortcode($post->post_content, 'sci_panel') ||
+            has_shortcode($post->post_content, 'sci_favoris') ||
+            has_shortcode($post->post_content, 'sci_campaigns')
+        )) {
             // Forcer le chargement immédiat
             $this->force_enqueue_assets([]);
         }
@@ -87,7 +93,11 @@ class SCI_Shortcodes {
     public function ensure_scripts_loaded() {
         global $post;
         
-        if (is_a($post, 'WP_Post') && has_shortcode($post->post_content, 'sci_panel')) {
+        if (is_a($post, 'WP_Post') && (
+            has_shortcode($post->post_content, 'sci_panel') ||
+            has_shortcode($post->post_content, 'sci_favoris') ||
+            has_shortcode($post->post_content, 'sci_campaigns')
+        )) {
             // Vérifier si les scripts sont chargés, sinon les charger
             if (!wp_script_is('sci-frontend-favoris', 'done')) {
                 $this->force_enqueue_assets([]);
@@ -104,7 +114,11 @@ class SCI_Shortcodes {
         $should_load = false;
         
         // Méthode 1 : Vérifier le post actuel
-        if (is_a($post, 'WP_Post') && has_shortcode($post->post_content, 'sci_panel')) {
+        if (is_a($post, 'WP_Post') && (
+            has_shortcode($post->post_content, 'sci_panel') ||
+            has_shortcode($post->post_content, 'sci_favoris') ||
+            has_shortcode($post->post_content, 'sci_campaigns')
+        )) {
             $should_load = true;
         }
         
@@ -1067,6 +1081,87 @@ class SCI_Shortcodes {
         // Même logique que l'admin mais pour le frontend
         // Cette fonction peut être utilisée pour des recherches AJAX si nécessaire
         wp_send_json_error('Non implémenté');
+    }
+    
+    /**
+     * Shortcode [sci_favoris] - Affichage des favoris SCI
+     */
+    public function sci_favoris_shortcode($atts) {
+        // Vérifier si l'utilisateur est connecté
+        if (!is_user_logged_in()) {
+            return '<div class="sci-frontend-wrapper"><div class="sci-error">Vous devez être connecté pour voir vos favoris.</div></div>';
+        }
+        
+        // Charger les assets nécessaires
+        $this->force_enqueue_assets([]);
+        
+        $atts = shortcode_atts(array(
+            'title' => '⭐ Mes SCI Favoris',
+            'show_empty_message' => 'true'
+        ), $atts);
+        
+        // Récupérer les favoris de l'utilisateur
+        global $sci_favoris_handler;
+        $favoris = $sci_favoris_handler->get_favoris();
+        
+        // Préparer le contexte pour le template
+        $context = [
+            'favoris' => $favoris,
+            'title' => $atts['title'],
+            'show_empty_message' => $atts['show_empty_message'] === 'true'
+        ];
+        
+        // Charger le template des favoris
+        ob_start();
+        sci_load_template('sci-favoris', $context);
+        return ob_get_clean();
+    }
+    
+    /**
+     * Shortcode [sci_campaigns] - Affichage des campagnes SCI
+     */
+    public function sci_campaigns_shortcode($atts) {
+        // Vérifier si l'utilisateur est connecté
+        if (!is_user_logged_in()) {
+            return '<div class="sci-frontend-wrapper"><div class="sci-error">Vous devez être connecté pour voir vos campagnes.</div></div>';
+        }
+        
+        // Charger les assets nécessaires
+        $this->force_enqueue_assets([]);
+        
+        $atts = shortcode_atts(array(
+            'title' => '📬 Mes Campagnes de Lettres',
+            'show_empty_message' => 'true'
+        ), $atts);
+        
+        // Récupérer les campagnes de l'utilisateur
+        $campaign_manager = sci_campaign_manager();
+        $campaigns = $campaign_manager->get_user_campaigns();
+        
+        // Gestion de l'affichage des détails d'une campagne
+        $view_mode = false;
+        $campaign_details = null;
+        
+        if (isset($_GET['view']) && is_numeric($_GET['view'])) {
+            $campaign_details = $campaign_manager->get_campaign_details(intval($_GET['view']));
+            if ($campaign_details) {
+                $view_mode = true;
+            }
+        }
+        
+        // Préparer le contexte pour le template
+        $context = [
+            'campaigns' => $campaigns,
+            'campaign_details' => $campaign_details,
+            'view_mode' => $view_mode,
+            'title' => $atts['title'],
+            'show_empty_message' => $atts['show_empty_message'] === 'true'
+        ];
+        
+        // Charger le template des campagnes
+        ob_start();
+        sci_load_template('sci-campaigns', $context);
+        return ob_get_clean();
     }
     
 
