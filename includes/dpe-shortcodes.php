@@ -7,8 +7,9 @@ if (!defined('ABSPATH')) exit;
 class DPE_Shortcodes {
     
     public function __construct() {
-        // Enregistrer uniquement le shortcode principal DPE
+        // Enregistrer les shortcodes DPE
         add_shortcode('dpe_panel', array($this, 'dpe_panel_shortcode'));
+        add_shortcode('dpe_campaigns', array($this, 'dpe_campaigns_shortcode'));
 
         add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_scripts'), 5);
         add_action('wp_head', array($this, 'force_enqueue_on_shortcode_pages'), 1);
@@ -94,7 +95,7 @@ class DPE_Shortcodes {
             '1.0.5'
         );
         
-        // ✅ CHANGÉ : Charger les deux scripts nécessaires
+        // ✅ CHANGÉ : Charger les scripts nécessaires
         wp_enqueue_script(
             'dpe-favoris-script',
             plugin_dir_url(dirname(__FILE__)) . 'assets/js/dpe-favoris.js',
@@ -109,6 +110,42 @@ class DPE_Shortcodes {
             plugin_dir_url(dirname(__FILE__)) . 'assets/js/dpe-frontend.js',
             array('jquery', 'dpe-favoris-script'),
             '1.0.4',
+            true
+        );
+        
+        // ✅ NOUVEAU : Charger le système unique de sélection DPE
+        wp_enqueue_script(
+            'dpe-selection-system',
+            plugin_dir_url(dirname(__FILE__)) . 'assets/js/dpe-selection-system.js',
+            array('jquery'),
+            '1.0.0',
+            true
+        );
+        
+        // ✅ NOUVEAU : Charger le script d'envoi de lettres DPE
+        wp_enqueue_script(
+            'dpe-lettre-script',
+            plugin_dir_url(dirname(__FILE__)) . 'assets/js/dpe-lettre.js',
+            array('jquery', 'dpe-favoris-script', 'dpe-selection-system'),
+            '1.0.0',
+            true
+        );
+        
+        // ✅ NOUVEAU : Charger le script de paiement DPE
+        wp_enqueue_script(
+            'dpe-payment-script',
+            plugin_dir_url(dirname(__FILE__)) . 'assets/js/dpe-payment.js',
+            array('jquery', 'dpe-lettre-script'),
+            '1.0.0',
+            true
+        );
+        
+        // ✅ NOUVEAU : Charger le script de debug DPE (à supprimer après diagnostic)
+        wp_enqueue_script(
+            'dpe-debug-script',
+            plugin_dir_url(dirname(__FILE__)) . 'assets/js/dpe-debug.js',
+            array('jquery', 'dpe-lettre-script'),
+            '1.0.0',
             true
         );
         
@@ -191,9 +228,9 @@ class DPE_Shortcodes {
                         <label for="buildingType">Type de bâtiment :</label>
                         <select name="buildingType" id="buildingType">
                             <option value="">— Tous les types —</option>
-                            <option value="Maison">Maison</option>
-                            <option value="Appartement">Appartement</option>
-                            <option value="Immeuble">Immeuble</option>
+                            <option value="Maison" selected>🏠 Maison</option>
+                            <option value="Appartement">🏢 Appartement</option>
+                            <option value="Immeuble">🏗️ Immeuble</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -201,9 +238,16 @@ class DPE_Shortcodes {
                         <input type="text" name="keywordSearch" id="keywordSearch" placeholder="Ex: rue de la paix, avenue victor hugo...">
                     </div>
                     <button type="submit" id="search-btn" class="dpe-button">
-                        Rechercher les DPE
+                        🔍 Rechercher les DPE
                     </button>
                 </div>
+
+                <!-- ✅ NOUVEAU : Bouton d'envoi de courriers pour les maisons -->
+                <button id="send-letters-btn" type="button" class="dpe-button secondary" disabled
+                        data-tooltip="Prospectez directement les propriétaires de maisons en envoyant un courrier"
+                        style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important; color: white !important; border: none !important;">
+                    📬 Créez une campagne d'envoi de courriers (<span id="selected-count">0</span>)
+                </button>
             </form>
 
             <!-- ✅ ZONE DE CHARGEMENT -->
@@ -241,6 +285,10 @@ class DPE_Shortcodes {
                             <th>Étiquette DPE</th>
                             <th>Étiquette GES</th>
                             <th>Géolocalisation</th>
+                            <th style="text-align: center; min-width: 120px;">
+                                📬 Envoi courrier<br>
+                                <small style="font-size: 11px; color: #666; font-weight: normal;">(Maisons uniquement)</small>
+                            </th>
                         </tr>
                     </thead>
                     <tbody id="results-tbody">
@@ -271,7 +319,121 @@ class DPE_Shortcodes {
             </div>
         </div>
 
+        <style>
+        /* ✅ NOUVEAU : Styles pour les checkboxes de sélection DPE */
+        .send-letter-checkbox {
+            width: 18px !important;
+            height: 18px !important;
+            cursor: pointer !important;
+            margin: 0 !important;
+            vertical-align: middle !important;
+            display: block !important;
+            margin: 0 auto !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+
+        .send-letter-checkbox:disabled {
+            cursor: not-allowed !important;
+            opacity: 0.5 !important;
+        }
+
+        .send-letter-checkbox:not(:disabled):hover {
+            transform: scale(1.1) !important;
+            transition: transform 0.2s ease !important;
+        }
+
+        /* Style pour la colonne Envoi courrier */
+        .dpe-table th:last-child,
+        .dpe-table td:last-child {
+            text-align: center !important;
+            min-width: 120px !important;
+            display: table-cell !important;
+            visibility: visible !important;
+        }
+
+        /* Style pour les cellules avec checkboxes */
+        .dpe-table td:last-child {
+            background-color: #f8f9fa !important;
+            border-left: 2px solid #dee2e6 !important;
+            padding: 10px !important;
+        }
+
+        /* Animation pour les checkboxes sélectionnées */
+        .send-letter-checkbox:checked {
+            animation: checkboxPulse 0.3s ease !important;
+        }
+
+        @keyframes checkboxPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        /* Style pour le bouton d'envoi */
+        #send-letters-btn {
+            transition: all 0.3s ease !important;
+        }
+
+        #send-letters-btn:not(:disabled):hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2) !important;
+        }
+
+        #send-letters-btn:disabled {
+            opacity: 0.6 !important;
+            cursor: not-allowed !important;
+        }
+        
+        /* ✅ NOUVEAU : Styles de débogage pour forcer l'affichage */
+        .dpe-table {
+            border-collapse: collapse !important;
+            width: 100% !important;
+        }
+        
+        .dpe-table th,
+        .dpe-table td {
+            border: 1px solid #ddd !important;
+            padding: 8px !important;
+            text-align: left !important;
+        }
+        
+        /* Forcer l'affichage de la dernière colonne */
+        .dpe-table tr td:last-child {
+            display: table-cell !important;
+            visibility: visible !important;
+            width: 120px !important;
+            min-width: 120px !important;
+        }
+        </style>
+
+        <!-- ✅ NOUVEAU : POPUP LETTRE DPE -->
+        <div id="dpe-letters-popup" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.6); z-index:10000; justify-content:center; align-items:center;">
+            <div style="background:#fff; padding:25px; width:700px; max-width:95vw; max-height:95vh; overflow-y:auto; border-radius:12px;">
+                <!-- Étape 1 : Liste des DPE sélectionnées -->
+                <div class="step" id="dpe-step-1">
+                    <h2>📋 DPE sélectionnées</h2>
+                    <p style="color: #666; margin-bottom: 20px;">Vérifiez votre sélection avant de continuer</p>
+                    <ul id="selected-dpe-list" style="max-height:350px; overflow-y:auto; border:1px solid #ddd; padding:15px; margin-bottom:25px; border-radius:6px; background-color: #f9f9f9; list-style: none;">
+                        <!-- Les DPE sélectionnées seront ajoutées ici par JavaScript -->
+                    </ul>
+                    <div style="text-align: center;">
+                        <button id="dpe-to-step-2" class="dpe-button" style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important; color: white !important; border: none !important; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 16px;">
+                            ✍️ Rédiger le courriel →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Étape 2 : Contenu dynamique -->
+                <div class="step" id="dpe-step-2" style="display:none;">
+                    <!-- Le contenu sera généré par JavaScript -->
+                </div>
+            </div>
+        </div>
+
         <script>
+
+        
         // Variables globales
         var currentPage = 1;
         var totalPages = 1;
@@ -309,9 +471,7 @@ class DPE_Shortcodes {
                 baseUrl += '&q=' + encodeURIComponent(keyword);
             }
 
-            // Afficher l'URL dans la console pour debug
-            console.log('URL de recherche DPE:', baseUrl);
-            console.log('Paramètres de recherche:', currentSearchParams);
+
 
             return baseUrl;
         }
@@ -434,6 +594,54 @@ class DPE_Shortcodes {
                         geoCell.textContent = 'Non disponible';
                     }
                     row.appendChild(geoCell);
+                    
+                    // ✅ NOUVEAU : Checkbox pour l'envoi de courrier (maisons uniquement)
+                    var letterCell = document.createElement('td');
+                    
+                    // Créer un conteneur pour la checkbox et le label
+                    var checkboxContainer = document.createElement('div');
+                    checkboxContainer.style.display = 'flex';
+                    checkboxContainer.style.flexDirection = 'column';
+                    checkboxContainer.style.alignItems = 'center';
+                    checkboxContainer.style.gap = '5px';
+                    
+                    var letterCheckbox = document.createElement('input');
+                    letterCheckbox.type = 'checkbox';
+                    letterCheckbox.className = 'send-letter-checkbox';
+                    letterCheckbox.setAttribute('data-numero-dpe', result.numero_dpe || '');
+                    letterCheckbox.setAttribute('data-type-batiment', result.type_batiment || '');
+                    letterCheckbox.setAttribute('data-adresse', result.adresse_ban || result.adresse_brut || '');
+                    letterCheckbox.setAttribute('data-commune', result.nom_commune_ban || result.nom_commune_brut || '');
+                    letterCheckbox.setAttribute('data-code-postal', result.code_postal_ban || result.code_postal_brut || '');
+                    letterCheckbox.setAttribute('data-surface', result.surface_habitable_logement || '');
+                    letterCheckbox.setAttribute('data-etiquette-dpe', result.etiquette_dpe || '');
+                    letterCheckbox.setAttribute('data-etiquette-ges', result.etiquette_ges || '');
+                    letterCheckbox.setAttribute('data-date-dpe', result.date_etablissement_dpe || result.date_reception_dpe || '');
+                    
+                    // Créer un label pour la checkbox
+                    var checkboxLabel = document.createElement('span');
+                    checkboxLabel.style.fontSize = '11px';
+                    checkboxLabel.style.color = '#666';
+                    checkboxLabel.style.textAlign = 'center';
+                    checkboxLabel.style.lineHeight = '1.2';
+                    
+                    // Désactiver si ce n'est pas une maison
+                    if (result.type_batiment && result.type_batiment.toLowerCase() !== 'maison') {
+                        letterCheckbox.disabled = true;
+                        letterCheckbox.title = 'Envoi de courrier disponible uniquement pour les maisons';
+                        checkboxLabel.textContent = 'Non disponible';
+                        checkboxLabel.style.color = '#999';
+                    } else {
+                        letterCheckbox.title = 'Sélectionner pour l\'envoi de courrier';
+                        checkboxLabel.textContent = 'Sélectionner';
+                        checkboxLabel.style.color = '#28a745';
+                        checkboxLabel.style.fontWeight = 'bold';
+                    }
+                    
+                    checkboxContainer.appendChild(letterCheckbox);
+                    checkboxContainer.appendChild(checkboxLabel);
+                    letterCell.appendChild(checkboxContainer);
+                    row.appendChild(letterCell);
 
                     tbody.appendChild(row);
                 });
@@ -442,29 +650,49 @@ class DPE_Shortcodes {
                 updatePaginationInfo();
                 showPaginationControls();
                 
-                        // Réinitialiser les favoris après affichage des résultats
-        if (typeof window.refreshFavorisAfterPageChange === 'function') {
-            window.refreshFavorisAfterPageChange();
-        } else if (typeof window.updateFavButtons === 'function') {
-            window.updateFavButtons();
-            if (typeof window.attachFavorisListeners === 'function') {
-                window.attachFavorisListeners();
-            }
-        }
-        
-        // ✅ Utiliser le système de favoris DPE existant
-        if (typeof window.dpeFavoris !== 'undefined' && typeof window.dpeFavoris.updateButtons === 'function') {
-            window.dpeFavoris.updateButtons();
-        } else if (typeof window.updateDpeFavButtons === 'function') {
-            window.updateDpeFavButtons();
-        }
-        
-        // ✅ NOUVEAU : Initialiser les favoris après affichage des résultats
-        if (typeof window.dpeFavoris !== 'undefined' && typeof window.dpeFavoris.init === 'function') {
-            window.dpeFavoris.init();
-        }
+                // ✅ NOUVEAU : Log final pour vérifier que toutes les lignes ont été créées
+                var finalRows = tbody.querySelectorAll('tr');
+                var finalCheckboxes = tbody.querySelectorAll('.send-letter-checkbox');
+                
+                // Réinitialiser les favoris après affichage des résultats
+                if (typeof window.refreshFavorisAfterPageChange === 'function') {
+                    window.refreshFavorisAfterPageChange();
+                } else if (typeof window.updateFavButtons === 'function') {
+                    window.updateFavButtons();
+                    if (typeof window.attachFavorisListeners === 'function') {
+                        window.attachFavorisListeners();
+                    }
+                }
+                
+                // ✅ Utiliser le système de favoris DPE existant
+                if (typeof window.dpeFavoris !== 'undefined' && typeof window.dpeFavoris.updateButtons === 'function') {
+                    window.dpeFavoris.updateButtons();
+                } else if (typeof window.updateDpeFavButtons === 'function') {
+                    window.updateDpeFavButtons();
+                }
+                
+                // ✅ NOUVEAU : Initialiser les favoris après affichage des résultats
+                if (typeof window.dpeFavoris !== 'undefined' && typeof window.dpeFavoris.init === 'function') {
+                    window.dpeFavoris.init();
+                }
+                
+                // ✅ NOUVEAU : Utiliser le système unique de sélection DPE
+                if (typeof window.DPESelectionSystem !== 'undefined') {
+                    window.DPESelectionSystem.reinitialize();
+                } else {
+                    // Fallback pour compatibilité
+                    if (typeof window.restoreDPESelections === 'function') {
+                        window.restoreDPESelections();
+                    }
+                    if (typeof window.updateDPESelectionUI === 'function') {
+                        window.updateDPESelectionUI();
+                    }
+                    if (typeof window.reinitializeDPESelection === 'function') {
+                        window.reinitializeDPESelection();
+                    }
+                }
             } else {
-                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 20px; color: #666;">Aucun résultat trouvé</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px; color: #666;">Aucun résultat trouvé</td></tr>';
                 hidePaginationControls();
             }
         }
@@ -674,8 +902,81 @@ class DPE_Shortcodes {
                 performSearch();
             }
         });
+        
+
         </script>
         <?php
+        return ob_get_clean();
+    }
+    
+    /**
+     * Shortcode [dpe_campaigns] - Affichage des campagnes DPE
+     */
+    public function dpe_campaigns_shortcode($atts) {
+        $atts = shortcode_atts(array(
+            'title' => '📬 Mes Campagnes DPE',
+            'show_empty_message' => 'true'
+        ), $atts);
+        
+        if (!is_user_logged_in()) {
+            return '<div class="dpe-error">Vous devez être connecté pour voir vos campagnes.</div>';
+        }
+        
+        // Récupérer le gestionnaire de campagnes DPE
+        $campaign_manager = dpe_campaign_manager();
+        if (!$campaign_manager) {
+            return '<div class="dpe-error">Erreur : Gestionnaire de campagnes non disponible.</div>';
+        }
+        
+        $current_user_id = get_current_user_id();
+        $view_campaign_id = isset($_GET['view']) ? intval($_GET['view']) : null;
+        
+        // Mode vue détaillée d'une campagne
+        if ($view_campaign_id) {
+            $campaign_details = $campaign_manager->get_campaign_details($view_campaign_id, $current_user_id);
+            
+            if (!$campaign_details) {
+                return '<div class="dpe-error">Campagne non trouvée ou accès non autorisé.</div>';
+            }
+            
+            // Passer les données au template
+            $context = array(
+                'campaign_details' => $campaign_details,
+                'view_mode' => true,
+                'title' => $atts['title']
+            );
+            
+            return $this->render_template('dpe-campaigns', $context);
+        }
+        
+        // Mode liste des campagnes
+        $campaigns = $campaign_manager->get_user_campaigns($current_user_id);
+        
+        $context = array(
+            'campaigns' => $campaigns,
+            'view_mode' => false,
+            'title' => $atts['title'],
+            'show_empty_message' => ($atts['show_empty_message'] === 'true')
+        );
+        
+        return $this->render_template('dpe-campaigns', $context);
+    }
+    
+    /**
+     * Rendre un template avec contexte
+     */
+    private function render_template($template_name, $context = array()) {
+        $template_path = plugin_dir_path(dirname(__FILE__)) . 'templates/' . $template_name . '.php';
+        
+        if (!file_exists($template_path)) {
+            return '<div class="dpe-error">Template ' . esc_html($template_name) . ' non trouvé.</div>';
+        }
+        
+        // Extraire les variables du contexte
+        extract($context);
+        
+        ob_start();
+        include $template_path;
         return ob_get_clean();
     }
     

@@ -63,7 +63,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         return fetch(sci_ajax.ajax_url, {
             method: 'POST',
-            body: formData
+            body: formData,
+            credentials: 'same-origin',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
         })
         .then(response => {
             return response.json();

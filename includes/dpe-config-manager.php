@@ -2,12 +2,12 @@
 if (!defined('ABSPATH')) exit;
 
 /**
- * Gestionnaire de configuration pour l'API DPE ADEME
+ * Gestionnaire de configuration DPE
  */
 class DPE_Config_Manager {
     
     private static $instance = null;
-    private $config_option_name = 'dpe_api_config';
+    private $config_option_name = 'dpe_config';
     
     public static function get_instance() {
         if (self::$instance === null) {
@@ -17,19 +17,18 @@ class DPE_Config_Manager {
     }
     
     private function __construct() {
-        // Ajouter les hooks pour l'interface d'administration
         add_action('admin_menu', array($this, 'add_config_menu'));
         add_action('admin_init', array($this, 'register_settings'));
     }
     
     /**
-     * Ajoute le menu de configuration DPE dans l'admin
+     * Ajouter le menu de configuration
      */
     public function add_config_menu() {
         add_submenu_page(
             'dpe-panel',
-            'Configuration API DPE',
             'Configuration DPE',
+            'Configuration',
             'manage_options',
             'dpe-config',
             array($this, 'config_page')
@@ -37,266 +36,175 @@ class DPE_Config_Manager {
     }
     
     /**
-     * Enregistre les paramètres
+     * Enregistrer les paramètres
      */
     public function register_settings() {
-        register_setting('dpe_api_settings', $this->config_option_name, array(
-            'sanitize_callback' => array($this, 'sanitize_config')
-        ));
+        register_setting(
+            'dpe_config_group',
+            $this->config_option_name,
+            array($this, 'sanitize_config')
+        );
     }
     
     /**
-     * Sanitise les données de configuration
+     * Sanitizer pour la configuration
      */
     public function sanitize_config($input) {
         $sanitized = array();
         
-        // URLs des pages shortcodes DPE
-        if (isset($input['dpe_panel_page_url'])) {
-            $sanitized['dpe_panel_page_url'] = esc_url_raw($input['dpe_panel_page_url']);
+        if (isset($input['laposte_token'])) {
+            $sanitized['laposte_token'] = sanitize_text_field($input['laposte_token']);
         }
         
-        if (isset($input['dpe_favoris_page_url'])) {
-            $sanitized['dpe_favoris_page_url'] = esc_url_raw($input['dpe_favoris_page_url']);
+        if (isset($input['laposte_api_url'])) {
+            $sanitized['laposte_api_url'] = esc_url_raw($input['laposte_api_url']);
         }
         
-        // URL API ADEME
-        if (isset($input['ademe_api_url'])) {
-            $sanitized['ademe_api_url'] = esc_url_raw($input['ademe_api_url']);
-        }
+        // Paramètres La Poste
+        $laposte_fields = array(
+            'laposte_type_affranchissement',
+            'laposte_type_enveloppe',
+            'laposte_enveloppe',
+            'laposte_couleur',
+            'laposte_recto_verso',
+            'laposte_placement_adresse',
+            'laposte_surimpression_adresses',
+            'laposte_impression_expediteur',
+            'laposte_ar_scan',
+            'laposte_ar_champ1',
+            'laposte_ar_champ2',
+            'laposte_reference',
+            'laposte_nom_entite',
+            'laposte_nom_dossier',
+            'laposte_nom_sousdossier'
+        );
         
-        // Paramètres de recherche
-        if (isset($input['dpe_default_page_size'])) {
-            $sanitized['dpe_default_page_size'] = intval($input['dpe_default_page_size']);
-        }
-        
-        if (isset($input['dpe_max_page_size'])) {
-            $sanitized['dpe_max_page_size'] = intval($input['dpe_max_page_size']);
+        foreach ($laposte_fields as $field) {
+            if (isset($input[$field])) {
+                $sanitized[$field] = sanitize_text_field($input[$field]);
+            }
         }
         
         return $sanitized;
     }
     
     /**
-     * Page de configuration DPE
+     * Page de configuration
      */
     public function config_page() {
-        if (!current_user_can('manage_options')) {
-            wp_die(__('Vous n\'avez pas les permissions suffisantes pour accéder à cette page.'));
-        }
-        
         $config = $this->get_config();
         ?>
         <div class="wrap">
-            <h1>🏠 Configuration API DPE</h1>
-            <p>Configurez ici les paramètres pour l'API DPE de l'ADEME.</p>
-            
-            <?php settings_errors(); ?>
+            <h1>Configuration DPE</h1>
             
             <form method="post" action="options.php">
-                <?php
-                settings_fields('dpe_api_settings');
-                do_settings_sections('dpe_api_settings');
-                ?>
+                <?php settings_fields('dpe_config_group'); ?>
                 
-                <!-- URLs des pages shortcodes DPE -->
-                <h2>🔗 URLs des pages shortcodes DPE</h2>
-                <p>Configurez les liens vers vos pages contenant les shortcodes DPE.</p>
                 <table class="form-table">
                     <tr>
                         <th scope="row">
-                            <label for="dpe_panel_page_url">Page principale DPE ([dpe_panel])</label>
+                            <label for="laposte_token">Token API La Poste</label>
                         </th>
                         <td>
-                            <input type="url" 
-                                   id="dpe_panel_page_url" 
-                                   name="<?php echo $this->config_option_name; ?>[dpe_panel_page_url]" 
-                                   value="<?php echo esc_attr($config['dpe_panel_page_url'] ?? ''); ?>" 
+                            <input type="text" 
+                                   id="laposte_token" 
+                                   name="<?php echo $this->config_option_name; ?>[laposte_token]" 
+                                   value="<?php echo esc_attr($config['laposte_token'] ?? ''); ?>" 
                                    class="regular-text" 
-                                   placeholder="https://monsite.com/dpe-recherche" />
-                            <p class="description">URL complète de la page contenant le shortcode [dpe_panel]</p>
+                                   placeholder="Votre clé API La Poste" />
+                            <p class="description">Clé API pour le service postal La Poste</p>
                         </td>
                     </tr>
                     
                     <tr>
                         <th scope="row">
-                            <label for="dpe_favoris_page_url">Page des favoris DPE ([dpe_favoris])</label>
+                            <label for="laposte_api_url">URL API La Poste</label>
                         </th>
                         <td>
                             <input type="url" 
-                                   id="dpe_favoris_page_url" 
-                                   name="<?php echo $this->config_option_name; ?>[dpe_favoris_page_url]" 
-                                   value="<?php echo esc_attr($config['dpe_favoris_page_url'] ?? ''); ?>" 
-                                   class="regular-text" 
-                                   placeholder="https://monsite.com/mes-favoris-dpe" />
-                            <p class="description">URL complète de la page contenant le shortcode [dpe_favoris]</p>
-                        </td>
-                    </tr>
-                </table>
-                
-                <!-- Configuration API ADEME -->
-                <h2>🔧 Configuration API ADEME</h2>
-                <table class="form-table">
-                    <tr>
-                        <th scope="row">
-                            <label for="ademe_api_url">URL API ADEME</label>
-                        </th>
-                        <td>
-                            <input type="url" 
-                                   id="ademe_api_url" 
-                                   name="<?php echo $this->config_option_name; ?>[ademe_api_url]" 
-                                   value="<?php echo esc_attr($config['ademe_api_url'] ?? 'https://data.ademe.fr/data-fair/api/v1/datasets/dpe03existant/lines'); ?>" 
+                                   id="laposte_api_url" 
+                                   name="<?php echo $this->config_option_name; ?>[laposte_api_url]" 
+                                   value="<?php echo esc_attr($config['laposte_api_url'] ?? 'https://sandbox-api.servicepostal.com/lettres'); ?>" 
                                    class="regular-text" />
-                            <p class="description">URL de l'API publique DPE de l'ADEME</p>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <th scope="row">
-                            <label for="dpe_default_page_size">Taille de page par défaut</label>
-                        </th>
-                        <td>
-                            <input type="number" 
-                                   id="dpe_default_page_size" 
-                                   name="<?php echo $this->config_option_name; ?>[dpe_default_page_size]" 
-                                   value="<?php echo esc_attr($config['dpe_default_page_size'] ?? 50); ?>" 
-                                   class="small-text" 
-                                   min="10" 
-                                   max="100" />
-                            <p class="description">Nombre de résultats par page par défaut (10-100)</p>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <th scope="row">
-                            <label for="dpe_max_page_size">Taille de page maximale</label>
-                        </th>
-                        <td>
-                            <input type="number" 
-                                   id="dpe_max_page_size" 
-                                   name="<?php echo $this->config_option_name; ?>[dpe_max_page_size]" 
-                                   value="<?php echo esc_attr($config['dpe_max_page_size'] ?? 100); ?>" 
-                                   class="small-text" 
-                                   min="50" 
-                                   max="200" />
-                            <p class="description">Nombre maximum de résultats par page (50-200)</p>
+                            <p class="description">URL de l'API La Poste (sandbox ou production)</p>
                         </td>
                     </tr>
                 </table>
                 
-                <?php submit_button('Sauvegarder la configuration DPE'); ?>
+                <h2>Paramètres d'envoi La Poste</h2>
+                <table class="form-table">
+                    <tr>
+                        <th scope="row">Type d'affranchissement</th>
+                        <td>
+                            <select name="<?php echo $this->config_option_name; ?>[laposte_type_affranchissement]">
+                                <option value="lrar" <?php selected($config['laposte_type_affranchissement'] ?? 'lrar', 'lrar'); ?>>LRAR</option>
+                                <option value="lettre" <?php selected($config['laposte_type_affranchissement'] ?? 'lrar', 'lettre'); ?>>Lettre simple</option>
+                            </select>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <th scope="row">Type d'enveloppe</th>
+                        <td>
+                            <select name="<?php echo $this->config_option_name; ?>[laposte_type_enveloppe]">
+                                <option value="auto" <?php selected($config['laposte_type_enveloppe'] ?? 'auto', 'auto'); ?>>Automatique</option>
+                                <option value="c4" <?php selected($config['laposte_type_enveloppe'] ?? 'auto', 'c4'); ?>>C4</option>
+                            </select>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <th scope="row">Couleur</th>
+                        <td>
+                            <select name="<?php echo $this->config_option_name; ?>[laposte_couleur]">
+                                <option value="nb" <?php selected($config['laposte_couleur'] ?? 'nb', 'nb'); ?>>Noir et blanc</option>
+                                <option value="couleur" <?php selected($config['laposte_couleur'] ?? 'nb', 'couleur'); ?>>Couleur</option>
+                            </select>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <th scope="row">Recto/verso</th>
+                        <td>
+                            <select name="<?php echo $this->config_option_name; ?>[laposte_recto_verso]">
+                                <option value="rectoverso" <?php selected($config['laposte_recto_verso'] ?? 'rectoverso', 'rectoverso'); ?>>Recto-verso</option>
+                                <option value="recto" <?php selected($config['laposte_recto_verso'] ?? 'rectoverso', 'recto'); ?>>Recto uniquement</option>
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+                
+                <?php submit_button(); ?>
             </form>
-            
-            <!-- Bouton de test API -->
-            <div class="card" style="max-width: 800px; margin-top: 20px;">
-                <h3>🧪 Test de connexion API</h3>
-                <p>Testez la connexion à l'API DPE ADEME pour vérifier que tout fonctionne correctement.</p>
-                <button type="button" id="test-dpe-api" class="button button-secondary">
-                    🔍 Tester la connexion API
-                </button>
-                <div id="test-result" style="margin-top: 10px; padding: 10px; border-radius: 4px; display: none;"></div>
-            </div>
-            
-            <script>
-            document.getElementById('test-dpe-api').addEventListener('click', function() {
-                const button = this;
-                const resultDiv = document.getElementById('test-result');
-                
-                button.disabled = true;
-                button.textContent = '⏳ Test en cours...';
-                resultDiv.style.display = 'none';
-                
-                // Appel AJAX pour tester l'API
-                fetch(ajaxurl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: new URLSearchParams({
-                        action: 'test_dpe_api',
-                        nonce: '<?php echo wp_create_nonce("test_dpe_api_nonce"); ?>'
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    button.disabled = false;
-                    button.textContent = '🔍 Tester la connexion API';
-                    
-                    resultDiv.style.display = 'block';
-                    if (data.success) {
-                        resultDiv.style.backgroundColor = '#d4edda';
-                        resultDiv.style.color = '#155724';
-                        resultDiv.style.border = '1px solid #c3e6cb';
-                        resultDiv.innerHTML = `
-                            <strong>✅ ${data.data.message}</strong><br>
-                            Structure des données: ${data.data.data_structure.join(', ')}
-                        `;
-                    } else {
-                        resultDiv.style.backgroundColor = '#f8d7da';
-                        resultDiv.style.color = '#721c24';
-                        resultDiv.style.border = '1px solid #f5c6cb';
-                        resultDiv.innerHTML = `
-                            <strong>❌ Erreur de test:</strong><br>
-                            ${data.data.error}
-                        `;
-                    }
-                })
-                .catch(error => {
-                    button.disabled = false;
-                    button.textContent = '🔍 Tester la connexion API';
-                    
-                    resultDiv.style.display = 'block';
-                    resultDiv.style.backgroundColor = '#f8d7da';
-                    resultDiv.style.color = '#721c24';
-                    resultDiv.style.border = '1px solid #f5c6cb';
-                    resultDiv.innerHTML = `
-                        <strong>❌ Erreur de connexion:</strong><br>
-                        ${error.message}
-                    `;
-                });
-            });
-            </script>
-            
-            <!-- Informations sur l'API -->
-            <div class="card" style="max-width: 800px; margin-top: 20px;">
-                <h3>ℹ️ Informations sur l'API DPE ADEME</h3>
-                <p><strong>Limitations de l'API :</strong></p>
-                <ul>
-                    <li>Utilisateur anonyme : 600 requêtes par minute</li>
-                    <li>Utilisateur authentifié : 1200 requêtes par minute</li>
-                    <li>Vitesse de téléchargement limitée selon le type d'utilisateur</li>
-                </ul>
-                <p><strong>Données disponibles :</strong></p>
-                <ul>
-                    <li>Étiquettes DPE et GES</li>
-                    <li>Consommations énergétiques</li>
-                    <li>Caractéristiques du bâtiment</li>
-                    <li>Informations techniques détaillées</li>
-                </ul>
-                <p><small>Source : <a href="https://data.ademe.fr/datasets/dpe-logements-existants" target="_blank">API publique ADEME</a></small></p>
-            </div>
         </div>
         <?php
     }
     
     /**
-     * Récupère la configuration complète
+     * Récupérer la configuration
      */
     public function get_config() {
-        $default_config = array(
-            'dpe_panel_page_url' => '',
-            'dpe_favoris_page_url' => '',
-            'ademe_api_url' => 'https://data.ademe.fr/data-fair/api/v1/datasets/dpe03existant/lines',
-            'dpe_default_page_size' => 50,
-            'dpe_max_page_size' => 100
+        $config = get_option($this->config_option_name, array());
+        
+        // Valeurs par défaut
+        $defaults = array(
+            'laposte_api_url' => 'https://sandbox-api.servicepostal.com/lettres',
+            'laposte_type_affranchissement' => 'lrar',
+            'laposte_type_enveloppe' => 'auto',
+            'laposte_enveloppe' => 'fenetre',
+            'laposte_couleur' => 'nb',
+            'laposte_recto_verso' => 'rectoverso',
+            'laposte_placement_adresse' => 'insertion_page_adresse',
+            'laposte_surimpression_adresses' => 1,
+            'laposte_impression_expediteur' => 0,
+            'laposte_ar_scan' => 1
         );
         
-        $saved_config = get_option($this->config_option_name, array());
-        return wp_parse_args($saved_config, $default_config);
+        return wp_parse_args($config, $defaults);
     }
     
     /**
-     * Récupère une valeur de configuration
+     * Récupérer une valeur de configuration
      */
     public function get($key, $default = '') {
         $config = $this->get_config();
@@ -304,38 +212,144 @@ class DPE_Config_Manager {
     }
     
     /**
-     * Vérifie si la configuration est complète
+     * Vérifier si la configuration est complète
      */
     public function is_configured() {
-        $config = $this->get_config();
-        return !empty($config['ademe_api_url']);
+        $laposte_token = $this->get_laposte_token();
+        return !empty($laposte_token);
     }
     
     /**
-     * Getters spécifiques
+     * Récupérer le token La Poste
      */
-    public function get_dpe_panel_page_url() {
-        return $this->get('dpe_panel_page_url');
+    public function get_laposte_token() {
+        return $this->get('laposte_token');
     }
     
-    public function get_dpe_favoris_page_url() {
-        return $this->get('dpe_favoris_page_url');
+    /**
+     * Récupérer l'URL de l'API La Poste
+     */
+    public function get_laposte_api_url() {
+        return $this->get('laposte_api_url');
     }
     
-    public function get_ademe_api_url() {
-        return $this->get('ademe_api_url');
+    /**
+     * Récupérer tous les paramètres La Poste formatés pour l'API
+     */
+    public function get_laposte_payload_params() {
+        $params = array(
+            'type_affranchissement' => $this->get_laposte_type_affranchissement(),
+            'type_enveloppe' => $this->get_laposte_type_enveloppe(),
+            'enveloppe' => $this->get_laposte_enveloppe(),
+            'couleur' => $this->get_laposte_couleur(),
+            'recto_verso' => $this->get_laposte_recto_verso(),
+            'placement_adresse' => $this->get_laposte_placement_adresse(),
+            'surimpression_adresses_document' => $this->get_laposte_surimpression_adresses(),
+            'impression_expediteur' => $this->get_laposte_impression_expediteur(),
+            'ar_scan' => $this->get_laposte_ar_scan()
+        );
+        
+        // Ajouter les champs optionnels s'ils sont remplis
+        $ar_champ1 = $this->get_laposte_ar_champ1();
+        if (!empty($ar_champ1)) {
+            $params['ar_expediteur_champ1'] = $ar_champ1;
+        }
+        
+        $ar_champ2 = $this->get_laposte_ar_champ2();
+        if (!empty($ar_champ2)) {
+            $params['ar_expediteur_champ2'] = $ar_champ2;
+        }
+        
+        $reference = $this->get_laposte_reference();
+        if (!empty($reference)) {
+            $params['reference'] = $reference;
+        }
+        
+        $nom_entite = $this->get_laposte_nom_entite();
+        if (!empty($nom_entite)) {
+            $params['nom_entite'] = $nom_entite;
+        }
+        
+        $nom_dossier = $this->get_laposte_nom_dossier();
+        if (!empty($nom_dossier)) {
+            $params['nom_dossier'] = $nom_dossier;
+        }
+        
+        $nom_sousdossier = $this->get_laposte_nom_sousdossier();
+        if (!empty($nom_sousdossier)) {
+            $params['nom_sousdossier'] = $nom_sousdossier;
+        }
+        
+        return $params;
     }
     
-    public function get_dpe_default_page_size() {
-        return $this->get('dpe_default_page_size', 50);
+    // Méthodes pour récupérer les paramètres individuels
+    public function get_laposte_type_affranchissement() {
+        return $this->get('laposte_type_affranchissement', 'lrar');
     }
     
-    public function get_dpe_max_page_size() {
-        return $this->get('dpe_max_page_size', 100);
+    public function get_laposte_type_enveloppe() {
+        return $this->get('laposte_type_enveloppe', 'auto');
+    }
+    
+    public function get_laposte_enveloppe() {
+        return $this->get('laposte_enveloppe', 'fenetre');
+    }
+    
+    public function get_laposte_couleur() {
+        return $this->get('laposte_couleur', 'nb');
+    }
+    
+    public function get_laposte_recto_verso() {
+        return $this->get('laposte_recto_verso', 'rectoverso');
+    }
+    
+    public function get_laposte_placement_adresse() {
+        return $this->get('laposte_placement_adresse', 'insertion_page_adresse');
+    }
+    
+    public function get_laposte_surimpression_adresses() {
+        return (bool) $this->get('laposte_surimpression_adresses', 1);
+    }
+    
+    public function get_laposte_impression_expediteur() {
+        return (bool) $this->get('laposte_impression_expediteur', 0);
+    }
+    
+    public function get_laposte_ar_scan() {
+        return (bool) $this->get('laposte_ar_scan', 1);
+    }
+    
+    public function get_laposte_ar_champ1() {
+        return $this->get('laposte_ar_champ1', '');
+    }
+    
+    public function get_laposte_ar_champ2() {
+        return $this->get('laposte_ar_champ2', '');
+    }
+    
+    public function get_laposte_reference() {
+        return $this->get('laposte_reference', '');
+    }
+    
+    public function get_laposte_nom_entite() {
+        return $this->get('laposte_nom_entite', '');
+    }
+    
+    public function get_laposte_nom_dossier() {
+        return $this->get('laposte_nom_dossier', '');
+    }
+    
+    public function get_laposte_nom_sousdossier() {
+        return $this->get('laposte_nom_sousdossier', '');
     }
 }
 
-// Fonction helper pour accéder au gestionnaire
+// Initialise le gestionnaire de configuration DPE
 function dpe_config_manager() {
     return DPE_Config_Manager::get_instance();
 } 
+
+// Hook d'initialisation
+add_action('plugins_loaded', 'dpe_config_manager');
+?> 

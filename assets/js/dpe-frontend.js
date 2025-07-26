@@ -37,15 +37,21 @@ function buildApiUrl(page = 1) {
         baseUrl += '&q=' + encodeURIComponent(keyword);
     }
 
-    // Afficher l'URL dans la console pour debug
-    console.log('URL de recherche DPE:', baseUrl);
-    console.log('Paramètres de recherche:', currentSearchParams);
+
 
     return baseUrl;
 }
 
 // Fonction pour récupérer les données de l'API
 function fetchDataFromApi(url, successCallback, errorCallback) {
+    // Afficher l'URL de la requête
+    var urlDisplay = document.getElementById('api-url-display');
+    var urlSpan = document.getElementById('current-api-url');
+    if (urlDisplay && urlSpan) {
+        urlSpan.textContent = url;
+        urlDisplay.style.display = 'block';
+    }
+    
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url, true);
 
@@ -73,6 +79,11 @@ function fetchDataFromApi(url, successCallback, errorCallback) {
 // Fonction pour afficher les résultats
 function displayResults(data) {
     var tbody = document.getElementById('results-tbody');
+    if (!tbody) {
+        console.warn('⚠️ Élément results-tbody non trouvé');
+        return;
+    }
+    
     tbody.innerHTML = '';
 
     if (data.results && data.results.length > 0) {
@@ -149,6 +160,47 @@ function displayResults(data) {
                 geoCell.textContent = 'Non disponible';
             }
             row.appendChild(geoCell);
+            
+            // ✅ NOUVEAU : Checkbox pour l'envoi de courrier (maisons uniquement)
+            var letterCell = document.createElement('td');
+            
+            // Créer un conteneur pour la checkbox et le label
+            var checkboxContainer = document.createElement('div');
+            checkboxContainer.className = 'checkbox-container';
+            
+            var letterCheckbox = document.createElement('input');
+            letterCheckbox.type = 'checkbox';
+            letterCheckbox.className = 'send-letter-checkbox';
+            letterCheckbox.setAttribute('data-numero-dpe', result.numero_dpe || '');
+            letterCheckbox.setAttribute('data-type-batiment', result.type_batiment || '');
+            letterCheckbox.setAttribute('data-adresse', result.adresse_ban || result.adresse_brut || '');
+            letterCheckbox.setAttribute('data-commune', result.nom_commune_ban || result.nom_commune_brut || '');
+            letterCheckbox.setAttribute('data-code-postal', result.code_postal_ban || result.code_postal_brut || '');
+            letterCheckbox.setAttribute('data-surface', result.surface_habitable_logement || '');
+            letterCheckbox.setAttribute('data-etiquette-dpe', result.etiquette_dpe || '');
+            letterCheckbox.setAttribute('data-etiquette-ges', result.etiquette_ges || '');
+            letterCheckbox.setAttribute('data-date-dpe', result.date_etablissement_dpe || result.date_reception_dpe || '');
+            
+            // Créer un label pour la checkbox
+            var checkboxLabel = document.createElement('span');
+            checkboxLabel.className = 'checkbox-label';
+            
+            // Désactiver si ce n'est pas une maison
+            if (result.type_batiment && result.type_batiment.toLowerCase() !== 'maison') {
+                letterCheckbox.disabled = true;
+                letterCheckbox.title = 'Envoi de courrier disponible uniquement pour les maisons';
+                checkboxLabel.textContent = 'Non disponible';
+                checkboxLabel.classList.add('disabled');
+            } else {
+                letterCheckbox.title = 'Sélectionner pour l\'envoi de courrier';
+                checkboxLabel.textContent = 'Sélectionner';
+                checkboxLabel.classList.add('enabled');
+            }
+            
+            checkboxContainer.appendChild(letterCheckbox);
+            checkboxContainer.appendChild(checkboxLabel);
+            letterCell.appendChild(checkboxContainer);
+            row.appendChild(letterCell);
 
             tbody.appendChild(row);
         });
@@ -157,7 +209,7 @@ function displayResults(data) {
         updatePaginationInfo();
         showPaginationControls();
         
-        // Réinitialiser les favoris après affichage des résultats
+        // ✅ NOUVEAU : Réinitialiser les favoris après affichage des résultats
         if (typeof window.refreshFavorisAfterPageChange === 'function') {
             window.refreshFavorisAfterPageChange();
         } else if (typeof window.updateFavButtons === 'function') {
@@ -166,8 +218,37 @@ function displayResults(data) {
                 window.attachFavorisListeners();
             }
         }
+        
+        // ✅ NOUVEAU : Initialiser le système de sélection DPE APRÈS création des checkboxes
+        if (typeof window.DPESelectionSystem !== 'undefined') {
+            console.log('🔄 DPE Panel - Réinitialisation du système de sélection externe');
+            window.DPESelectionSystem.reinitialize();
+        } else {
+            console.log('⚠️ DPE Panel - Aucun système de sélection disponible');
+        }
+        
+        // ✅ NOUVEAU : S'assurer que le bouton d'envoi est correctement configuré
+        const sendLettersBtn = document.getElementById('send-letters-btn');
+        if (sendLettersBtn) {
+            let count = 0;
+            
+            if (typeof window.DPESelectionSystem !== 'undefined') {
+                count = window.DPESelectionSystem.getCount();
+            }
+            
+            console.log('📊 DPE Panel - Nombre de sélections après affichage:', count);
+            if (count === 0) {
+                if (typeof window.forceDisableSendButton === 'function') {
+                    window.forceDisableSendButton();
+                }
+            } else {
+                if (typeof window.enableSendButton === 'function') {
+                    window.enableSendButton();
+                }
+            }
+        }
     } else {
-        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 20px; color: #666;">Aucun résultat trouvé</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; padding: 20px; color: #666;">Aucun résultat trouvé</td></tr>';
         hidePaginationControls();
     }
 }
@@ -210,41 +291,62 @@ function formatDate(dateString) {
 // Fonction pour mettre à jour les informations de pagination
 function updatePaginationInfo() {
     var pageInfo = document.getElementById('page-info');
-    // Calculer la page actuelle basée sur l'historique plutôt que sur l'incrémentation manuelle
-    var actualPage = pageHistory.length + 1;
-    pageInfo.textContent = actualPage + '/' + totalPages;
-    
     var paginationInfo = document.getElementById('pagination-info');
-    paginationInfo.textContent = totalResults + ' résultat(s) trouvé(s)';
-    paginationInfo.style.display = 'block';
+    
+    if (pageInfo) {
+        pageInfo.textContent = currentPage + '/' + totalPages;
+    }
+    
+    if (paginationInfo) {
+        paginationInfo.textContent = totalResults + ' résultat(s) trouvé(s)';
+        paginationInfo.style.display = 'block';
+    }
 }
 
 // Fonction pour afficher les contrôles de pagination
 function showPaginationControls() {
     var controls = document.getElementById('pagination-controls');
+    if (!controls) return;
+    
     controls.style.display = 'block';
     
     var prevBtn = document.getElementById('prev-page');
     var nextBtn = document.getElementById('next-page');
     
     // Activer/désactiver le bouton précédent
-    prevBtn.disabled = previousPageUrls.length === 0;
+    if (prevBtn) {
+        prevBtn.disabled = previousPageUrls.length === 0;
+    }
     
     // Activer/désactiver le bouton suivant
-    nextBtn.disabled = !nextPageUrl;
+    if (nextBtn) {
+        nextBtn.disabled = !nextPageUrl;
+    }
 }
 
 // Fonction pour masquer les contrôles de pagination
 function hidePaginationControls() {
     var controls = document.getElementById('pagination-controls');
-    controls.style.display = 'none';
+    if (controls) {
+        controls.style.display = 'none';
+    }
 }
 
 // Fonction pour effectuer une recherche
 function performSearch() {
-    var codePostal = document.getElementById('codePostal').value;
-    var buildingType = document.getElementById('buildingType').value;
-    var keywordSearch = document.getElementById('keywordSearch').value;
+    var codePostalElement = document.getElementById('codePostal');
+    var buildingTypeElement = document.getElementById('buildingType');
+    var keywordSearchElement = document.getElementById('keywordSearch');
+    
+    // Vérifier que les éléments existent
+    if (!codePostalElement) {
+        console.warn('⚠️ Élément codePostal non trouvé');
+        return;
+    }
+    
+    var codePostal = codePostalElement.value;
+    var buildingType = buildingTypeElement ? buildingTypeElement.value : '';
+    var keywordSearch = keywordSearchElement ? keywordSearchElement.value : '';
     
     if (!codePostal) {
         alert('Veuillez sélectionner un code postal');
@@ -277,30 +379,129 @@ function performSearch() {
 
 // Fonctions d'affichage/masquage
 function showLoading() {
-    document.getElementById('search-loading').style.display = 'block';
+    var loadingElement = document.getElementById('search-loading');
+    if (loadingElement) {
+        loadingElement.style.display = 'block';
+    }
 }
 
 function hideLoading() {
-    document.getElementById('search-loading').style.display = 'none';
+    var loadingElement = document.getElementById('search-loading');
+    if (loadingElement) {
+        loadingElement.style.display = 'none';
+    }
 }
 
 function showResults() {
-    document.getElementById('search-results').style.display = 'block';
+    var resultsElement = document.getElementById('search-results');
+    if (resultsElement) {
+        resultsElement.style.display = 'block';
+    }
 }
 
 function hideResults() {
-    document.getElementById('search-results').style.display = 'none';
+    var resultsElement = document.getElementById('search-results');
+    if (resultsElement) {
+        resultsElement.style.display = 'none';
+    }
 }
 
 function showError(message) {
     var errorDiv = document.getElementById('search-error');
-    document.getElementById('error-message').textContent = message;
-    errorDiv.style.display = 'block';
+    var errorMessage = document.getElementById('error-message');
+    if (errorDiv && errorMessage) {
+        errorMessage.textContent = message;
+        errorDiv.style.display = 'block';
+    }
 }
 
 function hideError() {
-    document.getElementById('search-error').style.display = 'none';
+    var errorDiv = document.getElementById('search-error');
+    if (errorDiv) {
+        errorDiv.style.display = 'none';
+    }
 }
+
+// ✅ NOUVEAU : Fonction pour forcer la désactivation du bouton
+function forceDisableSendButton() {
+    const sendLettersBtn = document.getElementById('send-letters-btn');
+    if (sendLettersBtn) {
+        sendLettersBtn.disabled = true;
+        sendLettersBtn.setAttribute('disabled', 'disabled');
+        sendLettersBtn.classList.add('disabled');
+        
+        console.log('🔒 Bouton d\'envoi forcé à désactivé');
+    }
+}
+
+// ✅ NOUVEAU : Fonction pour activer le bouton
+function enableSendButton() {
+    const sendLettersBtn = document.getElementById('send-letters-btn');
+    if (sendLettersBtn) {
+        sendLettersBtn.disabled = false;
+        sendLettersBtn.removeAttribute('disabled');
+        sendLettersBtn.classList.remove('disabled');
+        
+        console.log('🔓 Bouton d\'envoi activé');
+    }
+}
+
+// ✅ NOUVEAU : Fonction pour ouvrir le popup de campagne
+function openCampaignPopup() {
+    let selectedDPEs = [];
+    
+    // Récupérer les données selon le système disponible
+    if (typeof window.DPESelectionSystem !== 'undefined') {
+        selectedDPEs = window.DPESelectionSystem.getSelectedData();
+    }
+    
+    // SUPPRIMER l'alerte contextuelle si aucune sélection
+    if (selectedDPEs.length === 0) {
+        // Ne rien faire
+        return;
+    }
+    
+    console.log('📬 Ouverture du popup avec', selectedDPEs.length, 'DPE sélectionnées');
+    
+    // Remplir la liste des DPE sélectionnées
+    const selectedDpeList = document.getElementById('selected-dpe-list');
+    if (selectedDpeList) {
+        selectedDpeList.innerHTML = '';
+        selectedDPEs.forEach(dpe => {
+            const li = document.createElement('li');
+            li.className = 'selected-dpe-item';
+            li.innerHTML = `
+                <strong>${dpe.adresse}</strong><br>
+                <small>Commune: ${dpe.commune}</small><br>
+                <small>DPE: ${dpe.etiquette_dpe} | GES: ${dpe.etiquette_ges}</small><br>
+                <small>Surface: ${dpe.surface} | Date: ${dpe.date_dpe}</small>
+            `;
+            selectedDpeList.appendChild(li);
+        });
+    }
+    
+    // Afficher le popup
+    const lettersPopup = document.getElementById('dpe-letters-popup');
+    const step1 = document.getElementById('dpe-step-1');
+    const step2 = document.getElementById('dpe-step-2');
+    
+    if (lettersPopup) {
+        lettersPopup.style.display = 'flex';
+        if (step1) {
+            step1.classList.remove('hidden');
+            step1.style.display = 'block';
+        }
+        if (step2) {
+            step2.classList.add('hidden');
+            step2.style.display = 'none';
+        }
+    }
+}
+
+// ✅ NOUVEAU : Rendre les fonctions disponibles globalement
+window.forceDisableSendButton = forceDisableSendButton;
+window.enableSendButton = enableSendButton;
+window.openCampaignPopup = openCampaignPopup;
 
 // Initialisation quand le DOM est chargé
 document.addEventListener('DOMContentLoaded', function() {
@@ -342,7 +543,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (currentPageUrl) {
                     nextPageUrl = currentPageUrl;
                 }
-                
+
                 // Retirer la page actuelle de l'historique
                 pageHistory.pop();
                 
@@ -385,4 +586,90 @@ document.addEventListener('DOMContentLoaded', function() {
     if (codePostalSelect && codePostalSelect.value) {
         performSearch();
     }
-}); 
+    
+    // ✅ NOUVEAU : Désactiver le bouton dès que le DOM est prêt
+    forceDisableSendButton();
+    
+    // Attacher l'événement au bouton d'envoi
+    const sendLettersBtn = document.getElementById('send-letters-btn');
+    if (sendLettersBtn) {
+        sendLettersBtn.addEventListener('click', openCampaignPopup);
+        console.log('🔗 Événement de clic attaché au bouton d\'envoi');
+    }
+    
+    // Navigation entre les étapes du popup DPE
+    const toStep2Btn = document.getElementById('dpe-to-step-2');
+    if (toStep2Btn) {
+        toStep2Btn.addEventListener('click', function() {
+            const step1 = document.getElementById('dpe-step-1');
+            const step2 = document.getElementById('dpe-step-2');
+            if (step1 && step2) {
+                step1.classList.add('hidden');
+                step1.style.display = 'none';
+                step2.classList.remove('hidden');
+                step2.style.display = 'block';
+            }
+        });
+    }
+    
+    // Optionnel : bouton retour étape 1
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.id === 'back-to-step-1') {
+            const step1 = document.getElementById('dpe-step-1');
+            const step2 = document.getElementById('dpe-step-2');
+            if (step1 && step2) {
+                step2.classList.add('hidden');
+                step2.style.display = 'none';
+                step1.classList.remove('hidden');
+                step1.style.display = 'block';
+            }
+        }
+    });
+});
+
+// ✅ NOUVEAU : Initialisation du système de sélection au chargement
+window.onload = function () {
+    // ✅ NOUVEAU : Forcer la désactivation du bouton immédiatement
+    forceDisableSendButton();
+    
+    // Vérifier que l'élément codePostal existe avant d'accéder à sa valeur
+    var codePostalElement = document.getElementById('codePostal');
+    if (codePostalElement && codePostalElement.value) {
+        performSearch();
+    }
+    
+    // ✅ NOUVEAU : Initialiser le système de sélection DPE
+    if (typeof window.DPESelectionSystem !== 'undefined') {
+        console.log('🔧 Initialisation du système de sélection externe');
+        window.DPESelectionSystem.init();
+    } else {
+        console.log('⚠️ Aucun système de sélection disponible');
+        // Fallback : initialisation manuelle du bouton
+        const sendLettersBtn = document.getElementById('send-letters-btn');
+        if (sendLettersBtn) {
+            sendLettersBtn.disabled = true;
+        }
+    }
+    
+    // ✅ NOUVEAU : S'assurer que le bouton est correctement configuré au chargement initial
+    setTimeout(() => {
+        const sendLettersBtn = document.getElementById('send-letters-btn');
+        if (sendLettersBtn) {
+            let count = 0;
+            
+            if (typeof window.DPESelectionSystem !== 'undefined') {
+                count = window.DPESelectionSystem.getCount();
+            }
+            
+            if (count === 0) {
+                forceDisableSendButton();
+            } else {
+                enableSendButton();
+            }
+        }
+    }, 100);
+    
+    // ✅ NOUVEAU : Vérifier les systèmes de sélection disponibles
+    console.log('🔍 Vérification des systèmes de sélection:');
+    console.log('- DPESelectionSystem:', typeof window.DPESelectionSystem !== 'undefined');
+}; 
