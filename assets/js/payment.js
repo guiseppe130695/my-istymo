@@ -10,18 +10,121 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.target && e.target.id === 'send-campaign') {
                 e.preventDefault();
                 e.stopPropagation();
+                
+                // ✅ NOUVEAU : S'assurer que l'étape 2 est visible
+                const step2 = document.getElementById('step-2');
+                if (step2) {
+                    step2.style.display = 'block';
+                }
+                
                 handleCampaignValidation();
             }
         });
     }
     
-    function handleCampaignValidation() {
-        const campaignTitle = document.getElementById('campaign-title');
-        const campaignContent = document.getElementById('campaign-content');
-        
-        if (!campaignTitle || !campaignContent) {
-            showValidationError('Éléments de formulaire introuvables');
+    // ✅ NOUVEAU : Fonction pour créer les éléments de formulaire manquants
+    function createFormElements() {
+        const step2 = document.getElementById('step-2');
+        if (!step2) {
+            console.error('❌ Élément step-2 non trouvé');
             return;
+        }
+        
+        // Détecter le contexte
+        const isDPEContext = window.dpePaymentData !== undefined;
+        const campaignTitle = isDPEContext ? 'Campagne DPE 01' : 'Campagne SCI 01';
+        const placeholderText = isDPEContext ? 'Ex: Proposition d\'acquisition maison' : 'Ex: Proposition d\'acquisition SCI';
+        
+        // Contenu par défaut selon le contexte
+        const getDefaultEmailContent = () => {
+            if (isDPEContext) {
+                return `Bonjour,
+
+Je me permets de vous contacter concernant votre bien immobilier situé à [NOM].
+
+En tant que professionnel de l'immobilier, je suis à la recherche de propriétés dans votre secteur et je serais intéressé par votre bien.
+
+Pourriez-vous me contacter pour discuter d'une éventuelle collaboration ?
+
+Cordialement,
+[Votre nom]
+[Votre téléphone]
+[Votre email]`;
+            } else {
+                return `Bonjour,
+
+Je me permets de vous contacter concernant votre SCI [NOM].
+
+En tant que professionnel de l'immobilier, je suis à la recherche d'opportunités d'investissement et je serais intéressé par votre société.
+
+Pourriez-vous me contacter pour discuter d'une éventuelle collaboration ?
+
+Cordialement,
+[Votre nom]
+[Votre téléphone]
+[Votre email]`;
+            }
+        };
+        
+        step2.innerHTML = `
+            <h2>✍️ Contenu du courriel</h2>
+            <p style="color: #666; margin-bottom: 20px;">Rédigez le titre et le contenu de votre courriel</p>
+            
+            <label for="campaign-title"><strong>Titre de la campagne :</strong></label><br>
+            <input type="text" id="campaign-title" style="width:100%; margin-bottom:20px; padding:10px; border:1px solid #ddd; border-radius:4px;" required placeholder="${placeholderText}" value="${campaignTitle}"><br>
+
+            <label for="campaign-content"><strong>Contenu du courriel :</strong></label><br>
+            <textarea id="campaign-content" style="width:100%; height:200px; margin-bottom:20px; padding:10px; border:1px solid #ddd; border-radius:4px;" required placeholder="Rédigez votre message...">${getDefaultEmailContent()}</textarea>
+
+            <div style="background: #e7f3ff; padding: 20px; border-radius: 6px; margin-bottom: 25px;">
+                <h4 style="margin-top: 0; color: #0056b3;">💡 Conseils pour votre courriel :</h4>
+                <ul style="margin-bottom: 0; font-size: 14px; color: #495057;">
+                    <li>Pour afficher le nom du destinataire sur le courriel, tapez l'index <code style="background:#f8f9fa; padding:2px 4px; border-radius:3px;">[NOM]</code></li>
+                    <li>Soyez professionnel et courtois dans votre approche</li>
+                    <li>Précisez clairement l'objet de votre demande</li>
+                    <li>N'oubliez pas d'ajouter vos coordonnées de contact</li>
+                </ul>
+            </div>
+
+            <div style="display: flex; justify-content: center; align-items: flex-start; gap: 15px;">
+                <button id="send-campaign" class="button button-primary button-large">
+                    📋 Voir le récapitulatif →
+                </button>
+                <button id="back-to-step-1" class="button" style="background:#FFF!important; color: #000064!important;">← Précédent</button>
+            </div>
+        `;
+        
+        // Attacher les event listeners pour le bouton retour
+        const backToStep1Btn = document.getElementById('back-to-step-1');
+        if (backToStep1Btn) {
+            backToStep1Btn.addEventListener('click', function() {
+                const step1 = document.getElementById('step-1');
+                if (step2) step2.style.display = 'none';
+                if (step1) step1.style.display = 'block';
+            });
+        }
+        
+        console.log('✅ Éléments de formulaire créés avec succès');
+    }
+    
+    function handleCampaignValidation() {
+        // ✅ NOUVEAU : Détecter le contexte (DPE ou SCI)
+        const isDPEContext = window.dpePaymentData !== undefined;
+        
+        let campaignTitle = document.getElementById('campaign-title');
+        let campaignContent = document.getElementById('campaign-content');
+        
+        // ✅ NOUVEAU : Si les éléments n'existent pas, les créer
+        if (!campaignTitle || !campaignContent) {
+            console.log('🔍 Payment.js - Éléments de formulaire non trouvés, création...');
+            createFormElements();
+            campaignTitle = document.getElementById('campaign-title');
+            campaignContent = document.getElementById('campaign-content');
+            
+            if (!campaignTitle || !campaignContent) {
+                showValidationError('Impossible de créer les éléments de formulaire');
+                return;
+            }
         }
         
         if (!campaignTitle.value.trim() || !campaignContent.value.trim()) {
@@ -29,15 +132,30 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        const selectedEntries = window.getSelectedEntries ? window.getSelectedEntries() : [];
+        // ✅ NOUVEAU : Récupérer les données selon le contexte
+        let selectedEntries = [];
+        if (isDPEContext) {
+            // Utiliser les données DPE
+            if (window.DPESelectionSystem && window.DPESelectionSystem.getSelectedData) {
+                selectedEntries = window.DPESelectionSystem.getSelectedData();
+            } else if (window.getSelectedDPEEntries) {
+                selectedEntries = window.getSelectedDPEEntries();
+            }
+        } else {
+            // Utiliser les données SCI
+            selectedEntries = window.getSelectedEntries ? window.getSelectedEntries() : [];
+        }
         
         if (selectedEntries.length === 0) {
-            showValidationError('Aucune SCI sélectionnée');
+            const contextMessage = isDPEContext ? 'Aucune DPE sélectionnée' : 'Aucune SCI sélectionnée';
+            showValidationError(contextMessage);
             return;
         }
         
-        // Vérifier si WooCommerce est disponible
-        if (!sciPaymentData.woocommerce_ready) {
+        // ✅ NOUVEAU : Vérifier si WooCommerce est disponible selon le contexte
+        const paymentData = isDPEContext ? window.dpePaymentData : window.sciPaymentData;
+        
+        if (!paymentData || !paymentData.woocommerce_ready) {
             // Fallback vers l'ancien système d'envoi direct
             handleDirectSending(selectedEntries, campaignTitle.value, campaignContent.value);
             return;
@@ -48,7 +166,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function handleDirectSending(entries, title, content) {
-        if (!confirm('WooCommerce n\'est pas disponible. Voulez-vous envoyer directement les lettres (sans paiement) ?')) {
+        // ✅ NOUVEAU : Détecter le contexte pour le message
+        const isDPEContext = window.dpePaymentData !== undefined;
+        const contextMessage = isDPEContext ? 
+            'WooCommerce n\'est pas disponible. Voulez-vous envoyer directement les lettres DPE (sans paiement) ?' :
+            'WooCommerce n\'est pas disponible. Voulez-vous envoyer directement les lettres SCI (sans paiement) ?';
+            
+        if (!confirm(contextMessage)) {
             return;
         }
         
@@ -81,13 +205,16 @@ document.addEventListener('DOMContentLoaded', function() {
             entries: entries
         };
         
-        // Étape 1: Générer les PDFs et créer la campagne en BDD
+        // ✅ NOUVEAU : Étape 1: Générer les PDFs et créer la campagne en BDD
         const formData = new FormData();
-        formData.append('action', 'sci_generer_pdfs');
-        formData.append('data', JSON.stringify(campaignData));
-        formData.append('nonce', sciPaymentData.nonce);
+        const actionName = isDPEContext ? 'dpe_generer_pdfs' : 'sci_generer_pdfs';
+        const paymentData = isDPEContext ? window.dpePaymentData : window.sciPaymentData;
         
-        fetch(ajaxurl, {
+        formData.append('action', actionName);
+        formData.append('data', JSON.stringify(campaignData));
+        formData.append('nonce', paymentData.nonce);
+        
+        fetch(paymentData.ajax_url, {
             method: 'POST',
             body: formData
         })
@@ -97,7 +224,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Étape 2: Envoyer chaque lettre via l'API La Poste
                 updateDirectProgress(30, 'Envoi des lettres...');
                 
-                return sendLettersSequentially(data.data.files, entries, campaignData, data.data.campaign_id);
+                return sendLettersSequentially(data.data.files, entries, campaignData, data.data.campaign_id, isDPEContext);
             } else {
                 throw new Error('Erreur lors de la génération des PDFs: ' + (data.data || 'Erreur inconnue'));
             }
@@ -152,15 +279,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Fonction pour envoyer les lettres séquentiellement (reprise de l'ancien code)
-    async function sendLettersSequentially(pdfFiles, entries, campaignData, campaignId) {
+    // ✅ NOUVEAU : Fonction pour envoyer les lettres séquentiellement (reprise de l'ancien code)
+    async function sendLettersSequentially(pdfFiles, entries, campaignData, campaignId, isDPEContext = false) {
         const results = [];
         
         for (let i = 0; i < entries.length; i++) {
             const entry = entries[i];
             const pdfFile = pdfFiles[i];
             
-            updateDirectProgress(30 + (i / entries.length) * 60, `Envoi vers ${entry.denomination}...`);
+            // ✅ NOUVEAU : Afficher le bon nom selon le contexte
+            const entryName = isDPEContext ? entry.adresse : entry.denomination;
+            updateDirectProgress(30 + (i / entries.length) * 60, `Envoi vers ${entryName}...`);
             
             try {
                 // Télécharger le PDF généré
@@ -168,16 +297,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 const pdfBlob = await pdfResponse.blob();
                 const pdfBase64 = await blobToBase64(pdfBlob);
                 
-                // Préparer les données pour l'API La Poste
+                // ✅ NOUVEAU : Préparer les données pour l'API La Poste selon le contexte
                 const letterData = new FormData();
-                letterData.append('action', 'sci_envoyer_lettre_laposte');
+                const actionName = isDPEContext ? 'dpe_envoyer_lettre_laposte' : 'sci_envoyer_lettre_laposte';
+                letterData.append('action', actionName);
                 letterData.append('entry', JSON.stringify(entry));
                 letterData.append('pdf_base64', pdfBase64);
                 letterData.append('campaign_title', campaignData.title);
                 letterData.append('campaign_id', campaignId);
                 
-                // Envoyer via AJAX
-                const response = await fetch(ajaxurl, {
+                // ✅ NOUVEAU : Envoyer via AJAX avec la bonne URL
+                const paymentData = isDPEContext ? window.dpePaymentData : window.sciPaymentData;
+                const response = await fetch(paymentData.ajax_url, {
                     method: 'POST',
                     body: letterData
                 });
@@ -187,13 +318,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (result.success) {
                     results.push({
                         success: true,
-                        denomination: entry.denomination,
+                        denomination: entryName,
                         uid: result.data.uid
                     });
                 } else {
                     results.push({
                         success: false,
-                        denomination: entry.denomination,
+                        denomination: entryName,
                         error: result.data || 'Erreur inconnue'
                     });
                 }
@@ -201,7 +332,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } catch (error) {
                 results.push({
                     success: false,
-                    denomination: entry.denomination,
+                    denomination: entryName,
                     error: error.message
                 });
             }
@@ -227,12 +358,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function showRecapStep(entries, title, content) {
-        const step2 = document.getElementById('step-2');
-        const sciCount = entries.length;
+        // ✅ NOUVEAU : Détecter le contexte pour les données de paiement
+        const isDPEContext = window.dpePaymentData !== undefined;
+        const paymentData = isDPEContext ? window.dpePaymentData : window.sciPaymentData;
         
-        // Récupérer le prix unitaire depuis PHP
-        const unitPrice = parseFloat(sciPaymentData.unit_price || 5.00);
-        const totalPrice = (sciCount * unitPrice).toFixed(2);
+        const step2 = document.getElementById('step-2');
+        const entryCount = entries.length;
+        
+        // Récupérer le prix unitaire depuis PHP selon le contexte
+        const unitPrice = parseFloat(paymentData.unit_price || 5.00);
+        const totalPrice = (entryCount * unitPrice).toFixed(2);
         
         // Créer l'interface de récapitulatif simplifiée (étape 3)
         const recapHtml = `
@@ -244,7 +379,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="pricing-table">
                         <div class="pricing-row">
                             <span>Nombre de lettres :</span>
-                            <span>${sciCount}</span>
+                            <span>${entryCount}</span>
                         </div>
                         <div class="pricing-row total-row">
                             <span><strong>Total TTC :</strong></span>
@@ -359,15 +494,28 @@ document.addEventListener('DOMContentLoaded', function() {
             entries: entries
         };
         
+        // ✅ NOUVEAU : Détecter le contexte (SCI ou DPE) et utiliser la bonne action
+        const isDPEContext = window.dpePaymentData !== undefined;
+        const actionName = isDPEContext ? 'dpe_create_order' : 'sci_create_order';
+        const paymentData = isDPEContext ? window.dpePaymentData : window.sciPaymentData;
+        
+        console.log('🔍 Payment.js - Contexte détecté:', isDPEContext ? 'DPE' : 'SCI');
+        console.log('🔍 Payment.js - Action utilisée:', actionName);
+        console.log('🔍 Payment.js - Données de paiement:', paymentData);
+        
         const formData = new FormData();
-        formData.append('action', 'sci_create_order');
+        formData.append('action', actionName);
         formData.append('campaign_data', JSON.stringify(campaignData));
-        formData.append('nonce', sciPaymentData.nonce);
+        formData.append('nonce', paymentData.nonce);
         
         // Créer la commande
-        fetch(sciPaymentData.ajax_url, {
+        fetch(paymentData.ajax_url, {
             method: 'POST',
-            body: formData
+            body: formData,
+            credentials: 'same-origin',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
         })
         .then(response => response.json())
         .then(data => {
@@ -448,15 +596,26 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function startPaymentStatusPolling(orderId) {
+        // ✅ NOUVEAU : Détecter le contexte pour la vérification du statut
+        const isDPEContext = window.dpePaymentData !== undefined;
+        const statusAction = isDPEContext ? 'dpe_check_payment_status' : 'sci_check_order_status';
+        const paymentData = isDPEContext ? window.dpePaymentData : window.sciPaymentData;
+        
+        console.log('🔍 Payment.js - Vérification statut avec action:', statusAction);
+        
         const pollInterval = setInterval(() => {
             const formData = new FormData();
-            formData.append('action', 'sci_check_order_status');
+            formData.append('action', statusAction);
             formData.append('order_id', orderId);
-            formData.append('nonce', sciPaymentData.nonce);
+            formData.append('nonce', paymentData.nonce);
             
-            fetch(sciPaymentData.ajax_url, {
+            fetch(paymentData.ajax_url, {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'same-origin',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
             })
             .then(response => response.json())
             .then(data => {
@@ -511,7 +670,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('letters-popup').style.display = 'none';
                 if (window.resetSciPopup) window.resetSciPopup();
                 
-                window.location.href = sciPaymentData.campaigns_url || (window.location.origin + '/wp-admin/admin.php?page=sci-campaigns');
+                // ✅ NOUVEAU : Redirection selon le contexte
+                const campaignsUrl = isDPEContext ? 
+                    (window.dpePaymentData.campaigns_url || '/wp-admin/admin.php?page=dpe-campaigns') :
+                    (window.sciPaymentData.campaigns_url || '/wp-admin/admin.php?page=sci-campaigns');
+                
+                window.location.href = campaignsUrl;
             });
         }
         

@@ -79,6 +79,7 @@ require_once plugin_dir_path(__FILE__) . 'includes/dpe-config-manager.php';
 require_once plugin_dir_path(__FILE__) . 'includes/dpe-favoris-handler.php';
 require_once plugin_dir_path(__FILE__) . 'includes/dpe-handler.php';
 require_once plugin_dir_path(__FILE__) . 'includes/dpe-shortcodes.php';
+require_once plugin_dir_path(__FILE__) . 'includes/dpe-campaign-manager.php';
 
 
 // --- Ajout du menu SCI dans l'admin WordPress ---
@@ -142,6 +143,16 @@ function sci_ajouter_menu() {
         'read',
         'dpe-favoris',
         'dpe_favoris_page'
+    );
+
+    // ✅ NOUVEAU : Ajouter une page pour les campagnes DPE
+    add_submenu_page(
+        'dpe-panel',
+        'Campagnes DPE',
+        'Mes Campagnes DPE',
+        'read',
+        'dpe-campaigns',
+        'dpe_campaigns_page'
     );
 }
 
@@ -1003,6 +1014,23 @@ function dpe_afficher_panel() {
         '1.0.2'
     );
     
+    // ✅ NOUVEAU : Charger les scripts JavaScript nécessaires
+    wp_enqueue_script(
+        'dpe-selection-system',
+        plugin_dir_url(__FILE__) . 'assets/js/dpe-selection-system.js',
+        array('jquery'),
+        '1.0.0',
+        true
+    );
+    
+    wp_enqueue_script(
+        'dpe-lettre-script',
+        plugin_dir_url(__FILE__) . 'assets/js/dpe-lettre.js',
+        array('jquery', 'dpe-selection-system'),
+        '1.0.0',
+        true
+    );
+    
     // Récupérer les codes postaux de l'utilisateur
     $codesPostauxArray = sci_get_user_postal_codes();
 
@@ -1051,5 +1079,709 @@ function dpe_favoris_page() {
     // Charger le template des favoris DPE
     sci_load_template('dpe-favoris', $context);
 }
+
+// ✅ NOUVEAU : PAGE POUR AFFICHER LES CAMPAGNES DPE ---
+function dpe_campaigns_page() {
+    // ✅ NOUVEAU : Charger le CSS pour le panel des campagnes DPE
+    wp_enqueue_style(
+        'dpe-campaigns-admin',
+        plugin_dir_url(__FILE__) . 'assets/css/dpe-campaigns-admin.css',
+        array(),
+        '1.0.0'
+    );
+    
+    // Vérifier que l'utilisateur est connecté
+    if (!is_user_logged_in()) {
+        wp_die('Vous devez être connecté pour accéder à cette page.');
+    }
+    
+    // Récupérer le gestionnaire de campagnes DPE
+    $campaign_manager = dpe_campaign_manager();
+    if (!$campaign_manager) {
+        wp_die('Erreur : Gestionnaire de campagnes DPE non disponible.');
+    }
+    
+    $current_user_id = get_current_user_id();
+    $view_campaign_id = isset($_GET['view']) ? intval($_GET['view']) : null;
+    
+    // Mode vue détaillée d'une campagne
+    if ($view_campaign_id) {
+        $campaign_details = $campaign_manager->get_campaign_details($view_campaign_id, $current_user_id);
+        
+        if (!$campaign_details) {
+            wp_die('Campagne non trouvée ou accès non autorisé.');
+        }
+        
+        // Passer les données au template
+        $context = array(
+            'campaign_details' => $campaign_details,
+            'view_mode' => true,
+            'title' => '📬 Campagne DPE'
+        );
+        
+        sci_load_template('dpe-campaigns', $context);
+        return;
+    }
+    
+    // Mode liste des campagnes
+    $campaigns = $campaign_manager->get_user_campaigns($current_user_id);
+    
+    // ✅ DEBUG : Ajouter des informations de debug
+    error_log("DPE Campaigns Debug - User ID: $current_user_id");
+    error_log("DPE Campaigns Debug - Campaigns count: " . count($campaigns));
+    if ($campaigns) {
+        error_log("DPE Campaigns Debug - First campaign: " . json_encode($campaigns[0]));
+    }
+    
+    $context = array(
+        'campaigns' => $campaigns,
+        'view_mode' => false,
+        'title' => '📬 Mes Campagnes DPE',
+        'show_empty_message' => true
+    );
+    
+    sci_load_template('dpe-campaigns', $context);
+}
+
+// --- NOUVELLES FONCTIONS AJAX POUR DPE ---
+
+// --- NOUVELLE FONCTION AJAX POUR ENVOYER UNE LETTRE DPE VIA L'API LA POSTE ---
+add_action('wp_ajax_dpe_envoyer_lettre_laposte', 'dpe_envoyer_lettre_laposte_ajax');
+add_action('wp_ajax_nopriv_dpe_envoyer_lettre_laposte', 'dpe_envoyer_lettre_laposte_ajax');
+
+function dpe_envoyer_lettre_laposte_ajax() {
+    // Vérification des données reçues
+    if (!isset($_POST['entry']) || !isset($_POST['pdf_base64'])) {
+        wp_send_json_error('Données manquantes');
+        return;
+    }
+
+    $entry = json_decode(stripslashes($_POST['entry']), true);
+    $pdf_base64 = $_POST['pdf_base64'];
+    $campaign_title = sanitize_text_field($_POST['campaign_title'] ?? '');
+    $campaign_id = intval($_POST['campaign_id'] ?? 0);
+
+    if (!$entry || !$pdf_base64) {
+        wp_send_json_error('Données invalides');
+        return;
+    }
+
+    // Récupérer les données de l'expéditeur depuis le gestionnaire de campagnes
+    $campaign_manager = dpe_campaign_manager();
+    if (!$campaign_manager) {
+        wp_send_json_error('Gestionnaire de campagnes DPE non disponible');
+        return;
+    }
+    
+    $expedition_data = $campaign_manager->get_user_expedition_data();
+    
+    // Vérifier que les données essentielles sont présentes
+    $validation_errors = $campaign_manager->validate_expedition_data($expedition_data);
+    if (!empty($validation_errors)) {
+        wp_send_json_error('Données expéditeur incomplètes : ' . implode(', ', $validation_errors));
+        return;
+    }
+    
+    // Récupérer les paramètres configurés depuis le gestionnaire de configuration
+    $config_manager = dpe_config_manager();
+    $laposte_params = $config_manager->get_laposte_payload_params();
+    
+    // Préparer le payload pour l'API La Poste avec les paramètres dynamiques
+    $payload = array_merge($laposte_params, [
+        // Adresse expéditeur (récupérée depuis le profil utilisateur)
+        "adresse_expedition" => $expedition_data,
+
+        // Adresse destinataire (propriétaire de la maison)
+        "adresse_destination" => [
+            "civilite" => "M.",
+            "prenom" => "",
+            "nom" => "Propriétaire",
+            "nom_societe" => "",
+            "adresse_ligne1" => $entry['adresse'] ?? '',
+            "adresse_ligne2" => "",
+            "code_postal" => $entry['code_postal'] ?? '',
+            "ville" => $entry['commune'] ?? '',
+            "pays" => "FRANCE",
+        ],
+
+        // PDF encodé
+        "fichier" => [
+            "format" => "pdf",
+            "contenu_base64" => $pdf_base64,
+        ],
+    ]);
+
+    // Récupérer le token depuis la configuration sécurisée
+    $token = $config_manager->get_laposte_token();
+
+    if (empty($token)) {
+        wp_send_json_error('Token La Poste non configuré');
+        return;
+    }
+
+    // Logger le payload avant envoi (sans le PDF pour éviter les logs trop volumineux)
+    $payload_for_log = $payload;
+    $payload_for_log['fichier']['contenu_base64'] = '[PDF_BASE64_CONTENT_' . strlen($pdf_base64) . '_CHARS]';
+    my_istymo_log("=== ENVOI LETTRE DPE POUR {$entry['adresse']} ===", 'dpe_laposte');
+    my_istymo_log("Payload envoyé: " . json_encode($payload_for_log, JSON_PRETTY_PRINT), 'dpe_laposte');
+
+    // Envoyer via l'API La Poste
+    $response = envoyer_lettre_via_api_la_poste_my_istymo($payload, $token);
+
+    // Logger la réponse complète
+    my_istymo_log("Réponse complète API: " . json_encode($response, JSON_PRETTY_PRINT), 'dpe_laposte');
+
+    if ($response['success']) {
+        my_istymo_log("✅ SUCCÈS pour {$entry['adresse']} - UID: " . ($response['uid'] ?? 'N/A'), 'dpe_laposte');
+        
+        // Mettre à jour le statut dans la base de données
+        if ($campaign_id > 0) {
+            $campaign_manager->update_letter_status(
+                $campaign_id, 
+                $entry['numero_dpe'], 
+                'sent', 
+                $response['uid'] ?? null
+            );
+        }
+        
+        wp_send_json_success([
+            'message' => 'Lettre envoyée avec succès',
+            'uid' => $response['uid'] ?? 'non disponible',
+            'adresse' => $entry['adresse']
+        ]);
+    } else {
+        $error_msg = 'Erreur API : ';
+        if (isset($response['message']) && is_array($response['message'])) {
+            $error_msg .= json_encode($response['message']);
+        } elseif (isset($response['error'])) {
+            $error_msg .= $response['error'];
+        } else {
+            $error_msg .= 'Erreur inconnue';
+        }
+
+        my_istymo_log("❌ ERREUR pour {$entry['adresse']}: $error_msg", 'dpe_laposte');
+        my_istymo_log("Code HTTP: " . ($response['code'] ?? 'N/A'), 'dpe_laposte');
+        my_istymo_log("Message détaillé: " . json_encode($response['message'] ?? [], JSON_PRETTY_PRINT), 'dpe_laposte');
+        
+        // Mettre à jour le statut d'erreur dans la base de données
+        if ($campaign_id > 0) {
+            $campaign_manager->update_letter_status(
+                $campaign_id, 
+                $entry['numero_dpe'], 
+                'failed', 
+                null, 
+                $error_msg
+            );
+        }
+        
+        wp_send_json_error($error_msg);
+    }
+}
+
+// --- NOUVELLE FONCTION AJAX POUR GÉNÉRER LES PDFS DPE ---
+add_action('wp_ajax_dpe_generer_pdfs', 'dpe_generer_pdfs_ajax');
+add_action('wp_ajax_nopriv_dpe_generer_pdfs', 'dpe_generer_pdfs_ajax');
+
+function dpe_generer_pdfs_ajax() {
+    // Vérification des données reçues
+    if (!isset($_POST['data'])) {
+        wp_send_json_error('Données manquantes');
+        return;
+    }
+
+    $campaign_data = json_decode(stripslashes($_POST['data']), true);
+    
+    if (!$campaign_data || !isset($campaign_data['entries']) || !isset($campaign_data['content'])) {
+        wp_send_json_error('Données de campagne invalides');
+        return;
+    }
+
+    // Vérifier que l'utilisateur est connecté
+    if (!is_user_logged_in()) {
+        wp_send_json_error('Utilisateur non connecté');
+        return;
+    }
+
+    // Récupérer les managers nécessaires
+    $campaign_manager = dpe_campaign_manager();
+    if (!$campaign_manager) {
+        wp_send_json_error('Gestionnaire de campagnes DPE non disponible');
+        return;
+    }
+
+    try {
+        // ✅ CORRIGÉ : Vérifier et forcer l'ID utilisateur correct
+        $current_user_id = get_current_user_id();
+        if (!$current_user_id) {
+            wp_send_json_error('ID utilisateur invalide - veuillez vous reconnecter');
+            return;
+        }
+        
+        // Log pour debug
+        my_istymo_log("DPE PDF Generation - User ID: $current_user_id", 'dpe_campaigns');
+        
+        // Créer la campagne en base de données
+        $campaign_id = $campaign_manager->create_campaign([
+            'title' => $campaign_data['title'],
+            'content' => $campaign_data['content'],
+            'user_id' => $current_user_id, // ← Utiliser l'ID vérifié
+            'type' => 'dpe_maison'
+        ]);
+
+        if (!$campaign_id) {
+            wp_send_json_error('Erreur lors de la création de la campagne');
+            return;
+        }
+
+        // Générer les PDFs
+        if (!class_exists('TCPDF')) {
+            require_once plugin_dir_path(__FILE__) . 'lib/tcpdf/tcpdf.php';
+        }
+        
+        $upload_dir = wp_upload_dir();
+        $pdf_dir = $upload_dir['basedir'] . '/campagnes-dpe/';
+        
+        // Créer le dossier s'il n'existe pas
+        if (!file_exists($pdf_dir)) {
+            wp_mkdir_p($pdf_dir);
+        }
+        
+        $files = [];
+        
+        foreach ($campaign_data['entries'] as $index => $entry) {
+            // Générer le contenu personnalisé
+            $texte = $campaign_data['content'];
+            
+            // Ajouter les informations spécifiques à la DPE
+            $texte .= "\n\nInformations sur le bien :";
+            $texte .= "\n- Adresse : " . ($entry['adresse'] ?? 'Non spécifiée');
+            $texte .= "\n- Commune : " . ($entry['commune'] ?? 'Non spécifiée');
+            $texte .= "\n- Étiquette DPE : " . ($entry['etiquette_dpe'] ?? 'Non spécifiée');
+            $texte .= "\n- Étiquette GES : " . ($entry['etiquette_ges'] ?? 'Non spécifiée');
+            $texte .= "\n- Surface : " . ($entry['surface'] ?? 'Non spécifiée') . " m²";
+            
+            $pdf = new TCPDF();
+            $pdf->SetCreator('DPE Plugin');
+            $pdf->SetAuthor('DPE Plugin');
+            $pdf->SetTitle('Lettre pour ' . ($entry['adresse'] ?? 'DPE'));
+            
+            $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+            $pdf->SetMargins(20, 20, 20);
+            $pdf->SetAutoPageBreak(TRUE, 25);
+            
+            $pdf->AddPage();
+            $pdf->SetFont('helvetica', '', 12);
+            $pdf->writeHTML(nl2br(htmlspecialchars($texte)), true, false, true, false, '');
+            
+            $filename = sanitize_file_name($entry['adresse'] . '-' . time() . '-' . $index) . '.pdf';
+            $pdf_path = $pdf_dir . $filename;
+            
+            $pdf->Output($pdf_path, 'F');
+            
+            if (file_exists($pdf_path)) {
+                $files[] = [
+                    'url' => $upload_dir['baseurl'] . '/campagnes-dpe/' . $filename,
+                    'path' => $pdf_path,
+                    'entry' => $entry
+                ];
+                
+                // Ajouter l'entrée à la campagne
+                $campaign_manager->add_campaign_entry($campaign_id, $entry);
+            }
+        }
+
+        wp_send_json_success([
+            'files' => $files,
+            'campaign_id' => $campaign_id
+        ]);
+
+    } catch (Exception $e) {
+        my_istymo_log("❌ Erreur génération PDFs DPE: " . $e->getMessage(), 'dpe_laposte');
+        wp_send_json_error('Erreur lors de la génération des PDFs: ' . $e->getMessage());
+    }
+}
+
+// --- NOUVELLE FONCTION AJAX POUR CRÉER UNE COMMANDE WOOCOMMERCE DPE ---
+add_action('wp_ajax_dpe_create_order', 'dpe_create_order_ajax');
+add_action('wp_ajax_nopriv_dpe_create_order', 'dpe_create_order_ajax');
+
+function dpe_create_order_ajax() {
+    // ✅ AJOUTÉ : Log de début pour debug
+    my_istymo_log("🚀 dpe_create_order_ajax() appelée", 'dpe_laposte');
+    my_istymo_log("POST data: " . print_r($_POST, true), 'dpe_laposte');
+    
+    // ✅ AJOUTÉ : Vérification du nonce (sécurité)
+    if (!wp_verify_nonce($_POST['nonce'] ?? '', 'dpe_campaign_nonce')) {
+        my_istymo_log("❌ Nonce invalide pour DPE", 'dpe_laposte');
+        wp_send_json_error('Nonce invalide');
+        return;
+    }
+    
+    // Vérification des données reçues (compatible avec le système SCI)
+    if (!isset($_POST['campaign_data'])) {
+        wp_send_json_error('Données de campagne manquantes');
+        return;
+    }
+
+    $campaign_data = json_decode(stripslashes($_POST['campaign_data']), true);
+    
+    if (!$campaign_data || !isset($campaign_data['entries']) || !isset($campaign_data['title']) || !isset($campaign_data['content'])) {
+        wp_send_json_error('Données de campagne invalides');
+        return;
+    }
+
+    $entries = $campaign_data['entries'];
+    $title = sanitize_text_field($campaign_data['title']);
+    $content = sanitize_textarea_field($campaign_data['content']);
+
+    if (!$entries || !is_array($entries)) {
+        wp_send_json_error('Données d\'entrées invalides');
+        return;
+    }
+
+    // Vérifier que l'utilisateur est connecté
+    if (!is_user_logged_in()) {
+        wp_send_json_error('Utilisateur non connecté');
+        return;
+    }
+
+    // Vérifier que WooCommerce est disponible
+    if (!class_exists('WooCommerce')) {
+        wp_send_json_error('WooCommerce n\'est pas disponible');
+        return;
+    }
+    
+    // ✅ AJOUTÉ : Log pour debug
+    my_istymo_log("=== CRÉATION COMMANDE DPE WOOCOMMERCE ===", 'dpe_laposte');
+    my_istymo_log("Utilisateur: " . get_current_user_id(), 'dpe_laposte');
+    my_istymo_log("Nombre DPE: " . count($entries), 'dpe_laposte');
+    my_istymo_log("Titre campagne: " . $title, 'dpe_laposte');
+
+    try {
+        // Créer la commande WooCommerce
+        $order = wc_create_order();
+        
+        // Ajouter le produit DPE
+        $product_id = get_option('dpe_product_id', 0);
+        if (!$product_id || !wc_get_product($product_id)) {
+            my_istymo_log("🔄 Produit DPE introuvable, création...", 'dpe_laposte');
+            // Créer le produit s'il n'existe pas
+            $product_id = create_dpe_product();
+        }
+        
+        if (!$product_id) {
+            throw new Exception('Impossible de créer ou récupérer le produit DPE');
+        }
+        
+        $product = wc_get_product($product_id);
+        if (!$product) {
+            throw new Exception('Produit DPE introuvable après création');
+        }
+        
+        my_istymo_log("📦 Ajout du produit DPE (ID: $product_id) à la commande", 'dpe_laposte');
+        $order->add_product($product, count($entries));
+        
+        // Définir l'adresse de facturation
+        $user_id = get_current_user_id();
+        $order->set_address(array(
+            'first_name' => get_user_meta($user_id, 'first_name', true),
+            'last_name'  => get_user_meta($user_id, 'last_name', true),
+            'email'      => get_user_meta($user_id, 'user_email', true),
+            'phone'      => get_user_meta($user_id, 'phone', true),
+            'address_1'  => get_field('adresse_user', 'user_' . $user_id),
+            'address_2'  => get_field('adresse2_user', 'user_' . $user_id),
+            'city'       => get_field('ville_user', 'user_' . $user_id),
+            'postcode'   => get_field('cp_user', 'user_' . $user_id),
+            'country'    => 'FR'
+        ), 'billing');
+        
+        // Définir l'adresse de livraison (même que facturation)
+        $order->set_address(array(
+            'first_name' => get_user_meta($user_id, 'first_name', true),
+            'last_name'  => get_user_meta($user_id, 'last_name', true),
+            'email'      => get_user_meta($user_id, 'user_email', true),
+            'phone'      => get_user_meta($user_id, 'phone', true),
+            'address_1'  => get_field('adresse_user', 'user_' . $user_id),
+            'address_2'  => get_field('adresse2_user', 'user_' . $user_id),
+            'city'       => get_field('ville_user', 'user_' . $user_id),
+            'postcode'   => get_field('cp_user', 'user_' . $user_id),
+            'country'    => 'FR'
+        ), 'shipping');
+        
+        // Ajouter les métadonnées de la campagne
+        $order->update_meta_data('_dpe_campaign_title', $title);
+        $order->update_meta_data('_dpe_campaign_content', $content);
+        $order->update_meta_data('_dpe_campaign_entries', $entries);
+        $order->update_meta_data('_dpe_campaign_type', 'dpe_maison');
+        $order->update_meta_data('_dpe_campaign_status', 'pending');
+        
+        // Calculer les totaux
+        $order->calculate_totals();
+        
+        // Sauvegarder la commande
+        $order->save();
+        
+        // ✅ MODIFIÉ : Générer l'URL de paiement pour checkout embarqué
+        $checkout_url = $order->get_checkout_payment_url() . '&embedded=1&hide_admin_bar=1';
+        
+        my_istymo_log("✅ Commande DPE créée avec ID: " . $order->get_id(), 'dpe_laposte');
+        
+        wp_send_json_success(array(
+            'order_id' => $order->get_id(),
+            'checkout_url' => $checkout_url,
+            'total' => $order->get_total(),
+            'dpe_count' => count($entries)
+        ));
+
+    } catch (Exception $e) {
+        my_istymo_log("❌ Erreur création commande DPE: " . $e->getMessage(), 'dpe_laposte');
+        my_istymo_log("Stack trace: " . $e->getTraceAsString(), 'dpe_laposte');
+        wp_send_json_error('Erreur lors de la création de la commande: ' . $e->getMessage());
+    }
+}
+
+/**
+ * Créer le produit DPE s'il n'existe pas
+ */
+function create_dpe_product() {
+    try {
+        my_istymo_log("🔄 Création du produit DPE...", 'dpe_laposte');
+        
+        // Vérifier que WooCommerce est disponible
+        if (!class_exists('WC_Product_Simple')) {
+            my_istymo_log("❌ WC_Product_Simple non disponible", 'dpe_laposte');
+            return false;
+        }
+        
+        $product = new WC_Product_Simple();
+        $product->set_name('Campagne DPE - Envoi de courriers');
+        $product->set_description('Service d\'envoi de courriers pour prospecter les propriétaires de maisons via les DPE');
+        $product->set_short_description('Envoi de courriers personnalisés vers les propriétaires de maisons');
+        $product->set_price(5.00);
+        $product->set_regular_price(5.00);
+        $product->set_status('publish');
+        $product->set_catalog_visibility('hidden');
+        $product->set_virtual(true);
+        $product->set_manage_stock(false);
+        $product->set_stock_status('instock');
+        
+        $product_id = $product->save();
+        
+        if (is_wp_error($product_id)) {
+            my_istymo_log("❌ Erreur création produit DPE: " . $product_id->get_error_message(), 'dpe_laposte');
+            return false;
+        }
+        
+        // Sauvegarder l'ID du produit
+        update_option('dpe_product_id', $product_id);
+        
+        my_istymo_log("✅ Produit DPE créé avec ID: $product_id", 'dpe_laposte');
+        
+        return $product_id;
+        
+    } catch (Exception $e) {
+        my_istymo_log("❌ Exception création produit DPE: " . $e->getMessage(), 'dpe_laposte');
+        return false;
+    }
+}
+
+// ✅ AJOUTÉ : Fonction AJAX pour vérifier le statut de paiement DPE
+add_action('wp_ajax_dpe_check_payment_status', 'dpe_check_payment_status_ajax');
+add_action('wp_ajax_nopriv_dpe_check_payment_status', 'dpe_check_payment_status_ajax');
+
+function dpe_check_payment_status_ajax() {
+    // Vérifier le nonce
+    if (!wp_verify_nonce($_POST['nonce'], 'dpe_campaign_nonce')) {
+        wp_send_json_error('Nonce invalide');
+        return;
+    }
+    
+    $order_id = intval($_POST['order_id']);
+    $order = wc_get_order($order_id);
+    
+    if (!$order) {
+        wp_send_json_error('Commande introuvable');
+        return;
+    }
+    
+    $status = $order->get_status();
+    
+    // Considérer comme "completed" si le paiement est terminé
+    $is_completed = in_array($status, ['completed', 'processing']);
+    
+    wp_send_json_success(array(
+        'status' => $is_completed ? 'paid' : 'pending',
+        'order_status' => $status
+    ));
+}
+
+// ✅ AJOUTÉ : Hooks pour traiter les commandes DPE payées
+add_action('woocommerce_order_status_completed', 'dpe_process_paid_campaign');
+add_action('woocommerce_order_status_processing', 'dpe_process_paid_campaign');
+add_action('woocommerce_payment_complete', 'dpe_process_paid_campaign');
+
+function dpe_process_paid_campaign($order_id) {
+    $order = wc_get_order($order_id);
+    
+    if (!$order) {
+        return;
+    }
+    
+    // Vérifier si c'est une commande DPE
+    $campaign_type = $order->get_meta('_dpe_campaign_type');
+    if ($campaign_type !== 'dpe_maison') {
+        return; // Pas une commande DPE
+    }
+    
+    // Vérifier si déjà traitée
+    $campaign_status = $order->get_meta('_dpe_campaign_status');
+    if (in_array($campaign_status, ['processed', 'processing', 'completed'])) {
+        my_istymo_log("ℹ️ Commande DPE #$order_id déjà traitée (statut: $campaign_status)", 'dpe_laposte');
+        return;
+    }
+    
+    my_istymo_log("🔄 Traitement de la commande DPE payée #$order_id", 'dpe_laposte');
+    
+    // Marquer comme en cours de traitement
+    $order->update_meta_data('_dpe_campaign_status', 'processing');
+    $order->save();
+    
+    try {
+        // Récupérer les données de la campagne
+        $campaign_title = $order->get_meta('_dpe_campaign_title');
+        $campaign_content = $order->get_meta('_dpe_campaign_content');
+        $campaign_entries = $order->get_meta('_dpe_campaign_entries');
+        
+        if (!$campaign_entries || !is_array($campaign_entries)) {
+            throw new Exception('Données de campagne DPE invalides');
+        }
+        
+        // Créer la campagne dans la base de données
+        $campaign_manager = dpe_campaign_manager();
+        if (!$campaign_manager) {
+            throw new Exception('Gestionnaire de campagnes DPE non disponible');
+        }
+        
+        // ✅ CORRIGÉ : Vérifier et forcer l'ID utilisateur correct
+        $customer_id = $order->get_customer_id();
+        if (!$customer_id) {
+            throw new Exception('ID client de la commande invalide');
+        }
+        
+        // Log pour debug
+        my_istymo_log("DPE Order Processing - Customer ID: $customer_id, Order ID: $order_id", 'dpe_campaigns');
+        
+        $campaign_id = $campaign_manager->create_campaign([
+            'title' => $campaign_title,
+            'content' => $campaign_content,
+            'entries' => $campaign_entries,
+            'user_id' => $customer_id, // ← Utiliser l'ID client vérifié
+            'type' => 'dpe_maison'
+        ]);
+        
+        if (!$campaign_id) {
+            throw new Exception('Impossible de créer la campagne DPE');
+        }
+        
+        my_istymo_log("✅ Campagne DPE créée avec ID: $campaign_id", 'dpe_laposte');
+        
+        // Marquer comme terminée
+        $order->update_meta_data('_dpe_campaign_status', 'completed');
+        $order->update_meta_data('_dpe_campaign_id', $campaign_id);
+        $order->save();
+        
+        my_istymo_log("✅ Commande DPE #$order_id traitée avec succès", 'dpe_laposte');
+        
+    } catch (Exception $e) {
+        my_istymo_log("❌ Erreur traitement commande DPE #$order_id: " . $e->getMessage(), 'dpe_laposte');
+        
+        // Marquer comme en erreur
+        $order->update_meta_data('_dpe_campaign_status', 'error');
+        $order->update_meta_data('_dpe_campaign_error', $e->getMessage());
+        $order->save();
+    }
+}
+
+// ✅ AJOUTÉ : Gestion CORS pour les requêtes AJAX
+add_action('init', 'my_istymo_handle_cors');
+
+// ✅ ÉTENDU : CORS pour toutes les actions AJAX du plugin
+$ajax_actions = [
+    'dpe_create_order', 'dpe_check_payment_status',
+    'sci_manage_favoris', 'dpe_manage_favoris',
+    'dpe_search_ajax', 'test_dpe_api',
+    'dpe_add_favori', 'dpe_remove_favori', 'dpe_get_favoris',
+    'sci_add_favori', 'sci_remove_favori', 'sci_get_favoris'
+];
+
+foreach ($ajax_actions as $action) {
+    add_action('wp_ajax_nopriv_' . $action, 'my_istymo_handle_cors_preflight', 1);
+    add_action('wp_ajax_' . $action, 'my_istymo_handle_cors_preflight', 1);
+}
+
+function my_istymo_handle_cors() {
+    // Vérifier si c'est une requête AJAX
+    if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+        // Autoriser tous les domaines pour le développement
+        $allowed_origins = array(
+            'http://my-istymo.local',
+            'http://my-istymo.local:10004',
+            'http://my-istymo.local:10005',
+            'http://my-istymo.local:10006',
+            'http://localhost',
+            'http://localhost:10004',
+            'http://localhost:10005',
+            'http://localhost:10006'
+        );
+        
+        $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+        
+        if (in_array($origin, $allowed_origins)) {
+            header('Access-Control-Allow-Origin: ' . $origin);
+            header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
+            header('Access-Control-Allow-Headers: Content-Type, X-Requested-With');
+            header('Access-Control-Allow-Credentials: true');
+        }
+        
+        // Gérer les requêtes OPTIONS (preflight)
+        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+            http_response_code(200);
+            exit;
+        }
+    }
+}
+
+function my_istymo_handle_cors_preflight() {
+    // Gestion CORS spécifique pour les actions AJAX DPE
+    $allowed_origins = array(
+        'http://my-istymo.local',
+        'http://my-istymo.local:10004',
+        'http://my-istymo.local:10005',
+        'http://my-istymo.local:10006',
+        'http://localhost',
+        'http://localhost:10004',
+        'http://localhost:10005',
+        'http://localhost:10006'
+    );
+    
+    $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+    
+    if (in_array($origin, $allowed_origins)) {
+        header('Access-Control-Allow-Origin: ' . $origin);
+        header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
+        header('Access-Control-Allow-Headers: Content-Type, X-Requested-With');
+        header('Access-Control-Allow-Credentials: true');
+    }
+    
+    // Gérer les requêtes OPTIONS (preflight)
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        http_response_code(200);
+        exit;
+    }
+}
+
+// Inclure les nouveaux fichiers DPE
+require_once plugin_dir_path(__FILE__) . 'includes/dpe-campaign-manager.php';
+require_once plugin_dir_path(__FILE__) . 'includes/dpe-config-manager.php';
 
 ?>

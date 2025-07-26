@@ -6,17 +6,28 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // ✅ AMÉLIORÉ : Vérifier que les éléments nécessaires existent
     if (!sendLettersBtn || !selectedCountSpan) {
+        console.log('🔍 lettre.js - Éléments de base non trouvés, arrêt du script');
         return;
     }
     
     // Éléments du popup
     const step1 = document.getElementById('step-1');
     const step2 = document.getElementById('step-2');
-    const selectedSciList = document.getElementById('selected-sci-list');
+    const selectedSciList = document.getElementById('selected-sci-list') || document.getElementById('selected-dpe-list');
     
     // Boutons de navigation
     const toStep2Btn = document.getElementById('to-step-2');
     const closePopupBtns = document.querySelectorAll('#close-popup-1');
+    
+    // ✅ AMÉLIORÉ : Vérifier que tous les éléments du popup existent
+    if (!lettersPopup || !step1 || !step2 || !selectedSciList || !toStep2Btn) {
+        console.log('🔍 lettre.js - Éléments du popup non trouvés, arrêt du script');
+        return;
+    }
+    
+    // ✅ NOUVEAU : Détecter le contexte (SCI ou DPE)
+    const isDPEContext = document.getElementById('selected-dpe-list') !== null;
+    const contextType = isDPEContext ? 'DPE' : 'SCI';
     
     let selectedEntries = [];
 
@@ -50,6 +61,46 @@ Dans l’attente de votre retour, je vous remercie de l’attention portée à m
 (Votre prénom et nom)
 (Statut : Mandataire Immobilier/Agent Immobilier)
 (Coordonnées)`;
+
+    // ✅ NOUVEAU : Fonction pour obtenir le contenu d'email selon le contexte
+    const getDefaultEmailContent = () => {
+        if (isDPEContext) {
+            return `(Votre prénom et nom)
+(Statut : Mandataire Immobilier/Agent Immobilier)
+(Votre adresse)
+(Votre téléphone)
+(Votre e-mail)
+(Nom de l'agence ou réseau, si applicable)
+(Date)
+
+
+Objet : Proposition d'accompagnement pour la vente de votre bien immobilier
+
+Madame, Monsieur,
+
+Professionnel de l'immobilier au sein de (NOM de votre Agence ou Réseau, si applicable), je me permets de vous adresser la présente afin de vous proposer mes services pour la mise en vente de votre bien immobilier.
+
+J'ai remarqué que votre bien situé à l'adresse suivante a fait l'objet d'un diagnostic de performance énergétique (DPE) récemment. Cette information m'indique que vous pourriez envisager une mise en vente dans un avenir proche.
+
+Conscient des enjeux spécifiques liés à la vente immobilière, je vous propose un accompagnement sur-mesure, fondé sur une parfaite connaissance du marché local et une stratégie de commercialisation efficace.
+
+Mon approche se distingue par :
+- Une estimation rigoureuse et objective de votre bien,
+- La mise en place d'une communication ciblée auprès d'acquéreurs qualifiés,
+- Un accompagnement administratif et juridique jusqu'à la signature définitive,
+- La possibilité de travailler en toute confidentialité, selon vos contraintes et objectifs.
+
+Je serai ravi d'échanger avec vous lors d'un rendez-vous à votre convenance, afin de mieux cerner vos besoins et vous exposer les solutions que je peux vous apporter.
+
+Dans l'attente de votre retour, je vous remercie de l'attention portée à ma proposition et vous prie d'agréer, Madame, Monsieur, l'expression de mes salutations distinguées.
+
+(Votre prénom et nom)
+(Statut : Mandataire Immobilier/Agent Immobilier)
+(Coordonnées)`;
+        } else {
+            return defaultEmailContent;
+        }
+    };
 
     // Système de sélection simple avec un seul tableau
     const SCISelection = {
@@ -203,58 +254,108 @@ Dans l’attente de votre retour, je vous remercie de l’attention portée à m
     }
 
     // Ouvrir le popup
-    sendLettersBtn.addEventListener('click', function() {
-        // Récupérer les SCI sélectionnées (un seul tableau simple)
-        const selectedSCIs = SCISelection.selectedSCIs;
-        
-        if (selectedSCIs.length === 0) {
-            alert('Veuillez sélectionner au moins une SCI');
-            return;
-        }
-        
-        // Remplir la liste des SCI sélectionnées
-        selectedSciList.innerHTML = '';
-        selectedSCIs.forEach(sci => {
-            const li = document.createElement('li');
-            li.innerHTML = `
-                <strong>${sci.denomination}</strong><br>
-                <small>Dirigeant: ${sci.dirigeant}</small><br>
-                <small>SIREN: ${sci.siren}</small><br>
-                <small>${sci.adresse}, ${sci.ville}</small>
-            `;
-            selectedSciList.appendChild(li);
+    if (sendLettersBtn) {
+        sendLettersBtn.addEventListener('click', function() {
+            // ✅ NOUVEAU : Récupérer les données selon le contexte (DPE ou SCI)
+            let selectedData = [];
+            
+            if (isDPEContext) {
+                // Utiliser les données DPE
+                if (window.getSelectedDPEEntries) {
+                    selectedData = window.getSelectedDPEEntries();
+                } else if (window.getSelectedEntries) {
+                    selectedData = window.getSelectedEntries();
+                }
+                
+                if (selectedData.length === 0) {
+                    // Alerte désactivée - ne rien faire
+                    return;
+                }
+            } else {
+                // Utiliser les données SCI
+                selectedData = SCISelection.selectedSCIs;
+                
+                if (selectedData.length === 0) {
+                    // Alerte désactivée - ne rien faire
+                    return;
+                }
+            }
+            
+            // Remplir la liste selon le contexte
+            if (selectedSciList) {
+                selectedSciList.innerHTML = '';
+                selectedData.forEach(item => {
+                    const li = document.createElement('li');
+                    
+                    if (isDPEContext) {
+                        // Format DPE
+                        li.innerHTML = `
+                            <strong>${item.adresse}</strong><br>
+                            <small>Commune: ${item.commune}</small><br>
+                            <small>DPE: ${item.etiquette_dpe} | GES: ${item.etiquette_ges}</small><br>
+                            <small>Surface: ${item.surface} | Date: ${item.date_dpe}</small>
+                        `;
+                    } else {
+                        // Format SCI
+                        li.innerHTML = `
+                            <strong>${item.denomination}</strong><br>
+                            <small>Dirigeant: ${item.dirigeant}</small><br>
+                            <small>SIREN: ${item.siren}</small><br>
+                            <small>${item.adresse}, ${item.ville}</small>
+                        `;
+                    }
+                    selectedSciList.appendChild(li);
+                });
+            }
+            
+            // Mettre à jour selectedEntries pour compatibilité avec payment.js
+            selectedEntries = selectedData;
+            
+            // Afficher le popup
+            if (lettersPopup) {
+                lettersPopup.style.display = 'flex';
+            }
+            if (step1) {
+                step1.style.display = 'block';
+            }
+            if (step2) {
+                step2.style.display = 'none';
+            }
         });
-        
-        // Mettre à jour selectedEntries pour compatibilité avec payment.js
-        selectedEntries = selectedSCIs;
-        
-        // Afficher le popup
-        lettersPopup.style.display = 'flex';
-        step1.style.display = 'block';
-        step2.style.display = 'none';
-    });
+    }
 
     // Navigation vers l'étape 2
-    toStep2Btn.addEventListener('click', function() {
-        step1.style.display = 'none';
-        step2.style.display = 'block';
-    });
+    if (toStep2Btn) {
+        toStep2Btn.addEventListener('click', function() {
+            if (step1) step1.style.display = 'none';
+            if (step2) step2.style.display = 'block';
+            
+            // ✅ NOUVEAU : S'assurer que le contenu de l'étape 2 est généré
+            resetStep2Content();
+        });
+    }
 
     // Fermer le popup
-    closePopupBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            lettersPopup.style.display = 'none';
-            resetPopup();
+    if (closePopupBtns && closePopupBtns.length > 0) {
+        closePopupBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (lettersPopup) {
+                    lettersPopup.style.display = 'none';
+                }
+                resetPopup();
+            });
         });
-    });
+    }
 
     // Fermer le popup en cliquant sur l'arrière-plan
-    lettersPopup.addEventListener('click', function(e) {
-        if (e.target === lettersPopup) {
-            lettersPopup.style.display = 'none';
-            resetPopup();
-        }
-    });
+    if (lettersPopup) {
+        lettersPopup.addEventListener('click', function(e) {
+            if (e.target === lettersPopup) {
+                lettersPopup.style.display = 'none';
+                resetPopup();
+            }
+        });
+    }
 
     function resetPopup() {
         // Réinitialiser les champs
@@ -264,41 +365,46 @@ Dans l’attente de votre retour, je vous remercie de l’attention portée à m
         if (campaignContent) campaignContent.value = '';
         
         // Revenir à l'étape 1
-        step1.style.display = 'block';
-        step2.style.display = 'none';
+        if (step1) step1.style.display = 'block';
+        if (step2) step2.style.display = 'none';
         
         // Réinitialiser le contenu de l'étape 2 au contenu original
         resetStep2Content();
     }
 
     function resetStep2Content() {
-        step2.innerHTML = `
-            <h2>✍️ Contenu du courriel</h2>
-            <p style="color: #666; margin-bottom: 20px;">Rédigez le titre et le contenu de votre courriel</p>
+        if (step2) {
+            const campaignTitle = isDPEContext ? 'Campagne DPE 01' : 'Campagne SCI 01';
+            const placeholderText = isDPEContext ? 'Ex: Proposition d\'acquisition maison' : 'Ex: Proposition d\'acquisition SCI';
             
-            <label for="campaign-title"><strong>Titre de la campagne :</strong></label><br>
-            <input type="text" id="campaign-title" style="width:100%; margin-bottom:20px; padding:10px; border:1px solid #ddd; border-radius:4px;" required placeholder="Ex: Proposition d'acquisition SCI" value="Campagne 01"><br>
+            step2.innerHTML = `
+                <h2>✍️ Contenu du courriel</h2>
+                <p style="color: #666; margin-bottom: 20px;">Rédigez le titre et le contenu de votre courriel</p>
+                
+                <label for="campaign-title"><strong>Titre de la campagne :</strong></label><br>
+                <input type="text" id="campaign-title" style="width:100%; margin-bottom:20px; padding:10px; border:1px solid #ddd; border-radius:4px;" required placeholder="${placeholderText}" value="${campaignTitle}"><br>
 
-            <label for="campaign-content"><strong>Contenu du courriel :</strong></label><br>
-            <textarea id="campaign-content" style="width:100%; height:200px; margin-bottom:20px; padding:10px; border:1px solid #ddd; border-radius:4px;" required placeholder="Rédigez votre message...">${defaultEmailContent}</textarea>
+                <label for="campaign-content"><strong>Contenu du courriel :</strong></label><br>
+                <textarea id="campaign-content" style="width:100%; height:200px; margin-bottom:20px; padding:10px; border:1px solid #ddd; border-radius:4px;" required placeholder="Rédigez votre message...">${getDefaultEmailContent()}</textarea>
 
-            <div style="background: #e7f3ff; padding: 20px; border-radius: 6px; margin-bottom: 25px;">
-                <h4 style="margin-top: 0; color: #0056b3;">💡 Conseils pour votre courriel :</h4>
-                <ul style="margin-bottom: 0; font-size: 14px; color: #495057;">
-                    <li> Pour afficher le nom du destinataire sur le courriel, tapez l'index <code style="background:#f8f9fa; padding:2px 4px; border-radius:3px;">[NOM]</code></li>
-                    <li>Soyez professionnel et courtois dans votre approche</li>
-                    <li>Précisez clairement l'objet de votre demande</li>
-                    <li>N'oubliez pas d'ajouter vos coordonnées de contact dans le contenu</li>
-                </ul>
-            </div>
+                <div style="background: #e7f3ff; padding: 20px; border-radius: 6px; margin-bottom: 25px;">
+                    <h4 style="margin-top: 0; color: #0056b3;">💡 Conseils pour votre courriel :</h4>
+                    <ul style="margin-bottom: 0; font-size: 14px; color: #495057;">
+                        <li> Pour afficher le nom du destinataire sur le courriel, tapez l'index <code style="background:#f8f9fa; padding:2px 4px; border-radius:3px;">[NOM]</code></li>
+                        <li>Soyez professionnel et courtois dans votre approche</li>
+                        <li>Précisez clairement l'objet de votre demande</li>
+                        <li>N'oubliez pas d'ajouter vos coordonnées de contact dans le contenu</li>
+                    </ul>
+                </div>
 
-            <div style="display: flex; justify-content: center; align-items: flex-start; gap: 15px;">
-                <button id="send-campaign" class="button button-primary button-large">
-                    📋 Voir le récapitulatif →
-                </button>
-                <button id="back-to-step-1" class="button" style="background:#FFF!important;  color: #000064!important;">← Précédent</button>
-            </div>
-        `;
+                <div style="display: flex; justify-content: center; align-items: flex-start; gap: 15px;">
+                    <button id="send-campaign" class="button button-primary button-large">
+                        📋 Voir le récapitulatif →
+                    </button>
+                    <button id="back-to-step-1" class="button" style="background:#FFF!important;  color: #000064!important;">← Précédent</button>
+                </div>
+            `;
+        }
         
         // Réattacher les event listeners
         attachStep2Listeners();
@@ -309,26 +415,41 @@ Dans l’attente de votre retour, je vous remercie de l’attention portée à m
         
         if (backToStep1Btn) {
             backToStep1Btn.addEventListener('click', function() {
-                step2.style.display = 'none';
-                step1.style.display = 'block';
+                if (step2) step2.style.display = 'none';
+                if (step1) step1.style.display = 'block';
             });
         }
     }
 
-    // Initialiser le contenu de l'étape 2
-    resetStep2Content();
+    // Initialiser le contenu de l'étape 2 seulement si step2 existe
+    if (step2) {
+        resetStep2Content();
+    }
 
-    // Initialiser le système de sélection
-    SCISelection.init();
-    
-    // Restaurer les sélections après un délai pour s'assurer que le DOM est prêt
-    setTimeout(() => {
-        SCISelection.restoreSelections();
-    }, 100);
+    // Initialiser le système de sélection seulement si les éléments nécessaires existent
+    if (typeof SCISelection !== 'undefined') {
+        SCISelection.init();
+        
+        // Restaurer les sélections après un délai pour s'assurer que le DOM est prêt
+        setTimeout(() => {
+            if (typeof SCISelection !== 'undefined' && SCISelection.restoreSelections) {
+                SCISelection.restoreSelections();
+            }
+        }, 100);
+    }
 
-    // Fonction utilitaire pour obtenir les entrées sélectionnées (utilisée par payment.js)
+    // ✅ NOUVEAU : Fonction utilitaire pour obtenir les entrées sélectionnées selon le contexte
     window.getSelectedEntries = function() {
-        return SCISelection.selectedSCIs;
+        if (isDPEContext) {
+            // Retourner les données DPE
+            if (window.getSelectedDPEEntries) {
+                return window.getSelectedDPEEntries();
+            }
+            return [];
+        } else {
+            // Retourner les données SCI
+            return SCISelection.selectedSCIs;
+        }
     };
 
     window.resetSciPopup = function() {
