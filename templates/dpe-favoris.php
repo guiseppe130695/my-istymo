@@ -99,7 +99,7 @@ function createGoogleMapsLink($adresse, $codePostal, $commune) {
                 <thead>
                     <tr>
                         <th>Adresse</th>
-                        <th>Commune</th>
+                        <th>Ville</th>
                         <th>Type d'habitation</th>
                         <th>Surface</th>
                         <th>Étiquette DPE</th>

@@ -20,7 +20,7 @@
                 <th>Ville</th>
                 <th>Code Postal</th>
                 <th>Géolocalisation</th>
-                <th>Action</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>

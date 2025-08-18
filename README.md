@@ -86,7 +86,7 @@ Ce plugin permet aux utilisateurs de rechercher des SCI par code postal, de gér
 1. Sélectionner les SCI désirées (checkboxes)
 2. Cliquer sur "📬 Créez une campagne d'envoi de courriers"
 3. Vérifier la sélection dans l'étape 1
-4. Rédiger le titre et contenu du courriel
+4. Rédiger le titre et contenu du courrier
 5. Utiliser `[NOM]` pour personnaliser le destinataire
 6. Passer la commande et procéder au paiement
 

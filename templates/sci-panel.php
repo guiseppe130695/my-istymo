@@ -160,7 +160,7 @@
             </ul>
             <div style="text-align: center;">
                 <button id="to-step-2" class="sci-button" style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important; color: white !important; border: none !important; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 16px;">
-                    ✍️ Rédiger le courriel →
+                    ✍️ Rédiger le courrier →
                 </button>
             </div>
         </div>

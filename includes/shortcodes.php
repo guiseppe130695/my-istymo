@@ -170,7 +170,6 @@ class SCI_Shortcodes {
             array('sci-frontend-style'),
             '1.0.1'
         );
-        
 
         if (!wp_script_is('sci-frontend-favoris', 'enqueued')) {
             wp_enqueue_script(
@@ -193,6 +192,7 @@ class SCI_Shortcodes {
                 true
             );
         }
+
         
         if (!wp_script_is('sci-frontend-payment', 'enqueued')) {
             wp_enqueue_script(
@@ -277,9 +277,10 @@ class SCI_Shortcodes {
             <h1><?php echo esc_html($atts['title']); ?></h1>
             
             <!-- Information pour les utilisateurs -->
-            <div class="sci-info" style="background: #e7f3ff; border: 1px solid #bee5eb; border-radius: 8px; padding: 15px; margin-bottom: 20px; color: #004085;">
-                <p style="margin: 0; font-size: 16px; line-height: 1.5;">
-                    Prospectez directement les SCI. Vous avez également la possibilité de proposer vos services en envoyant un courrier.
+            <div class="sci-info" style="background: #e7f3ff!important; border: 1px solid #bee5eb!important; border-radius: 8px!important; padding: 15px!important; margin-bottom: 20px!important; color: #004085!important;">
+                <p style="margin: 0; font-size: 14px; line-height: 1.5;">
+                    <strong>Prospectez directement les SCI</strong><br><br>
+                    Vous avez également la possibilité de proposer vos services en envoyant un courrier.
                 </p>
             </div>
             
@@ -424,7 +425,7 @@ class SCI_Shortcodes {
                     </ul>
                     <div style="text-align: center;">
                         <button id="to-step-2" class="sci-button" style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important; color: white !important; border: none !important; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 16px;">
-                            ✍️ Rédiger le courriel →
+                            ✍️ Rédiger votre courrier →
                         </button>
                     </div>
                 </div>

@@ -157,7 +157,7 @@ class DPE_Shortcodes {
 
             <!-- Information pour les utilisateurs -->
             <div class="dpe-info" style="background: #e7f3ff; border: 1px solid #bee5eb; border-radius: 8px; padding: 15px; margin-bottom: 20px; color: #004085;">
-                <p style="margin: 0; font-size: 16px; line-height: 1.5;">
+                <p style="margin: 0; font-size: 14px; line-height: 1.5;">
                     <strong>Aide à la prospection Lead DPE</strong><br><br>
                     L'obligation du Diagnostic de Performance Énergétique concerne toute personne désirant mettre en vente un bien immobilier. Facilitez votre prospection et anticipez les ventes à venir en consultant la liste des DPE réalisés sur vos secteurs d'activité.
                 </p>
@@ -236,7 +236,7 @@ class DPE_Shortcodes {
                             <th>Type bâtiment</th>
                             <th>Date DPE</th>
                             <th>Adresse</th>
-                            <th>Commune</th>
+                            <th>Ville</th>
                             <th>Surface</th>
                             <th>Étiquette DPE</th>
                             <th>Étiquette GES</th>

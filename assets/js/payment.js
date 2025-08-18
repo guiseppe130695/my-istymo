@@ -243,7 +243,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <h3>💰 Tarification</h3>
                     <div class="pricing-table">
                         <div class="pricing-row">
-                            <span>Nombre de lettres :</span>
+                            <span>Nombre de courriers :</span>
                             <span>${sciCount}</span>
                         </div>
                         <div class="pricing-row total-row">
@@ -737,17 +737,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const step2 = document.getElementById('step-2');
         
         const contentHtml = `
-            <h2>✍️ Contenu du courriel</h2>
-            <p style="color: #666; margin-bottom: 20px;">Rédigez le titre et le contenu de votre courriel</p>
+            <h2>✍️ Contenu du courrier</h2>
+            <p style="color: #666; margin-bottom: 20px;">Rédigez le titre et le contenu de votre courrier</p>
             
             <label for="campaign-title"><strong>Titre de la campagne :</strong></label><br>
             <input type="text" id="campaign-title" style="width:100%; margin-bottom:20px; padding:10px; border:1px solid #ddd; border-radius:4px;" required placeholder="Ex: Proposition d'acquisition SCI" value="${escapeHtml(title)}"><br>
 
-            <label for="campaign-content"><strong>Contenu du courriel :</strong></label><br>
+            <label for="campaign-content"><strong>Contenu du courrier :</strong></label><br>
             <textarea id="campaign-content" style="width:100%; height:200px; margin-bottom:20px; padding:10px; border:1px solid #ddd; border-radius:4px;" required placeholder="Rédigez votre message...">${escapeHtml(content)}</textarea>
 
             <div style="background: #e7f3ff; padding: 20px; border-radius: 6px; margin-bottom: 25px;">
-                <h4 style="margin-top: 0; color: #0056b3;">💡 Conseils pour votre courriel :</h4>
+                <h4 style="margin-top: 0; color: #0056b3;">💡 Conseils pour votre courrier :</h4>
                 <ul style="margin-bottom: 0; font-size: 14px; color: #495057;">
                     <li>Pour afficher le nom du destinataire sur le couriel tapez l'index <code style="background:#f8f9fa; padding:2px 4px; border-radius:3px;">[NOM]</code></li>
                     <li>Soyez professionnel et courtois dans votre approche</li>
