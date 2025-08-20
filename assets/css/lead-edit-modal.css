@@ -1,0 +1,361 @@
+/**
+ * Styles pour le formulaire d'édition du lead dans le modal
+ * 
+ * @package My_Istymo
+ * @since 1.0.0
+ */
+
+/* Formulaire d'édition du lead - Style compact */
+.my-istymo-edit-form {
+    background: transparent;
+    padding: 0;
+    margin-bottom: 15px;
+    border: none;
+    box-shadow: none;
+}
+
+.my-istymo-edit-form .my-istymo-info-container {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 15px;
+    margin-bottom: 10px;
+    align-items: center;
+    overflow-x: auto;
+}
+
+.my-istymo-edit-form .my-istymo-info-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.my-istymo-edit-form .my-istymo-info-group label {
+    font-weight: 600;
+    color: #333;
+    font-size: 12px;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.my-istymo-edit-form .my-istymo-select,
+.my-istymo-edit-form .my-istymo-input {
+    padding: 3px 6px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    font-size: 12px;
+    background: #fff;
+    transition: border-color 0.2s ease;
+    min-width: 80px;
+    max-width: 150px;
+}
+
+.my-istymo-edit-form .my-istymo-select:focus,
+.my-istymo-edit-form .my-istymo-input:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 1px rgba(0, 115, 170, 0.2);
+}
+
+.my-istymo-edit-form .my-istymo-textarea {
+    padding: 6px 8px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    font-size: 13px;
+    background: #fff;
+    resize: vertical;
+    min-height: 60px;
+    max-height: 120px;
+    font-family: inherit;
+    transition: border-color 0.2s ease;
+    width: 100%;
+}
+
+.my-istymo-edit-form .my-istymo-textarea:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 1px rgba(0, 115, 170, 0.2);
+}
+
+.my-istymo-edit-form .my-istymo-readonly {
+    padding: 4px 8px;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    font-size: 13px;
+    color: #666;
+    font-style: italic;
+    min-width: 120px;
+}
+
+.my-istymo-edit-form .my-istymo-info-value {
+    font-size: 12px;
+    color: #333;
+    font-weight: normal;
+    padding: 3px 0;
+    min-width: 80px;
+    max-width: 150px;
+}
+
+.my-istymo-edit-form .my-istymo-info-row-notes {
+    margin-top: 10px;
+    width: 100%;
+}
+
+.my-istymo-edit-form .my-istymo-info-row-notes .my-istymo-info-group {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+}
+
+.my-istymo-edit-form .my-istymo-info-row-notes .my-istymo-info-group label {
+    margin-bottom: 2px;
+}
+
+.my-istymo-edit-form .my-istymo-form-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+}
+
+.my-istymo-edit-form .my-istymo-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    background: #f9f9f9;
+    color: #333;
+}
+
+.my-istymo-edit-form .my-istymo-btn-primary {
+    background: #0073aa;
+    color: #fff;
+    border-color: #0073aa;
+}
+
+.my-istymo-edit-form .my-istymo-btn-primary:hover {
+    background: #005a87;
+    border-color: #005a87;
+    transform: none;
+}
+
+.my-istymo-edit-form .my-istymo-btn-secondary {
+    background: #f9f9f9;
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+.my-istymo-edit-form .my-istymo-btn-secondary:hover {
+    background: #e9e9e9;
+    transform: none;
+}
+
+.my-istymo-edit-form .my-istymo-btn .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .my-istymo-edit-form .my-istymo-info-container {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .my-istymo-edit-form .my-istymo-info-group {
+        flex: 1;
+        min-width: 120px;
+    }
+    
+    .my-istymo-edit-form .my-istymo-select,
+    .my-istymo-edit-form .my-istymo-input {
+        min-width: 100px;
+        max-width: none;
+        flex: 1;
+    }
+    
+    .my-istymo-edit-form .my-istymo-form-actions {
+        flex-direction: row;
+        justify-content: flex-end;
+    }
+    
+    .my-istymo-edit-form .my-istymo-btn {
+        width: auto;
+        justify-content: center;
+    }
+}
+
+/* États de chargement */
+.my-istymo-edit-form.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.my-istymo-edit-form.loading .my-istymo-btn {
+    position: relative;
+}
+
+.my-istymo-edit-form.loading .my-istymo-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Validation des champs */
+.my-istymo-edit-form .my-istymo-input.error,
+.my-istymo-edit-form .my-istymo-select.error,
+.my-istymo-edit-form .my-istymo-textarea.error {
+    border-color: #dc3232;
+    box-shadow: 0 0 0 2px rgba(220, 50, 50, 0.2);
+}
+
+.my-istymo-edit-form .my-istymo-input.success,
+.my-istymo-edit-form .my-istymo-select.success,
+.my-istymo-edit-form .my-istymo-textarea.success {
+    border-color: #46b450;
+    box-shadow: 0 0 0 2px rgba(70, 180, 80, 0.2);
+}
+
+/* En-tête de section avec bouton */
+.my-istymo-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.my-istymo-section-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.my-istymo-section-header .my-istymo-btn-small {
+    padding: 6px 12px;
+    font-size: 12px;
+    min-height: auto;
+}
+
+/* Formulaire d'ajout d'action intégré */
+.my-istymo-add-action-form {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.my-istymo-add-action-form .my-istymo-form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.my-istymo-add-action-form .my-istymo-form-group {
+    flex: 1;
+    margin-bottom: 15px;
+}
+
+.my-istymo-add-action-form .my-istymo-form-group label {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    font-size: 13px;
+    margin-bottom: 5px;
+}
+
+.my-istymo-add-action-form .my-istymo-select,
+.my-istymo-add-action-form .my-istymo-input,
+.my-istymo-add-action-form .my-istymo-textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    background: #fff;
+    transition: border-color 0.2s ease;
+}
+
+.my-istymo-add-action-form .my-istymo-select:focus,
+.my-istymo-add-action-form .my-istymo-input:focus,
+.my-istymo-add-action-form .my-istymo-textarea:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 1px rgba(0, 115, 170, 0.2);
+}
+
+.my-istymo-add-action-form .my-istymo-textarea {
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+}
+
+.my-istymo-add-action-form .my-istymo-form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.my-istymo-add-action-form .my-istymo-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.my-istymo-add-action-form .my-istymo-btn-primary {
+    background: #0073aa;
+    color: #fff;
+    border-color: #0073aa;
+}
+
+.my-istymo-add-action-form .my-istymo-btn-primary:hover {
+    background: #005a87;
+    border-color: #005a87;
+}
+
+.my-istymo-add-action-form .my-istymo-btn-secondary {
+    background: #f9f9f9;
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+.my-istymo-add-action-form .my-istymo-btn-secondary:hover {
+    background: #e9e9e9;
+}

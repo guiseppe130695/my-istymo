@@ -45,6 +45,7 @@ class SCI_Favoris_Handler {
     
     /**
      * Ajoute un favori pour l'utilisateur courant
+     * ✅ AUTOMATISATION : Crée automatiquement un lead unifié
      */
     public function add_favori($sci_data) {
         global $wpdb;
@@ -72,11 +73,64 @@ class SCI_Favoris_Handler {
             return new WP_Error('db_error', 'Erreur lors de l\'ajout en base de données');
         }
         
+        // ✅ AUTOMATISATION : Créer automatiquement un lead unifié
+        $this->create_unified_lead_from_sci($sci_data, $user_id);
+        
         return true;
     }
     
     /**
+     * ✅ AUTOMATISATION : Crée un lead unifié à partir d'un favori SCI
+     */
+    private function create_unified_lead_from_sci($sci_data, $user_id) {
+        try {
+            // Vérifier si le système unifié est disponible
+            if (!class_exists('Unified_Leads_Manager')) {
+                error_log("Système unifié non disponible pour la création du lead SCI");
+                return;
+            }
+            
+            $leads_manager = Unified_Leads_Manager::get_instance();
+            
+            // Préparer les données du lead
+            $lead_data = array(
+                'user_id' => $user_id,
+                'lead_type' => 'sci',
+                'original_id' => sanitize_text_field($sci_data['siren']),
+                'status' => 'nouveau',
+                'priorite' => 'normale',
+                'notes' => sprintf(
+                    "Favori SCI automatiquement créé\n" .
+                    "Dénomination: %s\n" .
+                    "Dirigeant: %s\n" .
+                    "Adresse: %s, %s %s",
+                    $sci_data['denomination'] ?? '',
+                    $sci_data['dirigeant'] ?? '',
+                    $sci_data['adresse'] ?? '',
+                    $sci_data['code_postal'] ?? '',
+                    $sci_data['ville'] ?? ''
+                ),
+                'data_originale' => $sci_data, // ✅ AJOUT : Inclure les données originales complètes
+                'date_creation' => current_time('mysql'),
+                'date_modification' => current_time('mysql')
+            );
+            
+            // Créer le lead unifié
+            $result = $leads_manager->add_lead($lead_data);
+            
+            if (is_wp_error($result)) {
+                error_log("Erreur lors de la création automatique du lead unifié SCI: " . $result->get_error_message());
+            } else {
+                error_log("Lead unifié SCI créé automatiquement pour SIREN: " . $sci_data['siren']);
+            }
+        } catch (Exception $e) {
+            error_log("Exception lors de la création automatique du lead unifié SCI: " . $e->getMessage());
+        }
+    }
+    
+    /**
      * Supprime un favori pour l'utilisateur courant
+     * ✅ AUTOMATISATION : Supprime automatiquement le lead unifié correspondant
      */
     public function remove_favori($siren) {
         global $wpdb;
@@ -99,7 +153,45 @@ class SCI_Favoris_Handler {
             return new WP_Error('db_error', 'Erreur lors de la suppression');
         }
         
+        // ✅ AUTOMATISATION : Supprimer automatiquement le lead unifié correspondant
+        $this->remove_unified_lead_from_sci($siren, $user_id);
+        
         return true;
+    }
+    
+    /**
+     * ✅ AUTOMATISATION : Supprime le lead unifié correspondant à un favori SCI
+     */
+    private function remove_unified_lead_from_sci($siren, $user_id) {
+        try {
+            // Vérifier si le système unifié est disponible
+            if (!class_exists('Unified_Leads_Manager')) {
+                error_log("Système unifié non disponible pour la suppression du lead SCI");
+                return;
+            }
+            
+            $leads_manager = Unified_Leads_Manager::get_instance();
+            
+            // Récupérer le lead unifié correspondant
+            $leads = $leads_manager->get_leads($user_id, array(
+                'lead_type' => 'sci',
+                'original_id' => $siren
+            ));
+            
+            if (!empty($leads)) {
+                $lead = $leads[0];
+                // Utiliser le flag skip_favori_removal pour éviter la boucle infinie
+                $result = $leads_manager->delete_lead($lead->id, true);
+                
+                if (is_wp_error($result)) {
+                    error_log("Erreur lors de la suppression automatique du lead unifié SCI: " . $result->get_error_message());
+                } else {
+                    error_log("Lead unifié SCI supprimé automatiquement pour SIREN: " . $siren);
+                }
+            }
+        } catch (Exception $e) {
+            error_log("Exception lors de la suppression automatique du lead unifié SCI: " . $e->getMessage());
+        }
     }
     
     /**
@@ -168,82 +260,94 @@ add_action('init', 'sci_activate_favoris_table');
  * Gestionnaire AJAX pour les favoris
  */
 function sci_manage_favoris_ajax() {
-    // Vérification du nonce
-    if (!wp_verify_nonce($_POST['nonce'], 'sci_favoris_nonce')) {
-        wp_send_json_error('Nonce invalide');
-        return;
-    }
+    // Désactiver l'affichage des erreurs WordPress pour éviter le HTML
+    error_reporting(0);
+    ini_set('display_errors', 0);
     
-    global $sci_favoris_handler;
-    
-    $operation = sanitize_text_field($_POST['operation']);
-    
-    // ✅ AMÉLIORÉ : Logs pour le debugging
-    error_log("SCI Favoris AJAX - Opération: $operation");
-    
-    switch ($operation) {
-        case 'add':
-            if (!isset($_POST['sci_data'])) {
-                error_log("SCI Favoris AJAX - Erreur: Données manquantes pour l'ajout");
-                wp_send_json_error('Données manquantes');
-                return;
-            }
-            
-            $sci_data = json_decode(stripslashes($_POST['sci_data']), true);
-            if (!$sci_data) {
-                error_log("SCI Favoris AJAX - Erreur: Données JSON invalides");
-                wp_send_json_error('Données invalides');
-                return;
-            }
-            
-            error_log("SCI Favoris AJAX - Ajout favori pour SIREN: " . ($sci_data['siren'] ?? 'N/A'));
-            
-            $result = $sci_favoris_handler->add_favori($sci_data);
-            if (is_wp_error($result)) {
-                error_log("SCI Favoris AJAX - Erreur ajout: " . $result->get_error_message());
-                wp_send_json_error($result->get_error_message());
-            } else {
-                error_log("SCI Favoris AJAX - Favori ajouté avec succès");
-                wp_send_json_success('Favori ajouté');
-            }
-            break;
-            
-        case 'remove':
-            if (!isset($_POST['sci_data'])) {
-                error_log("SCI Favoris AJAX - Erreur: Données manquantes pour la suppression");
-                wp_send_json_error('Données manquantes');
-                return;
-            }
-            
-            $sci_data = json_decode(stripslashes($_POST['sci_data']), true);
-            if (!$sci_data || !isset($sci_data['siren'])) {
-                error_log("SCI Favoris AJAX - Erreur: SIREN manquant pour la suppression");
-                wp_send_json_error('SIREN manquant');
-                return;
-            }
-            
-            error_log("SCI Favoris AJAX - Suppression favori pour SIREN: " . $sci_data['siren']);
-            
-            $result = $sci_favoris_handler->remove_favori($sci_data['siren']);
-            if (is_wp_error($result)) {
-                error_log("SCI Favoris AJAX - Erreur suppression: " . $result->get_error_message());
-                wp_send_json_error($result->get_error_message());
-            } else {
-                error_log("SCI Favoris AJAX - Favori supprimé avec succès");
-                wp_send_json_success('Favori supprimé');
-            }
-            break;
-            
-        case 'get':
-            error_log("SCI Favoris AJAX - Récupération des favoris");
-            $favoris = $sci_favoris_handler->get_favoris();
-            error_log("SCI Favoris AJAX - " . count($favoris) . " favoris récupérés");
-            wp_send_json_success($favoris);
-            break;
-            
-        default:
-            error_log("SCI Favoris AJAX - Erreur: Opération invalide: $operation");
-            wp_send_json_error('Opération invalide');
+    try {
+        // Vérification du nonce
+        if (!wp_verify_nonce($_POST['nonce'], 'sci_favoris_nonce')) {
+            wp_send_json_error('Nonce invalide');
+            return;
+        }
+        
+        global $sci_favoris_handler;
+        
+        $operation = sanitize_text_field($_POST['operation']);
+        
+        // ✅ AMÉLIORÉ : Logs pour le debugging
+        error_log("SCI Favoris AJAX - Opération: $operation");
+        
+        switch ($operation) {
+            case 'add':
+                if (!isset($_POST['sci_data'])) {
+                    error_log("SCI Favoris AJAX - Erreur: Données manquantes pour l'ajout");
+                    wp_send_json_error('Données manquantes');
+                    return;
+                }
+                
+                $sci_data = json_decode(stripslashes($_POST['sci_data']), true);
+                if (!$sci_data) {
+                    error_log("SCI Favoris AJAX - Erreur: Données JSON invalides");
+                    wp_send_json_error('Données invalides');
+                    return;
+                }
+                
+                error_log("SCI Favoris AJAX - Ajout favori pour SIREN: " . ($sci_data['siren'] ?? 'N/A'));
+                
+                $result = $sci_favoris_handler->add_favori($sci_data);
+                if (is_wp_error($result)) {
+                    error_log("SCI Favoris AJAX - Erreur ajout: " . $result->get_error_message());
+                    wp_send_json_error($result->get_error_message());
+                } else {
+                    error_log("SCI Favoris AJAX - Favori ajouté avec succès");
+                    wp_send_json_success('Favori ajouté');
+                }
+                break;
+                
+            case 'remove':
+                if (!isset($_POST['sci_data'])) {
+                    error_log("SCI Favoris AJAX - Erreur: Données manquantes pour la suppression");
+                    wp_send_json_error('Données manquantes');
+                    return;
+                }
+                
+                $sci_data = json_decode(stripslashes($_POST['sci_data']), true);
+                if (!$sci_data || !isset($sci_data['siren'])) {
+                    error_log("SCI Favoris AJAX - Erreur: SIREN manquant pour la suppression");
+                    wp_send_json_error('SIREN manquant');
+                    return;
+                }
+                
+                error_log("SCI Favoris AJAX - Suppression favori pour SIREN: " . $sci_data['siren']);
+                
+                $result = $sci_favoris_handler->remove_favori($sci_data['siren']);
+                if (is_wp_error($result)) {
+                    error_log("SCI Favoris AJAX - Erreur suppression: " . $result->get_error_message());
+                    wp_send_json_error($result->get_error_message());
+                } else {
+                    error_log("SCI Favoris AJAX - Favori supprimé avec succès");
+                    wp_send_json_success('Favori supprimé');
+                }
+                break;
+                
+            case 'get':
+                error_log("SCI Favoris AJAX - Récupération des favoris");
+                $favoris = $sci_favoris_handler->get_favoris();
+                error_log("SCI Favoris AJAX - " . count($favoris) . " favoris récupérés");
+                wp_send_json_success($favoris);
+                break;
+                
+            default:
+                error_log("SCI Favoris AJAX - Erreur: Opération invalide: $operation");
+                wp_send_json_error('Opération invalide');
+        }
+    } catch (Exception $e) {
+        error_log("SCI Favoris AJAX - Exception: " . $e->getMessage());
+        wp_send_json_error('Erreur interne du serveur');
+    } catch (Error $e) {
+        error_log("SCI Favoris AJAX - Error: " . $e->getMessage());
+        wp_send_json_error('Erreur interne du serveur');
     }
 }
 

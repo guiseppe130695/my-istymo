@@ -2,6 +2,61 @@ document.addEventListener('DOMContentLoaded', function() {
     let favoris = [];
     let isInitialized = false;
 
+    // ✅ DIAGNOSTIC : Vérifier les variables AJAX
+    console.log('=== DIAGNOSTIC FAVORIS ===');
+    console.log('sci_ajax disponible:', typeof sci_ajax !== 'undefined');
+    if (typeof sci_ajax !== 'undefined') {
+        console.log('sci_ajax.ajax_url:', sci_ajax.ajax_url);
+        console.log('sci_ajax.nonce:', sci_ajax.nonce);
+    } else {
+        console.error('❌ sci_ajax n\'est pas disponible !');
+        // Essayer de récupérer les variables depuis window
+        if (typeof window.sci_ajax !== 'undefined') {
+            console.log('sci_ajax trouvé dans window.sci_ajax');
+            window.sci_ajax = window.sci_ajax;
+        }
+    }
+
+    // ✅ TEST AJAX SIMPLE
+    function testAjaxConnection() {
+        if (typeof sci_ajax === 'undefined') {
+            console.error('❌ Impossible de tester AJAX : sci_ajax non disponible');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('action', 'sci_manage_favoris');
+        formData.append('operation', 'get');
+        formData.append('nonce', sci_ajax.nonce);
+
+        console.log('🧪 Test AJAX en cours...');
+        
+        fetch(sci_ajax.ajax_url, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            console.log('📡 Réponse reçue:', response.status, response.statusText);
+            return response.text(); // Utiliser text() au lieu de json() pour voir la réponse brute
+        })
+        .then(data => {
+            console.log('📄 Données reçues:', data);
+            try {
+                const jsonData = JSON.parse(data);
+                console.log('✅ JSON valide:', jsonData);
+            } catch (e) {
+                console.error('❌ Réponse non-JSON:', data);
+                console.error('❌ Erreur de parsing:', e.message);
+            }
+        })
+        .catch(error => {
+            console.error('❌ Erreur AJAX:', error);
+        });
+    }
+
+    // Lancer le test après 1 seconde
+    setTimeout(testAjaxConnection, 1000);
+
     // Diagnostic supprimé pour la production
 
     function updateFavButtons() {
@@ -61,25 +116,41 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.append('sci_data', JSON.stringify(sciData));
         }
         
+        console.log('🔄 syncFavorisWithDB - Action:', action, 'Data:', sciData);
+        
         return fetch(sci_ajax.ajax_url, {
             method: 'POST',
             body: formData
         })
         .then(response => {
-            return response.json();
+            console.log('📡 Réponse reçue:', response.status, response.statusText);
+            return response.text(); // Utiliser text() pour voir la réponse brute
         })
         .then(data => {
-            if (data.success) {
-                if (action === 'get') {
-                    favoris = data.data || [];
-                    updateFavButtons();
+            console.log('📄 Données reçues:', data);
+            
+            // Essayer de parser le JSON
+            try {
+                const jsonData = JSON.parse(data);
+                console.log('✅ JSON parsé avec succès:', jsonData);
+                
+                if (jsonData.success) {
+                    if (action === 'get') {
+                        favoris = jsonData.data || [];
+                        updateFavButtons();
+                    }
+                    return jsonData;
+                } else {
+                    throw new Error(jsonData.data || 'Erreur inconnue');
                 }
-                return data;
-            } else {
-                throw new Error(data.data || 'Erreur inconnue');
+            } catch (e) {
+                console.error('❌ Erreur de parsing JSON:', e.message);
+                console.error('❌ Données reçues:', data);
+                throw new Error('Réponse serveur invalide: ' + data.substring(0, 100));
             }
         })
         .catch(error => {
+            console.error('❌ Erreur dans syncFavorisWithDB:', error);
             throw error;
         });
     }

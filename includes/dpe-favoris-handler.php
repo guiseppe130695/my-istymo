@@ -172,6 +172,7 @@ class DPE_Favoris_Handler {
     
     /**
      * Ajouter un favori DPE
+     * ✅ AUTOMATISATION : Crée automatiquement un lead unifié
      */
     public function add_favori($user_id, $dpe_data) {
         global $wpdb;
@@ -215,11 +216,70 @@ class DPE_Favoris_Handler {
             return new WP_Error('db_error', 'Erreur lors de l\'ajout du favori');
         }
         
+        // ✅ AUTOMATISATION : Créer automatiquement un lead unifié
+        $this->create_unified_lead_from_dpe($dpe_data, $user_id);
+        
         return true;
     }
     
     /**
+     * ✅ AUTOMATISATION : Crée un lead unifié à partir d'un favori DPE
+     */
+    private function create_unified_lead_from_dpe($dpe_data, $user_id) {
+        try {
+            // Vérifier si le système unifié est disponible
+            if (!class_exists('Unified_Leads_Manager')) {
+                error_log("Système unifié non disponible pour la création du lead DPE");
+                return;
+            }
+            
+            $leads_manager = Unified_Leads_Manager::get_instance();
+            
+            // Préparer les données du lead
+            $lead_data = array(
+                'user_id' => $user_id,
+                'lead_type' => 'dpe',
+                'original_id' => sanitize_text_field($dpe_data['_id']),
+                'status' => 'nouveau',
+                'priorite' => 'normale',
+                'notes' => sprintf(
+                    "Favori DPE automatiquement créé\n" .
+                    "Adresse: %s\n" .
+                    "Code postal: %s\n" .
+                    "Commune: %s\n" .
+                    "Étiquette DPE: %s\n" .
+                    "Étiquette GES: %s\n" .
+                    "Surface: %s m²\n" .
+                    "Type bâtiment: %s",
+                    $dpe_data['adresse_ban'] ?? '',
+                    $dpe_data['code_postal_ban'] ?? '',
+                    $dpe_data['nom_commune_ban'] ?? '',
+                    $dpe_data['etiquette_dpe'] ?? '',
+                    $dpe_data['etiquette_ges'] ?? '',
+                    $dpe_data['surface_habitable_logement'] ?? '',
+                    $dpe_data['type_batiment'] ?? ''
+                ),
+                'data_originale' => $dpe_data, // ✅ AJOUT : Inclure les données originales complètes
+                'date_creation' => current_time('mysql'),
+                'date_modification' => current_time('mysql')
+            );
+            
+            // Créer le lead unifié
+            $result = $leads_manager->add_lead($lead_data);
+            
+            if (is_wp_error($result)) {
+                error_log("Erreur lors de la création automatique du lead unifié DPE: " . $result->get_error_message());
+            } else {
+                error_log("Lead unifié DPE créé automatiquement pour DPE ID: " . $dpe_data['_id']);
+            }
+        } catch (Exception $e) {
+            error_log("Exception lors de la création automatique du lead unifié DPE: " . $e->getMessage());
+        }
+    }
+    
+    /**
      * Supprimer un favori DPE
+     * ✅ AUTOMATISATION : Supprime automatiquement le lead unifié correspondant
      */
     public function remove_favori($user_id, $dpe_id) {
         global $wpdb;
@@ -237,7 +297,45 @@ class DPE_Favoris_Handler {
             return new WP_Error('db_error', 'Erreur lors de la suppression du favori');
         }
         
+        // ✅ AUTOMATISATION : Supprimer automatiquement le lead unifié correspondant
+        $this->remove_unified_lead_from_dpe($dpe_id, $user_id);
+        
         return true;
+    }
+    
+    /**
+     * ✅ AUTOMATISATION : Supprime le lead unifié correspondant à un favori DPE
+     */
+    private function remove_unified_lead_from_dpe($dpe_id, $user_id) {
+        try {
+            // Vérifier si le système unifié est disponible
+            if (!class_exists('Unified_Leads_Manager')) {
+                error_log("Système unifié non disponible pour la suppression du lead DPE");
+                return;
+            }
+            
+            $leads_manager = Unified_Leads_Manager::get_instance();
+            
+            // Récupérer le lead unifié correspondant
+            $leads = $leads_manager->get_leads($user_id, array(
+                'lead_type' => 'dpe',
+                'original_id' => $dpe_id
+            ));
+            
+            if (!empty($leads)) {
+                $lead = $leads[0];
+                // Utiliser le flag skip_favori_removal pour éviter la boucle infinie
+                $result = $leads_manager->delete_lead($lead->id, true);
+                
+                if (is_wp_error($result)) {
+                    error_log("Erreur lors de la suppression automatique du lead unifié DPE: " . $result->get_error_message());
+                } else {
+                    error_log("Lead unifié DPE supprimé automatiquement pour DPE ID: " . $dpe_id);
+                }
+            }
+        } catch (Exception $e) {
+            error_log("Exception lors de la suppression automatique du lead unifié DPE: " . $e->getMessage());
+        }
     }
     
     /**

@@ -1,0 +1,2036 @@
+/**
+ * Styles pour le système unifié de gestion des leads
+ * Phase 1 : Infrastructure de base
+ * Préfixe my-istymo pour éviter les conflits
+ * Design professionnel et minimaliste
+ */
+
+/* Suppression de toute limitation de largeur pour utiliser toute la largeur de l'écran */
+.my-istymo .wrap {
+    max-width: none !important;
+    width: 100% !important;
+    background: #fafafa;
+    min-height: 100vh;
+}
+
+/* Conteneur principal en pleine largeur */
+.my-istymo .unified-leads-container {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 20px;
+    background: #fafafa;
+}
+
+/* En-tête de la page */
+.my-istymo .wrap h1 {
+    color: #1d2327;
+    font-size: 28px;
+    font-weight: 400;
+    margin: 0 0 30px 0;
+    padding: 0;
+    border: none;
+}
+
+/* Notice d'information */
+.my-istymo .notice.notice-info {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-left: 4px solid #0073aa;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    margin-bottom: 30px;
+}
+
+/* Badges de statut - Design minimaliste */
+.my-istymo .lead-status-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #fff;
+    line-height: 1.2;
+    border: none;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.my-istymo .lead-status-badge .dashicons {
+    font-size: 12px;
+    width: 12px;
+    height: 12px;
+    margin-right: 4px;
+    vertical-align: middle;
+}
+
+/* Badges de priorité - Design minimaliste */
+.my-istymo .lead-priority-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #fff;
+    line-height: 1.2;
+    border: none;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.my-istymo .lead-priority-badge .dashicons {
+    font-size: 12px;
+    width: 12px;
+    height: 12px;
+    margin-right: 4px;
+    vertical-align: middle;
+}
+
+/* Badges de type de lead - Design minimaliste */
+.my-istymo .lead-type-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: #fff;
+    line-height: 1;
+    border: none;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.my-istymo .lead-type-sci {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.my-istymo .lead-type-dpe {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+/* Tableau des leads - Design professionnel */
+.my-istymo .leads-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    table-layout: fixed;
+}
+
+/* Largeurs spécifiques des colonnes */
+.my-istymo .leads-table th:nth-child(1) { width: 8%; }  /* Type */
+.my-istymo .leads-table th:nth-child(2) { width: 25%; } /* Adresse */
+.my-istymo .leads-table th:nth-child(3) { width: 15%; } /* Ville */
+.my-istymo .leads-table th:nth-child(4) { width: 12%; } /* Statut */
+.my-istymo .leads-table th:nth-child(5) { width: 10%; } /* Priorité */
+.my-istymo .leads-table th:nth-child(6) { width: 12%; } /* Date */
+.my-istymo .leads-table th:nth-child(7) { width: 13%; } /* Notes */
+.my-istymo .leads-table th:nth-child(8) { width: 5%; }  /* Actions */
+
+.my-istymo .leads-table th,
+.my-istymo .leads-table td {
+    padding: 16px 12px;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Exceptions pour les colonnes qui peuvent avoir du texte long */
+.my-istymo .leads-table td:nth-child(2), /* Adresse */
+.my-istymo .leads-table td:nth-child(7)  /* Notes */ {
+    white-space: normal;
+    line-height: 1.4;
+    max-height: 3.2em;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.my-istymo .leads-table th {
+    background: #fafbfc;
+    font-weight: 600;
+    color: #1d2327;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e5e5e5;
+}
+
+.my-istymo .leads-table tr:hover {
+    background-color: #f8f9fa;
+    transition: background-color 0.2s ease;
+}
+
+.my-istymo .leads-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Grille de statistiques */
+.my-istymo .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.my-istymo .stat-item {
+    text-align: center;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    transition: transform 0.2s ease;
+}
+
+.my-istymo .stat-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.my-istymo .stat-number {
+    font-size: 2em;
+    font-weight: bold;
+    color: #0073aa;
+    margin: 10px 0;
+}
+
+.my-istymo .stat-details {
+    display: flex;
+    justify-content: space-around;
+    font-size: 0.9em;
+    color: #666;
+}
+
+/* Grille de statuts et priorités */
+.my-istymo .status-grid,
+.my-istymo .priority-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.my-istymo .status-item,
+.my-istymo .priority-item {
+    text-align: center;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    transition: transform 0.2s ease;
+}
+
+.my-istymo .status-item:hover,
+.my-istymo .priority-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.my-istymo .status-badge,
+.my-istymo .priority-badge {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 4px;
+    color: white;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.my-istymo .status-count,
+.my-istymo .priority-count {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #0073aa;
+}
+
+/* Cartes d'information - Design minimaliste */
+.my-istymo .my-istymo-card {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    padding: 14px;
+    margin: 24px 0;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.my-istymo .my-istymo-card:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    transform: translateY(-1px);
+}
+
+.my-istymo .my-istymo-card h2 {
+    margin: 0 0 20px 0;
+    color: #1d2327;
+    font-size: 18px;
+    font-weight: 500;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Boutons d'action - Design minimaliste amélioré */
+.my-istymo .leads-action-buttons {
+    display: flex;
+    gap: 12px;
+    margin: 10px 0;
+}
+
+.my-istymo .leads-action-button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.my-istymo .leads-action-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+}
+
+.my-istymo .leads-action-button.primary {
+    background: linear-gradient(135deg, #0073aa 0%, #005a87 100%);
+    color: white;
+    box-shadow: 0 3px 10px rgba(0,115,170,0.3);
+}
+
+.my-istymo .leads-action-button.primary:hover {
+    background: linear-gradient(135deg, #005a87 0%, #004466 100%);
+    box-shadow: 0 6px 20px rgba(0,115,170,0.4);
+}
+
+.my-istymo .leads-action-button.secondary {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    color: #1d2327;
+    border: 2px solid #e5e5e5;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.my-istymo .leads-action-button.secondary:hover {
+    background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+    border-color: #0073aa;
+    color: #0073aa;
+    box-shadow: 0 4px 12px rgba(0,115,170,0.15);
+}
+
+.my-istymo .leads-action-button.danger {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    box-shadow: 0 3px 10px rgba(220,53,69,0.3);
+}
+
+.my-istymo .leads-action-button.danger:hover {
+    background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+    box-shadow: 0 6px 20px rgba(220,53,69,0.4);
+}
+
+.my-istymo .leads-action-button.success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    box-shadow: 0 3px 10px rgba(40,167,69,0.3);
+}
+
+.my-istymo .leads-action-button.success:hover {
+    background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%);
+    box-shadow: 0 6px 20px rgba(40,167,69,0.4);
+}
+
+/* Filtres - Design professionnel amélioré avec alignement parfait */
+.my-istymo .leads-filters {
+    margin: 20px 0;
+    padding: 10px;
+    background: linear-gradient(135deg, #fafbfc 0%, #f8f9fa 100%);
+    border-radius: 12px;
+    border: 1px solid #e5e5e5;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.my-istymo .filter-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    align-items: end;
+    width: 100%;
+}
+
+.my-istymo .leads-filter-group,
+.my-istymo .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 70px;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    border: none;
+    box-shadow: none;
+    background: none;
+}
+
+.my-istymo .leads-filter-group label,
+.my-istymo .filter-group label {
+    font-weight: 500;
+    font-size: 12px;
+    color: #6b7280;
+    text-transform: none;
+    letter-spacing: 0.2px;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.my-istymo .leads-filter-group select,
+.my-istymo .leads-filter-group input,
+.my-istymo .filter-group select,
+.my-istymo .filter-group input {
+    padding: 4px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 12px;
+    background: #fff;
+    transition: all 0.2s ease;
+    font-weight: 400;
+    color: #1d2327;
+    height: 36px;
+    box-sizing: border-box;
+}
+
+.my-istymo .leads-filter-group select:hover,
+.my-istymo .leads-filter-group input:hover,
+.my-istymo .filter-group select:hover,
+.my-istymo .filter-group input:hover {
+    border-color: #0073aa;
+    box-shadow: 0 2px 8px rgba(0,115,170,0.1);
+}
+
+.my-istymo .leads-filter-group select:focus,
+.my-istymo .leads-filter-group input:focus,
+.my-istymo .filter-group select:focus,
+.my-istymo .filter-group input:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 4px rgba(0,115,170,0.15);
+    transform: translateY(-1px);
+}
+
+/* Groupe spécial pour les dates avec alignement parfait */
+.my-istymo .filter-group.date-range {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 70px;
+}
+
+.my-istymo .filter-group.date-range .date-inputs {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    height: 36px;
+}
+
+.my-istymo .filter-group.date-range .date-inputs input[type="date"] {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 13px;
+    background: #fff;
+    transition: all 0.2s ease;
+    font-weight: 400;
+    color: #1d2327;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    height: 36px;
+    box-sizing: border-box;
+}
+
+.my-istymo .filter-group.date-range .date-inputs span {
+    font-weight: 500;
+    color: #666;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.my-istymo .filter-actions {
+    display: flex;
+    gap: 8px;
+    align-items: end;
+    min-height: 70px;
+    justify-content: flex-end;
+}
+
+.my-istymo .filter-actions .button {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 12px;
+    text-transform: none;
+    letter-spacing: 0.2px;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.my-istymo .filter-actions .button-primary {
+    background: linear-gradient(135deg, #0073aa 0%, #005a87 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(0,115,170,0.3);
+}
+
+.my-istymo .filter-actions .button-primary:hover {
+    background: linear-gradient(135deg, #005a87 0%, #004466 100%);
+    box-shadow: 0 4px 12px rgba(0,115,170,0.4);
+    transform: translateY(-1px);
+}
+
+.my-istymo .filter-actions .button-secondary {
+    background: #f8f9fa;
+    color: #1d2327;
+    border: 2px solid #e5e5e5;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.my-istymo .filter-actions .button-secondary:hover {
+    background: #e9ecef;
+    border-color: #0073aa;
+    color: #0073aa;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transform: translateY(-1px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .my-istymo .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .my-istymo .status-grid,
+    .my-istymo .priority-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .my-istymo .filter-row {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .my-istymo .filter-group.date-range .date-inputs {
+        flex-direction: column;
+        height: auto;
+        gap: 12px;
+    }
+    
+    .my-istymo .filter-group.date-range .date-inputs input[type="date"] {
+        width: 100%;
+    }
+    
+    .my-istymo .filter-actions {
+        justify-content: stretch;
+    }
+    
+    .my-istymo .filter-actions .button {
+        flex: 1;
+        text-align: center;
+    }
+    
+    .my-istymo .leads-action-buttons {
+        flex-direction: column;
+    }
+    
+    .my-istymo .leads-table {
+        font-size: 12px;
+    }
+    
+    .my-istymo .leads-table th,
+    .my-istymo .leads-table td {
+        padding: 8px 4px;
+    }
+    
+    /* Réajustement des largeurs pour mobile */
+    .my-istymo .leads-table th:nth-child(1) { width: 10%; } /* Type */
+    .my-istymo .leads-table th:nth-child(2) { width: 30%; } /* Adresse */
+    .my-istymo .leads-table th:nth-child(3) { width: 20%; } /* Ville */
+    .my-istymo .leads-table th:nth-child(4) { width: 15%; } /* Statut */
+    .my-istymo .leads-table th:nth-child(5) { width: 0%; }  /* Priorité - cachée */
+    .my-istymo .leads-table th:nth-child(6) { width: 0%; }  /* Date - cachée */
+    .my-istymo .leads-table th:nth-child(7) { width: 15%; } /* Notes */
+    .my-istymo .leads-table th:nth-child(8) { width: 10%; } /* Actions */
+    
+    /* Cacher certaines colonnes sur mobile */
+    .my-istymo .leads-table th:nth-child(5),
+    .my-istymo .leads-table td:nth-child(5),
+    .my-istymo .leads-table th:nth-child(6),
+    .my-istymo .leads-table td:nth-child(6) {
+        display: none;
+    }
+}
+
+/* Animations */
+@keyframes my-istymo-fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.my-istymo .leads-table tbody tr {
+    animation: my-istymo-fadeIn 0.3s ease;
+}
+
+/* Styles pour les informations spécifiques des leads */
+.my-istymo .my-istymo-lead-specific-section {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    border: 1px solid #e5e5e5;
+}
+
+.my-istymo .my-istymo-lead-specific-section h3 {
+    margin: 0 0 16px 0;
+    color: #1d2327;
+    font-size: 16px;
+    font-weight: 600;
+    border-bottom: 2px solid #0073aa;
+    padding-bottom: 8px;
+}
+
+.my-istymo .my-istymo-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+}
+
+.my-istymo .my-istymo-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.my-istymo .my-istymo-info-item label {
+    font-weight: 600;
+    font-size: 12px;
+    color: #6b7280;
+    text-transform: none;
+    letter-spacing: 0.2px;
+}
+
+.my-istymo .my-istymo-info-item .my-istymo-info-value {
+    font-size: 14px;
+    color: #1d2327;
+    font-weight: 500;
+    padding: 8px 12px;
+    background: #fff;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+}
+
+/* Styles pour les classes DPE */
+.my-istymo .my-istymo-dpe-class {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #fff;
+}
+
+.my-istymo .my-istymo-dpe-class-a { background: #10b981; }
+.my-istymo .my-istymo-dpe-class-b { background: #3b82f6; }
+.my-istymo .my-istymo-dpe-class-c { background: #8b5cf6; }
+.my-istymo .my-istymo-dpe-class-d { background: #f59e0b; }
+.my-istymo .my-istymo-dpe-class-e { background: #f97316; }
+.my-istymo .my-istymo-dpe-class-f { background: #ef4444; }
+.my-istymo .my-istymo-dpe-class-g { background: #dc2626; }
+
+/* Styles pour les sections organisées dans les popups DPE et SCI */
+.my-istymo .my-istymo-info-section {
+    background: #fff;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    padding: 20px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.my-istymo .my-istymo-section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 16px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.my-istymo .my-istymo-dpe-info,
+.my-istymo .my-istymo-sci-info {
+    background: #f9fafb;
+    border-radius: 8px;
+    padding: 16px;
+    max-width: 600px;
+}
+
+/* Section debug pour les admins */
+.my-istymo .my-istymo-debug-info {
+    margin-top: 20px;
+    padding: 16px;
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 6px;
+}
+
+.my-istymo .my-istymo-debug-info summary {
+    font-weight: 600;
+    color: #92400e;
+    cursor: pointer;
+    padding: 8px 0;
+}
+
+.my-istymo .my-istymo-debug-info pre {
+    background: #fff;
+    padding: 12px;
+    border-radius: 4px;
+    font-size: 11px;
+    overflow-x: auto;
+    margin: 8px 0 0 0;
+    border: 1px solid #d1d5db;
+}
+
+/* Styles pour le modal de détail */
+.my-istymo .my-istymo-lead-info-section,
+.my-istymo .my-istymo-lead-history-section {
+    margin: 20px 0;
+}
+
+.my-istymo .my-istymo-lead-info-section h3,
+.my-istymo .my-istymo-lead-history-section h3 {
+    margin: 0 0 16px 0;
+    color: #1d2327;
+    font-size: 16px;
+    font-weight: 600;
+    border-bottom: 2px solid #0073aa;
+    padding-bottom: 8px;
+}
+
+.my-istymo .my-istymo-info-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.my-istymo .my-istymo-info-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.my-istymo .my-istymo-info-group label {
+    font-weight: 600;
+    font-size: 12px;
+    color: #6b7280;
+    text-transform: none;
+    letter-spacing: 0.2px;
+}
+
+.my-istymo .my-istymo-info-value {
+    font-size: 14px;
+    color: #1d2327;
+    font-weight: 500;
+    padding: 8px 12px;
+    background: #fff;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+}
+
+.my-istymo .my-istymo-info-row-notes {
+    margin-top: 20px;
+}
+
+.my-istymo .my-istymo-full-width {
+    grid-column: 1 / -1;
+}
+
+.my-istymo .my-istymo-select {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    background: #fff;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    color: #1d2327;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.my-istymo .my-istymo-select:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 4px rgba(0,115,170,0.15);
+}
+
+.my-istymo .my-istymo-textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    background: #fff;
+    transition: all 0.2s ease;
+    font-weight: 400;
+    color: #1d2327;
+    resize: vertical;
+    min-height: 100px;
+    font-family: inherit;
+    line-height: 1.5;
+}
+
+.my-istymo .my-istymo-textarea:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 4px rgba(0,115,170,0.15);
+}
+
+.my-istymo .my-istymo-form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e5e5;
+}
+
+.my-istymo .my-istymo-btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+}
+
+.my-istymo .my-istymo-btn-primary {
+    background: linear-gradient(135deg, #0073aa 0%, #005a87 100%);
+    color: white;
+}
+
+.my-istymo .my-istymo-btn-primary:hover {
+    background: linear-gradient(135deg, #005a87 0%, #004466 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,115,170,0.3);
+}
+
+.my-istymo .my-istymo-btn-secondary {
+    background: #f8f9fa;
+    color: #6c757d;
+    border: 1px solid #e5e5e5;
+}
+
+.my-istymo .my-istymo-btn-secondary:hover {
+    background: #e9ecef;
+    color: #495057;
+    transform: translateY(-1px);
+}
+
+.my-istymo .my-istymo-no-actions {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+    font-style: italic;
+}
+
+/* Styles pour les informations spécifiques intégrées */
+.my-istymo .my-istymo-lead-specific-inline {
+    margin: 20px 0;
+    padding: 16px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #e5e5e5;
+}
+
+.my-istymo .my-istymo-lead-specific-inline h4 {
+    margin: 0 0 12px 0;
+    color: #1d2327;
+    font-size: 14px;
+    font-weight: 600;
+    border-bottom: 1px solid #e5e5e5;
+    padding-bottom: 6px;
+}
+
+.my-istymo .my-istymo-debug-section {
+    margin: 20px 0;
+}
+
+/* États de chargement */
+.my-istymo .leads-loading {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+}
+
+.my-istymo .leads-loading::after {
+    content: '';
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ddd;
+    border-top: 2px solid #0073aa;
+    border-radius: 50%;
+    animation: my-istymo-spin 1s linear infinite;
+    margin-left: 10px;
+}
+
+@keyframes my-istymo-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Messages de notification - Design minimaliste */
+.my-istymo .leads-notice {
+    padding: 16px 20px;
+    margin: 20px 0;
+    border-radius: 8px;
+    border-left: 4px solid;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    font-weight: 500;
+}
+
+.my-istymo .leads-notice.success {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border-color: #28a745;
+    color: #155724;
+}
+
+.my-istymo .leads-notice.error {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    border-color: #dc3545;
+    color: #721c24;
+}
+
+.my-istymo .leads-notice.warning {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border-color: #ffc107;
+    color: #856404;
+}
+
+.my-istymo .leads-notice.info {
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+    border-color: #17a2b8;
+    color: #0c5460;
+}
+
+/* Modal d'édition des leads */
+.my-istymo-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.my-istymo-modal.my-istymo-show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.my-istymo-modal.my-istymo-hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.my-istymo-modal-content {
+    background: #ffffff;
+    border: 3px solid #0073aa;
+    border-radius: 12px;
+    max-width: 700px;
+    width: 95%;
+    max-height: 85vh;
+    overflow-y: auto;
+    transform: scale(0.95);
+    transition: transform 0.2s ease;
+    /* Amélioration de l'accessibilité pour les personnes âgées */
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.my-istymo-modal.my-istymo-show .my-istymo-modal-content {
+    transform: scale(1);
+}
+
+.my-istymo-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #0073aa;
+    background: #f8f9fa;
+    border-radius: 9px 9px 0 0;
+}
+
+.my-istymo-modal-header h3 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: #1d2327;
+    /* Amélioration de l'accessibilité */
+    letter-spacing: 0.5px;
+}
+
+.my-istymo-modal-close {
+    background: #f8f9fa;
+    border: 2px solid #0073aa;
+    cursor: pointer;
+    padding: 12px;
+    border-radius: 8px;
+    color: #0073aa;
+    transition: all 0.2s ease;
+    /* Amélioration de l'accessibilité */
+    font-size: 18px;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.my-istymo-modal-close:hover {
+    background: #0073aa;
+    color: #ffffff;
+    transform: scale(1.05);
+}
+
+.my-istymo-form {
+    padding: 28px;
+    /* Amélioration de l'accessibilité */
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.my-istymo-form-group {
+    margin-bottom: 20px;
+}
+
+.my-istymo-form-group label {
+    display: block;
+    margin-bottom: 12px;
+    font-weight: 600;
+    color: #1d2327;
+    font-size: 16px;
+    /* Amélioration de l'accessibilité */
+    letter-spacing: 0.3px;
+}
+
+.my-istymo-select,
+.my-istymo-textarea {
+    width: 100%;
+    padding: 14px 16px;
+    /* Amélioration de l'accessibilité */
+    font-size: 16px;
+    border: 2px solid #e5e5e5;
+    border-radius: 8px;
+    transition: border-color 0.2s ease;
+}
+
+.my-istymo-select:focus,
+.my-istymo-textarea:focus {
+    border-color: #0073aa;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+}
+
+.my-istymo-select:focus,
+.my-istymo-textarea:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 2px rgba(0, 115, 170, 0.1);
+}
+
+.my-istymo-textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.my-istymo-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e5e5;
+}
+
+.my-istymo-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.my-istymo-btn-primary {
+    background: #0073aa;
+    color: #fff;
+}
+
+.my-istymo-btn-primary:hover {
+    background: #005a87;
+    color: #fff;
+}
+
+.my-istymo-btn-secondary {
+    background: #f1f1f1;
+    color: #333;
+}
+
+.my-istymo-btn-secondary:hover {
+    background: #e5e5e5;
+    color: #333;
+}
+
+/* Responsive pour le modal */
+@media (max-width: 768px) {
+    .my-istymo-modal-content {
+        width: 98%;
+        margin: 10px;
+        max-height: 90vh;
+        font-size: 18px;
+    }
+    
+    .my-istymo-modal-header {
+        padding: 20px 24px;
+    }
+    
+    .my-istymo-modal-header h3 {
+        font-size: 20px;
+    }
+    
+    .my-istymo-form {
+        padding: 20px 24px;
+        font-size: 18px;
+    }
+    
+    .my-istymo-form-group label {
+        font-size: 18px;
+        margin-bottom: 16px;
+    }
+    
+    .my-istymo-select,
+    .my-istymo-textarea,
+    .my-istymo-modal-content input[type="text"],
+    .my-istymo-modal-content input[type="email"],
+    .my-istymo-modal-content input[type="tel"],
+    .my-istymo-modal-content input[type="number"],
+    .my-istymo-modal-content input[type="date"],
+    .my-istymo-modal-content select,
+    .my-istymo-modal-content textarea {
+        font-size: 18px;
+        padding: 16px 20px;
+        min-height: 48px;
+    }
+    
+    .my-istymo-modal-actions {
+        flex-direction: column;
+        gap: 12px;
+        padding: 20px 24px;
+    }
+    
+    .my-istymo-modal-actions .my-istymo-btn {
+        width: 100%;
+        margin-bottom: 0;
+        padding: 18px 24px;
+        font-size: 18px;
+        min-height: 52px;
+    }
+    
+    .my-istymo-modal-close {
+        padding: 16px;
+        font-size: 20px;
+        min-width: 48px;
+        min-height: 48px;
+    }
+    
+    .my-istymo-modal-content p {
+        font-size: 18px;
+        line-height: 1.7;
+    }
+    
+    .my-istymo-modal-content h2 {
+        font-size: 22px;
+    }
+    
+    .my-istymo-modal-content h3 {
+        font-size: 20px;
+    }
+    
+    .my-istymo-modal-content h4 {
+        font-size: 18px;
+    }
+    
+    .my-istymo-modal-content .my-istymo-btn {
+        font-size: 18px;
+        padding: 16px 24px;
+        min-height: 48px;
+    }
+}
+
+/* Notifications système */
+.my-istymo-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    padding: 16px 20px;
+    max-width: 400px;
+    z-index: 100001;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    border-left: 4px solid;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.my-istymo-notification.show {
+    transform: translateX(0);
+}
+
+.my-istymo-notification-success {
+    border-left-color: #28a745;
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+}
+
+.my-istymo-notification-error {
+    border-left-color: #dc3545;
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+}
+
+.my-istymo-notification-warning {
+    border-left-color: #ffc107;
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+}
+
+.my-istymo-notification-info {
+    border-left-color: #17a2b8;
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+}
+
+.my-istymo-notification-message {
+    flex: 1;
+    font-weight: 500;
+    color: #1d2327;
+    font-size: 14px;
+}
+
+.my-istymo-notification-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    color: #666;
+    font-size: 18px;
+    line-height: 1;
+    transition: all 0.2s ease;
+}
+
+.my-istymo-notification-close:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #333;
+}
+
+/* Boutons pour les modals */
+.my-istymo-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    margin-top: 28px;
+    padding: 24px 28px;
+    border-top: 2px solid #e5e5e5;
+    background: #f8f9fa;
+    border-radius: 0 0 9px 9px;
+    /* Amélioration de l'accessibilité */
+    min-height: 60px;
+}
+
+.my-istymo-modal-actions .my-istymo-btn {
+    padding: 16px 32px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+    /* Amélioration de l'accessibilité */
+    min-width: 120px;
+    min-height: 48px;
+}
+
+.my-istymo-modal-actions .my-istymo-btn-primary {
+    background: #0073aa;
+    color: white;
+    border: 2px solid #0073aa;
+}
+
+.my-istymo-modal-actions .my-istymo-btn-primary:hover {
+    background: #005a87;
+    border-color: #005a87;
+    transform: scale(1.02);
+}
+
+.my-istymo-modal-actions .my-istymo-btn-secondary {
+    background: #ffffff;
+    color: #1d2327;
+    border: 2px solid #e5e5e5;
+}
+
+.my-istymo-modal-actions .my-istymo-btn-secondary:hover {
+    background: #f8f9fa;
+    border-color: #0073aa;
+    color: #0073aa;
+    transform: scale(1.02);
+}
+
+/* Overlay pour les modals */
+.my-istymo-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: -1;
+}
+
+/* Améliorations d'accessibilité pour le contenu du modal */
+.my-istymo-modal-content p {
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 16px;
+    color: #1d2327;
+}
+
+.my-istymo-modal-content h2,
+.my-istymo-modal-content h3,
+.my-istymo-modal-content h4 {
+    font-weight: 700;
+    color: #1d2327;
+    margin-bottom: 16px;
+    letter-spacing: 0.3px;
+}
+
+.my-istymo-modal-content h2 {
+    font-size: 24px;
+}
+
+.my-istymo-modal-content h3 {
+    font-size: 20px;
+}
+
+.my-istymo-modal-content h4 {
+    font-size: 18px;
+}
+
+/* Amélioration des listes dans le modal */
+.my-istymo-modal-content ul,
+.my-istymo-modal-content ol {
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 16px;
+    padding-left: 24px;
+}
+
+.my-istymo-modal-content li {
+    margin-bottom: 8px;
+}
+
+/* Amélioration des tableaux dans le modal */
+.my-istymo-modal-content table {
+    font-size: 16px;
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.my-istymo-modal-content th,
+.my-istymo-modal-content td {
+    padding: 12px 16px;
+    border: 2px solid #e5e5e5;
+    text-align: left;
+}
+
+.my-istymo-modal-content th {
+    background: #f8f9fa;
+    font-weight: 700;
+    color: #1d2327;
+}
+
+/* Amélioration des liens dans le modal */
+.my-istymo-modal-content a {
+    color: #0073aa;
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+.my-istymo-modal-content a:hover {
+    color: #005a87;
+    text-decoration: none;
+}
+
+/* Amélioration des boutons dans le modal */
+.my-istymo-modal-content .my-istymo-btn {
+    font-size: 16px;
+    padding: 12px 20px;
+    min-height: 44px;
+    min-width: 100px;
+    border-radius: 8px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+/* Amélioration des champs de formulaire dans le modal */
+.my-istymo-modal-content input[type="text"],
+.my-istymo-modal-content input[type="email"],
+.my-istymo-modal-content input[type="tel"],
+.my-istymo-modal-content input[type="number"],
+.my-istymo-modal-content input[type="date"],
+.my-istymo-modal-content select,
+.my-istymo-modal-content textarea {
+    font-size: 16px;
+    border: 2px solid #e5e5e5;
+    border-radius: 8px;
+}
+
+.my-istymo-modal-content input[type="text"]:focus,
+.my-istymo-modal-content input[type="email"]:focus,
+.my-istymo-modal-content input[type="tel"]:focus,
+.my-istymo-modal-content input[type="number"]:focus,
+.my-istymo-modal-content input[type="date"]:focus,
+.my-istymo-modal-content select:focus,
+.my-istymo-modal-content textarea:focus {
+    border-color: #0073aa;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+}
+
+/* Styles pour les informations dans le modal - Affichage compact et horizontal */
+.my-istymo-info-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 16px;
+    align-items: center;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.my-istymo-info-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 12px;
+    align-items: center;
+}
+
+.my-istymo-info-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    min-width: 0;
+    flex-shrink: 1;
+}
+
+.my-istymo-info-group label {
+    font-weight: 600;
+    color: #1d2327;
+    margin: 0;
+    white-space: nowrap;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+}
+
+.my-istymo-info-group span {
+    color: #495057;
+    font-weight: 500;
+    word-break: break-word;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Style spécial pour les notes - label en haut, contenu en bas */
+.my-istymo-info-row-notes {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #e9ecef;
+}
+
+.my-istymo-info-group.my-istymo-full-width {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    width: 100%;
+}
+
+.my-istymo-info-group.my-istymo-full-width label {
+    font-weight: 600;
+    color: #1d2327;
+    margin: 0;
+    white-space: nowrap;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.my-istymo-notes-content {
+    color: #495057;
+    font-weight: 400;
+    width: 100%;
+    line-height: 1.5;
+    background: #fff;
+    min-height: 60px;
+    font-size: 14px;
+}
+
+/* Badges de statut et priorité compacts */
+.my-istymo-status-badge,
+.my-istymo-priority-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: white;
+    line-height: 1.2;
+    border: none;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    white-space: nowrap;
+}
+
+
+
+/* ========================================
+   NOUVEAU DESIGN MODERNE POUR LE TABLEAU
+   ======================================== */
+
+/* Conteneur principal du nouveau tableau */
+.my-istymo-leads-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    margin: 20px 0;
+}
+
+/* En-tête avec contrôles */
+.my-istymo-table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #fafbfc;
+}
+
+.my-istymo-header-left,
+.my-istymo-header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.my-istymo-header-left {
+    flex: 1;
+}
+
+/* Filtres intégrés dans l'en-tête */
+.my-istymo-inline-filters {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    margin-left: 20px !important;
+}
+
+.my-istymo-filter-group {
+    position: relative;
+}
+
+.my-istymo-filter-select {
+    padding: 6px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 13px;
+    background: #fff;
+    color: #374151;
+    min-width: 140px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.my-istymo-filter-select:hover {
+    border-color: #9ca3af;
+}
+
+.my-istymo-filter-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+/* Boutons d'action des filtres */
+.my-istymo-filter-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: 8px;
+}
+
+.my-istymo-filter-apply-btn,
+.my-istymo-filter-reset-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.my-istymo-filter-apply-btn {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: #fff;
+}
+
+.my-istymo-filter-apply-btn:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #fff;
+}
+
+.my-istymo-filter-reset-btn {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+    color: #6b7280;
+}
+
+.my-istymo-filter-reset-btn:hover {
+    background: #e5e7eb;
+    color: #374151;
+    text-decoration: none;
+}
+
+/* Compteur de résultats */
+.my-istymo-results-count {
+    font-size: 13px;
+    color: #6b7280;
+    font-weight: 500;
+    padding: 8px 12px;
+    background: #f9fafb;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+}
+
+/* Boutons de contrôle */
+.my-istymo-view-btn,
+.my-istymo-sort-btn,
+.my-istymo-filter-btn,
+.my-istymo-export-btn,
+.my-istymo-add-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #fff;
+    color: #6b7280;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.my-istymo-view-btn:hover,
+.my-istymo-sort-btn:hover,
+.my-istymo-filter-btn:hover,
+.my-istymo-export-btn:hover {
+    border-color: #9ca3af;
+    color: #374151;
+}
+
+.my-istymo-view-btn.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: #fff;
+}
+
+.my-istymo-add-btn {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: #fff;
+}
+
+.my-istymo-add-btn:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #fff;
+}
+
+/* Tableau moderne */
+
+
+/* S'assurer que les lignes du tableau permettent l'affichage des menus */
+.my-istymo-leads-table tbody tr {
+    position: relative;
+}
+
+.my-istymo-leads-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+/* En-têtes du tableau */
+.my-istymo-leads-table thead th {
+    padding: 16px 20px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+.my-istymo-leads-table thead th .dashicons {
+    margin-right: 6px;
+    font-size: 14px;
+    color: #9ca3af;
+}
+
+/* Largeurs des colonnes */
+.my-istymo-th-checkbox { width: 50px; }
+.my-istymo-th-company { width: 250px; }
+.my-istymo-th-category { width: 150px; }
+.my-istymo-th-priority { width: 120px; }
+.my-istymo-th-location { width: 180px; }
+.my-istymo-th-status { width: 120px; }
+.my-istymo-th-actions { width: 60px; }
+
+/* Lignes du tableau */
+.my-istymo-table-row {
+    border-bottom: 1px solid #f3f4f6;
+    transition: background-color 0.2s ease;
+}
+
+.my-istymo-table-row:hover {
+    background: #f9fafb;
+}
+
+.my-istymo-leads-table tbody td {
+    padding: 16px 20px;
+    vertical-align: middle;
+}
+
+/* Cellule checkbox */
+.my-istymo-td-checkbox {
+    width: 50px;
+}
+
+.my-istymo-lead-checkbox,
+.my-istymo-select-all {
+    width: 16px;
+    height: 16px;
+    accent-color: #3b82f6;
+}
+
+/* Cellule entreprise avec icône */
+.my-istymo-company-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.my-istymo-company-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.my-istymo-icon {
+    font-size: 18px;
+}
+
+.my-istymo-company-info {
+    min-width: 0;
+}
+
+.my-istymo-company-name {
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.my-istymo-company-id {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+/* Cellules simples */
+.my-istymo-category,
+.my-istymo-domain,
+.my-istymo-location {
+    color: #6b7280;
+    font-weight: 500;
+}
+
+/* Badges de statut modernes */
+.my-istymo-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.my-istymo-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+/* Couleurs des statuts */
+.my-istymo-status-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.my-istymo-status-pending .my-istymo-status-dot {
+    background: #f59e0b;
+}
+
+.my-istymo-status-progress {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.my-istymo-status-progress .my-istymo-status-dot {
+    background: #3b82f6;
+}
+
+.my-istymo-status-completed {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.my-istymo-status-completed .my-istymo-status-dot {
+    background: #10b981;
+}
+
+/* Badges de priorité modernes */
+.my-istymo-priority-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.my-istymo-priority-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+/* Couleurs des priorités */
+.my-istymo-priority-high {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.my-istymo-priority-high .my-istymo-priority-dot {
+    background: #dc2626;
+}
+
+.my-istymo-priority-normal {
+    background: #f0f9ff;
+    color: #0369a1;
+}
+
+.my-istymo-priority-normal .my-istymo-priority-dot {
+    background: #0369a1;
+}
+
+.my-istymo-priority-low {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+.my-istymo-priority-low .my-istymo-priority-dot {
+    background: #6b7280;
+}
+
+/* Menu d'actions */
+.my-istymo-actions-menu {
+    position: relative;
+}
+
+.my-istymo-menu-trigger {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+    transition: all 0.2s ease;
+}
+
+.my-istymo-menu-trigger:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.my-istymo-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 150px;
+    z-index: 9999;
+    display: none;
+    padding: 6px 0;
+    margin-top: 4px;
+}
+
+.my-istymo-dropdown-menu.show {
+    display: block;
+}
+
+.my-istymo-dropdown-menu a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    color: #374151;
+    text-decoration: none;
+    font-size: 13px;
+    transition: background-color 0.2s ease;
+}
+
+.my-istymo-dropdown-menu a:hover {
+    background: #f3f4f6;
+}
+
+.my-istymo-dropdown-menu a.delete-lead {
+    color: #dc2626;
+}
+
+.my-istymo-dropdown-menu a.delete-lead:hover {
+    background: #fef2f2;
+}
+
+/* Responsive pour les petits écrans */
+@media (max-width: 768px) {
+    .my-istymo-info-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 16px;
+    }
+    
+    .my-istymo-info-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .my-istymo-info-group {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .my-istymo-info-group span {
+        max-width: none;
+        text-align: right;
+    }
+}

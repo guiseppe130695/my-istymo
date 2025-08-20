@@ -66,7 +66,6 @@ if (!function_exists('lettre_laposte_log')) {
     }
 }
 require_once plugin_dir_path(__FILE__) . 'lib/tcpdf/tcpdf.php';
-require_once plugin_dir_path(__FILE__) . 'includes/favoris-handler.php';
 require_once plugin_dir_path(__FILE__) . 'includes/config-manager.php';
 require_once plugin_dir_path(__FILE__) . 'includes/campaign-manager.php';
 require_once plugin_dir_path(__FILE__) . 'includes/woocommerce-integration.php';
@@ -76,10 +75,22 @@ require_once plugin_dir_path(__FILE__) . 'includes/template-loader.php';
 
 // ✅ NOUVEAU : Inclure les fichiers DPE
 require_once plugin_dir_path(__FILE__) . 'includes/dpe-config-manager.php';
-require_once plugin_dir_path(__FILE__) . 'includes/dpe-favoris-handler.php';
 require_once plugin_dir_path(__FILE__) . 'includes/dpe-handler.php';
 require_once plugin_dir_path(__FILE__) . 'includes/dpe-shortcodes.php';
 
+// ✅ PHASE 1 : Système unifié de gestion des leads (AVANT les favoris)
+require_once plugin_dir_path(__FILE__) . 'includes/unified-leads-manager.php';
+require_once plugin_dir_path(__FILE__) . 'includes/lead-status-manager.php';
+require_once plugin_dir_path(__FILE__) . 'includes/unified-leads-migration.php';
+require_once plugin_dir_path(__FILE__) . 'includes/unified-leads-test.php';
+
+// ✅ PHASE 3 : Système d'actions et workflow
+require_once plugin_dir_path(__FILE__) . 'includes/lead-actions-manager.php';
+require_once plugin_dir_path(__FILE__) . 'includes/lead-workflow.php';
+
+// ✅ APRÈS le système unifié : Inclure les gestionnaires de favoris
+require_once plugin_dir_path(__FILE__) . 'includes/favoris-handler.php';
+require_once plugin_dir_path(__FILE__) . 'includes/dpe-favoris-handler.php';
 
 // --- Ajout du menu SCI dans l'admin WordPress ---
 add_action('admin_menu', 'sci_ajouter_menu');
@@ -143,8 +154,35 @@ function sci_ajouter_menu() {
         'dpe-favoris',
         'dpe_favoris_page'
     );
+    
+           // ✅ PHASE 2 : Menu principal pour le système unifié de gestion des leads
+       add_menu_page(
+           'Gestion des Leads',
+           'Leads',
+           'manage_options',
+           'unified-leads',
+           'unified_leads_admin_page',
+           'dashicons-groups',
+           8
+       );
+       
+       // ✅ PHASE 2 : Sous-menu pour la configuration
+       add_submenu_page(
+           'unified-leads',
+           'Configuration',
+           'Configuration',
+           'manage_options',
+           'unified-leads-config',
+           'unified_leads_config_page'
+       );
 }
 
+
+       // ✅ PHASE 1 : Inclure la page d'administration des leads unifiés
+       require_once plugin_dir_path(__FILE__) . 'templates/unified-leads-admin.php';
+       
+       // ✅ PHASE 2 : Inclure la page de configuration des leads unifiés
+       require_once plugin_dir_path(__FILE__) . 'templates/unified-leads-config.php';
 
 // --- Affichage du panneau d'administration SCI ---
 function sci_afficher_panel() {
@@ -992,6 +1030,743 @@ function sci_force_create_dpe_tables() {
     // Forcer la création de la table des favoris DPE
     dpe_favoris_handler()->create_favoris_table();
 }
+
+// ✅ PHASE 3 : Handlers AJAX pour les actions et le workflow
+add_action('wp_ajax_my_istymo_add_lead_action', 'my_istymo_ajax_add_lead_action');
+add_action('wp_ajax_my_istymo_update_lead_action', 'my_istymo_ajax_update_lead_action');
+add_action('wp_ajax_my_istymo_delete_lead_action', 'my_istymo_ajax_delete_lead_action');
+add_action('wp_ajax_my_istymo_get_lead_action', 'my_istymo_ajax_get_lead_action');
+add_action('wp_ajax_my_istymo_change_lead_status', 'my_istymo_ajax_change_lead_status');
+add_action('wp_ajax_my_istymo_get_lead_details', 'my_istymo_ajax_get_lead_details');
+add_action('wp_ajax_my_istymo_get_lead_detail_content', 'my_istymo_ajax_get_lead_detail_content');
+add_action('wp_ajax_my_istymo_validate_workflow_transition', 'my_istymo_ajax_validate_workflow_transition');
+add_action('wp_ajax_my_istymo_get_workflow_transitions', 'my_istymo_ajax_get_workflow_transitions');
+add_action('wp_ajax_my_istymo_get_status_change_validation', 'my_istymo_ajax_get_status_change_validation');
+add_action('wp_ajax_my_istymo_get_workflow_step_info', 'my_istymo_ajax_get_workflow_step_info');
+
+// ✅ NOUVEAU : Handlers AJAX pour l'édition des leads
+add_action('wp_ajax_my_istymo_update_lead', 'my_istymo_ajax_update_lead');
+
+// ✅ Fonction de mise à jour de lead
+function my_istymo_ajax_update_lead() {
+    check_ajax_referer('my_istymo_nonce', 'nonce');
+    
+    $lead_id = intval($_POST['lead_id']);
+    $status = sanitize_text_field($_POST['status'] ?? '');
+    $priorite = sanitize_text_field($_POST['priorite'] ?? '');
+    $notes = sanitize_textarea_field($_POST['notes'] ?? '');
+    
+    if (!$lead_id) {
+        wp_send_json_error('ID du lead manquant');
+        return;
+    }
+    
+    $leads_manager = Unified_Leads_Manager::get_instance();
+    
+    // Préparer les données à mettre à jour
+    $update_data = [];
+    if (!empty($status)) $update_data['status'] = $status;
+    if (!empty($priorite)) $update_data['priorite'] = $priorite;
+    if (isset($_POST['notes'])) $update_data['notes'] = $notes; // Permettre les notes vides
+    
+    $result = $leads_manager->update_lead($lead_id, $update_data);
+    
+    if (is_wp_error($result)) {
+        wp_send_json_error($result->get_error_message());
+    } else {
+        wp_send_json_success('Lead mis à jour avec succès');
+    }
+}
+
+// ✅ Handler pour la suppression de leads
+add_action('wp_ajax_delete_unified_lead', 'my_istymo_ajax_delete_unified_lead');
+
+// ✅ Fonction de suppression de lead
+function my_istymo_ajax_delete_unified_lead() {
+    check_ajax_referer('my_istymo_nonce', 'nonce');
+    
+    $lead_id = intval($_POST['lead_id']);
+    
+    if (!$lead_id) {
+        wp_send_json_error('ID du lead manquant');
+        return;
+    }
+    
+    $leads_manager = Unified_Leads_Manager::get_instance();
+    $result = $leads_manager->delete_lead($lead_id);
+    
+    if (is_wp_error($result)) {
+        wp_send_json_error($result->get_error_message());
+    } else {
+        wp_send_json_success('Lead supprimé avec succès');
+    }
+}
+
+// ✅ Fonctions AJAX pour les actions
+function my_istymo_ajax_add_lead_action() {
+    check_ajax_referer('my_istymo_nonce', 'nonce');
+    
+    $lead_id = intval($_POST['lead_id']);
+    $action_type = sanitize_text_field($_POST['action_type']);
+    $description = sanitize_textarea_field($_POST['description'] ?? '');
+    $result = sanitize_text_field($_POST['result'] ?? 'en_attente');
+    $scheduled_date = sanitize_text_field($_POST['scheduled_date'] ?? '');
+    
+    $user_id = get_current_user_id();
+    
+    $actions_manager = Lead_Actions_Manager::get_instance();
+    $action_id = $actions_manager->add_action($lead_id, $user_id, $action_type, $description, $result, $scheduled_date);
+    
+    if (is_wp_error($action_id)) {
+        wp_send_json_error($action_id->get_error_message());
+    } else {
+        wp_send_json_success(['action_id' => $action_id]);
+    }
+}
+
+function my_istymo_ajax_update_lead_action() {
+    check_ajax_referer('my_istymo_nonce', 'nonce');
+    
+    $action_id = intval($_POST['action_id']);
+    $description = sanitize_textarea_field($_POST['description'] ?? '');
+    $result = sanitize_text_field($_POST['result'] ?? '');
+    
+    $data = [];
+    if (!empty($description)) $data['description'] = $description;
+    if (!empty($result)) $data['result'] = $result;
+    
+    $actions_manager = Lead_Actions_Manager::get_instance();
+    $result = $actions_manager->update_action($action_id, $data);
+    
+    if (is_wp_error($result)) {
+        wp_send_json_error($result->get_error_message());
+    } else {
+        wp_send_json_success();
+    }
+}
+
+function my_istymo_ajax_delete_lead_action() {
+    check_ajax_referer('my_istymo_nonce', 'nonce');
+    
+    $action_id = intval($_POST['action_id']);
+    
+    $actions_manager = Lead_Actions_Manager::get_instance();
+    $result = $actions_manager->delete_action($action_id);
+    
+    if (is_wp_error($result)) {
+        wp_send_json_error($result->get_error_message());
+    } else {
+        wp_send_json_success();
+    }
+}
+
+function my_istymo_ajax_get_lead_action() {
+    check_ajax_referer('my_istymo_nonce', 'nonce');
+    
+    $action_id = intval($_POST['action_id']);
+    
+    global $wpdb;
+    $action = $wpdb->get_row($wpdb->prepare(
+        "SELECT * FROM {$wpdb->prefix}my_istymo_lead_actions WHERE id = %d",
+        $action_id
+    ));
+    
+    if (!$action) {
+        wp_send_json_error('Action introuvable');
+    } else {
+        wp_send_json_success($action);
+    }
+}
+
+function my_istymo_ajax_change_lead_status() {
+    error_log('🔄 my_istymo_ajax_change_lead_status appelée');
+    
+    check_ajax_referer('my_istymo_nonce', 'nonce');
+    
+    $lead_id = intval($_POST['lead_id']);
+    $new_status = sanitize_text_field($_POST['new_status']);
+    
+    error_log("📋 Données reçues - Lead ID: $lead_id, Nouveau statut: $new_status");
+    
+    $leads_manager = Unified_Leads_Manager::get_instance();
+    $workflow_manager = Lead_Workflow::get_instance();
+    
+    // Valider la transition
+    $lead = $leads_manager->get_lead($lead_id);
+    if (!$lead) {
+        error_log("❌ Lead introuvable: $lead_id");
+        wp_send_json_error('Lead introuvable');
+    }
+    
+    error_log("✅ Lead trouvé - Statut actuel: " . $lead->status);
+    
+    $validation = $workflow_manager->validate_transition($lead->status, $new_status, ['id' => $lead_id]);
+    if (is_wp_error($validation)) {
+        error_log("❌ Validation échouée: " . $validation->get_error_message());
+        wp_send_json_error($validation->get_error_message());
+    }
+    
+    error_log("✅ Validation réussie");
+    
+    // Effectuer le changement
+    $result = $leads_manager->update_lead($lead_id, ['status' => $new_status]);
+    
+    if (is_wp_error($result)) {
+        error_log("❌ Erreur lors de la mise à jour: " . $result->get_error_message());
+        wp_send_json_error($result->get_error_message());
+    } else {
+        error_log("✅ Statut mis à jour avec succès");
+        wp_send_json_success();
+    }
+}
+
+function my_istymo_ajax_get_lead_details() {
+    check_ajax_referer('my_istymo_nonce', 'nonce');
+    
+    $lead_id = intval($_POST['lead_id']);
+    
+    $leads_manager = Unified_Leads_Manager::get_instance();
+    $lead = $leads_manager->get_lead($lead_id);
+    
+    if (!$lead) {
+        wp_send_json_error('Lead introuvable');
+    } else {
+        wp_send_json_success($lead);
+    }
+}
+
+function my_istymo_ajax_get_lead_detail_content() {
+    try {
+        check_ajax_referer('my_istymo_nonce', 'nonce');
+        
+        $lead_id = intval($_POST['lead_id']);
+        
+        if (!$lead_id) {
+            wp_send_json_error('ID du lead manquant');
+        }
+        
+        // Vérifier que le lead existe
+        $leads_manager = Unified_Leads_Manager::get_instance();
+        $lead = $leads_manager->get_lead($lead_id);
+        
+        if (!$lead) {
+            wp_send_json_error('Lead introuvable');
+        }
+        
+        // Générer le contenu directement
+        $content = my_istymo_generate_lead_detail_content($lead_id, $lead);
+        
+        if (empty($content)) {
+            wp_send_json_error('Erreur lors de la génération du contenu');
+        }
+        
+        wp_send_json_success($content);
+        
+    } catch (Exception $e) {
+        error_log('Erreur dans my_istymo_ajax_get_lead_detail_content: ' . $e->getMessage());
+        wp_send_json_error('Erreur interne du serveur: ' . $e->getMessage());
+    }
+}
+
+function my_istymo_ajax_validate_workflow_transition() {
+    check_ajax_referer('my_istymo_nonce', 'nonce');
+    
+    $lead_id = intval($_POST['lead_id']);
+    $from_status = sanitize_text_field($_POST['from_status']);
+    $to_status = sanitize_text_field($_POST['to_status']);
+    
+    $workflow_manager = Lead_Workflow::get_instance();
+    $validation = $workflow_manager->validate_transition($from_status, $to_status, ['id' => $lead_id]);
+    
+    if (is_wp_error($validation)) {
+        wp_send_json_error([
+            'message' => $validation->get_error_message(),
+            'required_actions' => []
+        ]);
+    } else {
+        $suggested_actions = $workflow_manager->get_suggested_actions_for_transition($from_status, $to_status);
+        wp_send_json_success([
+            'suggested_actions' => $suggested_actions
+        ]);
+    }
+}
+
+function my_istymo_ajax_get_workflow_transitions() {
+    check_ajax_referer('my_istymo_nonce', 'nonce');
+    
+    $lead_id = intval($_POST['lead_id']);
+    
+    $leads_manager = Unified_Leads_Manager::get_instance();
+    $workflow_manager = Lead_Workflow::get_instance();
+    
+    $lead = $leads_manager->get_lead($lead_id);
+    if (!$lead) {
+        wp_send_json_error('Lead introuvable');
+    }
+    
+    $transitions = $workflow_manager->get_allowed_transitions($lead->status);
+    wp_send_json_success($transitions);
+}
+
+// Nouvelle fonction pour générer le contenu du modal de détail des leads
+function my_istymo_generate_lead_detail_content($lead_id, $lead) {
+    ob_start();
+    ?>
+    <div class="my-istymo-lead-detail-modal" data-lead-id="<?php echo esc_attr($lead_id); ?>">
+        
+        <!-- En-tête du modal -->
+        <div class="my-istymo-modal-header">
+            <h2>
+                <span class="my-istymo-lead-type-badge my-istymo-lead-type-<?php echo esc_attr($lead->lead_type); ?>">
+                    <?php echo esc_html(strtoupper($lead->lead_type)); ?>
+                </span>
+                Lead #<?php echo esc_html($lead_id); ?>
+            </h2>
+            <button type="button" class="my-istymo-modal-close" data-action="close-lead-detail">
+                <span class="dashicons dashicons-no-alt"></span>
+            </button>
+        </div>
+        
+        <!-- Contenu du modal -->
+        <div class="my-istymo-modal-content-detail">
+            
+            <!-- Informations de base -->
+            <div class="my-istymo-lead-info-section">
+                <h3>ℹ️ Informations de base</h3>
+                
+                <form id="lead-edit-form" class="my-istymo-edit-form">
+                    <input type="hidden" name="lead_id" value="<?php echo esc_attr($lead_id); ?>">
+                    
+                    <div class="my-istymo-info-container">
+                        <div class="my-istymo-info-group">
+                            <label>Créé le :</label>
+                            <span class="my-istymo-info-value"><?php echo esc_html(date('d/m/Y H:i', strtotime($lead->date_creation))); ?></span>
+                        </div>
+                        
+                        <div class="my-istymo-info-group">
+                            <label>ID Original :</label>
+                            <span class="my-istymo-info-value"><?php echo esc_html($lead->original_id); ?></span>
+                        </div>
+                        
+                        <div class="my-istymo-info-group">
+                            <label>Statut :</label>
+                            <select name="status" class="my-istymo-select">
+                                <option value="nouveau" <?php selected($lead->status, 'nouveau'); ?>>Nouveau</option>
+                                <option value="en_cours" <?php selected($lead->status, 'en_cours'); ?>>En cours</option>
+                                <option value="termine" <?php selected($lead->status, 'termine'); ?>>Terminé</option>
+                                <option value="annule" <?php selected($lead->status, 'annule'); ?>>Annulé</option>
+                            </select>
+                        </div>
+                        
+                        <div class="my-istymo-info-group">
+                            <label>Priorité :</label>
+                            <select name="priorite" class="my-istymo-select">
+                                <option value="basse" <?php selected($lead->priorite, 'basse'); ?>>Basse</option>
+                                <option value="normale" <?php selected($lead->priorite, 'normale'); ?>>Normale</option>
+                                <option value="haute" <?php selected($lead->priorite, 'haute'); ?>>Haute</option>
+                                <option value="urgente" <?php selected($lead->priorite, 'urgente'); ?>>Urgente</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Informations spécifiques du lead intégrées -->
+                    <?php if (!empty($lead->data_originale)): ?>
+                    <div class="my-istymo-lead-specific-inline">
+                        <h4>📋 Informations spécifiques</h4>
+                        
+                        <?php if ($lead->lead_type === 'dpe'): ?>
+                            <?php echo my_istymo_render_dpe_info($lead->data_originale); ?>
+                        <?php elseif ($lead->lead_type === 'sci'): ?>
+                            <?php echo my_istymo_render_sci_info($lead->data_originale); ?>
+                        <?php endif; ?>
+                        
+
+                    </div>
+                    <?php endif; ?>
+                    
+                    <div class="my-istymo-info-row-notes">
+                        <div class="my-istymo-info-group my-istymo-full-width">
+                            <label>Notes :</label>
+                            <textarea name="notes" class="my-istymo-textarea" rows="4" placeholder="Ajoutez des notes sur ce lead..."><?php echo esc_textarea($lead->notes); ?></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="my-istymo-form-actions">
+                        <button type="submit" class="my-istymo-btn my-istymo-btn-primary">
+                            <span class="dashicons dashicons-saved"></span>
+                            Sauvegarder
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            
+            <!-- Historique des actions -->
+            <div class="my-istymo-lead-history-section">
+                <h3>📝 Historique des actions</h3>
+                <div class="my-istymo-no-actions">
+                    <p>Aucune action enregistrée pour ce lead.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pied du modal -->
+        <div class="my-istymo-modal-footer">
+            <button type="button" class="my-istymo-btn my-istymo-btn-secondary" data-action="close-lead-detail">
+                Fermer
+            </button>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+function my_istymo_render_dpe_info($data) {
+    ob_start();
+    ?>
+    <div class="my-istymo-dpe-info">
+        <!-- Informations générales -->
+        <div class="my-istymo-info-section">
+            <h4 class="my-istymo-section-title">📋 Informations générales</h4>
+            <div class="my-istymo-info-grid">
+                <?php if (!empty($data['adresse_ban'])): ?>
+                <div class="my-istymo-info-item">
+                    <label>📍 Adresse</label>
+                    <div class="my-istymo-info-value">
+                        <?php echo esc_html($data['adresse_ban']); ?>
+                        <?php if (!empty($data['nom_commune_ban'])): ?>
+                            <br><small><?php echo esc_html($data['nom_commune_ban']); ?>
+                            <?php if (!empty($data['code_postal_ban'])): ?>
+                                (<?php echo esc_html($data['code_postal_ban']); ?>)
+                            <?php endif; ?></small>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <?php if (!empty($data['type_batiment'])): ?>
+                <div class="my-istymo-info-item">
+                    <label>🏢 Type de bâtiment</label>
+                    <div class="my-istymo-info-value">
+                        <?php echo esc_html(ucfirst($data['type_batiment'])); ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <?php if (!empty($data['surface_habitable_logement'])): ?>
+                <div class="my-istymo-info-item">
+                    <label>📐 Surface habitable</label>
+                    <div class="my-istymo-info-value">
+                        <?php echo esc_html(number_format($data['surface_habitable_logement'], 0, ',', ' ')); ?> m²
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <?php if (!empty($data['annee_construction']) && $data['annee_construction'] != '0'): ?>
+                <div class="my-istymo-info-item">
+                    <label>🏗️ Année de construction</label>
+                    <div class="my-istymo-info-value">
+                        <?php echo esc_html($data['annee_construction']); ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Performance énergétique -->
+        <?php if (!empty($data['etiquette_dpe']) || !empty($data['etiquette_ges']) || !empty($data['conso_5_usages_ef_energie_n1']) || !empty($data['emission_ges_5_usages_energie_n1'])): ?>
+        <div class="my-istymo-info-section">
+            <h4 class="my-istymo-section-title">⚡ Performance énergétique</h4>
+            <div class="my-istymo-info-grid">
+                <?php if (!empty($data['etiquette_dpe'])): ?>
+                <div class="my-istymo-info-item">
+                    <label>⚡ Classe DPE</label>
+                    <div class="my-istymo-info-value">
+                        <span class="my-istymo-dpe-class my-istymo-dpe-class-<?php echo esc_attr(strtolower($data['etiquette_dpe'])); ?>">
+                            <?php echo esc_html($data['etiquette_dpe']); ?>
+                        </span>
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <?php if (!empty($data['etiquette_ges'])): ?>
+                <div class="my-istymo-info-item">
+                    <label>🌱 Classe GES</label>
+                    <div class="my-istymo-info-value">
+                        <span class="my-istymo-dpe-class my-istymo-dpe-class-<?php echo esc_attr(strtolower($data['etiquette_ges'])); ?>">
+                            <?php echo esc_html($data['etiquette_ges']); ?>
+                        </span>
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <?php if (!empty($data['conso_5_usages_ef_energie_n1'])): ?>
+                <div class="my-istymo-info-item">
+                    <label>⚡ Consommation énergétique</label>
+                    <div class="my-istymo-info-value">
+                        <?php echo esc_html(number_format($data['conso_5_usages_ef_energie_n1'], 0, ',', ' ')); ?> kWh/m²/an
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <?php if (!empty($data['emission_ges_5_usages_energie_n1'])): ?>
+                <div class="my-istymo-info-item">
+                    <label>💨 Émissions GES</label>
+                    <div class="my-istymo-info-value">
+                        <?php echo esc_html(number_format($data['emission_ges_5_usages_energie_n1'], 0, ',', ' ')); ?> kgCO2/m²/an
+                    </div>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <!-- Informations DPE -->
+        <?php if (!empty($data['date_etablissement_dpe']) || !empty($data['numero_dpe']) || !empty($data['dpe_id'])): ?>
+        <div class="my-istymo-info-section">
+            <h4 class="my-istymo-section-title">📄 Détails du DPE</h4>
+            <div class="my-istymo-info-grid">
+                <?php if (!empty($data['date_etablissement_dpe'])): ?>
+                <div class="my-istymo-info-item">
+                    <label>📅 Date d'établissement</label>
+                    <div class="my-istymo-info-value">
+                        <?php echo esc_html(date('d/m/Y', strtotime($data['date_etablissement_dpe']))); ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <?php if (!empty($data['numero_dpe'])): ?>
+                <div class="my-istymo-info-item">
+                    <label>🔢 Numéro DPE</label>
+                    <div class="my-istymo-info-value">
+                        <?php echo esc_html($data['numero_dpe']); ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <?php if (!empty($data['dpe_id'])): ?>
+                <div class="my-istymo-info-item">
+                    <label>🆔 ID Système</label>
+                    <div class="my-istymo-info-value">
+                        <?php echo esc_html($data['dpe_id']); ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+        <?php endif; ?>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+function my_istymo_render_sci_info($data) {
+    ob_start();
+    ?>
+    <div class="my-istymo-sci-info">
+        <?php
+        // Fonction helper pour récupérer une valeur avec plusieurs clés possibles
+        $getValue = function($data, $keys) {
+            if (is_string($keys)) $keys = [$keys];
+            foreach ($keys as $key) {
+                if (!empty($data[$key])) return $data[$key];
+            }
+            return null;
+        };
+        ?>
+
+        <!-- Informations générales -->
+        <div class="my-istymo-info-section">
+            <h4 class="my-istymo-section-title">🏢 Informations de l'entreprise</h4>
+            <div class="my-istymo-info-grid">
+                <?php
+                // Dénomination
+                $denomination = $getValue($data, ['denomination', 'raisonSociale', 'nom_societe', 'nom']);
+                if ($denomination): ?>
+                <div class="my-istymo-info-item">
+                    <label>🏢 Dénomination sociale</label>
+                    <div class="my-istymo-info-value">
+                        <?php echo esc_html($denomination); ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <?php
+                // SIREN
+                $siren = $getValue($data, ['siren', 'numeroSiren', 'identifiant']);
+                if ($siren): ?>
+                <div class="my-istymo-info-item">
+                    <label>🔢 Numéro SIREN</label>
+                    <div class="my-istymo-info-value">
+                        <?php echo esc_html($siren); ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <?php
+                // Dirigeant
+                $dirigeant = $getValue($data, ['dirigeant', 'representant', 'gerant']);
+                if ($dirigeant): ?>
+                <div class="my-istymo-info-item">
+                    <label>👤 Dirigeant principal</label>
+                    <div class="my-istymo-info-value">
+                        <?php echo esc_html($dirigeant); ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Adresse -->
+        <?php 
+        $adresse = $getValue($data, ['adresse', 'adresseComplete', 'adresse_complete']);
+        $ville = $getValue($data, ['ville', 'commune', 'localite']);
+        $code_postal = $getValue($data, ['code_postal', 'codePostal', 'cp']);
+        if ($adresse || $ville): ?>
+        <div class="my-istymo-info-section">
+            <h4 class="my-istymo-section-title">📍 Localisation</h4>
+            <div class="my-istymo-info-grid">
+                <?php if ($adresse): ?>
+                <div class="my-istymo-info-item">
+                    <label>📍 Adresse</label>
+                    <div class="my-istymo-info-value">
+                        <?php echo esc_html($adresse); ?>
+                        <?php if ($ville): ?>
+                            <br><small><?php echo esc_html($ville); ?>
+                            <?php if ($code_postal): ?>
+                                (<?php echo esc_html($code_postal); ?>)
+                            <?php endif; ?></small>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <?php elseif ($ville): ?>
+                <div class="my-istymo-info-item">
+                    <label>🏘️ Ville</label>
+                    <div class="my-istymo-info-value">
+                        <?php echo esc_html($ville); ?>
+                        <?php if ($code_postal): ?>
+                            (<?php echo esc_html($code_postal); ?>)
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <!-- Informations financières et juridiques -->
+        <?php 
+        $capital = $getValue($data, ['capital', 'capitalSocial', 'montant_capital']);
+        $forme_juridique = $getValue($data, ['forme_juridique', 'formeJuridique', 'type_societe']);
+        $date_creation = $getValue($data, ['date_creation', 'dateCreation', 'date_immatriculation']);
+        if ($capital || $forme_juridique || $date_creation): ?>
+        <div class="my-istymo-info-section">
+            <h4 class="my-istymo-section-title">💼 Informations juridiques</h4>
+            <div class="my-istymo-info-grid">
+                <?php if ($forme_juridique): ?>
+                <div class="my-istymo-info-item">
+                    <label>⚖️ Forme juridique</label>
+                    <div class="my-istymo-info-value">
+                        <?php echo esc_html($forme_juridique); ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <?php if ($capital): ?>
+                <div class="my-istymo-info-item">
+                    <label>💰 Capital social</label>
+                    <div class="my-istymo-info-value">
+                        <?php echo esc_html(number_format($capital, 0, ',', ' ')); ?> €
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <?php if ($date_creation): ?>
+                <div class="my-istymo-info-item">
+                    <label>📅 Date de création</label>
+                    <div class="my-istymo-info-value">
+                        <?php echo esc_html(date('d/m/Y', strtotime($date_creation))); ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <!-- Activité -->
+        <?php 
+        $activite = $getValue($data, ['activite', 'activitePrincipale', 'objet_social']);
+        if ($activite): ?>
+        <div class="my-istymo-info-section">
+            <h4 class="my-istymo-section-title">🎯 Activité</h4>
+            <div class="my-istymo-info-grid">
+                <div class="my-istymo-info-item">
+                    <label>💼 Activité principale</label>
+                    <div class="my-istymo-info-value">
+                        <?php echo esc_html($activite); ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+function my_istymo_ajax_get_status_change_validation() {
+    check_ajax_referer('my_istymo_nonce', 'nonce');
+    
+    $lead_id = intval($_POST['lead_id']);
+    $new_status = sanitize_text_field($_POST['new_status']);
+    
+    $leads_manager = Unified_Leads_Manager::get_instance();
+    $workflow_manager = Lead_Workflow::get_instance();
+    
+    $lead = $leads_manager->get_lead($lead_id);
+    if (!$lead) {
+        wp_send_json_error('Lead introuvable');
+    }
+    
+    $validation = $workflow_manager->validate_transition($lead->status, $new_status, ['id' => $lead_id]);
+    
+    if (is_wp_error($validation)) {
+        wp_send_json_success([
+            'valid' => false,
+            'message' => $validation->get_error_message(),
+            'required_actions' => []
+        ]);
+    } else {
+        wp_send_json_success([
+            'valid' => true,
+            'message' => 'Transition autorisée'
+        ]);
+    }
+}
+
+function my_istymo_ajax_get_workflow_step_info() {
+    check_ajax_referer('my_istymo_nonce', 'nonce');
+    
+    $lead_id = intval($_POST['lead_id']);
+    $step_status = sanitize_text_field($_POST['step_status']);
+    
+    $workflow_manager = Lead_Workflow::get_instance();
+    $status_manager = Lead_Status_Manager::get_instance();
+    
+    $statuses = $status_manager->get_all_statuses();
+    $status_info = $statuses[$step_status] ?? [];
+    
+    $step_info = [
+        'title' => $status_info['label'] ?? ucfirst($step_status),
+        'description' => $status_info['description'] ?? 'Description de l\'étape ' . $step_status,
+        'recommended_actions' => $workflow_manager->get_suggested_actions($step_status),
+        'criteria' => $status_info['criteria'] ?? ['Critères à définir']
+    ];
+    
+    wp_send_json_success($step_info);
+}
+
+
 
 // --- AFFICHAGE DU PANNEAU DPE ---
 function dpe_afficher_panel() {
