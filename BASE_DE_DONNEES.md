@@ -215,8 +215,7 @@ CREATE TABLE {prefix}dpe_favoris (
     adresse_ban varchar(500) NOT NULL,
     code_postal_ban varchar(10) NOT NULL,
     nom_commune_ban varchar(100) NOT NULL,
-    etiquette_dpe varchar(10) NOT NULL,
-    etiquette_ges varchar(10) NOT NULL,
+                etiquette_dpe varchar(10) NOT NULL,
     conso_5_usages_ef_energie_n1 decimal(10,2),
     emission_ges_5_usages_energie_n1 decimal(10,2),
     surface_habitable_logement int(11),
@@ -233,8 +232,7 @@ CREATE TABLE {prefix}dpe_favoris (
     UNIQUE KEY user_dpe (user_id, dpe_id),
     KEY user_id (user_id),
     KEY code_postal (code_postal_ban),
-    KEY etiquette_dpe (etiquette_dpe),
-    KEY etiquette_ges (etiquette_ges)
+                KEY etiquette_dpe (etiquette_dpe)
 );
 ```
 
@@ -246,7 +244,7 @@ CREATE TABLE {prefix}dpe_favoris (
 - `code_postal_ban` : Code postal normalisé
 - `nom_commune_ban` : Nom de la commune normalisé
 - `etiquette_dpe` : Classe énergétique (A à G)
-- `etiquette_ges` : Classe GES (A à G)
+
 - `conso_5_usages_ef_energie_n1` : Consommation énergétique (kWh/m²/an)
 - `emission_ges_5_usages_energie_n1` : Émissions de GES (kgCO2/m²/an)
 - `surface_habitable_logement` : Surface en m²
@@ -263,7 +261,7 @@ CREATE TABLE {prefix}dpe_favoris (
 **Index et contraintes** :
 - **Clé primaire** : `id`
 - **Clé unique** : `user_dpe` (user_id, dpe_id)
-- **Index** : `user_id`, `code_postal_ban`, `etiquette_dpe`, `etiquette_ges`
+- **Index** : `user_id`, `code_postal_ban`, `etiquette_dpe`
 
 ---
 

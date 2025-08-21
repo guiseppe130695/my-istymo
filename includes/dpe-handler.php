@@ -291,7 +291,7 @@ class DPE_Handler {
                 'code_postal' => $item['code_postal_ban'] ?? '',
                 'commune' => $item['nom_commune_ban'] ?? '',
                 'etiquette_dpe' => $item['etiquette_dpe'] ?? '',
-                'etiquette_ges' => $item['etiquette_ges'] ?? '',
+
                 'conso_energie' => $item['conso_5_usages_ef_energie_n1'] ?? 0,
                 'emission_ges' => $item['emission_ges_5_usages_energie_n1'] ?? 0,
                 'surface' => $item['surface_habitable_logement'] ?? 0,
@@ -365,7 +365,7 @@ class DPE_Handler {
         $stats = array(
             'total' => count($data),
             'etiquettes_dpe' => array(),
-            'etiquettes_ges' => array(),
+            'complement_adresse' => array(),
             'moyenne_conso' => 0,
             'moyenne_ges' => 0,
             'types_batiment' => array()
@@ -383,10 +383,10 @@ class DPE_Handler {
                 $stats['etiquettes_dpe'][$dpe] = ($stats['etiquettes_dpe'][$dpe] ?? 0) + 1;
             }
             
-            // Étiquettes GES
-            $ges = $item['etiquette_ges'] ?? '';
-            if ($ges) {
-                $stats['etiquettes_ges'][$ges] = ($stats['etiquettes_ges'][$ges] ?? 0) + 1;
+            // Complément d'adresse (remplace les statistiques GES)
+            $complement = $item['complement_adresse_logement'] ?? $item['complement_adresse_batiment'] ?? '';
+            if ($complement) {
+                $stats['complement_adresse'][$complement] = ($stats['complement_adresse'][$complement] ?? 0) + 1;
             }
             
             // Consommation énergétique

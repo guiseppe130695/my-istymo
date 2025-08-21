@@ -286,7 +286,7 @@ jQuery(document).ready(function($) {
             url: unifiedLeadsAjax.ajaxurl,
             type: 'POST',
             data: {
-                action: 'my_istymo_get_lead_detail_content',
+                action: 'dummy_action',
                 lead_id: leadId,
                 nonce: unifiedLeadsAjax.nonce
             },
@@ -296,7 +296,7 @@ jQuery(document).ready(function($) {
                 if (response.success) {
                     // Créer un modal temporaire pour afficher les détails
                     const modalHtml = `
-                        <div id="lead-detail-modal" class="my-istymo-modal my-istymo-show">
+                        <!-- Modal supprimé -->
                             <div class="my-istymo-modal-content" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
                                 <div class="my-istymo-modal-header">
                                     <h3>Détails du Lead #${leadId}</h3>
@@ -701,7 +701,7 @@ jQuery(document).ready(function($) {
             window.leadActionsManager.closeLeadDetailModal();
         } else {
             // Fallback vers l'ancien système
-            $('#lead-detail-modal').remove();
+            // Modal supprimé
         }
     };
     

@@ -42,6 +42,21 @@ function formatDateFr($dateString) {
 }
 
 /**
+ * ✅ NOUVEAU : Fonction pour nettoyer l'adresse (enlever code postal et commune)
+ */
+function cleanAddress($address) {
+    if (empty($address)) {
+        return 'Non spécifié';
+    }
+    
+    // Supprimer le code postal (5 chiffres) et la commune qui suivent
+    $cleaned = preg_replace('/\s+\d{5}\s+[A-Za-zÀ-ÿ\s-]+$/', '', $address);
+    
+    // Si l'adresse est vide après nettoyage, retourner l'original
+    return trim($cleaned) ?: trim($address);
+}
+
+/**
  * ✅ NOUVEAU : Fonction pour créer le lien Google Maps
  */
 function createGoogleMapsLink($adresse, $codePostal, $commune) {
@@ -103,7 +118,7 @@ function createGoogleMapsLink($adresse, $codePostal, $commune) {
                         <th>Type d'habitation</th>
                         <th>Surface</th>
                         <th>Étiquette DPE</th>
-                        <th>Étiquette GES</th>
+                        <th>Complément adresse</th>
                         <th>Date DPE</th>
                         <th>Géolocalisation</th>
                         <th>Supprimer</th>
@@ -112,7 +127,7 @@ function createGoogleMapsLink($adresse, $codePostal, $commune) {
                 <tbody id="dpe-favoris-tbody">
                     <?php foreach ($favoris as $favori): ?>
                         <tr data-dpe-id="<?php echo esc_attr($favori->dpe_id); ?>">
-                            <td class="adresse"><?php echo esc_html($favori->adresse_ban ?: 'Non spécifié'); ?></td>
+                            <td class="adresse"><?php echo esc_html(cleanAddress($favori->adresse_ban)); ?></td>
                             <td class="commune"><?php echo esc_html($favori->nom_commune_ban ?: 'Non spécifié'); ?></td>
                             <td class="type-batiment"><?php echo esc_html($favori->type_batiment ?: 'Non spécifié'); ?></td>
                             <td class="surface"><?php echo $favori->surface_habitable_logement ? esc_html($favori->surface_habitable_logement . ' m²') : 'Non spécifié'; ?></td>
@@ -121,10 +136,8 @@ function createGoogleMapsLink($adresse, $codePostal, $commune) {
                                     <?php echo esc_html($favori->etiquette_dpe ?: 'Non spécifié'); ?>
                                 </span>
                             </td>
-                            <td>
-                                <span class="ges-label <?php echo dpe_class($favori->etiquette_ges); ?>">
-                                    <?php echo esc_html($favori->etiquette_ges ?: 'Non spécifié'); ?>
-                                </span>
+                            <td class="complement-adresse">
+                                <?php echo esc_html($favori->complement_adresse_logement ?: 'Non spécifié'); ?>
                             </td>
                             <td class="date-dpe"><?php echo formatDateFr($favori->date_etablissement_dpe); ?></td>
                             <td class="geolocalisation">
@@ -164,8 +177,8 @@ function createGoogleMapsLink($adresse, $codePostal, $commune) {
     color: #005a87;
 }
 
-/* Styles pour les étiquettes DPE et GES */
-.dpe-label, .ges-label {
+/* Styles pour les étiquettes DPE */
+.dpe-label {
     padding: 4px 8px;
     border-radius: 4px;
     font-weight: bold;
@@ -183,15 +196,6 @@ function createGoogleMapsLink($adresse, $codePostal, $commune) {
 .dpe-label.E { background-color: #e30613 !important; color: white !important; }
 .dpe-label.F { background-color: #8b0000 !important; color: white !important; }
 .dpe-label.G { background-color: #4a4a4a !important; color: white !important; }
-
-/* Étiquettes GES */
-.ges-label.A { background-color: #009639 !important; color: white !important; }
-.ges-label.B { background-color: #85bb2f !important; color: white !important; }
-.ges-label.C { background-color: #ffcc02 !important; color: black !important; }
-.ges-label.D { background-color: #f68b1f !important; color: white !important; }
-.ges-label.E { background-color: #e30613 !important; color: white !important; }
-.ges-label.F { background-color: #8b0000 !important; color: white !important; }
-.ges-label.G { background-color: #4a4a4a !important; color: white !important; }
 
 /* Styles pour les boutons favoris */
 .btn-favori {

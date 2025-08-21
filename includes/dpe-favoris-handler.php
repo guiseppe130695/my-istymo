@@ -46,7 +46,6 @@ class DPE_Favoris_Handler {
             code_postal_ban varchar(10) NOT NULL,
             nom_commune_ban varchar(100) NOT NULL,
             etiquette_dpe varchar(10) NOT NULL,
-            etiquette_ges varchar(10) NOT NULL,
             conso_5_usages_ef_energie_n1 decimal(10,2),
             emission_ges_5_usages_energie_n1 decimal(10,2),
             surface_habitable_logement int(11),
@@ -63,8 +62,7 @@ class DPE_Favoris_Handler {
             UNIQUE KEY user_dpe (user_id, dpe_id),
             KEY user_id (user_id),
             KEY code_postal (code_postal_ban),
-            KEY etiquette_dpe (etiquette_dpe),
-            KEY etiquette_ges (etiquette_ges)
+            KEY etiquette_dpe (etiquette_dpe)
         ) $charset_collate;";
         
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
@@ -99,7 +97,6 @@ class DPE_Favoris_Handler {
         $code_postal = sanitize_text_field($dpe_data['code_postal_ban'] ?? '');
         $commune = sanitize_text_field($dpe_data['nom_commune_ban'] ?? '');
         $etiquette_dpe = sanitize_text_field($dpe_data['etiquette_dpe'] ?? '');
-        $etiquette_ges = sanitize_text_field($dpe_data['etiquette_ges'] ?? '');
         
         if (empty($dpe_id) || empty($adresse)) {
             wp_send_json_error('Données DPE incomplètes');
@@ -196,7 +193,6 @@ class DPE_Favoris_Handler {
             'code_postal_ban' => $dpe_data['code_postal_ban'] ?? '',
             'nom_commune_ban' => $dpe_data['nom_commune_ban'] ?? '',
             'etiquette_dpe' => $dpe_data['etiquette_dpe'] ?? '',
-            'etiquette_ges' => $dpe_data['etiquette_ges'] ?? '',
             'conso_5_usages_ef_energie_n1' => floatval($dpe_data['conso_5_usages_ef_energie_n1'] ?? 0),
             'emission_ges_5_usages_energie_n1' => floatval($dpe_data['emission_ges_5_usages_energie_n1'] ?? 0),
             'surface_habitable_logement' => intval($dpe_data['surface_habitable_logement'] ?? 0),
@@ -248,14 +244,14 @@ class DPE_Favoris_Handler {
                     "Code postal: %s\n" .
                     "Commune: %s\n" .
                     "Étiquette DPE: %s\n" .
-                    "Étiquette GES: %s\n" .
+                    "Complément adresse: %s\n" .
                     "Surface: %s m²\n" .
                     "Type bâtiment: %s",
                     $dpe_data['adresse_ban'] ?? '',
                     $dpe_data['code_postal_ban'] ?? '',
                     $dpe_data['nom_commune_ban'] ?? '',
                     $dpe_data['etiquette_dpe'] ?? '',
-                    $dpe_data['etiquette_ges'] ?? '',
+                    $dpe_data['complement_adresse_logement'] ?? $dpe_data['complement_adresse_batiment'] ?? '',
                     $dpe_data['surface_habitable_logement'] ?? '',
                     $dpe_data['type_batiment'] ?? ''
                 ),
@@ -413,10 +409,10 @@ class DPE_Favoris_Handler {
                     'code_postal_ban' => $dpe_data['code_postal'] ?? '',
                     'nom_commune_ban' => $dpe_data['commune'] ?? '',
                     'etiquette_dpe' => $dpe_data['etiquette_dpe'] ?? '',
-                    'etiquette_ges' => $dpe_data['etiquette_ges'] ?? '',
                     'surface_habitable_logement' => $dpe_data['surface'] ?? '',
                     'type_batiment' => $dpe_data['type_batiment'] ?? '',
-                    'date_etablissement_dpe' => $dpe_data['date_dpe'] ?? ''
+                    'date_etablissement_dpe' => $dpe_data['date_dpe'] ?? '',
+                    'complement_adresse_logement' => $dpe_data['complement_adresse'] ?? ''
                 );
                 
                 $result = $this->add_favori($user_id, $formatted_data);

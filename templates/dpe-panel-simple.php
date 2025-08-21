@@ -99,7 +99,7 @@
                     <th>Commune</th>
                     <th>Surface</th>
                     <th>Étiquette DPE</th>
-                    <th>Étiquette GES</th>
+                                                <th>Complément adresse</th>
                     <th>Géolocalisation</th>
                 </tr>
             </thead>
@@ -238,8 +238,8 @@ function displayResults(data) {
             // Date DPE
             row.appendChild(createCell(formatDate(result.date_etablissement_dpe || result.date_reception_dpe)));
             
-            // Adresse
-            row.appendChild(createCell(result.adresse_ban || result.adresse_brut || 'Non spécifié'));
+            // Adresse (nettoyée)
+            row.appendChild(createCell(cleanAddress(result.adresse_ban || result.adresse_brut)));
             
             // Commune
             row.appendChild(createCell(result.nom_commune_ban || result.nom_commune_brut || 'Non spécifié'));
@@ -255,13 +255,11 @@ function displayResults(data) {
             dpeCell.appendChild(dpeLabel);
             row.appendChild(dpeCell);
             
-            // Étiquette GES
-            var gesCell = document.createElement('td');
-            var gesLabel = document.createElement('span');
-            gesLabel.className = 'dpe-label ' + (result.etiquette_ges || '');
-            gesLabel.textContent = result.etiquette_ges || 'Non spécifié';
-            gesCell.appendChild(gesLabel);
-            row.appendChild(gesCell);
+            // Complément adresse
+            var complementCell = document.createElement('td');
+            var complementText = result.complement_adresse_logement || result.complement_adresse_batiment || 'Non spécifié';
+            complementCell.textContent = complementText;
+            row.appendChild(complementCell);
             
             // Géolocalisation avec adresse simple
             var geoCell = document.createElement('td');
@@ -300,6 +298,17 @@ function displayResults(data) {
         tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 20px; color: #666;">Aucun résultat trouvé</td></tr>';
         hidePaginationControls();
     }
+}
+
+// Fonction pour nettoyer l'adresse (enlever code postal et commune)
+function cleanAddress(address) {
+    if (!address) return 'Non spécifié';
+    
+    // Supprimer le code postal (5 chiffres) et la commune qui suivent
+    var cleaned = address.replace(/\s+\d{5}\s+[A-Za-zÀ-ÿ\s-]+$/, '');
+    
+    // Si l'adresse est vide après nettoyage, retourner l'original
+    return cleaned.trim() || address.trim();
 }
 
 // Fonction pour créer une cellule

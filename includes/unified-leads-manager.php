@@ -556,7 +556,7 @@ class Unified_Leads_Manager {
                     'code_postal_ban' => $favorite->code_postal_ban,
                     'nom_commune_ban' => $favorite->nom_commune_ban,
                     'etiquette_dpe' => $favorite->etiquette_dpe,
-                    'etiquette_ges' => $favorite->etiquette_ges,
+                    'complement_adresse_logement' => $favorite->complement_adresse_logement,
                     'surface_habitable_logement' => $favorite->surface_habitable_logement,
                     'annee_construction' => $favorite->annee_construction,
                     'type_batiment' => $favorite->type_batiment

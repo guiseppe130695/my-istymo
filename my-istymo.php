@@ -1038,8 +1038,7 @@ add_action('wp_ajax_my_istymo_delete_lead_action', 'my_istymo_ajax_delete_lead_a
 add_action('wp_ajax_my_istymo_get_lead_action', 'my_istymo_ajax_get_lead_action');
 add_action('wp_ajax_my_istymo_change_lead_status', 'my_istymo_ajax_change_lead_status');
 add_action('wp_ajax_my_istymo_get_lead_details', 'my_istymo_ajax_get_lead_details');
-add_action('wp_ajax_my_istymo_get_lead_detail_content', 'my_istymo_ajax_get_lead_detail_content');
-add_action('wp_ajax_nopriv_my_istymo_get_lead_detail_content', 'my_istymo_ajax_get_lead_detail_content');
+// Hooks AJAX supprimés - fonctionnalité simplifiée
 add_action('wp_ajax_my_istymo_validate_workflow_transition', 'my_istymo_ajax_validate_workflow_transition');
 add_action('wp_ajax_my_istymo_get_workflow_transitions', 'my_istymo_ajax_get_workflow_transitions');
 add_action('wp_ajax_my_istymo_get_status_change_validation', 'my_istymo_ajax_get_status_change_validation');
@@ -1047,6 +1046,7 @@ add_action('wp_ajax_my_istymo_get_workflow_step_info', 'my_istymo_ajax_get_workf
 
 // ✅ NOUVEAU : Handlers AJAX pour l'édition des leads
 add_action('wp_ajax_my_istymo_update_lead', 'my_istymo_ajax_update_lead');
+add_action('wp_ajax_my_istymo_update_lead_from_modal', 'my_istymo_ajax_update_lead_from_modal');
 
 // ✅ Fonction de mise à jour de lead
 function my_istymo_ajax_update_lead() {
@@ -1076,6 +1076,44 @@ function my_istymo_ajax_update_lead() {
         wp_send_json_error($result->get_error_message());
     } else {
         wp_send_json_success('Lead mis à jour avec succès');
+    }
+}
+
+// ✅ Fonction de mise à jour de lead depuis le modal de détail
+function my_istymo_ajax_update_lead_from_modal() {
+    check_ajax_referer('my_istymo_nonce', 'nonce');
+    
+    $lead_id = intval($_POST['lead_id']);
+    $status = sanitize_text_field($_POST['status'] ?? '');
+    $priorite = sanitize_text_field($_POST['priorite'] ?? '');
+    $notes = sanitize_textarea_field($_POST['notes'] ?? '');
+    
+    if (!$lead_id) {
+        wp_send_json_error('ID du lead manquant');
+        return;
+    }
+    
+    if (empty($status) || empty($priorite)) {
+        wp_send_json_error('Statut et priorité sont obligatoires');
+        return;
+    }
+    
+    $leads_manager = Unified_Leads_Manager::get_instance();
+    
+    // Préparer les données à mettre à jour
+    $update_data = [
+        'status' => $status,
+        'priorite' => $priorite,
+        'notes' => $notes,
+        'date_modification' => current_time('mysql')
+    ];
+    
+    $result = $leads_manager->update_lead($lead_id, $update_data);
+    
+    if (is_wp_error($result)) {
+        wp_send_json_error($result->get_error_message());
+    } else {
+        wp_send_json_success('Modifications sauvegardées avec succès');
     }
 }
 
@@ -1232,47 +1270,26 @@ function my_istymo_ajax_get_lead_details() {
     
     if (!$lead) {
         wp_send_json_error('Lead introuvable');
-    } else {
-        wp_send_json_success($lead);
     }
+    
+    // Préparer les données pour l'affichage (données brutes pour JavaScript)
+    $data = array(
+        'id' => $lead->id,
+        'lead_type' => $lead->lead_type,
+        'original_id' => $lead->original_id,
+        'status' => $lead->status,
+        'priorite' => $lead->priorite,
+        'notes' => $lead->notes,
+        'date_creation' => $lead->date_creation,
+        'date_modification' => $lead->date_modification,
+        'data_originale' => $lead->data_originale
+    );
+    
+    // Retourner les données brutes pour que JavaScript puisse générer le HTML moderne
+    wp_send_json_success($data);
 }
 
-function my_istymo_ajax_get_lead_detail_content() {
-    try {
-        check_ajax_referer('my_istymo_nonce', 'nonce');
-        
-        $lead_id = intval($_POST['lead_id']);
-        
-        if (!$lead_id) {
-            wp_send_json_error('ID du lead manquant');
-        }
-        
-        // Vérifier que le lead existe
-        $leads_manager = Unified_Leads_Manager::get_instance();
-        $lead = $leads_manager->get_lead($lead_id);
-        
-        if (!$lead) {
-            wp_send_json_error('Lead introuvable');
-        }
-        
-        // Générer le contenu HTML
-        $html_content = my_istymo_generate_lead_detail_content($lead_id, $lead);
-        
-        if (empty($html_content)) {
-            wp_send_json_error('Erreur lors de la génération du contenu');
-        }
-        
-        wp_send_json_success(array(
-            'html' => $html_content,
-            'lead_id' => $lead_id,
-            'lead_type' => $lead->lead_type
-        ));
-        
-    } catch (Exception $e) {
-        error_log('Erreur dans my_istymo_ajax_get_lead_detail_content: ' . $e->getMessage());
-        wp_send_json_error('Erreur interne du serveur: ' . $e->getMessage());
-    }
-}
+// Fonction AJAX supprimée - fonctionnalité simplifiée
 
 function my_istymo_ajax_validate_workflow_transition() {
     check_ajax_referer('my_istymo_nonce', 'nonce');
@@ -1314,106 +1331,7 @@ function my_istymo_ajax_get_workflow_transitions() {
     wp_send_json_success($transitions);
 }
 
-// Nouvelle fonction pour générer le contenu du modal de détail des leads
-function my_istymo_generate_lead_detail_content($lead_id, $lead) {
-    ob_start();
-    ?>
-    <div class="my-istymo-lead-detail-content" data-lead-id="<?php echo esc_attr($lead_id); ?>">
-        
-        <!-- En-tête simple -->
-        <div class="my-istymo-lead-header" style="border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px;">
-            <h2 style="margin: 0; display: flex; align-items: center; gap: 10px;">
-                <span class="my-istymo-lead-type-badge my-istymo-lead-type-<?php echo esc_attr($lead->lead_type); ?>" style="background: #007cba; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
-                    <?php echo esc_html(strtoupper($lead->lead_type)); ?>
-                </span>
-                Lead #<?php echo esc_html($lead_id); ?>
-            </h2>
-        </div>
-            
-            <!-- Informations de base -->
-            <div class="my-istymo-lead-info-section">
-                <h3>ℹ️ Informations de base</h3>
-                
-                <form id="lead-edit-form" class="my-istymo-edit-form">
-                    <input type="hidden" name="lead_id" value="<?php echo esc_attr($lead_id); ?>">
-                    
-                    <div class="my-istymo-info-container">
-                        <div class="my-istymo-info-group">
-                            <label>Créé le :</label>
-                            <span class="my-istymo-info-value"><?php echo esc_html(date('d/m/Y H:i', strtotime($lead->date_creation))); ?></span>
-                        </div>
-                        
-                        <div class="my-istymo-info-group">
-                            <label>ID Original :</label>
-                            <span class="my-istymo-info-value"><?php echo esc_html($lead->original_id); ?></span>
-                        </div>
-                        
-                        <div class="my-istymo-info-group">
-                            <label>Statut :</label>
-                            <select name="status" class="my-istymo-select">
-                                <option value="nouveau" <?php selected($lead->status, 'nouveau'); ?>>Nouveau</option>
-                                <option value="en_cours" <?php selected($lead->status, 'en_cours'); ?>>En cours</option>
-                                <option value="termine" <?php selected($lead->status, 'termine'); ?>>Terminé</option>
-                                <option value="annule" <?php selected($lead->status, 'annule'); ?>>Annulé</option>
-                            </select>
-                        </div>
-                        
-                        <div class="my-istymo-info-group">
-                            <label>Priorité :</label>
-                            <select name="priorite" class="my-istymo-select">
-                                <option value="basse" <?php selected($lead->priorite, 'basse'); ?>>Basse</option>
-                                <option value="normale" <?php selected($lead->priorite, 'normale'); ?>>Normale</option>
-                                <option value="haute" <?php selected($lead->priorite, 'haute'); ?>>Haute</option>
-                                <option value="urgente" <?php selected($lead->priorite, 'urgente'); ?>>Urgente</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <!-- Informations spécifiques du lead intégrées -->
-                    <?php if (!empty($lead->data_originale)): ?>
-                    <div class="my-istymo-lead-specific-inline">
-                        <h4>📋 Informations spécifiques</h4>
-                        
-                        <?php if ($lead->lead_type === 'dpe'): ?>
-                            <?php echo my_istymo_render_dpe_info($lead->data_originale); ?>
-                        <?php elseif ($lead->lead_type === 'sci'): ?>
-                            <?php echo my_istymo_render_sci_info($lead->data_originale); ?>
-                        <?php endif; ?>
-                        
-
-                    </div>
-                    <?php endif; ?>
-                    
-                    <div class="my-istymo-info-row-notes">
-                        <div class="my-istymo-info-group my-istymo-full-width">
-                            <label>Notes :</label>
-                            <textarea name="notes" class="my-istymo-textarea" rows="4" placeholder="Ajoutez des notes sur ce lead..."><?php echo esc_textarea($lead->notes); ?></textarea>
-                        </div>
-                    </div>
-                    
-                    <div class="my-istymo-form-actions" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
-                        <button type="submit" class="my-istymo-btn my-istymo-btn-primary" style="background: #007cba; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                            <span class="dashicons dashicons-saved"></span>
-                            💾 Sauvegarder les modifications
-                        </button>
-                    </div>
-                </form>
-            </div>
-            
-            
-            <!-- Historique des actions -->
-            <div class="my-istymo-lead-history-section">
-                <h3>📝 Historique des actions</h3>
-                <div class="my-istymo-no-actions">
-                    <p>Aucune action enregistrée pour ce lead.</p>
-                </div>
-            </div>
-        </div>
-        
-    </div>
-    <?php
-    return ob_get_clean();
-}
+// Fonction AJAX simplifiée pour afficher l'ID du lead
 
 function my_istymo_render_dpe_info($data) {
     ob_start();
@@ -1427,7 +1345,15 @@ function my_istymo_render_dpe_info($data) {
                 <div class="my-istymo-info-item">
                     <label>📍 Adresse</label>
                     <div class="my-istymo-info-value">
-                        <?php echo esc_html($data['adresse_ban']); ?>
+                        <?php 
+                        // Fonction pour nettoyer l'adresse
+                        function cleanAddressDisplay($address) {
+                            if (empty($address)) return 'Non spécifié';
+                            $cleaned = preg_replace('/\s+\d{5}\s+[A-Za-zÀ-ÿ\s-]+$/', '', $address);
+                            return trim($cleaned) ?: trim($address);
+                        }
+                        echo esc_html(cleanAddressDisplay($data['adresse_ban'])); 
+                        ?>
                         <?php if (!empty($data['nom_commune_ban'])): ?>
                             <br><small><?php echo esc_html($data['nom_commune_ban']); ?>
                             <?php if (!empty($data['code_postal_ban'])): ?>
@@ -1468,7 +1394,7 @@ function my_istymo_render_dpe_info($data) {
         </div>
 
         <!-- Performance énergétique -->
-        <?php if (!empty($data['etiquette_dpe']) || !empty($data['etiquette_ges']) || !empty($data['conso_5_usages_ef_energie_n1']) || !empty($data['emission_ges_5_usages_energie_n1'])): ?>
+        <?php if (!empty($data['etiquette_dpe']) || !empty($data['complement_adresse_logement']) || !empty($data['complement_adresse_batiment']) || !empty($data['conso_5_usages_ef_energie_n1']) || !empty($data['emission_ges_5_usages_energie_n1'])): ?>
         <div class="my-istymo-info-section">
             <h4 class="my-istymo-section-title">⚡ Performance énergétique</h4>
             <div class="my-istymo-info-grid">
@@ -1483,13 +1409,11 @@ function my_istymo_render_dpe_info($data) {
                 </div>
                 <?php endif; ?>
                 
-                <?php if (!empty($data['etiquette_ges'])): ?>
+                <?php if (!empty($data['complement_adresse_logement']) || !empty($data['complement_adresse_batiment'])): ?>
                 <div class="my-istymo-info-item">
-                    <label>🌱 Classe GES</label>
+                    <label>📍 Complément adresse</label>
                     <div class="my-istymo-info-value">
-                        <span class="my-istymo-dpe-class my-istymo-dpe-class-<?php echo esc_attr(strtolower($data['etiquette_ges'])); ?>">
-                            <?php echo esc_html($data['etiquette_ges']); ?>
-                        </span>
+                        <?php echo esc_html($data['complement_adresse_logement'] ?: $data['complement_adresse_batiment'] ?: 'Non spécifié'); ?>
                     </div>
                 </div>
                 <?php endif; ?>
@@ -1819,6 +1743,108 @@ function dpe_favoris_page() {
     
     // Charger le template des favoris DPE
     sci_load_template('dpe-favoris', $context);
+}
+
+// --- SHORTCODE POUR EMBARQUER LE SYSTÈME DE LEADS ---
+function my_istymo_leads_shortcode($atts) {
+    // Vérifier si l'utilisateur est connecté
+    if (!is_user_logged_in()) {
+        return '<div class="my-istymo-error">Vous devez être connecté pour accéder à la gestion des leads.</div>';
+    }
+    
+    $atts = shortcode_atts(array(
+        'title' => '📋 Gestion des Leads',
+        'show_filters' => 'true',
+        'show_actions' => 'true',
+        'per_page' => 20
+    ), $atts);
+    
+    // Charger les styles et scripts de manière persistante
+    wp_enqueue_style('unified-leads-css', plugin_dir_url(__FILE__) . 'assets/css/unified-leads.css', array(), '1.0.0');
+    wp_enqueue_style('lead-edit-modal-css', plugin_dir_url(__FILE__) . 'assets/css/lead-edit-modal.css', array(), '1.0.0');
+    wp_enqueue_script('unified-leads-admin', plugin_dir_url(__FILE__) . 'assets/js/unified-leads-admin.js', array('jquery'), '1.0.0', true);
+    wp_enqueue_script('lead-actions', plugin_dir_url(__FILE__) . 'assets/js/lead-actions.js', array('jquery', 'jquery-ui-tooltip'), '1.0.0', true);
+    wp_enqueue_script('lead-workflow', plugin_dir_url(__FILE__) . 'assets/js/lead-workflow.js', array('jquery'), '1.0.0', true);
+    
+    // Localiser les scripts
+    wp_localize_script('unified-leads-admin', 'unifiedLeadsAjax', array(
+        'ajaxurl' => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('my_istymo_nonce')
+    ));
+    
+    wp_localize_script('lead-actions', 'leadActionsAjax', array(
+        'ajaxurl' => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('my_istymo_nonce')
+    ));
+    
+    wp_localize_script('lead-workflow', 'leadWorkflowAjax', array(
+        'ajaxurl' => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('my_istymo_nonce')
+    ));
+    
+    // Capturer la sortie de la fonction existante
+    ob_start();
+    
+    // Inclure le template existant en passant les paramètres
+    $context = array(
+        'title' => $atts['title'],
+        'show_filters' => $atts['show_filters'] === 'true',
+        'show_actions' => $atts['show_actions'] === 'true',
+        'per_page' => intval($atts['per_page']),
+        'is_shortcode' => true,
+        'shortcode_id' => 'my-istymo-leads-' . uniqid() // ID unique pour le shortcode
+    );
+    
+    // Inclure le template existant
+    unified_leads_admin_page($context);
+    
+    $content = ob_get_clean();
+    
+    return $content;
+}
+
+// Enregistrer le shortcode
+add_shortcode('my_istymo_leads', 'my_istymo_leads_shortcode');
+
+// Hook pour charger les styles sur toutes les pages où le shortcode est utilisé
+function my_istymo_enqueue_shortcode_styles() {
+    global $post;
+    
+    if (is_a($post, 'WP_Post') && has_shortcode($post->post_content, 'my_istymo_leads')) {
+        // Charger les styles de manière globale
+        wp_enqueue_style('unified-leads-css', plugin_dir_url(__FILE__) . 'assets/css/unified-leads.css', array(), '1.0.0');
+        wp_enqueue_style('lead-edit-modal-css', plugin_dir_url(__FILE__) . 'assets/css/lead-edit-modal.css', array(), '1.0.0');
+        
+        // Charger les scripts
+        wp_enqueue_script('unified-leads-admin', plugin_dir_url(__FILE__) . 'assets/js/unified-leads-admin.js', array('jquery'), '1.0.0', true);
+        wp_enqueue_script('lead-actions', plugin_dir_url(__FILE__) . 'assets/js/lead-actions.js', array('jquery', 'jquery-ui-tooltip'), '1.0.0', true);
+        wp_enqueue_script('lead-workflow', plugin_dir_url(__FILE__) . 'assets/js/lead-workflow.js', array('jquery'), '1.0.0', true);
+        
+        // Localiser les scripts
+        wp_localize_script('unified-leads-admin', 'unifiedLeadsAjax', array(
+            'ajaxurl' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('my_istymo_nonce')
+        ));
+        
+        wp_localize_script('lead-actions', 'leadActionsAjax', array(
+            'ajaxurl' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('my_istymo_nonce')
+        ));
+        
+        wp_localize_script('lead-workflow', 'leadWorkflowAjax', array(
+            'ajaxurl' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('my_istymo_nonce')
+        ));
+    }
+}
+add_action('wp_enqueue_scripts', 'my_istymo_enqueue_shortcode_styles');
+
+// Charger le système de migration
+require_once plugin_dir_path(__FILE__) . 'migrations/migration-remove-etiquette-ges-v1.0.php';
+
+// Charger l'interface d'administration des migrations
+if (is_admin()) {
+    require_once plugin_dir_path(__FILE__) . 'admin/migration-admin.php';
 }
 
 ?>

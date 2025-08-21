@@ -239,7 +239,7 @@ class DPE_Shortcodes {
                             <th>Ville</th>
                             <th>Surface</th>
                             <th>Étiquette DPE</th>
-                            <th>Étiquette GES</th>
+                            <th>Complément adresse</th>
                             <th>Géolocalisation</th>
                         </tr>
                     </thead>
@@ -350,6 +350,52 @@ class DPE_Shortcodes {
             xhr.send();
         }
 
+        // Fonction pour nettoyer l'adresse (enlever code postal et commune)
+        function cleanAddress(address) {
+            if (!address) return 'Non spécifié';
+            
+            // Supprimer le code postal (5 chiffres) et la commune qui suivent
+            var cleaned = address.replace(/\s+\d{5}\s+[A-Za-zÀ-ÿ\s-]+$/, '');
+            
+            // Si l'adresse est vide après nettoyage, retourner l'original
+            return cleaned.trim() || address.trim();
+        }
+
+        // Fonction pour créer une cellule
+        function createCell(content) {
+            var cell = document.createElement('td');
+            cell.textContent = content;
+            return cell;
+        }
+
+        // Fonction pour formater la date en format dd/MM/YY
+        function formatDate(dateString) {
+            if (!dateString) return 'Non spécifié';
+            
+            // Essayer de parser la date dans différents formats
+            var dateObj = new Date(dateString);
+            if (isNaN(dateObj.getTime())) {
+                // Essayer le format YYYY-MM-DD
+                var parts = dateString.split('-');
+                if (parts.length === 3) {
+                    dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+                } else {
+                    return dateString; // Retourner la chaîne originale si pas de date valide
+                }
+            }
+            
+            if (isNaN(dateObj.getTime())) {
+                return dateString; // Retourner la chaîne originale si pas de date valide
+            }
+            
+            // Formater en dd/MM/YY
+            var day = String(dateObj.getDate()).padStart(2, '0');
+            var month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            var year = String(dateObj.getFullYear()).slice(-2);
+            
+            return day + '/' + month + '/' + year;
+        }
+
         // Fonction pour afficher les résultats
         function displayResults(data) {
             var tbody = document.getElementById('results-tbody');
@@ -360,11 +406,6 @@ class DPE_Shortcodes {
                 
                 // Calculer le nombre total de pages (approximatif)
                 totalPages = Math.ceil(totalResults / 50);
-                
-                // Si c'est la première recherche, initialiser la page à 1
-                if (previousPageUrls.length === 0 && !currentPageUrl) {
-                    currentPageNumber = 1;
-                }
 
                 data.results.forEach(function (result) {
                     var row = document.createElement('tr');
@@ -381,7 +422,6 @@ class DPE_Shortcodes {
                     favBtn.setAttribute('data-code-postal', result.code_postal_ban || result.code_postal_brut || '');
                     favBtn.setAttribute('data-surface', result.surface_habitable_logement || '');
                     favBtn.setAttribute('data-etiquette-dpe', result.etiquette_dpe || '');
-                    favBtn.setAttribute('data-etiquette-ges', result.etiquette_ges || '');
                     favBtn.setAttribute('data-date-dpe', result.date_etablissement_dpe || result.date_reception_dpe || '');
                     favBtn.title = 'Ajouter aux favoris';
                     favCell.appendChild(favBtn);
@@ -393,8 +433,8 @@ class DPE_Shortcodes {
                     // Date DPE
                     row.appendChild(createCell(formatDate(result.date_etablissement_dpe || result.date_reception_dpe)));
                     
-                    // Adresse
-                    row.appendChild(createCell(result.adresse_ban || result.adresse_brut || 'Non spécifié'));
+                    // Adresse (nettoyée)
+                    row.appendChild(createCell(cleanAddress(result.adresse_ban || result.adresse_brut)));
                     
                     // Commune
                     row.appendChild(createCell(result.nom_commune_ban || result.nom_commune_brut || 'Non spécifié'));
@@ -410,13 +450,11 @@ class DPE_Shortcodes {
                     dpeCell.appendChild(dpeLabel);
                     row.appendChild(dpeCell);
                     
-                    // Étiquette GES
-                    var gesCell = document.createElement('td');
-                    var gesLabel = document.createElement('span');
-                    gesLabel.className = 'dpe-label ' + (result.etiquette_ges || '');
-                    gesLabel.textContent = result.etiquette_ges || 'Non spécifié';
-                    gesCell.appendChild(gesLabel);
-                    row.appendChild(gesCell);
+                    // Complément adresse
+                    var complementCell = document.createElement('td');
+                    var complementText = result.complement_adresse_logement || result.complement_adresse_batiment || 'Non spécifié';
+                    complementCell.textContent = complementText;
+                    row.appendChild(complementCell);
                     
                     // Géolocalisation avec adresse simple
                     var geoCell = document.createElement('td');
@@ -467,41 +505,6 @@ class DPE_Shortcodes {
                 tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 20px; color: #666;">Aucun résultat trouvé</td></tr>';
                 hidePaginationControls();
             }
-        }
-
-        // Fonction pour créer une cellule
-        function createCell(content) {
-            var cell = document.createElement('td');
-            cell.textContent = content;
-            return cell;
-        }
-
-        // Fonction pour formater la date en format dd/MM/YY
-        function formatDate(dateString) {
-            if (!dateString) return 'Non spécifié';
-            
-            // Essayer de parser la date dans différents formats
-            var dateObj = new Date(dateString);
-            if (isNaN(dateObj.getTime())) {
-                // Essayer le format YYYY-MM-DD
-                var parts = dateString.split('-');
-                if (parts.length === 3) {
-                    dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
-                } else {
-                    return dateString; // Retourner la chaîne originale si pas de date valide
-                }
-            }
-            
-            if (isNaN(dateObj.getTime()) || dateObj.getFullYear() < 1900) {
-                return dateString;
-            }
-            
-            // Formater en dd/MM/YY
-            var day = String(dateObj.getDate()).padStart(2, '0');
-            var month = String(dateObj.getMonth() + 1).padStart(2, '0');
-            var year = String(dateObj.getFullYear()).slice(-2); // Prendre seulement les 2 derniers chiffres
-            
-            return day + '/' + month + '/' + year;
         }
 
         // Fonction pour mettre à jour les informations de pagination

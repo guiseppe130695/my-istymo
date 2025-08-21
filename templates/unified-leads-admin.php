@@ -4,17 +4,27 @@ if (!defined('ABSPATH')) exit;
 /**
  * Page d'administration principale pour la gestion des leads
  * Interface de gestion avec tableau, filtres et actions en lot
+ * Peut être utilisée en mode admin ou en mode shortcode
  */
-function unified_leads_admin_page() {
+function unified_leads_admin_page($context = array()) {
     // Vérifier les permissions
     if (!current_user_can('manage_options')) {
         wp_die(__('Vous n\'avez pas les permissions nécessaires pour accéder à cette page.'));
     }
     
+    // Valeurs par défaut pour le contexte
+    $default_context = array(
+        'title' => '📋 Gestion des Leads',
+        'show_filters' => true,
+        'show_actions' => true,
+        'per_page' => 20,
+        'is_shortcode' => false
+    );
+    
+    $context = wp_parse_args($context, $default_context);
+    
     $leads_manager = Unified_Leads_Manager::get_instance();
     $status_manager = Lead_Status_Manager::get_instance();
-    
-
     
     // Récupérer les filtres
     $filters = array();
@@ -26,7 +36,7 @@ function unified_leads_admin_page() {
     
     // Récupérer les leads avec pagination
     $page = max(1, intval($_GET['paged'] ?? 1));
-    $per_page = 20;
+    $per_page = $context['per_page'];
     $offset = ($page - 1) * $per_page;
     
     $leads = $leads_manager->get_leads(null, $filters);
@@ -40,17 +50,13 @@ function unified_leads_admin_page() {
     
     ?>
     <div class="wrap unified-leads-container my-istymo">
-        <h1>📋 Gestion des Leads</h1>
+        <h1><?php echo esc_html($context['title']); ?></h1>
         
+        <?php if (!$context['is_shortcode']): ?>
         <div class="notice notice-info">
             <p><strong>Interface de Gestion</strong> - Gérez vos leads avec filtres, actions en lot et suivi des statuts.</p>
         </div>
-        
-        <!-- Les filtres sont maintenant intégrés dans l'en-tête du tableau moderne -->
-        
-
-        
-
+        <?php endif; ?>
         
         <!-- Tableau des leads moderne -->
         <div class="my-istymo-leads-container">
@@ -58,9 +64,14 @@ function unified_leads_admin_page() {
             <div class="my-istymo-table-header">
                 <div class="my-istymo-header-left">
                     
+                    <?php if ($context['show_filters']): ?>
                     <!-- Filtres intégrés -->
-                    <form method="get" class="my-istymo-inline-filters" style="display: flex; align-items: center; gap: 12px;">
-                <input type="hidden" name="page" value="unified-leads">
+                    <form method="get" class="my-istymo-inline-filters" style="display: flex; align-items: center; gap: 12px;" id="<?php echo $context['is_shortcode'] ? 'shortcode-filters-' . $context['shortcode_id'] : 'admin-filters'; ?>">
+                        <?php if (!$context['is_shortcode']): ?>
+                        <input type="hidden" name="page" value="unified-leads">
+                        <?php else: ?>
+                        <input type="hidden" name="shortcode_id" value="<?php echo $context['shortcode_id']; ?>">
+                        <?php endif; ?>
                 
                         <!-- Filtre par type -->
                         <div class="my-istymo-filter-group">
@@ -89,7 +100,7 @@ function unified_leads_admin_page() {
                     
                         <!-- Boutons d'action des filtres -->
                         <div class="my-istymo-filter-actions">
-                            <button type="submit" class="my-istymo-filter-apply-btn">
+                            <button type="submit" class="my-istymo-btn my-istymo-btn-primary">
                                 <span class="dashicons dashicons-filter"></span> Filtrer
                             </button>
                             <?php if (!empty($_GET['lead_type']) || !empty($_GET['status']) || !empty($_GET['priorite']) || !empty($_GET['date_from']) || !empty($_GET['date_to'])): ?>
@@ -99,14 +110,10 @@ function unified_leads_admin_page() {
                             <?php endif; ?>
                         </div>
                     </form>
-                    </div>
-                    
-                <div class="my-istymo-header-right">
-                    <!-- Compteur de résultats -->
-                    <div class="my-istymo-results-count">
-                        <?php echo $total_leads; ?> lead<?php echo $total_leads > 1 ? 's' : ''; ?>
-                    </div>
+                    <?php endif; ?>
                 </div>
+                
+
         </div>
             
             <?php if (!empty($leads)): ?>
@@ -248,7 +255,7 @@ function unified_leads_admin_page() {
                                                 <span class="dashicons dashicons-ellipsis"></span>
                                             </button>
                                             <div class="my-istymo-dropdown-menu">
-                                                <a href="#" class="view-lead" data-lead-id="<?php echo $lead->id; ?>" onclick="console.log('Link clicked'); openLeadDetailModal(<?php echo $lead->id; ?>); return false;">
+                                                <a href="#" class="view-lead" data-lead-id="<?php echo $lead->id; ?>" onclick="openLeadDetailModal(<?php echo $lead->id; ?>); return false;">
                                                     <span class="dashicons dashicons-visibility"></span> Voir
                                                 </a>
                                                 <a href="#" class="delete-lead" data-lead-id="<?php echo $lead->id; ?>" onclick="if(confirm('Êtes-vous sûr de vouloir supprimer ce lead ?')) { deleteLead(<?php echo $lead->id; ?>); } return false;">
@@ -270,14 +277,28 @@ function unified_leads_admin_page() {
                         <span class="displaying-num"><?php echo $total_leads; ?> éléments</span>
                         
                         <?php
-                        $pagination_args = array(
-                            'base' => add_query_arg('paged', '%#%'),
-                            'format' => '',
-                            'prev_text' => __('&laquo;'),
-                            'next_text' => __('&raquo;'),
-                            'total' => $total_pages,
-                            'current' => $page
-                        );
+                        if ($context['is_shortcode']) {
+                            // En mode shortcode, utiliser l'URL actuelle
+                            $current_url = remove_query_arg('paged', $_SERVER['REQUEST_URI']);
+                            $pagination_args = array(
+                                'base' => add_query_arg('paged', '%#%', $current_url),
+                                'format' => '',
+                                'prev_text' => __('&laquo;'),
+                                'next_text' => __('&raquo;'),
+                                'total' => $total_pages,
+                                'current' => $page
+                            );
+                        } else {
+                            // En mode admin, utiliser l'URL de la page admin
+                            $pagination_args = array(
+                                'base' => add_query_arg('paged', '%#%'),
+                                'format' => '',
+                                'prev_text' => __('&laquo;'),
+                                'next_text' => __('&raquo;'),
+                                'total' => $total_pages,
+                                'current' => $page
+                            );
+                        }
                         
                         echo paginate_links($pagination_args);
                         ?>
@@ -287,7 +308,9 @@ function unified_leads_admin_page() {
             <?php else: ?>
                 <div class="no-leads">
                     <p>Aucun lead trouvé avec les critères actuels.</p>
+                    <?php if (!$context['is_shortcode']): ?>
                     <a href="?page=unified-leads" class="button button-primary">Voir tous les leads</a>
+                    <?php endif; ?>
                 </div>
             <?php endif; ?>
         </div>
@@ -350,656 +373,267 @@ function unified_leads_admin_page() {
     </div>
     
     <?php
-    // Charger le CSS et JS
-    wp_enqueue_style('unified-leads-css', plugin_dir_url(__FILE__) . '../assets/css/unified-leads.css', array(), '1.0.0');
-    wp_enqueue_style('lead-edit-modal-css', plugin_dir_url(__FILE__) . '../assets/css/lead-edit-modal.css', array(), '1.0.0');
-    wp_enqueue_script('unified-leads-admin', plugin_dir_url(__FILE__) . '../assets/js/unified-leads-admin.js', array('jquery'), '1.0.0', true);
-    
-    // ✅ PHASE 3 : Charger les scripts pour les actions et workflow
-    wp_enqueue_script('lead-actions', plugin_dir_url(__FILE__) . '../assets/js/lead-actions.js', array('jquery', 'jquery-ui-tooltip'), '1.0.0', true);
-    wp_enqueue_script('lead-workflow', plugin_dir_url(__FILE__) . '../assets/js/lead-workflow.js', array('jquery'), '1.0.0', true);
-    
-    wp_localize_script('unified-leads-admin', 'unifiedLeadsAjax', array(
-        'ajaxurl' => admin_url('admin-ajax.php'),
-        'nonce' => wp_create_nonce('my_istymo_nonce')
-    ));
-    
-    // ✅ PHASE 3 : Variables pour les actions et workflow
-    wp_localize_script('lead-actions', 'leadActionsAjax', array(
-        'ajaxurl' => admin_url('admin-ajax.php'),
-        'nonce' => wp_create_nonce('my_istymo_nonce')
-    ));
-    
-    wp_localize_script('lead-workflow', 'leadWorkflowAjax', array(
-        'ajaxurl' => admin_url('admin-ajax.php'),
-        'nonce' => wp_create_nonce('my_istymo_nonce')
-    ));
+    // Inclure le template du modal Lead Detail
+    include_once plugin_dir_path(__FILE__) . 'lead-detail-modal.php';
     ?>
     
-    <style>
-        /* Design professionnel et minimaliste pour la page leads */
-        .my-istymo .wrap {
-            max-width: none !important;
-            width: 100% !important;
-            background: #fafafa;
-        }
-        
+    <?php
+    // Charger le CSS et JS seulement si pas déjà chargé (pour éviter les doublons)
+    if (!wp_style_is('unified-leads-css', 'enqueued')) {
+        wp_enqueue_style('unified-leads-css', plugin_dir_url(__FILE__) . '../assets/css/unified-leads.css', array(), '1.0.0');
+    }
+    if (!wp_style_is('lead-edit-modal-css', 'enqueued')) {
+        wp_enqueue_style('lead-edit-modal-css', plugin_dir_url(__FILE__) . '../assets/css/lead-edit-modal.css', array(), '1.0.0');
+    }
+    if (!wp_script_is('unified-leads-admin', 'enqueued')) {
+        wp_enqueue_script('unified-leads-admin', plugin_dir_url(__FILE__) . '../assets/js/unified-leads-admin.js', array('jquery'), '1.0.0', true);
+    }
+    
+    // ✅ PHASE 3 : Charger les scripts pour les actions et workflow
+    if (!wp_script_is('lead-actions', 'enqueued')) {
+        wp_enqueue_script('lead-actions', plugin_dir_url(__FILE__) . '../assets/js/lead-actions.js', array('jquery', 'jquery-ui-tooltip'), '1.0.0', true);
+    }
+    if (!wp_script_is('lead-workflow', 'enqueued')) {
+        wp_enqueue_script('lead-workflow', plugin_dir_url(__FILE__) . '../assets/js/lead-workflow.js', array('jquery'), '1.0.0', true);
+    }
+    
+    // Localiser les scripts seulement si pas déjà fait
+    if (!wp_script_is('unified-leads-admin', 'localized')) {
+        wp_localize_script('unified-leads-admin', 'unifiedLeadsAjax', array(
+            'ajaxurl' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('my_istymo_nonce')
+        ));
+    }
+    
+    // ✅ PHASE 3 : Variables pour les actions et workflow
+    if (!wp_script_is('lead-actions', 'localized')) {
+        wp_localize_script('lead-actions', 'leadActionsAjax', array(
+            'ajaxurl' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('my_istymo_nonce')
+        ));
+    }
+    
+    if (!wp_script_is('lead-workflow', 'localized')) {
+        wp_localize_script('lead-workflow', 'leadWorkflowAjax', array(
+            'ajaxurl' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('my_istymo_nonce')
+        ));
+    }
+    
+    // Script spécifique pour les filtres en mode shortcode
+    if ($context['is_shortcode']) {
+        ?>
+        <script>
+        jQuery(document).ready(function($) {
+            // Gestion des filtres en mode shortcode
+            $('#<?php echo 'shortcode-filters-' . $context['shortcode_id']; ?>').on('submit', function(e) {
+                e.preventDefault();
+                
+                var formData = $(this).serialize();
+                var currentUrl = window.location.href.split('?')[0];
+                var newUrl = currentUrl + '?' + formData;
+                
+                // Mettre à jour l'URL sans recharger la page
+                window.history.pushState({}, '', newUrl);
+                
+                // Recharger le contenu via AJAX ou recharger la page
+                window.location.reload();
+            });
+            
+            // Préserver les valeurs des filtres après rechargement
+            var urlParams = new URLSearchParams(window.location.search);
+            var leadType = urlParams.get('lead_type');
+            var status = urlParams.get('status');
+            var priorite = urlParams.get('priorite');
+            
+            if (leadType) {
+                $('select[name="lead_type"]').val(leadType);
+            }
+            if (status) {
+                $('select[name="status"]').val(status);
+            }
+            if (priorite) {
+                $('select[name="priorite"]').val(priorite);
+            }
+        });
+        </script>
+        <?php
+    }
+    ?>
+    
 
-        
-        /* Colonnes du tableau - Largeurs optimisées */
-        
-        .my-istymo .leads-table th:nth-child(1),
-        .my-istymo .leads-table td:nth-child(1) {
-            width: 80px; /* Type - réduit */
-            min-width: 80px;
-            max-width: 80px;
-        }
-        
-        .my-istymo .leads-table th:nth-child(2),
-        .my-istymo .leads-table td:nth-child(2) {
-            width: 120px; /* ID Original - réduit */
-            min-width: 120px;
-            max-width: 120px;
-            word-break: break-all;
-            font-size: 12px;
-        }
-        
-        .my-istymo .leads-table th:nth-child(3),
-        .my-istymo .leads-table td:nth-child(3) {
-            width: 100px; /* Statut */
-            min-width: 100px;
-        }
-        
-        .my-istymo .leads-table th:nth-child(4),
-        .my-istymo .leads-table td:nth-child(4) {
-            width: 90px; /* Priorité */
-            min-width: 90px;
-        }
-        
-        .my-istymo .leads-table th:nth-child(5),
-        .my-istymo .leads-table td:nth-child(5) {
-            width: 110px; /* Date Création */
-            min-width: 110px;
-        }
-        
-        .my-istymo .leads-table th:nth-child(6),
-        .my-istymo .leads-table td:nth-child(6) {
-            width: 120px; /* Notes - réduit */
-            min-width: 120px;
-        }
-        
-        .my-istymo .leads-table th:nth-child(7),
-        .my-istymo .leads-table td:nth-child(7) {
-            width: 120px; /* Actions - optimisé avec icônes */
-            min-width: 120px;
-        }
-        
-        /* Optimisation des badges de type */
-        .my-istymo .lead-type-badge {
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        /* Optimisation des actions */
-        .my-istymo .row-actions {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .my-istymo .row-actions a {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 24px;
-            height: 24px;
-            border-radius: 4px;
-            text-decoration: none;
-            font-size: 14px;
-            transition: all 0.2s ease;
-            background: #f8f9fa;
-            border: 1px solid #e5e5e5;
-        }
-        
-        .my-istymo .row-actions a:hover {
-            background: #0073aa;
-            color: white;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0,115,170,0.2);
-        }
-        
-        .my-istymo .row-actions .delete a:hover {
-            background: #dc3545;
-            border-color: #dc3545;
-        }
-        
-        /* Optimisation des notes */
-        .my-istymo .lead-notes {
-            font-size: 12px;
-            color: #666;
-            line-height: 1.3;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        
-        .my-istymo .lead-notes:hover {
-            color: #333;
-        }
-        
-        /* Styles pour les modals */
-        .my-istymo-modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-        
-        .my-istymo-modal.my-istymo-show {
-            display: block;
-        }
-        
-        .my-istymo-modal-content {
-            background-color: #fefefe;
-            margin: 5% auto;
-            padding: 30px;
-            border-radius: 12px;
-            width: 80%;
-            max-width: 600px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-        
-        .my-istymo-modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #e5e5e5;
-        }
-        
-        .my-istymo-modal-header h3 {
-            margin: 0;
-            color: #1d2327;
-            font-size: 20px;
-            font-weight: 600;
-        }
-        
-        .my-istymo-modal-close {
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            color: #666;
-            padding: 5px;
-            border-radius: 4px;
-            transition: all 0.2s ease;
-        }
-        
-        .my-istymo-modal-close:hover {
-            background: #f0f0f0;
-            color: #333;
-        }
-        
-        .my-istymo-form-group {
-            margin-bottom: 20px;
-        }
-        
-        .my-istymo-form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #1d2327;
-        }
-        
-        .my-istymo-select,
-        .my-istymo-textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e5e5e5;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-        
-        .my-istymo-select:focus,
-        .my-istymo-textarea:focus {
-            outline: none;
-            border-color: #0073aa;
-            box-shadow: 0 0 0 4px rgba(0,115,170,0.15);
-        }
-        
-        .my-istymo-form-actions {
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-            margin-top: 30px;
-        }
-        
-        .my-istymo-btn {
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-        }
-        
-        .my-istymo-btn-primary {
-            background: linear-gradient(135deg, #0073aa 0%, #005a87 100%);
-            color: white;
-        }
-        
-        .my-istymo-btn-secondary {
-            background: #f8f9fa;
-            color: #6c757d;
-            border: 2px solid #e5e5e5;
-        }
-        
-        .my-istymo-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        
-                 
-        
-        .my-istymo .lead-notes {
-            max-width: 250px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            color: #666;
-            font-size: 13px;
-        }
-        
-        /* Actions sur les lignes */
-        .my-istymo .row-actions {
-            font-size: 12px;
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-        
-                 .my-istymo .row-actions a {
-             color: #0073aa;
-             text-decoration: none;
-             padding: 6px 12px;
-             border-radius: 6px;
-             transition: all 0.3s ease;
-             font-weight: 500;
-             border: 1px solid transparent;
-         }
-         
-         .my-istymo .row-actions a:hover {
-             background: linear-gradient(135deg, rgba(0,115,170,0.1) 0%, rgba(0,115,170,0.05) 100%);
-             color: #005a87;
-             border-color: rgba(0,115,170,0.2);
-             transform: translateY(-1px);
-             box-shadow: 0 2px 6px rgba(0,115,170,0.15);
-         }
-         
-         .my-istymo .row-actions .delete a:hover {
-             background: linear-gradient(135deg, rgba(220,53,69,0.1) 0%, rgba(220,53,69,0.05) 100%);
-             color: #dc3545;
-             border-color: rgba(220,53,69,0.2);
-             box-shadow: 0 2px 6px rgba(220,53,69,0.15);
-         }
-        
-        /* Modals - Design amélioré */
-        .my-istymo .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            z-index: 100000;
-            backdrop-filter: blur(2px);
-        }
-        
-        .my-istymo .modal-content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #fff;
-            padding: 32px;
-            border-radius: 12px;
-            min-width: 450px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-            border: 1px solid #e5e5e5;
-        }
-        
-        .my-istymo .modal-content h3 {
-            margin: 0 0 24px 0;
-            color: #1d2327;
-            font-size: 18px;
-            font-weight: 500;
-        }
-        
-                 .my-istymo .modal-content select,
-         .my-istymo .modal-content textarea {
-             width: 100%;
-             margin-bottom: 24px;
-             padding: 16px 20px;
-             border: 2px solid #e5e5e5;
-             border-radius: 10px;
-             font-size: 14px;
-             font-weight: 500;
-             color: #1d2327;
-             background: #fff;
-             transition: all 0.3s ease;
-             box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-         }
-         
-         .my-istymo .modal-content select:hover,
-         .my-istymo .modal-content textarea:hover {
-             border-color: #0073aa;
-             box-shadow: 0 4px 12px rgba(0,115,170,0.1);
-         }
-         
-         .my-istymo .modal-content select:focus,
-         .my-istymo .modal-content textarea:focus {
-             outline: none;
-             border-color: #0073aa;
-             box-shadow: 0 0 0 4px rgba(0,115,170,0.15);
-             transform: translateY(-1px);
-         }
-         
-         .my-istymo .modal-content textarea {
-             resize: vertical;
-             min-height: 120px;
-             font-family: inherit;
-             line-height: 1.5;
-         }
-        
-                 .my-istymo .modal-actions {
-             display: flex;
-             gap: 16px;
-             justify-content: flex-end;
-             margin-top: 8px;
-         }
-         
-         .my-istymo .modal-actions .button {
-             padding: 12px 24px;
-             border-radius: 10px;
-             font-weight: 600;
-             font-size: 13px;
-             text-transform: uppercase;
-             letter-spacing: 0.5px;
-             transition: all 0.3s ease;
-             border: none;
-             cursor: pointer;
-             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-         }
-         
-         .my-istymo .modal-actions .button-primary {
-             background: linear-gradient(135deg, #0073aa 0%, #005a87 100%);
-             color: white;
-             box-shadow: 0 3px 10px rgba(0,115,170,0.3);
-         }
-         
-         .my-istymo .modal-actions .button-primary:hover {
-             background: linear-gradient(135deg, #005a87 0%, #004466 100%);
-             box-shadow: 0 6px 20px rgba(0,115,170,0.4);
-             transform: translateY(-2px);
-         }
-         
-         .my-istymo .modal-actions .button-secondary {
-             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-             color: #1d2327;
-             border: 2px solid #e5e5e5;
-             box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-         }
-         
-         .my-istymo .modal-actions .button-secondary:hover {
-             background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
-             border-color: #0073aa;
-             color: #0073aa;
-             box-shadow: 0 4px 12px rgba(0,115,170,0.15);
-             transform: translateY(-2px);
-         }
-        
-        /* État vide */
-        .my-istymo .no-leads {
-            text-align: center;
-            padding: 60px 40px;
-            color: #666;
-            background: #fafbfc;
-            border-radius: 8px;
-            border: 2px dashed #e5e5e5;
-        }
-        
-                 .my-istymo .no-leads p {
-             font-size: 16px;
-             margin-bottom: 24px;
-             color: #666;
-             font-weight: 500;
-         }
-         
-         .my-istymo .no-leads .button {
-             padding: 14px 28px;
-             border-radius: 10px;
-             font-weight: 600;
-             font-size: 14px;
-             text-transform: uppercase;
-             letter-spacing: 0.5px;
-             transition: all 0.3s ease;
-             border: none;
-             cursor: pointer;
-             background: linear-gradient(135deg, #0073aa 0%, #005a87 100%);
-             color: white;
-             box-shadow: 0 3px 10px rgba(0,115,170,0.3);
-             text-decoration: none;
-             display: inline-block;
-         }
-         
-         .my-istymo .no-leads .button:hover {
-             background: linear-gradient(135deg, #005a87 0%, #004466 100%);
-             box-shadow: 0 6px 20px rgba(0,115,170,0.4);
-             transform: translateY(-2px);
-         }
-        
-        /* Pagination - Design amélioré */
-        .my-istymo .tablenav-pages {
-            margin-top: 24px;
-            text-align: center;
-            padding: 20px;
-            background: #fafbfc;
-            border-radius: 8px;
-            border: 1px solid #e5e5e5;
-        }
-        
-        .my-istymo .tablenav-pages .page-numbers {
-            display: inline-block;
-            padding: 8px 12px;
-            margin: 0 4px;
-            border: 1px solid #e5e5e5;
-            text-decoration: none;
-            color: #0073aa;
-            border-radius: 6px;
-            transition: all 0.2s ease;
-            background: #fff;
-        }
-        
-        .my-istymo .tablenav-pages .page-numbers:hover {
-            background: #f8f9fa;
-            border-color: #0073aa;
-        }
-        
-        .my-istymo .tablenav-pages .current {
-            background: linear-gradient(135deg, #0073aa 0%, #005a87 100%);
-            color: white;
-            border-color: #0073aa;
-            box-shadow: 0 2px 4px rgba(0,115,170,0.2);
-        }
-        
-        .my-istymo .displaying-num {
-            color: #666;
-            font-size: 14px;
-            margin-right: 20px;
-        }
-        
-        /* Responsive */
-        .my-istymo .table-responsive {
-            width: 100%;
-            overflow-x: auto;
-            border-radius: 8px;
-        }
-        
-        @media (max-width: 768px) {
-            .my-istymo .bulk-actions-row {
-                flex-direction: column;
-                gap: 16px;
-                align-items: stretch;
-            }
-            
-            .my-istymo .bulk-actions {
-                flex-direction: column;
-                gap: 8px;
-            }
-            
-            .my-istymo .modal-content {
-                min-width: 90%;
-                margin: 20px;
-                padding: 24px;
-            }
-            
-            .my-istymo .row-actions {
-                flex-direction: column;
-                gap: 4px;
-            }
-        }
-        
-        /* ✅ PHASE 3 : Styles pour les modals d'actions et workflow */
-        .my-istymo .action-modal,
-        .my-istymo .workflow-modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-        
-        .my-istymo .action-modal-content,
-        .my-istymo .workflow-modal-content {
-            background-color: #fefefe;
-            margin: 5% auto;
-            padding: 30px;
-            border-radius: 12px;
-            width: 80%;
-            max-width: 600px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-        
-        .my-istymo .action-modal h3,
-        .my-istymo .workflow-modal h3 {
-            margin-top: 0;
-            color: #1d2327;
-            font-size: 24px;
-            font-weight: 600;
-        }
-        
-        .my-istymo .action-form-group,
-        .my-istymo .workflow-form-group {
-            margin-bottom: 20px;
-        }
-        
-        .my-istymo .action-form-group label,
-        .my-istymo .workflow-form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #1d2327;
-        }
-        
-        .my-istymo .action-form-group input,
-        .my-istymo .action-form-group select,
-        .my-istymo .action-form-group textarea,
-        .my-istymo .workflow-form-group input,
-        .my-istymo .workflow-form-group select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e5e5e5;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-        
-        .my-istymo .action-form-group input:focus,
-        .my-istymo .action-form-group select:focus,
-        .my-istymo .action-form-group textarea:focus,
-        .my-istymo .workflow-form-group input:focus,
-        .my-istymo .workflow-form-group select:focus {
-            outline: none;
-            border-color: #0073aa;
-            box-shadow: 0 0 0 4px rgba(0,115,170,0.15);
-        }
-        
-        .my-istymo .modal-actions {
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-            margin-top: 30px;
-        }
-        
-        .my-istymo .modal-actions .button {
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .my-istymo .modal-actions .button-primary {
-            background: linear-gradient(135deg, #0073aa 0%, #005a87 100%);
-            color: white;
-            border: none;
-        }
-        
-        .my-istymo .modal-actions .button-secondary {
-            background: #f8f9fa;
-            color: #6c757d;
-            border: 2px solid #e5e5e5;
-        }
-        
-        .my-istymo .modal-actions .button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-    </style>
     
     <!-- Script pour le nouveau design du tableau -->
     <script>
     jQuery(document).ready(function($) {
-        // Gestion des menus dropdown
+        // Gestion des menus dropdown avec survol et clic
+        let menuTimeout;
+        
+        // Fonction pour positionner le menu intelligemment - VERSION SIMPLIFIÉE
+        function positionMenu(menuContainer) {
+            const menu = menuContainer.find('.my-istymo-dropdown-menu');
+            const button = menuContainer.find('.my-istymo-menu-trigger');
+            
+            // TOUJOURS utiliser position fixed pour éviter TOUS les problèmes de débordement
+            menu.addClass('menu-fixed');
+            
+            // Temporairement afficher le menu pour mesurer ses dimensions
+            menu.css({visibility: 'hidden', display: 'block', position: 'fixed'});
+            const menuHeight = menu.outerHeight();
+            const menuWidth = menu.outerWidth();
+            menu.css({visibility: '', display: ''});
+            
+            // Obtenir les dimensions et positions du bouton
+            const buttonRect = button[0].getBoundingClientRect();
+            const windowHeight = window.innerHeight;
+            const windowWidth = window.innerWidth;
+            
+            // Calculer la position optimale
+            let top = buttonRect.bottom + 5;
+            let left = buttonRect.right - menuWidth;
+            
+            // Ajustements pour éviter les débordements
+            // 1. Si pas assez d'espace en bas, placer au-dessus
+            if (top + menuHeight > windowHeight - 20) {
+                top = buttonRect.top - menuHeight - 5;
+            }
+            
+            // 2. Si pas assez d'espace à droite, aligner à droite du bouton
+            if (left < 10) {
+                left = buttonRect.left;
+            }
+            
+            // 3. Si le menu dépasse encore à droite, le placer à gauche du bouton
+            if (left + menuWidth > windowWidth - 10) {
+                left = buttonRect.left - menuWidth + buttonRect.width;
+            }
+            
+            // 4. Dernière vérification - forcer dans la fenêtre
+            if (left < 10) left = 10;
+            if (left + menuWidth > windowWidth - 10) left = windowWidth - menuWidth - 10;
+            if (top < 10) top = 10;
+            if (top + menuHeight > windowHeight - 10) top = windowHeight - menuHeight - 10;
+            
+            // Appliquer la position calculée
+            menu.css({
+                position: 'fixed',
+                top: top + 'px',
+                left: left + 'px',
+                right: 'auto',
+                bottom: 'auto',
+                'z-index': 10000
+            });
+            
+            // Prévention agressive des scrollbars
+            preventScrollbars();
+        }
+        
+        // Fonction pour empêcher les scrollbars de façon agressive
+        function preventScrollbars() {
+            // Forcer tous les conteneurs à overflow visible
+            $('.my-istymo, .my-istymo *').not('.my-istymo-dropdown-menu').each(function() {
+                const $el = $(this);
+                if (!$el.data('original-overflow-saved')) {
+                    $el.data('original-overflow-saved', true);
+                    $el.data('original-overflow', $el.css('overflow'));
+                    $el.data('original-overflow-y', $el.css('overflow-y'));
+                    $el.data('original-overflow-x', $el.css('overflow-x'));
+                }
+                
+                $el.css({
+                    'overflow-y': 'visible',
+                    'overflow-x': $el.css('overflow-x') === 'scroll' || $el.css('overflow-x') === 'auto' ? 'auto' : 'visible'
+                });
+            });
+        }
+        
+        // Gestion du survol pour ouvrir le menu
+        $('.my-istymo-actions-menu').on('mouseenter', function() {
+            clearTimeout(menuTimeout);
+            const menuContainer = $(this);
+            const menu = menuContainer.find('.my-istymo-dropdown-menu');
+            $('.my-istymo-dropdown-menu').not(menu).removeClass('show');
+            
+            // Prévention immédiate des scrollbars AVANT d'ouvrir le menu
+            preventScrollbars();
+            
+            // Positionner le menu intelligemment
+            positionMenu(menuContainer);
+            menu.addClass('show');
+            
+            // Double prévention après ouverture
+            setTimeout(function() {
+                preventScrollbars();
+            }, 10);
+        });
+        
+        // Fonction pour restaurer les styles originaux des conteneurs
+        function restoreContainerStyles() {
+            // Restaurer les styles overflow originaux
+            $('.my-istymo [data-original-overflow-saved]').each(function() {
+                const $el = $(this);
+                $el.css({
+                    'overflow': $el.data('original-overflow'),
+                    'overflow-y': $el.data('original-overflow-y'),
+                    'overflow-x': $el.data('original-overflow-x')
+                });
+            });
+            
+            // Nettoyer les styles de position fixed des menus
+            $('.my-istymo-dropdown-menu').css({
+                position: '',
+                top: '',
+                left: '',
+                right: '',
+                bottom: '',
+                'z-index': ''
+            }).removeClass('menu-fixed');
+        }
+        
+        // Gestion du survol pour fermer le menu
+        $('.my-istymo-actions-menu').on('mouseleave', function() {
+            const menu = $(this).find('.my-istymo-dropdown-menu');
+            menuTimeout = setTimeout(function() {
+                menu.removeClass('show');
+                // Restaurer les styles après un délai pour éviter les clignotements
+                setTimeout(restoreContainerStyles, 100);
+            }, 200); // Délai de 200ms pour éviter la fermeture trop rapide
+        });
+        
+        // Gestion du clic pour ouvrir/fermer le menu
         $('.my-istymo-menu-trigger').on('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
             
-            // Fermer tous les autres menus
-            $('.my-istymo-dropdown-menu').removeClass('show').hide();
-            
-            // Ouvrir le menu de ce bouton
+            const menuContainer = $(this).closest('.my-istymo-actions-menu');
             const menu = $(this).siblings('.my-istymo-dropdown-menu');
-            menu.addClass('show').show();
+            const isVisible = menu.hasClass('show');
+            
+            // Fermer tous les autres menus
+            $('.my-istymo-dropdown-menu').removeClass('show');
+            
+            // Basculer l'état du menu actuel
+            if (!isVisible) {
+                // Prévention immédiate des scrollbars
+                preventScrollbars();
+                
+                // Positionner le menu intelligemment
+                positionMenu(menuContainer);
+                menu.addClass('show');
+                
+                // Double prévention après ouverture
+                setTimeout(function() {
+                    preventScrollbars();
+                }, 10);
+            }
         });
         
         // Fermer les menus en cliquant ailleurs
-        $(document).on('click', function() {
-            $('.my-istymo-dropdown-menu').removeClass('show').hide();
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('.my-istymo-actions-menu').length) {
+                $('.my-istymo-dropdown-menu').removeClass('show');
+                restoreContainerStyles();
+            }
         });
         
         // Empêcher la fermeture du menu en cliquant dessus
@@ -1009,7 +643,32 @@ function unified_leads_admin_page() {
         
         // Fermer le menu après avoir cliqué sur une action
         $('.my-istymo-dropdown-menu a').on('click', function() {
-            $(this).closest('.my-istymo-dropdown-menu').removeClass('show').hide();
+            $(this).closest('.my-istymo-dropdown-menu').removeClass('show');
+            restoreContainerStyles();
+        });
+        
+        // Fermer les menus lors du scroll pour éviter les problèmes de positionnement
+        $(window).on('scroll resize', function() {
+            $('.my-istymo-dropdown-menu').removeClass('show');
+            restoreContainerStyles();
+        });
+        
+        // Observateur pour prévenir les scrollbars en temps réel
+        let scrollbarObserver = setInterval(function() {
+            if ($('.my-istymo-dropdown-menu.show').length > 0) {
+                // Un menu est ouvert, vérifier et corriger les scrollbars
+                $('.my-istymo *').each(function() {
+                    const el = this;
+                    if (el.scrollHeight > el.clientHeight && $(el).css('overflow-y') !== 'visible') {
+                        $(el).css('overflow-y', 'visible');
+                    }
+                });
+            }
+        }, 50); // Vérification toutes les 50ms quand un menu est ouvert
+        
+        // Initialisation : prévenir les scrollbars au chargement
+        $(document).ready(function() {
+            preventScrollbars();
         });
         
         // Gestion de la sélection multiple
@@ -1030,23 +689,64 @@ function unified_leads_admin_page() {
         console.log('Modal element found:', jQuery('#lead-detail-modal').length > 0);
         console.log('Modal functions available:', typeof openLeadDetailModal === 'function');
         
-        // Ajouter un bouton de test temporaire
-        jQuery('body').append('<button id="test-modal-btn" style="position: fixed; top: 10px; right: 10px; z-index: 999999; background: red; color: white; padding: 10px;">Test Modal</button>');
-        jQuery('#test-modal-btn').on('click', function() {
-            console.log('Test button clicked');
-            openLeadDetailModal(1);
-        });
+        // Gestion spécifique pour mobile
+        if (window.innerWidth <= 768) {
+            // Sur mobile, utiliser seulement le clic
+            $('.my-istymo-actions-menu').off('mouseenter mouseleave');
+            
+            $('.my-istymo-menu-trigger').on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const menu = $(this).siblings('.my-istymo-dropdown-menu');
+                const isVisible = menu.hasClass('show');
+                
+                // Fermer tous les autres menus
+                $('.my-istymo-dropdown-menu').removeClass('show');
+                
+                // Basculer l'état du menu actuel
+                if (!isVisible) {
+                    menu.addClass('show');
+                    
+                    // Positionner le menu correctement sur mobile
+                    const buttonRect = this.getBoundingClientRect();
+                    const menuElement = menu[0];
+                    
+                    // Calculer la position optimale
+                    let top = buttonRect.bottom + 5;
+                    let left = Math.max(10, buttonRect.left - 150 + buttonRect.width);
+                    
+                    // Vérifier si le menu dépasse en bas
+                    if (top + menuElement.offsetHeight > window.innerHeight - 20) {
+                        top = buttonRect.top - menuElement.offsetHeight - 5;
+                    }
+                    
+                    // Vérifier si le menu dépasse à gauche
+                    if (left < 10) {
+                        left = 10;
+                    }
+                    
+                    menu.css({
+                        position: 'fixed',
+                        top: top + 'px',
+                        left: left + 'px',
+                        right: 'auto'
+                    });
+                }
+            });
+        }
     });
     
     // Fonction pour ouvrir le modal de détail d'un lead
     function openLeadDetailModal(leadId) {
         console.log('Opening modal for lead ID:', leadId); // Debug
         
-        // Affichage simple du modal
+        // Afficher le modal
         const modal = jQuery('#lead-detail-modal');
         console.log('Modal element exists:', modal.length);
         
-        modal.css('display', 'block');
+        modal.removeClass('my-istymo-hidden').addClass('my-istymo-show');
+        modal.show();
         console.log('Modal display set to block');
         
         // Charger les détails via AJAX
@@ -1054,7 +754,7 @@ function unified_leads_admin_page() {
             url: unifiedLeadsAjax.ajaxurl,
             type: 'POST',
             data: {
-                action: 'my_istymo_get_lead_detail_content',
+                action: 'my_istymo_get_lead_details',
                 lead_id: leadId,
                 nonce: unifiedLeadsAjax.nonce
             },
@@ -1065,15 +765,23 @@ function unified_leads_admin_page() {
                 console.log('AJAX Response:', response); // Debug
                 if (response && response.success) {
                     // Mettre à jour le titre du modal
-                    jQuery('#lead-modal-title').text('Lead #' + response.data.lead_id + ' - ' + response.data.lead_type.toUpperCase());
+                    jQuery('#lead-modal-title').text('Lead #' + leadId + ' - ' + (response.data.lead_type || 'Détails').toUpperCase());
+                    
+                    // Générer le contenu HTML moderne
+                    var leadData = response.data;
+                    console.log('Lead Data:', leadData); // Debug des données
+                    var htmlContent = generateModernLeadDetailHTML(leadData);
                     
                     // Charger le contenu
-                    jQuery('#lead-detail-content').html(response.data.html);
+                    jQuery('#lead-detail-content').html(htmlContent);
+                    
+                    // Afficher le bouton modifier
+                    jQuery('#edit-lead-btn').show();
                     
                     // Initialiser le formulaire d'édition après le chargement
                     initLeadEditForm();
                 } else {
-                    jQuery('#lead-detail-content').html('<div style="color: red; padding: 20px;"><p>❌ Erreur: ' + (response && response.data ? response.data : 'Impossible de charger les détails') + '</p></div>');
+                    jQuery('#lead-detail-content').html('<div class="my-istymo-error-state"><p>❌ Erreur: ' + (response && response.data ? response.data : 'Impossible de charger les détails') + '</p></div>');
                 }
             },
             error: function(xhr, status, error) {
@@ -1084,9 +792,10 @@ function unified_leads_admin_page() {
     }
     
     // Fonction pour fermer le modal de détail
-    function closeleadDetailModal() {
+    function closeLeadDetailModal() {
         console.log('Closing modal'); // Debug
-        jQuery('#lead-detail-modal').css('display', 'none');
+        jQuery('#lead-detail-modal').removeClass('my-istymo-show').addClass('my-istymo-hidden');
+        jQuery('#lead-detail-modal').hide();
     }
     
     // Fonction pour initialiser le formulaire d'édition
@@ -1191,97 +900,413 @@ function unified_leads_admin_page() {
         const leadText = currentCount > 1 ? 'leads' : 'lead';
         jQuery('.my-istymo-results-count').text(currentCount + ' ' + leadText);
     }
+    
+    // Fonction pour générer le HTML moderne des détails du lead
+    function generateModernLeadDetailHTML(leadData) {
+        var html = '';
+        
+        // Première ligne - Informations de base en mode linéaire et petit
+        html += '<div class="my-istymo-lead-summary-row">';
+        
+        // Statut avec liste déroulante éditable
+        html += '<div class="my-istymo-summary-item">';
+        html += '<span class="my-istymo-summary-label">Statut :</span>';
+        html += '<select class="my-istymo-edit-select" id="edit-status-' + leadData.id + '" data-field="status">';
+        html += '<option value="nouveau"' + (leadData.status === 'nouveau' ? ' selected' : '') + '>Nouveau</option>';
+        html += '<option value="en_cours"' + (leadData.status === 'en_cours' ? ' selected' : '') + '>En cours</option>';
+        html += '<option value="qualifie"' + (leadData.status === 'qualifie' ? ' selected' : '') + '>Qualifié</option>';
+        html += '<option value="proposition"' + (leadData.status === 'proposition' ? ' selected' : '') + '>Proposition</option>';
+        html += '<option value="negociation"' + (leadData.status === 'negociation' ? ' selected' : '') + '>Négociation</option>';
+        html += '<option value="gagne"' + (leadData.status === 'gagne' ? ' selected' : '') + '>Gagné</option>';
+        html += '<option value="perdu"' + (leadData.status === 'perdu' ? ' selected' : '') + '>Perdu</option>';
+        html += '</select>';
+        html += '</div>';
+        
+        // Priorité avec liste déroulante éditable
+        html += '<div class="my-istymo-summary-item">';
+        html += '<span class="my-istymo-summary-label">Priorité :</span>';
+        html += '<select class="my-istymo-edit-select" id="edit-priorite-' + leadData.id + '" data-field="priorite">';
+        html += '<option value="basse"' + (leadData.priorite === 'basse' ? ' selected' : '') + '>Basse</option>';
+        html += '<option value="normale"' + (leadData.priorite === 'normale' ? ' selected' : '') + '>Normale</option>';
+        html += '<option value="haute"' + (leadData.priorite === 'haute' ? ' selected' : '') + '>Haute</option>';
+        html += '</select>';
+        html += '</div>';
+        
+        // Dates
+        html += '<div class="my-istymo-summary-item">';
+        html += '<span class="my-istymo-summary-label">Créé le :</span>';
+        html += '<span class="my-istymo-summary-value">' + (leadData.date_creation ? new Date(leadData.date_creation).toLocaleDateString('fr-FR') : '—') + '</span>';
+        html += '</div>';
+        
+        html += '<div class="my-istymo-summary-item">';
+        html += '<span class="my-istymo-summary-label">Modifié le :</span>';
+        html += '<span class="my-istymo-summary-value">' + (leadData.date_modification ? new Date(leadData.date_modification).toLocaleDateString('fr-FR') : '—') + '</span>';
+        html += '</div>';
+        
+        html += '</div>'; // Fin summary-row
+        
+        // Deuxième ligne - Container avec 2 colonnes
+        html += '<div class="my-istymo-lead-detail-container">';
+        
+        // Colonne gauche - Informations du lead
+        html += '<div class="my-istymo-lead-detail-left">';
+        
+        // Carte d'informations principales avec toutes les données SCI/DPE
+        html += '<div class="my-istymo-info-card">';
+        html += '<div class="my-istymo-card-header">';
+        html += '<h4><span class="dashicons dashicons-info"></span> Informations ' + (leadData.lead_type === 'sci' ? 'SCI' : 'DPE') + '</h4>';
+        html += '</div>';
+        html += '<div class="my-istymo-card-content">';
+        
+        // Type de lead avec badge
+        var typeIcon = leadData.lead_type === 'sci' ? '🏢' : '🏠';
+        var typeText = leadData.lead_type === 'sci' ? 'Société Civile' : 'Bien Immobilier';
+        html += '<div class="my-istymo-info-row">';
+        html += '<span class="my-istymo-info-label">Type :</span>';
+        html += '<span class="my-istymo-info-value">' + typeIcon + ' ' + typeText + '</span>';
+        html += '</div>';
+        
+        // ID original (SIREN pour SCI, DPE ID pour DPE)
+        var idLabel = leadData.lead_type === 'sci' ? 'SIREN :' : 'DPE ID :';
+        html += '<div class="my-istymo-info-row">';
+        html += '<span class="my-istymo-info-label">' + idLabel + '</span>';
+        html += '<span class="my-istymo-info-value">' + (leadData.original_id || '—') + '</span>';
+        html += '</div>';
+        
+        // Informations spécifiques selon le type
+        if (leadData.data_originale) {
+            var data = leadData.data_originale;
+            
+            if (leadData.lead_type === 'sci') {
+                // Informations SCI
+                if (data.denomination || data.raisonSociale) {
+                    html += '<div class="my-istymo-info-row">';
+                    html += '<span class="my-istymo-info-label">Dénomination :</span>';
+                    html += '<span class="my-istymo-info-value">' + (data.denomination || data.raisonSociale || '—') + '</span>';
+                    html += '</div>';
+                }
+                
+                if (data.dirigeant) {
+                    html += '<div class="my-istymo-info-row">';
+                    html += '<span class="my-istymo-info-label">Dirigeant :</span>';
+                    html += '<span class="my-istymo-info-value">' + data.dirigeant + '</span>';
+                    html += '</div>';
+                }
+                
+                // Section Adresse et Localisation pour SCI
+                html += '<div class="my-istymo-info-section">';
+                
+                // Construire l'adresse complète
+                var adresseComplete = '';
+                var adresseParts = [];
+                
+                if (data.adresse) {
+                    adresseParts.push(data.adresse);
+                }
+                
+                if (data.code_postal && data.ville) {
+                    adresseParts.push(data.code_postal + ' ' + data.ville);
+                } else if (data.code_postal) {
+                    adresseParts.push(data.code_postal);
+                } else if (data.ville) {
+                    adresseParts.push(data.ville);
+                }
+                
+                adresseComplete = adresseParts.join(', ');
+                
+                if (adresseComplete) {
+                    html += '<div class="my-istymo-info-row">';
+                    html += '<span class="my-istymo-info-label">Adresse :</span>';
+                    html += '<span class="my-istymo-info-value">' + adresseComplete + '</span>';
+                    html += '</div>';
+                }
+                
+                html += '</div>'; // Fin section localisation
+                
+                // Informations supplémentaires SCI
+                if (data.siren) {
+                    html += '<div class="my-istymo-info-row">';
+                    html += '<span class="my-istymo-info-label">SIREN :</span>';
+                    html += '<span class="my-istymo-info-value">' + data.siren + '</span>';
+                    html += '</div>';
+                }
+                
+            } else if (leadData.lead_type === 'dpe') {
+                // Section Adresse et Localisation pour DPE
+                html += '<div class="my-istymo-info-section">';
+                
+                // Construire l'adresse complète
+                var adresseComplete = '';
+                var adresseParts = [];
+                
+                if (data.adresse_ban) {
+                    // Nettoyer l'adresse pour enlever le code postal et la ville
+                    var adresseClean = data.adresse_ban;
+                    if (data.code_postal_ban && data.nom_commune_ban) {
+                        var pattern = new RegExp('\\s*' + data.code_postal_ban + '\\s*' + data.nom_commune_ban + '\\s*$', 'i');
+                        adresseClean = adresseClean.replace(pattern, '').trim();
+                    }
+                    adresseParts.push(adresseClean || data.adresse_ban);
+                }
+                
+                if (data.code_postal_ban && data.nom_commune_ban) {
+                    adresseParts.push(data.code_postal_ban + ' ' + data.nom_commune_ban);
+                } else if (data.code_postal_ban) {
+                    adresseParts.push(data.code_postal_ban);
+                } else if (data.nom_commune_ban) {
+                    adresseParts.push(data.nom_commune_ban);
+                }
+                
+                adresseComplete = adresseParts.join(', ');
+                
+                if (adresseComplete) {
+                    html += '<div class="my-istymo-info-row">';
+                    html += '<span class="my-istymo-info-label">Adresse :</span>';
+                    html += '<span class="my-istymo-info-value">' + adresseComplete + '</span>';
+                    html += '</div>';
+                }
+                
+                if (data.complement_adresse_logement || data.complement_adresse_batiment) {
+                    html += '<div class="my-istymo-info-row">';
+                    html += '<span class="my-istymo-info-label">Complément :</span>';
+                    html += '<span class="my-istymo-info-value">' + (data.complement_adresse_logement || data.complement_adresse_batiment || '—') + '</span>';
+                    html += '</div>';
+                }
+                
+                html += '</div>'; // Fin section localisation
+                
+                // Section Caractéristiques du bien
+                html += '<div class="my-istymo-info-section">';
+                
+                if (data.surface_habitable_logement) {
+                    html += '<div class="my-istymo-info-row">';
+                    html += '<span class="my-istymo-info-label">Surface :</span>';
+                    html += '<span class="my-istymo-info-value">' + data.surface_habitable_logement + ' m²</span>';
+                    html += '</div>';
+                }
+                
+                if (data.type_batiment) {
+                    html += '<div class="my-istymo-info-row">';
+                    html += '<span class="my-istymo-info-label">Type Bâtiment :</span>';
+                    html += '<span class="my-istymo-info-value">' + data.type_batiment + '</span>';
+                    html += '</div>';
+                }
+                
+                if (data.annee_construction) {
+                    html += '<div class="my-istymo-info-row">';
+                    html += '<span class="my-istymo-info-label">Année Construction :</span>';
+                    html += '<span class="my-istymo-info-value">' + data.annee_construction + '</span>';
+                    html += '</div>';
+                }
+                
+                html += '</div>'; // Fin section caractéristiques
+                
+                // Section Performance Énergétique
+                html += '<div class="my-istymo-info-section">';
+                
+                if (data.etiquette_dpe) {
+                    html += '<div class="my-istymo-info-row">';
+                    html += '<span class="my-istymo-info-label">Étiquette DPE :</span>';
+                    html += '<span class="my-istymo-info-value my-istymo-dpe-badge my-istymo-dpe-' + data.etiquette_dpe.toLowerCase() + '">';
+                    html += '<span class="my-istymo-badge-dot"></span>';
+                    html += data.etiquette_dpe;
+                    html += '</span>';
+                    html += '</div>';
+                }
+                
+                if (data.etiquette_ges) {
+                    html += '<div class="my-istymo-info-row">';
+                    html += '<span class="my-istymo-info-label">Étiquette GES :</span>';
+                    html += '<span class="my-istymo-info-value my-istymo-ges-badge my-istymo-ges-' + data.etiquette_ges.toLowerCase() + '">';
+                    html += '<span class="my-istymo-badge-dot"></span>';
+                    html += data.etiquette_ges;
+                    html += '</span>';
+                    html += '</div>';
+                }
+                
+                if (data.conso_5_usages_ef_energie_n1) {
+                    html += '<div class="my-istymo-info-row">';
+                    html += '<span class="my-istymo-info-label">Consommation :</span>';
+                    html += '<span class="my-istymo-info-value">' + data.conso_5_usages_ef_energie_n1 + ' kWh/m²/an</span>';
+                    html += '</div>';
+                }
+                
+                if (data.emission_ges_5_usages_energie_n1) {
+                    html += '<div class="my-istymo-info-row">';
+                    html += '<span class="my-istymo-info-label">Émissions GES :</span>';
+                    html += '<span class="my-istymo-info-value">' + data.emission_ges_5_usages_energie_n1 + ' kgCO₂/m²/an</span>';
+                    html += '</div>';
+                }
+                
+                html += '</div>'; // Fin section performance énergétique
+                
+                // Informations supplémentaires DPE
+                
+                if (data.date_etablissement_dpe) {
+                    html += '<div class="my-istymo-info-row">';
+                    html += '<span class="my-istymo-info-label">Date DPE :</span>';
+                    html += '<span class="my-istymo-info-value">' + new Date(data.date_etablissement_dpe).toLocaleDateString('fr-FR') + '</span>';
+                    html += '</div>';
+                }
+                
+                // Bouton pour voir les détails du DPE
+                if (data._id) {
+                    html += '<div class="my-istymo-info-row" style="margin-top: 16px;">';
+                    html += '<a href="https://observatoire-dpe-audit.ademe.fr/afficher-dpe/' + data._id + '" target="_blank" class="my-istymo-btn my-istymo-btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">';
+                    html += '<span class="dashicons dashicons-external"></span>';
+                    html += 'Voir les détails du DPE';
+                    html += '</a>';
+                    html += '</div>';
+                }
+            }
+        }
+        
+        html += '</div>'; // Fin card-content
+        html += '</div>'; // Fin info-card
+        
+
+        
+        html += '</div>'; // Fin colonne gauche
+        
+        // Colonne droite - Notes et historique
+        html += '<div class="my-istymo-lead-detail-right">';
+        
+        // Carte des notes (déplacée dans la colonne droite)
+        html += '<div class="my-istymo-info-card">';
+        html += '<div class="my-istymo-card-header">';
+        html += '<h4><span class="dashicons dashicons-edit"></span> Notes</h4>';
+        html += '</div>';
+        html += '<div class="my-istymo-card-content">';
+        
+        html += '<textarea class="my-istymo-edit-textarea" id="edit-notes-' + leadData.id + '" data-field="notes" placeholder="Ajouter des notes pour ce lead..." rows="6">' + (leadData.notes || '') + '</textarea>';
+        
+        html += '</div>'; // Fin card-content
+        html += '</div>'; // Fin info-card
+        
+
+        
+        html += '</div>'; // Fin colonne droite
+        
+        html += '</div>'; // Fin container principal
+        
+        // Boutons d'action en bas du modal
+        html += '<div class="my-istymo-modal-actions" style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #e5e5e5; text-align: right;">';
+        html += '<button type="button" class="my-istymo-btn my-istymo-btn-primary" onclick="saveLeadChanges(' + leadData.id + ');">';
+        html += '<span class="dashicons dashicons-saved"></span> Sauvegarder';
+        html += '</button>';
+
+        html += '</div>';
+        
+        return html;
+    }
+    
+    // Fonction pour sauvegarder les modifications du lead
+    function saveLeadChanges(leadId) {
+        console.log('💾 Sauvegarde des modifications pour le lead:', leadId);
+        
+        // Récupérer les valeurs des champs éditables
+        var status = jQuery('#edit-status-' + leadId).val();
+        var priorite = jQuery('#edit-priorite-' + leadId).val();
+        var notes = jQuery('#edit-notes-' + leadId).val();
+        
+        // Validation des données
+        if (!status || !priorite) {
+            alert('❌ Veuillez remplir tous les champs obligatoires');
+            return;
+        }
+        
+        // Afficher un indicateur de chargement
+        var saveButton = jQuery('#lead-detail-modal .my-istymo-btn-primary');
+        var originalText = saveButton.html();
+        saveButton.html('<span class="dashicons dashicons-update" style="animation: spin 1s linear infinite;"></span> Sauvegarde...');
+        saveButton.prop('disabled', true);
+        
+        // Envoyer les données via AJAX
+        jQuery.ajax({
+            url: unifiedLeadsAjax.ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'my_istymo_update_lead_from_modal',
+                lead_id: leadId,
+                status: status,
+                priorite: priorite,
+                notes: notes,
+                nonce: unifiedLeadsAjax.nonce
+            },
+            success: function(response) {
+                console.log('📡 Réponse de sauvegarde:', response);
+                
+                // Arrêter l'animation immédiatement
+                saveButton.html(originalText);
+                saveButton.prop('disabled', false);
+                
+                if (response && response.success) {
+                    // Afficher une notification de succès
+                    showToastNotification('Modifications sauvegardées avec succès !', 'success');
+                    
+                    // Fermer le modal
+                    closeLeadDetailModal();
+                    
+                    // Recharger la liste des leads pour afficher les modifications
+                    loadLeads();
+                } else {
+                    showToastNotification('Erreur lors de la sauvegarde: ' + (response && response.data ? response.data : 'Erreur inconnue'), 'error');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('❌ Erreur AJAX:', xhr, status, error);
+                
+                // Arrêter l'animation immédiatement
+                saveButton.html(originalText);
+                saveButton.prop('disabled', false);
+                
+                showToastNotification('Erreur de communication avec le serveur: ' + error, 'error');
+            },
+            complete: function() {
+                // S'assurer que l'animation est arrêtée (fallback)
+                if (saveButton.prop('disabled')) {
+                    saveButton.html(originalText);
+                    saveButton.prop('disabled', false);
+                }
+            }
+        });
+    }
+    
+    // Fonction pour afficher les notifications toast
+    function showToastNotification(message, type = 'success') {
+        // Supprimer les notifications existantes
+        jQuery('.my-istymo-toast-notification').remove();
+        
+        // Créer la notification
+        var notification = jQuery('<div class="my-istymo-toast-notification ' + type + '">');
+        
+        // Ajouter l'icône selon le type
+        var icon = type === 'success' ? 'dashicons-yes-alt' : 'dashicons-warning';
+        notification.html('<span class="dashicons ' + icon + '"></span>' + message);
+        
+        // Ajouter au body
+        jQuery('body').append(notification);
+        
+        // Afficher avec animation
+        setTimeout(function() {
+            notification.addClass('show');
+        }, 100);
+        
+        // Masquer automatiquement après 3 secondes
+        setTimeout(function() {
+            notification.removeClass('show');
+            setTimeout(function() {
+                notification.remove();
+            }, 300);
+        }, 3000);
+    }
     </script>
     
-    <!-- Modal pour visualiser/modifier un lead -->
-    <div id="lead-detail-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 999999;">
-        <div onclick="closeleadDetailModal()" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
-        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 8px; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
-                <h3 id="lead-modal-title" style="margin: 0; color: #333;">Détails du Lead</h3>
-                <button onclick="closeleadDetailModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #999;">&times;</button>
-            </div>
-            <div id="lead-detail-content">
-                <p>Chargement des détails...</p>
-            </div>
-        </div>
-    </div>
+    <!-- Modal supprimé - fonctionnalité simplifiée -->
     
-    <!-- ✅ PHASE 3 : Modals pour les actions et workflow -->
-    <div id="add-action-modal" class="my-istymo-modal my-istymo-hidden">
-        <div class="my-istymo-modal-overlay"></div>
-        <div class="my-istymo-modal-content">
-            <h3>📝 Ajouter une Action</h3>
-            <form id="add-action-form">
-                <input type="hidden" name="lead_id" id="action-lead-id">
-                <div class="action-form-group">
-                    <label for="action-type">Type d'action :</label>
-                    <select name="action_type" id="action-type" required>
-                        <option value="">Sélectionner un type</option>
-                        <option value="appel">📞 Appel téléphonique</option>
-                        <option value="email">📧 Email</option>
-                        <option value="sms">💬 SMS</option>
-                        <option value="rdv">📅 Rendez-vous</option>
-                        <option value="note">📝 Note</option>
-                    </select>
-                </div>
-                <div class="action-form-group">
-                    <label for="action-description">Description :</label>
-                    <textarea name="description" id="action-description" rows="4" placeholder="Décrivez l'action..." required></textarea>
-                </div>
-                <div class="action-form-group">
-                    <label for="action-result">Résultat :</label>
-                    <select name="result" id="action-result">
-                        <option value="en_attente">⏳ En attente</option>
-                        <option value="reussi">✅ Réussi</option>
-                        <option value="echec">❌ Échec</option>
-                        <option value="reporte">📅 Reporté</option>
-                    </select>
-                </div>
-                <div class="action-form-group">
-                    <label for="action-scheduled-date">Date programmée (optionnel) :</label>
-                    <input type="datetime-local" name="scheduled_date" id="action-scheduled-date">
-                </div>
-                <div class="my-istymo-modal-actions">
-                    <button type="submit" class="my-istymo-btn my-istymo-btn-primary">Ajouter l'action</button>
-                    <button type="button" class="my-istymo-btn my-istymo-btn-secondary my-istymo-modal-close">Annuler</button>
-                </div>
-            </form>
-        </div>
-    </div>
+
     
-    <div id="change-status-modal" class="my-istymo-modal my-istymo-hidden">
-        <div class="my-istymo-modal-overlay"></div>
-        <div class="my-istymo-modal-content">
-            <h3>🔄 Changer le Statut</h3>
-            <form id="change-status-form">
-                <input type="hidden" name="lead_id" id="status-lead-id">
-                <input type="hidden" name="current_status" id="current-status">
-                <div class="workflow-form-group">
-                    <label for="new-status">Nouveau statut :</label>
-                    <select name="new_status" id="new-status" required>
-                        <option value="">Sélectionner un statut</option>
-                        <option value="nouveau">🆕 Nouveau</option>
-                        <option value="en_cours">🔄 En cours</option>
-                        <option value="qualifie">✅ Qualifié</option>
-                        <option value="proposition">📋 Proposition</option>
-                        <option value="negocie">💼 Négociation</option>
-                        <option value="gagne">🏆 Gagné</option>
-                        <option value="perdu">❌ Perdu</option>
-                        <option value="en_attente">⏳ En attente</option>
-                    </select>
-                </div>
-                <div class="workflow-form-group">
-                    <label for="status-notes">Notes (optionnel) :</label>
-                    <textarea name="notes" id="status-notes" rows="3" placeholder="Notes sur le changement de statut..."></textarea>
-                </div>
-                <div class="my-istymo-modal-actions">
-                    <button type="submit" class="my-istymo-btn my-istymo-btn-primary">Changer le statut</button>
-                    <button type="button" class="my-istymo-btn my-istymo-btn-secondary my-istymo-modal-close">Annuler</button>
-                </div>
-            </form>
-        </div>
-    </div>
+
     
     <?php
 }
