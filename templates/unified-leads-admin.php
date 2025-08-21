@@ -759,7 +759,7 @@ function unified_leads_admin_page($context = array()) {
                 nonce: unifiedLeadsAjax.nonce
             },
             beforeSend: function() {
-                jQuery('#lead-detail-content').html('<div style="text-align: center; padding: 20px;"><p>🔄 Chargement des détails...</p></div>');
+                jQuery('#lead-detail-content').html('<div style="text-align: center; padding: 20px;"><p><span class="dashicons dashicons-update" style="animation: spin 1s linear infinite; margin-right: 8px;"></span>Chargement des détails...</p></div>');
             },
             success: function(response) {
                 console.log('AJAX Response:', response); // Debug
