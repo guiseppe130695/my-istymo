@@ -1039,6 +1039,7 @@ add_action('wp_ajax_my_istymo_get_lead_action', 'my_istymo_ajax_get_lead_action'
 add_action('wp_ajax_my_istymo_change_lead_status', 'my_istymo_ajax_change_lead_status');
 add_action('wp_ajax_my_istymo_get_lead_details', 'my_istymo_ajax_get_lead_details');
 add_action('wp_ajax_my_istymo_get_lead_detail_content', 'my_istymo_ajax_get_lead_detail_content');
+add_action('wp_ajax_nopriv_my_istymo_get_lead_detail_content', 'my_istymo_ajax_get_lead_detail_content');
 add_action('wp_ajax_my_istymo_validate_workflow_transition', 'my_istymo_ajax_validate_workflow_transition');
 add_action('wp_ajax_my_istymo_get_workflow_transitions', 'my_istymo_ajax_get_workflow_transitions');
 add_action('wp_ajax_my_istymo_get_status_change_validation', 'my_istymo_ajax_get_status_change_validation');
@@ -1080,6 +1081,7 @@ function my_istymo_ajax_update_lead() {
 
 // ✅ Handler pour la suppression de leads
 add_action('wp_ajax_delete_unified_lead', 'my_istymo_ajax_delete_unified_lead');
+add_action('wp_ajax_nopriv_delete_unified_lead', 'my_istymo_ajax_delete_unified_lead');
 
 // ✅ Fonction de suppression de lead
 function my_istymo_ajax_delete_unified_lead() {
@@ -1253,14 +1255,18 @@ function my_istymo_ajax_get_lead_detail_content() {
             wp_send_json_error('Lead introuvable');
         }
         
-        // Générer le contenu directement
-        $content = my_istymo_generate_lead_detail_content($lead_id, $lead);
+        // Générer le contenu HTML
+        $html_content = my_istymo_generate_lead_detail_content($lead_id, $lead);
         
-        if (empty($content)) {
+        if (empty($html_content)) {
             wp_send_json_error('Erreur lors de la génération du contenu');
         }
         
-        wp_send_json_success($content);
+        wp_send_json_success(array(
+            'html' => $html_content,
+            'lead_id' => $lead_id,
+            'lead_type' => $lead->lead_type
+        ));
         
     } catch (Exception $e) {
         error_log('Erreur dans my_istymo_ajax_get_lead_detail_content: ' . $e->getMessage());
@@ -1312,23 +1318,17 @@ function my_istymo_ajax_get_workflow_transitions() {
 function my_istymo_generate_lead_detail_content($lead_id, $lead) {
     ob_start();
     ?>
-    <div class="my-istymo-lead-detail-modal" data-lead-id="<?php echo esc_attr($lead_id); ?>">
+    <div class="my-istymo-lead-detail-content" data-lead-id="<?php echo esc_attr($lead_id); ?>">
         
-        <!-- En-tête du modal -->
-        <div class="my-istymo-modal-header">
-            <h2>
-                <span class="my-istymo-lead-type-badge my-istymo-lead-type-<?php echo esc_attr($lead->lead_type); ?>">
+        <!-- En-tête simple -->
+        <div class="my-istymo-lead-header" style="border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px;">
+            <h2 style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                <span class="my-istymo-lead-type-badge my-istymo-lead-type-<?php echo esc_attr($lead->lead_type); ?>" style="background: #007cba; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
                     <?php echo esc_html(strtoupper($lead->lead_type)); ?>
                 </span>
                 Lead #<?php echo esc_html($lead_id); ?>
             </h2>
-            <button type="button" class="my-istymo-modal-close" data-action="close-lead-detail">
-                <span class="dashicons dashicons-no-alt"></span>
-            </button>
         </div>
-        
-        <!-- Contenu du modal -->
-        <div class="my-istymo-modal-content-detail">
             
             <!-- Informations de base -->
             <div class="my-istymo-lead-info-section">
@@ -1391,10 +1391,10 @@ function my_istymo_generate_lead_detail_content($lead_id, $lead) {
                         </div>
                     </div>
                     
-                    <div class="my-istymo-form-actions">
-                        <button type="submit" class="my-istymo-btn my-istymo-btn-primary">
+                    <div class="my-istymo-form-actions" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+                        <button type="submit" class="my-istymo-btn my-istymo-btn-primary" style="background: #007cba; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
                             <span class="dashicons dashicons-saved"></span>
-                            Sauvegarder
+                            💾 Sauvegarder les modifications
                         </button>
                     </div>
                 </form>
@@ -1410,12 +1410,6 @@ function my_istymo_generate_lead_detail_content($lead_id, $lead) {
             </div>
         </div>
         
-        <!-- Pied du modal -->
-        <div class="my-istymo-modal-footer">
-            <button type="button" class="my-istymo-btn my-istymo-btn-secondary" data-action="close-lead-detail">
-                Fermer
-            </button>
-        </div>
     </div>
     <?php
     return ob_get_clean();

@@ -60,33 +60,33 @@ function unified_leads_admin_page() {
                     
                     <!-- Filtres intégrés -->
                     <form method="get" class="my-istymo-inline-filters" style="display: flex; align-items: center; gap: 12px;">
-                        <input type="hidden" name="page" value="unified-leads">
-                        
+                <input type="hidden" name="page" value="unified-leads">
+                
                         <!-- Filtre par type -->
                         <div class="my-istymo-filter-group">
                             <select name="lead_type" class="my-istymo-filter-select">
-                                <option value="">Tous les types</option>
-                                <option value="sci" <?php selected($_GET['lead_type'] ?? '', 'sci'); ?>>SCI</option>
-                                <option value="dpe" <?php selected($_GET['lead_type'] ?? '', 'dpe'); ?>>DPE</option>
-                            </select>
-                        </div>
-                        
+                            <option value="">Tous les types</option>
+                            <option value="sci" <?php selected($_GET['lead_type'] ?? '', 'sci'); ?>>SCI</option>
+                            <option value="dpe" <?php selected($_GET['lead_type'] ?? '', 'dpe'); ?>>DPE</option>
+                        </select>
+                    </div>
+                    
                         <!-- Filtre par statut -->
                         <div class="my-istymo-filter-group">
                             <select name="status" class="my-istymo-filter-select">
-                                <option value="">Tous les statuts</option>
-                                <?php echo $status_options; ?>
-                            </select>
-                        </div>
-                        
+                            <option value="">Tous les statuts</option>
+                            <?php echo $status_options; ?>
+                        </select>
+                    </div>
+                    
                         <!-- Filtre par priorité -->
                         <div class="my-istymo-filter-group">
                             <select name="priorite" class="my-istymo-filter-select">
-                                <option value="">Toutes les priorités</option>
-                                <?php echo $priority_options; ?>
-                            </select>
-                        </div>
-                        
+                            <option value="">Toutes les priorités</option>
+                            <?php echo $priority_options; ?>
+                        </select>
+                    </div>
+                    
                         <!-- Boutons d'action des filtres -->
                         <div class="my-istymo-filter-actions">
                             <button type="submit" class="my-istymo-filter-apply-btn">
@@ -99,15 +99,15 @@ function unified_leads_admin_page() {
                             <?php endif; ?>
                         </div>
                     </form>
-                </div>
-                
+                    </div>
+                    
                 <div class="my-istymo-header-right">
                     <!-- Compteur de résultats -->
                     <div class="my-istymo-results-count">
                         <?php echo $total_leads; ?> lead<?php echo $total_leads > 1 ? 's' : ''; ?>
                     </div>
                 </div>
-            </div>
+        </div>
             
             <?php if (!empty($leads)): ?>
                 <div class="my-istymo-modern-table">
@@ -240,7 +240,7 @@ function unified_leads_admin_page() {
                                         <span class="my-istymo-status-badge my-istymo-status-<?php echo $status_class; ?>">
                                             <span class="my-istymo-status-dot"></span>
                                             <?php echo $status_text; ?>
-                                        </span>
+                                            </span>
                                     </td>
                                     <td class="my-istymo-td-actions">
                                         <div class="my-istymo-actions-menu">
@@ -248,13 +248,10 @@ function unified_leads_admin_page() {
                                                 <span class="dashicons dashicons-ellipsis"></span>
                                             </button>
                                             <div class="my-istymo-dropdown-menu">
-                                                <a href="#" class="view-lead" data-lead-id="<?php echo $lead->id; ?>">
+                                                <a href="#" class="view-lead" data-lead-id="<?php echo $lead->id; ?>" onclick="console.log('Link clicked'); openLeadDetailModal(<?php echo $lead->id; ?>); return false;">
                                                     <span class="dashicons dashicons-visibility"></span> Voir
                                                 </a>
-                                                <a href="#" class="edit-lead" data-lead-id="<?php echo $lead->id; ?>">
-                                                    <span class="dashicons dashicons-edit"></span> Modifier
-                                                </a>
-                                                <a href="#" class="delete-lead" data-lead-id="<?php echo $lead->id; ?>">
+                                                <a href="#" class="delete-lead" data-lead-id="<?php echo $lead->id; ?>" onclick="if(confirm('Êtes-vous sûr de vouloir supprimer ce lead ?')) { deleteLead(<?php echo $lead->id; ?>); } return false;">
                                                     <span class="dashicons dashicons-trash"></span> Supprimer
                                                 </a>
                                             </div>
@@ -1028,8 +1025,187 @@ function unified_leads_admin_page() {
             
             $('.my-istymo-select-all').prop('checked', totalCheckboxes === checkedCheckboxes);
         });
+        
+        // Test simple pour vérifier que le modal existe
+        console.log('Modal element found:', jQuery('#lead-detail-modal').length > 0);
+        console.log('Modal functions available:', typeof openLeadDetailModal === 'function');
+        
+        // Ajouter un bouton de test temporaire
+        jQuery('body').append('<button id="test-modal-btn" style="position: fixed; top: 10px; right: 10px; z-index: 999999; background: red; color: white; padding: 10px;">Test Modal</button>');
+        jQuery('#test-modal-btn').on('click', function() {
+            console.log('Test button clicked');
+            openLeadDetailModal(1);
+        });
     });
+    
+    // Fonction pour ouvrir le modal de détail d'un lead
+    function openLeadDetailModal(leadId) {
+        console.log('Opening modal for lead ID:', leadId); // Debug
+        
+        // Affichage simple du modal
+        const modal = jQuery('#lead-detail-modal');
+        console.log('Modal element exists:', modal.length);
+        
+        modal.css('display', 'block');
+        console.log('Modal display set to block');
+        
+        // Charger les détails via AJAX
+        jQuery.ajax({
+            url: unifiedLeadsAjax.ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'my_istymo_get_lead_detail_content',
+                lead_id: leadId,
+                nonce: unifiedLeadsAjax.nonce
+            },
+            beforeSend: function() {
+                jQuery('#lead-detail-content').html('<div style="text-align: center; padding: 20px;"><p>🔄 Chargement des détails...</p></div>');
+            },
+            success: function(response) {
+                console.log('AJAX Response:', response); // Debug
+                if (response && response.success) {
+                    // Mettre à jour le titre du modal
+                    jQuery('#lead-modal-title').text('Lead #' + response.data.lead_id + ' - ' + response.data.lead_type.toUpperCase());
+                    
+                    // Charger le contenu
+                    jQuery('#lead-detail-content').html(response.data.html);
+                    
+                    // Initialiser le formulaire d'édition après le chargement
+                    initLeadEditForm();
+                } else {
+                    jQuery('#lead-detail-content').html('<div style="color: red; padding: 20px;"><p>❌ Erreur: ' + (response && response.data ? response.data : 'Impossible de charger les détails') + '</p></div>');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX Error:', xhr, status, error);
+                jQuery('#lead-detail-content').html('<div style="color: red; padding: 20px;"><p>❌ Erreur de communication avec le serveur: ' + error + '</p></div>');
+            }
+        });
+    }
+    
+    // Fonction pour fermer le modal de détail
+    function closeleadDetailModal() {
+        console.log('Closing modal'); // Debug
+        jQuery('#lead-detail-modal').css('display', 'none');
+    }
+    
+    // Fonction pour initialiser le formulaire d'édition
+    function initLeadEditForm() {
+        // Gérer la soumission du formulaire d'édition
+        jQuery('#lead-edit-form').off('submit').on('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = jQuery(this).serialize();
+            const submitBtn = jQuery(this).find('button[type="submit"]');
+            
+            // Désactiver le bouton pendant la sauvegarde
+            submitBtn.prop('disabled', true).text('Sauvegarde...');
+            
+            jQuery.ajax({
+                url: unifiedLeadsAjax.ajaxurl,
+                type: 'POST',
+                data: formData + '&action=my_istymo_update_lead&nonce=' + unifiedLeadsAjax.nonce,
+                success: function(response) {
+                    if (response.success) {
+                        // Afficher un message de succès
+                        jQuery('#lead-detail-content').prepend('<div class="my-istymo-success" style="background: #d4edda; color: #155724; padding: 10px; border-radius: 4px; margin-bottom: 15px;"><p>✅ Lead modifié avec succès!</p></div>');
+                        
+                        // Masquer le message après 3 secondes
+                        setTimeout(function() {
+                            jQuery('.my-istymo-success').fadeOut();
+                        }, 3000);
+                        
+                        // Recharger le tableau pour refléter les changements
+                        setTimeout(function() {
+                            location.reload();
+                        }, 2000);
+                        
+                    } else {
+                        alert('Erreur lors de la modification: ' + (response.data || 'Erreur inconnue'));
+                    }
+                },
+                error: function() {
+                    alert('Erreur de communication avec le serveur');
+                },
+                complete: function() {
+                    submitBtn.prop('disabled', false).text('💾 Sauvegarder les modifications');
+                }
+            });
+        });
+        
+        // Gérer les boutons de fermeture dans le contenu
+        jQuery('.my-istymo-modal-close[data-action="close-lead-detail"]').on('click', function() {
+            closeleadDetailModal();
+        });
+    }
+    
+    // Fonction pour supprimer un lead
+    function deleteLead(leadId) {
+        // Vérifier si la fonction existante est disponible
+        if (typeof deleteUnifiedLead === 'function') {
+            deleteUnifiedLead(leadId);
+            return;
+        }
+        
+        // Sinon utiliser AJAX direct
+        jQuery.ajax({
+            url: unifiedLeadsAjax.ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'delete_unified_lead',
+                lead_id: leadId,
+                nonce: unifiedLeadsAjax.nonce
+            },
+            beforeSend: function() {
+                // Désactiver le bouton pour éviter les doubles clics
+                jQuery('[data-lead-id="' + leadId + '"]').prop('disabled', true);
+            },
+            success: function(response) {
+                console.log('Response:', response); // Debug
+                if (response && response.success) {
+                    // Supprimer la ligne du tableau
+                    jQuery('[data-lead-id="' + leadId + '"]').closest('tr').fadeOut(400, function() {
+                        jQuery(this).remove();
+                        updateLeadCount();
+                        // Recharger la page si c'était le dernier lead
+                        if (jQuery('.my-istymo-table-row').length === 0) {
+                            location.reload();
+                        }
+                    });
+                } else {
+                    alert('Erreur lors de la suppression du lead: ' + (response && response.data ? response.data : 'Erreur inconnue'));
+                    jQuery('[data-lead-id="' + leadId + '"]').prop('disabled', false);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX Error:', xhr, status, error); // Debug
+                alert('Erreur de communication avec le serveur: ' + error);
+                jQuery('[data-lead-id="' + leadId + '"]').prop('disabled', false);
+            }
+        });
+    }
+    
+    // Fonction pour mettre à jour le compteur de leads
+    function updateLeadCount() {
+        const currentCount = jQuery('.my-istymo-table-row').length;
+        const leadText = currentCount > 1 ? 'leads' : 'lead';
+        jQuery('.my-istymo-results-count').text(currentCount + ' ' + leadText);
+    }
     </script>
+    
+    <!-- Modal pour visualiser/modifier un lead -->
+    <div id="lead-detail-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 999999;">
+        <div onclick="closeleadDetailModal()" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 8px; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
+                <h3 id="lead-modal-title" style="margin: 0; color: #333;">Détails du Lead</h3>
+                <button onclick="closeleadDetailModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #999;">&times;</button>
+            </div>
+            <div id="lead-detail-content">
+                <p>Chargement des détails...</p>
+            </div>
+        </div>
+    </div>
     
     <!-- ✅ PHASE 3 : Modals pour les actions et workflow -->
     <div id="add-action-modal" class="my-istymo-modal my-istymo-hidden">
