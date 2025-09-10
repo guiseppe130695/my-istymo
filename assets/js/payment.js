@@ -604,12 +604,12 @@ document.addEventListener('DOMContentLoaded', function() {
             // Étapes finales
             setTimeout(() => {
                 animateProgress(progressBar, currentProgress, 98, 1000);
-                statusDiv.textContent = '✅ Finalisation de l\'envoi...';
+                statusDiv.textContent = 'Finalisation de l\'envoi...';
             }, 500);
             
             setTimeout(() => {
                 animateProgress(progressBar, 98, 100, 800);
-                statusDiv.textContent = `🎉 ${totalLetters} lettre${totalLetters > 1 ? 's' : ''} envoyée${totalLetters > 1 ? 's' : ''} avec succès !`;
+                statusDiv.textContent = `${totalLetters} lettre${totalLetters > 1 ? 's' : ''} envoyée${totalLetters > 1 ? 's' : ''} avec succès !`;
             }, 1500);
         }
         

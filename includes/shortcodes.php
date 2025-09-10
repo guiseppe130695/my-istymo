@@ -193,6 +193,17 @@ class SCI_Shortcodes {
             );
         }
 
+        // ✅ AJOUTÉ : Charger le script admin pour le shortcode sci_panel_admin
+        if (!wp_script_is('admin-sci', 'enqueued')) {
+            wp_enqueue_script(
+                'admin-sci',
+                plugin_dir_url(dirname(__FILE__)) . 'assets/js/admin-sci.js',
+                array('jquery'),
+                '1.0.3',
+                true
+            );
+        }
+
         
         if (!wp_script_is('sci-frontend-payment', 'enqueued')) {
             wp_enqueue_script(
@@ -215,6 +226,14 @@ class SCI_Shortcodes {
                 'ajax_url' => admin_url('admin-ajax.php'),
                 'nonce' => wp_create_nonce('sci_favoris_nonce'),
                 'contacted_sirens' => $contacted_sirens
+            ));
+
+            // ✅ AJOUTÉ : Localisation pour le script admin-sci
+            wp_localize_script('admin-sci', 'sci_admin_ajax', array(
+                'ajax_url' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('sci_admin_nonce'),
+                'contacted_sirens' => $contacted_sirens,
+                'codes_postaux' => $codesPostauxArray
             ));
             
 
@@ -246,9 +265,20 @@ class SCI_Shortcodes {
     }
     
     /**
-     * Shortcode [sci_panel] - Panneau principal de recherche SCI avec pagination AJAX
+     * Shortcode [sci_panel] - Panneau principal de recherche SCI (utilise le template admin)
+     * Évite la duplication de code en réutilisant le template admin
      */
     public function sci_panel_shortcode($atts) {
+        // Vérifier si l'utilisateur est connecté
+        if (!is_user_logged_in()) {
+            return '<div class="sci-frontend-wrapper"><div class="sci-error">Vous devez être connecté pour utiliser cette fonctionnalité.</div></div>';
+        }
+        
+        $atts = shortcode_atts(array(
+            'title' => 'SCI – Recherche et Contact',
+            'show_config_warnings' => 'true'
+        ), $atts);
+        
         // Récupérer les codes postaux de l'utilisateur
         $current_user = wp_get_current_user();
         $codePostal = get_field('code_postal_user', 'user_' . $current_user->ID);
@@ -259,158 +289,167 @@ class SCI_Shortcodes {
             $codesPostauxArray = explode(';', $codePostal);
         }
         
-        // Forcer le chargement des assets avec les codes postaux
+        // Charger les instances nécessaires avec vérification
+        $config_manager = function_exists('sci_config_manager') ? sci_config_manager() : null;
+        $inpi_token_manager = function_exists('sci_inpi_token_manager') ? sci_inpi_token_manager() : null;
+        $woocommerce_integration = function_exists('sci_woocommerce') ? sci_woocommerce() : null;
+        $campaign_manager = function_exists('sci_campaign_manager') ? sci_campaign_manager() : null;
+        
+        // Forcer le chargement des assets
         $this->force_enqueue_assets($codesPostauxArray);
         
-        $atts = shortcode_atts(array(
-            'title' => '',
-            'show_config_warnings' => 'true'
-        ), $atts);
+        // ✅ AJOUTÉ : Forcer aussi le chargement des assets CSS du design system
+        wp_enqueue_style('my-istymo-global', plugin_dir_url(dirname(__FILE__)) . 'assets/css/my-istymo-global.css', array(), '1.0.0');
+        wp_enqueue_style('dpe-design-system', plugin_dir_url(dirname(__FILE__)) . 'assets/css/dpe-design-system.css', array('my-istymo-global'), '1.0.0');
+        wp_enqueue_style('dpe-style', plugin_dir_url(dirname(__FILE__)) . 'assets/css/dpe-style.css', array('dpe-design-system'), '1.0.0');
         
-        if (!is_user_logged_in()) {
-            return '<div class="sci-error">Vous devez être connecté pour utiliser cette fonctionnalité.</div>';
+        // Préparer le contexte pour le template admin
+        $context = [
+            'codesPostauxArray' => $codesPostauxArray,
+            'config_manager' => $config_manager,
+            'inpi_token_manager' => $inpi_token_manager,
+            'woocommerce_integration' => $woocommerce_integration,
+            'campaign_manager' => $campaign_manager,
+            'title' => $atts['title'],
+            'show_config_warnings' => $atts['show_config_warnings'] === 'true'
+        ];
+        
+        // Charger le template admin directement
+        ob_start();
+        if (function_exists('sci_load_template')) {
+            sci_load_template('sci-panel', $context);
+        } else {
+            echo '<div class="sci-error">Erreur : Template loader non disponible.</div>';
+        }
+        return ob_get_clean();
+    }
+    
+    /**
+     * Shortcode [sci_favoris] - Affichage des favoris SCI
+     */
+    public function sci_favoris_shortcode($atts) {
+        ob_start();
+        
+        // Vérifier si la configuration API est complète
+        $config_manager = sci_config_manager();
+        if (!$config_manager->is_configured()) {
+            echo '<div class="sci-error"><strong>⚠️ Configuration manquante :</strong> Veuillez configurer vos tokens API dans l\'administration.</div>';
+        }
+
+        // Vérifier la configuration INPI
+        $inpi_token_manager = sci_inpi_token_manager();
+        $username = get_option('sci_inpi_username');
+        $password = get_option('sci_inpi_password');
+        
+        if (!$username || !$password) {
+            echo '<div class="sci-warning"><strong>⚠️ Identifiants INPI manquants :</strong> Veuillez configurer vos identifiants INPI pour la génération automatique de tokens.</div>';
+        }
+
+        // Vérifier WooCommerce
+        $woocommerce_integration = sci_woocommerce();
+        if (!$woocommerce_integration->is_woocommerce_ready()) {
+            echo '<div class="sci-warning"><strong>⚠️ WooCommerce requis :</strong> Veuillez installer et configurer WooCommerce pour utiliser le système de paiement.</div>';
+        }
+
+        // Vérifier la configuration des données expéditeur
+        $campaign_manager = sci_campaign_manager();
+        $expedition_data = $campaign_manager->get_user_expedition_data();
+        $validation_errors = $campaign_manager->validate_expedition_data($expedition_data);
+        
+        if (!empty($validation_errors)) {
+            echo '<div class="sci-warning">';
+            echo '<strong>⚠️ Configuration expéditeur incomplète :</strong>';
+            echo '<ul>';
+            foreach ($validation_errors as $error) {
+                echo '<li>' . esc_html($error) . '</li>';
+            }
+            echo '</ul>';
+            echo '</div>';
         }
         
-        ob_start();
+        $codesPostauxArray = $this->get_codes_postaux_array();
         ?>
-        <div class="sci-frontend-wrapper">
-            <h1><?php echo esc_html($atts['title']); ?></h1>
-            
-            <!-- Information pour les utilisateurs -->
-            <div class="sci-info" style="background: #e7f3ff!important; border: 1px solid #bee5eb!important; border-radius: 8px!important; padding: 15px!important; margin-bottom: 20px!important; color: #004085!important;">
-                <p style="margin: 0; font-size: 14px; line-height: 1.5;">
-                    <strong>Prospectez directement les SCI</strong><br><br>
-                    Vous avez également la possibilité de proposer vos services en envoyant un courrier.
-                </p>
-            </div>
-            
-            <!-- Affichage des avertissements de configuration -->
-            <?php if ($atts['show_config_warnings'] === 'true'): ?>
-                <?php
-                // Vérifier si la configuration API est complète
-                $config_manager = sci_config_manager();
-                if (!$config_manager->is_configured()) {
-                    echo '<div class="sci-error"><strong>⚠️ Configuration manquante :</strong> Veuillez configurer vos tokens API dans l\'administration.</div>';
-                }
 
-                // Vérifier la configuration INPI
-                $inpi_token_manager = sci_inpi_token_manager();
-                $username = get_option('sci_inpi_username');
-                $password = get_option('sci_inpi_password');
-                
-                if (!$username || !$password) {
-                    echo '<div class="sci-warning"><strong>⚠️ Identifiants INPI manquants :</strong> Veuillez configurer vos identifiants INPI pour la génération automatique de tokens.</div>';
-                }
-
-                // Vérifier WooCommerce
-                $woocommerce_integration = sci_woocommerce();
-                if (!$woocommerce_integration->is_woocommerce_ready()) {
-                    echo '<div class="sci-warning"><strong>⚠️ WooCommerce requis :</strong> Veuillez installer et configurer WooCommerce pour utiliser le système de paiement.</div>';
-                }
-
-                // Vérifier la configuration des données expéditeur
-                $campaign_manager = sci_campaign_manager();
-                $expedition_data = $campaign_manager->get_user_expedition_data();
-                $validation_errors = $campaign_manager->validate_expedition_data($expedition_data);
-                
-                if (!empty($validation_errors)) {
-                    echo '<div class="sci-warning">';
-                    echo '<strong>⚠️ Configuration expéditeur incomplète :</strong>';
-                    echo '<ul>';
-                    foreach ($validation_errors as $error) {
-                        echo '<li>' . esc_html($error) . '</li>';
-                    }
-                    echo '</ul>';
-                    echo '</div>';
-                }
-                ?>
-            <?php endif; ?>
-
-            <!-- ✅ FORMULAIRE DE RECHERCHE AJAX -->
-            <form id="sci-search-form" class="sci-form">
-                <div class="form-group-left">
-                    <div class="form-group">
-                        <label style="font-size:12px!important;" for="codePostal">Sélectionnez votre code postal :</label>
-                        <select style="font-size:12px!important;" name="codePostal" id="codePostal" required>
-                            <option style="font-size:12px!important;" value="">— Choisir un code postal —</option>
-                                                    <?php foreach ($codesPostauxArray as $index => $value): ?>
+        <!-- ✅ FORMULAIRE DE RECHERCHE AJAX -->
+        <form id="sci-search-form" class="sci-form">
+            <div class="form-group-left">
+                <div class="form-group">
+                    <label style="font-size:12px!important;" for="codePostal">Sélectionnez votre code postal :</label>
+                    <select style="font-size:12px!important;" name="codePostal" id="codePostal" required>
+                        <option style="font-size:12px!important;" value="">— Choisir un code postal —</option>
+                        <?php foreach ($codesPostauxArray as $index => $value): ?>
                             <option value="<?php echo esc_attr($value); ?>" <?php echo ($index === 0) ? 'selected' : ''; ?>>
                                 <?php echo esc_html($value); ?>
                             </option>
                         <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <button type="submit" id="search-btn" class="sci-button" style="background: #000064 !important;">
-                        🔍 Rechercher les SCI
-                    </button>
+                    </select>
                 </div>
-
-                
-                <button id="send-letters-btn" type="button" class="sci-button secondary" disabled
-                        data-tooltip="Prospectez directement les SCI. Vous avez également la possibilité de proposer vos services en envoyant un courrier"
-                        style="font-size:12px!important; background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important; color: white !important; border: none !important;">
-                    📬 Créez une campagne d'envoi de courriers (<span id="selected-count">0</span>)
+                <button type="submit" id="search-btn" class="sci-button" style="background: #000064 !important;">
+                    🔍 Rechercher les SCI
                 </button>
-                
-
-                
-
-            </form>
-
-            <!-- ✅ ZONE DE CHARGEMENT -->
-            <div id="search-loading" style="display: none;">
-                <div class="loading-spinner"></div>
-                <span>Recherche en cours...</span>
-            </div>
-
-                        <!-- ✅ ZONE DES RÉSULTATS - STRUCTURE STABLE -->
-            <div id="search-results" style="display: none;">
-                <div id="results-header">
-                    <h2 id="results-title">📋 Résultats de recherche</h2>
-                    <div id="pagination-info" style="display: none;"></div>
-                </div>
-
-                <!-- ✅ TABLEAU DES RÉSULTATS - STRUCTURE STABLE -->
-                <table class="sci-table" id="results-table">
-                    <thead>
-                        <tr>
-                            <th style="text-align: center !important;">Favoris</th>
-                            <th>Dénomination</th>
-                            <th>Dirigeant</th>
-                            <th style="display: none;">SIREN</th>
-                            <th>Adresse</th>
-                            <th>Ville</th>
-                            <th>Géolocalisation</th>
-                            <th style="text-align: center !important;">Envoi courrier</th>
-                            <th style="text-align: center !important;">Déjà contacté ?</th>
-                        </tr>
-                    </thead>
-                    <tbody id="results-tbody">
-                        <!-- Les résultats seront insérés ici par JavaScript -->
-                    </tbody>
-                </table>
             </div>
             
-            <!-- ✅ CONTRÔLES DE PAGINATION - HORS DE LA ZONE DES RÉSULTATS -->
-            <div id="pagination-controls" style="display: none; margin-top: 20px; text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
-                <div class="pagination-main" style="display: flex; align-items: center; justify-content: center; gap: 15px;">
-                    <button id="prev-page" disabled style="padding: 10px 20px; font-size: 10px!important; font-weight: 500; border-radius: 5px; background: #fff!important; color: #000064!important; cursor: pointer; transition: all 0.2s ease;">⬅️ Page précédente</button>
-                    <span id="page-info" style="background: #0073aa; color: white; padding: 8px 15px; border-radius: 4px; font-size: 14px; font-weight: 500;">1/1</span>
-                    <button id="next-page" disabled style="padding: 10px 20px; font-size: 10px!important; font-weight: 500; border-radius: 5px; background: #fff!important; color: #000064!important; cursor: pointer; transition: all 0.2s ease;">Page suivante ➡️</button>
-                </div>
-            </div>
-            
-            <!-- ✅ CACHE DES DONNÉES - ÉVITE LES RECHARGEMENTS -->
-            <div id="data-cache" style="display: none;">
-                <span id="cached-title"></span>
-                <span id="cached-page"></span>
-                <span id="cached-total"></span>
+            <button id="send-letters-btn" type="button" class="sci-button secondary" disabled
+                    data-tooltip="Prospectez directement les SCI. Vous avez également la possibilité de proposer vos services en envoyant un courrier"
+                    style="font-size:12px!important; background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important; color: white !important; border: none !important;">
+                📬 Créez une campagne d'envoi de courriers (<span id="selected-count">0</span>)
+            </button>
+        </form>
+
+        <!-- ✅ ZONE DE CHARGEMENT -->
+        <div id="search-loading" style="display: none;">
+            <div class="loading-spinner"></div>
+            <span>Recherche en cours...</span>
+        </div>
+
+        <!-- ✅ ZONE DES RÉSULTATS - STRUCTURE STABLE -->
+        <div id="search-results" style="display: none;">
+            <div id="results-header">
+                <h2 id="results-title">Résultats de recherche</h2>
+                <div id="pagination-info" style="display: none;"></div>
             </div>
 
-            <!-- ✅ ZONE D'ERREUR -->
-            <div id="search-error" style="display: none;" class="sci-error">
-                <p id="error-message"></p>
+            <!-- ✅ TABLEAU DES RÉSULTATS - STRUCTURE STABLE -->
+            <table class="sci-table" id="results-table">
+                <thead>
+                    <tr>
+                        <th style="text-align: center !important;">Favoris</th>
+                        <th>Dénomination</th>
+                        <th>Dirigeant</th>
+                        <th style="display: none;">SIREN</th>
+                        <th>Adresse</th>
+                        <th>Ville</th>
+                        <th>Géolocalisation</th>
+                        <th style="text-align: center !important;">Envoi courrier</th>
+                        <th style="text-align: center !important;">Déjà contacté ?</th>
+                    </tr>
+                </thead>
+                <tbody id="results-tbody">
+                    <!-- Les résultats seront insérés ici par JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- ✅ CONTRÔLES DE PAGINATION - HORS DE LA ZONE DES RÉSULTATS -->
+        <div id="pagination-controls" style="display: none; margin-top: 20px; text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+            <div class="pagination-main" style="display: flex; align-items: center; justify-content: center; gap: 15px;">
+                <button id="prev-page" disabled style="padding: 10px 20px; font-size: 10px!important; font-weight: 500; border-radius: 5px; background: #fff!important; color: #000064!important; cursor: pointer; transition: all 0.2s ease;">⬅️ Page précédente</button>
+                <span id="page-info" style="background: #0073aa; color: white; padding: 8px 15px; border-radius: 4px; font-size: 14px; font-weight: 500;">1/1</span>
+                <button id="next-page" disabled style="padding: 10px 20px; font-size: 10px!important; font-weight: 500; border-radius: 5px; background: #fff!important; color: #000064!important; cursor: pointer; transition: all 0.2s ease;">Page suivante ➡️</button>
             </div>
+        </div>
+        
+        <!-- ✅ CACHE DES DONNÉES - ÉVITE LES RECHARGEMENTS -->
+        <div id="data-cache" style="display: none;">
+            <span id="cached-title"></span>
+            <span id="cached-page"></span>
+            <span id="cached-total"></span>
+        </div>
+
+        <!-- ✅ ZONE D'ERREUR -->
+        <div id="search-error" style="display: none;" class="sci-error">
+            <p id="error-message"></p>
+        </div>
         </div>
         
         <!-- ✅ POPUP LETTRE -->
@@ -656,7 +695,6 @@ class SCI_Shortcodes {
             function updateCache(key, value) {
                 cache[key] = value;
                 cache.lastUpdate = Date.now();
-
             }
             
             // ✅ NOUVEAU : Fonction pour vérifier si les données ont changé
@@ -673,13 +711,11 @@ class SCI_Shortcodes {
                 }
             }
             
-
-            
             // ✅ AMÉLIORÉ : Fonction pour obtenir les paramètres de pagination
             function getCurrentPaginationParams() {
-                return { 
-                    page: cache.currentPage, 
-                    codePostal: cache.codePostal 
+                return {
+                    page: cache.currentPage,
+                    codePostal: cache.codePostal
                 };
             }
             
@@ -699,8 +735,6 @@ class SCI_Shortcodes {
                     const row = createResultRow(result, index);
                     elements.resultsTbody.appendChild(row);
                 });
-                
-
             }
             
             // ✅ SUPPRIMÉ : Cette fonction n'est plus nécessaire car le cache est mis à jour dans displayResults
@@ -729,6 +763,7 @@ class SCI_Shortcodes {
                 
                 return elements;
             }
+            
             function performSearch(codePostal, page = 1, pageSize = 50) {
                 const elements = getElements();
                 if (!elements) return;
@@ -1090,40 +1125,6 @@ class SCI_Shortcodes {
         // Même logique que l'admin mais pour le frontend
         // Cette fonction peut être utilisée pour des recherches AJAX si nécessaire
         wp_send_json_error('Non implémenté');
-    }
-    
-    /**
-     * Shortcode [sci_favoris] - Affichage des favoris SCI
-     */
-    public function sci_favoris_shortcode($atts) {
-        // Vérifier si l'utilisateur est connecté
-        if (!is_user_logged_in()) {
-            return '<div class="sci-frontend-wrapper"><div class="sci-error">Vous devez être connecté pour voir vos favoris.</div></div>';
-        }
-        
-        // Charger les assets nécessaires
-        $this->force_enqueue_assets([]);
-        
-        $atts = shortcode_atts(array(
-            'title' => '⭐ Mes SCI Favoris',
-            'show_empty_message' => 'true'
-        ), $atts);
-        
-        // Récupérer les favoris de l'utilisateur
-        global $sci_favoris_handler;
-        $favoris = $sci_favoris_handler->get_favoris();
-        
-        // Préparer le contexte pour le template
-        $context = [
-            'favoris' => $favoris,
-            'title' => $atts['title'],
-            'show_empty_message' => $atts['show_empty_message'] === 'true'
-        ];
-        
-        // Charger le template des favoris
-        ob_start();
-        sci_load_template('sci-favoris', $context);
-        return ob_get_clean();
     }
     
     /**

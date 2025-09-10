@@ -203,21 +203,42 @@ function sci_ajouter_menu() {
        // ✅ PHASE 1 : Inclure la page d'administration des leads unifiés
        require_once plugin_dir_path(__FILE__) . 'templates/unified-leads-admin.php';
        
+       // ✅ NOUVEAU : Enqueue du design system global pour tous les modules
+       add_action('admin_enqueue_scripts', 'my_istymo_enqueue_design_system');
+       add_action('wp_enqueue_scripts', 'my_istymo_enqueue_design_system');
+       
+       function my_istymo_enqueue_design_system() {
+           wp_enqueue_style(
+               'my-istymo-global',
+               plugin_dir_url(__FILE__) . 'assets/css/my-istymo-global.css',
+               array(),
+               '1.0.0'
+           );
+       }
+       
        // ✅ NOUVEAU : Fonction pour la page Lead Vendeur
        function lead_vendeur_page() {
            // Vérifier si l'utilisateur est connecté
            if (!is_user_logged_in()) {
-               echo '<div class="wrap"><h1>Lead Vendeur</h1><p>Vous devez être connecté pour accéder à cette page.</p></div>';
+               echo '<div class="dpe-container"><div class="dpe-alert dpe-alert--error">Vous devez être connecté pour accéder à cette page.</div></div>';
                return;
            }
            
-           echo '<div class="wrap">';
-           echo '<h1>🏢 Lead Vendeur</h1>';
-           echo '<div class="my-istymo-container">';
-           echo '<div class="my-istymo-card">';
-           echo '<h2>📋 Gestion des Leads Vendeur</h2>';
-           echo '<p>Cette section sera dédiée à la gestion des leads vendeur.</p>';
-           echo '<p><em>Contenu à développer...</em></p>';
+           // Enqueue du design system CSS
+           wp_enqueue_style('dpe-design-system', plugin_dir_url(__FILE__) . 'assets/css/dpe-design-system.css', array(), '1.0.0');
+           
+           echo '<div class="dpe-container">';
+           echo '<div class="dpe-card dpe-card--elevated dpe-mb-lg">';
+           echo '<div class="dpe-card__header">';
+           echo '<h1 class="dpe-title-1">Lead Vendeur</h1>';
+           echo '<p class="dpe-subtitle">Gestion des leads vendeur et prospection immobilière</p>';
+           echo '</div>';
+           echo '<div class="dpe-card__body">';
+           echo '<h2 class="dpe-title-2">Gestion des Leads Vendeur</h2>';
+           echo '<p class="dpe-body">Cette section sera dédiée à la gestion des leads vendeur.</p>';
+           echo '<div class="dpe-alert dpe-alert--info">';
+           echo '<strong>Information :</strong> Contenu à développer...';
+           echo '</div>';
            echo '</div>';
            echo '</div>';
            echo '</div>';
@@ -227,17 +248,25 @@ function sci_ajouter_menu() {
        function carte_succession_page() {
            // Vérifier si l'utilisateur est connecté
            if (!is_user_logged_in()) {
-               echo '<div class="wrap"><h1>Carte de Succession</h1><p>Vous devez être connecté pour accéder à cette page.</p></div>';
+               echo '<div class="dpe-container"><div class="dpe-alert dpe-alert--error">Vous devez être connecté pour accéder à cette page.</div></div>';
                return;
            }
            
-           echo '<div class="wrap">';
-           echo '<h1>🗺️ Carte de Succession</h1>';
-           echo '<div class="my-istymo-container">';
-           echo '<div class="my-istymo-card">';
-           echo '<h2>📊 Cartographie des Successions</h2>';
-           echo '<p>Cette section sera dédiée à la cartographie et à l\'analyse des successions immobilières.</p>';
-           echo '<p><em>Contenu à développer...</em></p>';
+           // Enqueue du design system CSS
+           wp_enqueue_style('dpe-design-system', plugin_dir_url(__FILE__) . 'assets/css/dpe-design-system.css', array(), '1.0.0');
+           
+           echo '<div class="dpe-container">';
+           echo '<div class="dpe-card dpe-card--elevated dpe-mb-lg">';
+           echo '<div class="dpe-card__header">';
+           echo '<h1 class="dpe-title-1">Carte de Succession</h1>';
+           echo '<p class="dpe-subtitle">Cartographie et analyse des successions immobilières</p>';
+           echo '</div>';
+           echo '<div class="dpe-card__body">';
+           echo '<h2 class="dpe-title-2">Cartographie des Successions</h2>';
+           echo '<p class="dpe-body">Cette section sera dédiée à la cartographie et à l\'analyse des successions immobilières.</p>';
+           echo '<div class="dpe-alert dpe-alert--info">';
+           echo '<strong>Information :</strong> Contenu à développer...';
+           echo '</div>';
            echo '</div>';
            echo '</div>';
            echo '</div>';

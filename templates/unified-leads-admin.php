@@ -12,6 +12,9 @@ function unified_leads_admin_page($context = array()) {
         wp_die(__('Vous n\'avez pas les permissions nécessaires pour accéder à cette page.'));
     }
     
+    // Enqueue du design system CSS
+    wp_enqueue_style('dpe-design-system', plugin_dir_url(__FILE__) . '../assets/css/dpe-design-system.css', array(), '1.0.0');
+    
     // Valeurs par défaut pour le contexte
     $default_context = array(
         'title' => '📋 Gestion des Leads',
@@ -49,12 +52,17 @@ function unified_leads_admin_page($context = array()) {
     $priority_options = $status_manager->get_priority_options();
     
     ?>
-    <div class="wrap unified-leads-container my-istymo">
-        <h1><?php echo esc_html($context['title']); ?></h1>
+    <div class="dpe-container unified-leads-container">
+        <div class="dpe-card dpe-card--elevated dpe-mb-lg">
+            <div class="dpe-card__header">
+                <h1 class="dpe-title-1"><?php echo esc_html($context['title']); ?></h1>
+                <p class="dpe-subtitle">Gestion unifiée des leads et prospects</p>
+            </div>
+        </div>
         
         <?php if (!$context['is_shortcode']): ?>
-        <div class="notice notice-info">
-            <p><strong>Interface de Gestion</strong> - Gérez vos leads avec filtres, actions en lot et suivi des statuts.</p>
+        <div class="dpe-alert dpe-alert--info dpe-mb-lg">
+            <strong>Interface de Gestion :</strong> Gérez vos leads avec filtres, actions en lot et suivi des statuts.
         </div>
         <?php endif; ?>
         

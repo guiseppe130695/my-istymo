@@ -125,7 +125,7 @@
             paginationControls.style.display = 'block';
         }
         elements.searchBtn.disabled = true;
-        elements.searchBtn.textContent = '🔄 Recherche...';
+        elements.searchBtn.textContent = 'Recherche...';
         const formData = new FormData();
         formData.append('action', 'sci_inpi_search_ajax');
         formData.append('code_postal', codePostal);
@@ -153,7 +153,7 @@
             cache.isSearching = false;
             elements.searchLoading.style.display = 'none';
             elements.searchBtn.disabled = false;
-            elements.searchBtn.textContent = '🔍 Rechercher les SCI';
+            elements.searchBtn.textContent = 'Rechercher les SCI';
             if (data.success) {
                 displayResults(data.data);
             } else {
@@ -165,7 +165,7 @@
             cache.isSearching = false;
             elements.searchLoading.style.display = 'none';
             elements.searchBtn.disabled = false;
-            elements.searchBtn.textContent = '🔍 Rechercher les SCI';
+            elements.searchBtn.textContent = 'Rechercher les SCI';
             displayError('Erreur réseau lors de la recherche: ' + error.message);
         });
     }
@@ -200,9 +200,9 @@
         elements.searchError.style.display = 'none';
         
         // Mettre à jour le titre et les infos
-        elements.resultsTitle.textContent = `📋 Résultats de recherche (${pagination.total_count} SCI trouvées)`;
+        elements.resultsTitle.textContent = `Résultats de recherche`;
         if (elements.paginationInfo) {
-            elements.paginationInfo.textContent = `Page ${pagination.current_page} sur ${pagination.total_pages} - ${results.length} résultats affichés`;
+            elements.paginationInfo.textContent = `${pagination.total_count} résultat(s) trouvé(s)`;
             elements.paginationInfo.style.display = 'block';
         }
         

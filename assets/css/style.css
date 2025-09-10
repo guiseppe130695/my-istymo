@@ -1,17 +1,4 @@
-.fav-btn {
-    font-size: 1.5rem;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #ccc;
-    transition: color 0.3s;
-}
-.fav-btn.favori {
-    color: gold;
-}
-.fav-btn:hover {
-    color: orange;
-}
+/* ✅ Styles favoris supprimés - Utiliser ceux de dpe-style.css */
 
 /* Styles supplémentaires pour le plugin SCI */
 .wrap h1 {
@@ -353,20 +340,7 @@
     border-radius: 8px;
 }
 
-.loading-spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #0073aa;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 20px auto;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
+/* ✅ Loading spinner supprimé - Utiliser celui de dpe-style.css */
 
 .loading-text {
     font-size: 18px;
@@ -684,7 +658,7 @@
     color: #333 !important;
     background: transparent !important;
     margin: 0 !important;
-    padding: 0 !important;
+    padding: 10px !important;
     --primary-color: #3498db;
     --secondary-color: #6c757d;
     --success-color: #28a745;
@@ -948,7 +922,7 @@
 /* ✅ NOUVEAU : Styles spécifiques pour les éléments SCI */
 .sci-frontend-wrapper .sci-form {
     background: var(--light-bg) !important;
-    padding: 1.5rem !important;
+    padding: 10px !important;
     border-radius: var(--border-radius) !important;
     border: 1px solid #dee2e6 !important;
     margin-bottom: 1.5rem !important;
@@ -987,12 +961,8 @@
 
 /* ✅ NOUVEAU : Styles pour les éléments spécifiques aux shortcodes */
 .sci-frontend-wrapper #results-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 1.5rem 0;
-    flex-wrap: wrap;
-    gap: 1rem;
+    width: 100%;
+    margin-bottom: 15px;
 }
 
 .sci-frontend-wrapper #pagination-info {
@@ -1241,7 +1211,7 @@
 .sci-frontend-wrapper form.sci-form,
 .sci-frontend-wrapper .sci-form {
     background: #f8f9fa !important;
-    padding: 1.5rem !important;
+    padding: 10px !important;
     border-radius: 12px !important;
     margin-bottom: 1.5rem !important;
     border: 1px solid #e9ecef !important;
@@ -1676,7 +1646,7 @@
     gap: 1rem !important;
     flex-wrap: wrap !important;
     background: #f8f9fa !important;
-    padding: 1.5rem !important;
+    padding: 10px !important;
     border-radius: 12px !important;
     margin-bottom: 1.5rem !important;
     border: 1px solid #e9ecef !important;
@@ -1751,7 +1721,7 @@
     gap: 1rem !important;
     flex-wrap: wrap !important;
     background: #f8f9fa !important;
-    padding: 1.5rem !important;
+    padding: 10px !important;
     border-radius: 12px !important;
     margin-bottom: 1.5rem !important;
     border: 1px solid #e9ecef !important;
@@ -1964,106 +1934,32 @@ button.button-secondary:disabled::after,
     }
 }
 
-/* ✅ NOUVEAU : Styles spécifiques pour les boutons favoris */
-.sci-frontend-wrapper button.fav-btn,
-button.fav-btn,
-.sci-frontend-wrapper .fav-btn,
-.fav-btn {
-    font-size: 1.5rem !important;
-    background: none !important;
-    background-image: none !important;
-    background-color: transparent !important;
-    border: none !important;
-    border-radius: 0 !important;
-    cursor: pointer !important;
-    color: #ccc !important;
-    transition: all 0.3s ease !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    line-height: 1 !important;
-    vertical-align: middle !important;
-    outline: none !important;
-    box-shadow: none !important;
-    transform: none !important;
-    font-family: inherit !important;
-    font-weight: normal !important;
-    text-decoration: none !important;
-    display: inline-block !important;
-    min-height: auto !important;
-    min-width: auto !important;
-    width: auto !important;
-    height: auto !important;
-}
-
-.sci-frontend-wrapper button.fav-btn:hover,
-button.fav-btn:hover,
-.sci-frontend-wrapper .fav-btn:hover,
-.fav-btn:hover {
-    color: orange !important;
-    background: none !important;
-    background-image: none !important;
-    background-color: transparent !important;
-    border: none !important;
-    transform: scale(1.1) !important;
-    box-shadow: none !important;
-    text-decoration: none !important;
-}
-
-.sci-frontend-wrapper button.fav-btn.favori,
-button.fav-btn.favori,
-.sci-frontend-wrapper .fav-btn.favori,
-.fav-btn.favori {
-    color: gold !important;
-    background: none !important;
-    background-image: none !important;
-    background-color: transparent !important;
-    border: none !important;
-    transform: none !important;
-    box-shadow: none !important;
-}
-
-.sci-frontend-wrapper button.fav-btn.favori:hover,
-button.fav-btn.favori:hover,
-.sci-frontend-wrapper .fav-btn.favori:hover,
-.fav-btn.favori:hover {
-    color: #ffd700 !important;
-    background: none !important;
-    background-image: none !important;
-    background-color: transparent !important;
-    border: none !important;
-    transform: scale(1.1) !important;
-    box-shadow: none !important;
-}
-
-.sci-frontend-wrapper button.fav-btn:focus,
-button.fav-btn:focus,
-.sci-frontend-wrapper .fav-btn:focus,
-.fav-btn:focus {
-    outline: none !important;
-    box-shadow: none !important;
-    background: none !important;
-    border: none !important;
-}
-
-.sci-frontend-wrapper button.fav-btn:active,
-button.fav-btn:active,
-.sci-frontend-wrapper .fav-btn:active,
-.fav-btn:active {
-    background: none !important;
-    border: none !important;
-    transform: scale(0.95) !important;
-}
+/* ✅ Styles favoris supprimés - Utiliser ceux de dpe-style.css */
 
 /* ✅ NOUVEAU : Masquer les informations de pagination dans les shortcodes */
 .sci-frontend-wrapper #pagination-info {
     display: none !important;
 }
 
-/* ✅ NOUVEAU : Réduire la taille du titre des résultats */
-.sci-frontend-wrapper #results-title {
-    font-size: 10px !important;
-    margin: 0 !important;
-    padding: 0 !important;
+/* ✅ NOUVEAU : Permettre l'affichage de pagination-info dans le panel admin */
+body.wp-admin .sci-frontend-wrapper #pagination-info {
+    display: block !important;
+    background: #e7f3ff;
+    border: 1px solid #bee5eb;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    color: #004085;
+    font-size: 16px;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* ✅ NOUVEAU : Taille normale du titre dans le panel admin */
+body.wp-admin .sci-frontend-wrapper #results-title {
+    color: #1d2327;
+    font-size: 1.3em;
+    margin: 1em 0;
 }
 
 /* ✅ NOUVEAU : Masquer le label "Résultats par page" */
@@ -2239,504 +2135,9 @@ button.fav-btn:active,
     }
 }
 
-/* ✅ NOUVEAU : Styles pour les boutons WooCommerce - RENFORCÉS */
-.woocommerce button.button,
-.woocommerce input.button,
-.woocommerce .button,
-.woocommerce #respond input#submit,
-.woocommerce a.button,
-.woocommerce button.button.alt,
-.woocommerce input.button.alt,
-.woocommerce .button.alt,
-.woocommerce #respond input#submit.alt,
-.woocommerce a.button.alt,
-.woocommerce button.button.alt.disabled,
-.woocommerce button.button.alt:disabled,
-.woocommerce button.button.alt:disabled[disabled],
-.woocommerce input.button.alt.disabled,
-.woocommerce input.button.alt:disabled,
-.woocommerce input.button.alt:disabled[disabled],
-.woocommerce .button.alt.disabled,
-.woocommerce .button.alt:disabled,
-.woocommerce .button.alt:disabled[disabled],
-.woocommerce #respond input#submit.alt.disabled,
-.woocommerce #respond input#submit.alt:disabled,
-.woocommerce #respond input#submit.alt:disabled[disabled],
-.woocommerce a.button.alt.disabled,
-.woocommerce a.button.alt:disabled,
-.woocommerce a.button.alt:disabled[disabled],
-.woocommerce button.button.alt:hover,
-.woocommerce input.button.alt:hover,
-.woocommerce .button.alt:hover,
-.woocommerce #respond input#submit.alt:hover,
-.woocommerce a.button.alt:hover,
-.woocommerce button.button:hover,
-.woocommerce input.button:hover,
-.woocommerce .button:hover,
-.woocommerce #respond input#submit:hover,
-.woocommerce a.button:hover,
-.woocommerce button.button:focus,
-.woocommerce input.button:focus,
-.woocommerce .button:focus,
-.woocommerce #respond input#submit:focus,
-.woocommerce a.button:focus,
-.woocommerce button.button.alt:focus,
-.woocommerce input.button.alt:focus,
-.woocommerce .button.alt:focus,
-.woocommerce #respond input#submit.alt:focus,
-.woocommerce a.button.alt:focus,
-/* ✅ NOUVEAU : Sélecteurs supplémentaires pour WooCommerce */
-button.button,
-input.button,
-.button,
-#respond input#submit,
-a.button,
-button.button.alt,
-input.button.alt,
-.button.alt,
-#respond input#submit.alt,
-a.button.alt,
-/* ✅ NOUVEAU : Sélecteurs pour les boutons de produit */
-.woocommerce .products .product .button,
-.woocommerce .products .product button,
-.woocommerce .products .product input[type="submit"],
-.woocommerce .products .product a.button,
-/* ✅ NOUVEAU : Sélecteurs pour les boutons de panier */
-.woocommerce .cart .button,
-.woocommerce .cart button,
-.woocommerce .cart input[type="submit"],
-.woocommerce .cart a.button,
-/* ✅ NOUVEAU : Sélecteurs pour les boutons de checkout */
-.woocommerce .checkout .button,
-.woocommerce .checkout button,
-.woocommerce .checkout input[type="submit"],
-.woocommerce .checkout a.button,
-/* ✅ NOUVEAU : Sélecteurs pour les boutons de my-account */
-.woocommerce .my-account .button,
-.woocommerce .my-account button,
-.woocommerce .my-account input[type="submit"],
-.woocommerce .my-account a.button,
-/* ✅ NOUVEAU : Sélecteurs génériques pour tous les boutons */
-body .woocommerce button,
-body .woocommerce input[type="submit"],
-body .woocommerce .button,
-body .woocommerce a.button,
-body button.button,
-body input.button,
-body .button,
-body #respond input#submit,
-body a.button {
-    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 6px !important;
-    padding: 12px 24px !important;
-    font-weight: 600 !important;
-    transition: all 0.3s ease !important;
-    text-transform: none !important;
-    text-decoration: none !important;
-    display: inline-block !important;
-    cursor: pointer !important;
-    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2) !important;
-    outline: none !important;
-    min-height: 44px !important;
-    line-height: 1.2 !important;
-    vertical-align: middle !important;
-    position: relative !important;
-    overflow: hidden !important;
-    font-family: inherit !important;
-}
+/* ✅ Styles WooCommerce supprimés - Utiliser ceux de dpe-style.css */
 
-.woocommerce button.button:hover,
-.woocommerce input.button:hover,
-.woocommerce .button:hover,
-.woocommerce #respond input#submit:hover,
-.woocommerce a.button:hover,
-.woocommerce button.button.alt:hover,
-.woocommerce input.button.alt:hover,
-.woocommerce .button.alt:hover,
-.woocommerce #respond input#submit.alt:hover,
-.woocommerce a.button.alt:hover,
-/* ✅ NOUVEAU : Hover pour tous les boutons WooCommerce */
-button.button:hover,
-input.button:hover,
-.button:hover,
-#respond input#submit:hover,
-a.button:hover,
-button.button.alt:hover,
-input.button.alt:hover,
-.button.alt:hover,
-#respond input#submit.alt:hover,
-a.button.alt:hover,
-.woocommerce .products .product .button:hover,
-.woocommerce .products .product button:hover,
-.woocommerce .products .product input[type="submit"]:hover,
-.woocommerce .products .product a.button:hover,
-.woocommerce .cart .button:hover,
-.woocommerce .cart button:hover,
-.woocommerce .cart input[type="submit"]:hover,
-.woocommerce .cart a.button:hover,
-.woocommerce .checkout .button:hover,
-.woocommerce .checkout button:hover,
-.woocommerce .checkout input[type="submit"]:hover,
-.woocommerce .checkout a.button:hover,
-.woocommerce .my-account .button:hover,
-.woocommerce .my-account button:hover,
-.woocommerce .my-account input[type="submit"]:hover,
-.woocommerce .my-account a.button:hover,
-body .woocommerce button:hover,
-body .woocommerce input[type="submit"]:hover,
-body .woocommerce .button:hover,
-body .woocommerce a.button:hover,
-body button.button:hover,
-body input.button:hover,
-body .button:hover,
-body #respond input#submit:hover,
-body a.button:hover {
-    background: linear-gradient(135deg, #1e7e34 0%, #155724 100%) !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3) !important;
-    text-decoration: none !important;
-    color: white !important;
-}
-
-.woocommerce button.button:focus,
-.woocommerce input.button:focus,
-.woocommerce .button:focus,
-.woocommerce #respond input#submit:focus,
-.woocommerce a.button:focus,
-.woocommerce button.button.alt:focus,
-.woocommerce input.button.alt:focus,
-.woocommerce .button.alt:focus,
-.woocommerce #respond input#submit.alt:focus,
-.woocommerce a.button.alt:focus {
-    outline: 2px solid #28a745 !important;
-    outline-offset: 2px !important;
-    color: white !important;
-}
-
-.woocommerce button.button:disabled,
-.woocommerce input.button:disabled,
-.woocommerce .button:disabled,
-.woocommerce #respond input#submit:disabled,
-.woocommerce a.button:disabled,
-.woocommerce button.button.alt:disabled,
-.woocommerce input.button.alt:disabled,
-.woocommerce .button.alt:disabled,
-.woocommerce #respond input#submit.alt:disabled,
-.woocommerce a.button.alt:disabled,
-.woocommerce button.button.disabled,
-.woocommerce input.button.disabled,
-.woocommerce .button.disabled,
-.woocommerce #respond input#submit.disabled,
-.woocommerce a.button.disabled,
-.woocommerce button.button.alt.disabled,
-.woocommerce input.button.alt.disabled,
-.woocommerce .button.alt.disabled,
-.woocommerce #respond input#submit.alt.disabled,
-.woocommerce a.button.alt.disabled {
-    background: #e9ecef !important;
-    color: #6c757d !important;
-    transform: none !important;
-    box-shadow: none !important;
-    opacity: 0.6 !important;
-    cursor: not-allowed !important;
-}
-
-/* ✅ NOUVEAU : Styles pour les boutons WooCommerce dans les iframes et popups */
-#embedded-checkout button,
-#embedded-checkout input[type="submit"],
-#embedded-checkout .button,
-#embedded-checkout .woocommerce button,
-#embedded-checkout .woocommerce input.button,
-#embedded-checkout .woocommerce .button,
-#embedded-checkout .woocommerce #respond input#submit,
-#embedded-checkout .woocommerce a.button,
-#checkout-container button,
-#checkout-container input[type="submit"],
-#checkout-container .button,
-#checkout-container .woocommerce button,
-#checkout-container .woocommerce input.button,
-#checkout-container .woocommerce .button,
-#checkout-container .woocommerce #respond input#submit,
-#checkout-container .woocommerce a.button {
-    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 6px !important;
-    padding: 12px 24px !important;
-    font-weight: 600 !important;
-    transition: all 0.3s ease !important;
-    text-transform: none !important;
-    text-decoration: none !important;
-    display: inline-block !important;
-    cursor: pointer !important;
-    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2) !important;
-    outline: none !important;
-    min-height: 44px !important;
-    line-height: 1.2 !important;
-    vertical-align: middle !important;
-    position: relative !important;
-    overflow: hidden !important;
-}
-
-#embedded-checkout button:hover,
-#embedded-checkout input[type="submit"]:hover,
-#embedded-checkout .button:hover,
-#embedded-checkout .woocommerce button:hover,
-#embedded-checkout .woocommerce input.button:hover,
-#embedded-checkout .woocommerce .button:hover,
-#embedded-checkout .woocommerce #respond input#submit:hover,
-#embedded-checkout .woocommerce a.button:hover,
-#checkout-container button:hover,
-#checkout-container input[type="submit"]:hover,
-#checkout-container .button:hover,
-#checkout-container .woocommerce button:hover,
-#checkout-container .woocommerce input.button:hover,
-#checkout-container .woocommerce .button:hover,
-#checkout-container .woocommerce #respond input#submit:hover,
-#checkout-container .woocommerce a.button:hover {
-    background: linear-gradient(135deg, #1e7e34 0%, #155724 100%) !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3) !important;
-    text-decoration: none !important;
-    color: white !important;
-}
-
-/* ✅ NOUVEAU : Styles pour les boutons de paiement WooCommerce spécifiques */
-.woocommerce-checkout button#place_order,
-.woocommerce-checkout input#place_order,
-.woocommerce-checkout .button#place_order,
-.woocommerce-checkout .woocommerce button#place_order,
-.woocommerce-checkout .woocommerce input#place_order,
-.woocommerce-checkout .woocommerce .button#place_order,
-/* ✅ NOUVEAU : Styles pour tous les boutons de commande */
-#place_order,
-button#place_order,
-input#place_order,
-.button#place_order,
-.woocommerce #place_order,
-.woocommerce button#place_order,
-.woocommerce input#place_order,
-.woocommerce .button#place_order {
-    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 6px !important;
-    padding: 16px 32px !important;
-    font-weight: 700 !important;
-    font-size: 16px !important;
-    transition: all 0.3s ease !important;
-    text-transform: none !important;
-    text-decoration: none !important;
-    display: inline-block !important;
-    cursor: pointer !important;
-    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3) !important;
-    outline: none !important;
-    min-height: 50px !important;
-    line-height: 1.2 !important;
-    vertical-align: middle !important;
-    position: relative !important;
-    overflow: hidden !important;
-    width: 100% !important;
-    max-width: 300px !important;
-}
-
-.woocommerce-checkout button#place_order:hover,
-.woocommerce-checkout input#place_order:hover,
-.woocommerce-checkout .button#place_order:hover,
-.woocommerce-checkout .woocommerce button#place_order:hover,
-.woocommerce-checkout .woocommerce input#place_order:hover,
-.woocommerce-checkout .woocommerce .button#place_order:hover {
-    background: linear-gradient(135deg, #1e7e34 0%, #155724 100%) !important;
-    transform: translateY(-2px) !important;
-    box-shadow: 0 6px 12px rgba(40, 167, 69, 0.4) !important;
-    text-decoration: none !important;
-    color: white !important;
-}
-
-/* ✅ NOUVEAU : Styles pour les boutons de navigation WooCommerce */
-.woocommerce .woocommerce-breadcrumb a,
-.woocommerce .woocommerce-breadcrumb .breadcrumb-separator,
-.woocommerce .woocommerce-breadcrumb .breadcrumb-separator:before {
-    color: #28a745 !important;
-}
-
-.woocommerce .woocommerce-breadcrumb a:hover {
-    color: #1e7e34 !important;
-    text-decoration: none !important;
-}
-
-/* ✅ NOUVEAU : Styles pour les liens WooCommerce */
-.woocommerce a,
-.woocommerce a:visited {
-    color: #28a745 !important;
-}
-
-.woocommerce a:hover,
-.woocommerce a:focus {
-    color: #1e7e34 !important;
-    text-decoration: none !important;
-}
-
-/* ✅ NOUVEAU : Styles pour les boutons de quantité WooCommerce */
-.woocommerce .quantity .qty {
-    border: 2px solid #e9ecef !important;
-    border-radius: 6px !important;
-    padding: 8px 12px !important;
-    font-size: 14px !important;
-    transition: all 0.2s ease !important;
-}
-
-.woocommerce .quantity .qty:focus {
-    border-color: #28a745 !important;
-    outline: none !important;
-    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1) !important;
-}
-
-/* ✅ NOUVEAU : Styles pour les boutons de quantité */
-.woocommerce .quantity .plus,
-.woocommerce .quantity .minus {
-    background: #28a745 !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 4px !important;
-    padding: 8px 12px !important;
-    font-weight: 600 !important;
-    transition: all 0.2s ease !important;
-    cursor: pointer !important;
-}
-
-.woocommerce .quantity .plus:hover,
-.woocommerce .quantity .minus:hover {
-    background: #1e7e34 !important;
-    transform: translateY(-1px) !important;
-}
-
-/* ✅ NOUVEAU : Styles génériques pour TOUS les boutons WooCommerce - ULTRA RENFORCÉS */
-*[class*="woocommerce"] button,
-*[class*="woocommerce"] input[type="submit"],
-*[class*="woocommerce"] .button,
-*[class*="woocommerce"] a.button,
-*[class*="woocommerce"] button.button,
-*[class*="woocommerce"] input.button,
-*[class*="woocommerce"] #respond input#submit,
-*[class*="woocommerce"] button.button.alt,
-*[class*="woocommerce"] input.button.alt,
-*[class*="woocommerce"] .button.alt,
-*[class*="woocommerce"] #respond input#submit.alt,
-*[class*="woocommerce"] a.button.alt,
-/* ✅ NOUVEAU : Styles pour les boutons avec des classes contenant "add-to-cart" */
-*[class*="add-to-cart"] button,
-*[class*="add-to-cart"] input[type="submit"],
-*[class*="add-to-cart"] .button,
-*[class*="add-to-cart"] a.button,
-/* ✅ NOUVEAU : Styles pour les boutons avec des classes contenant "checkout" */
-*[class*="checkout"] button,
-*[class*="checkout"] input[type="submit"],
-*[class*="checkout"] .button,
-*[class*="checkout"] a.button,
-/* ✅ NOUVEAU : Styles pour les boutons avec des classes contenant "cart" */
-*[class*="cart"] button,
-*[class*="cart"] input[type="submit"],
-*[class*="cart"] .button,
-*[class*="cart"] a.button,
-/* ✅ NOUVEAU : Styles pour les boutons avec des classes contenant "order" */
-*[class*="order"] button,
-*[class*="order"] input[type="submit"],
-*[class*="order"] .button,
-*[class*="order"] a.button {
-    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 6px !important;
-    padding: 12px 24px !important;
-    font-weight: 600 !important;
-    transition: all 0.3s ease !important;
-    text-transform: none !important;
-    text-decoration: none !important;
-    display: inline-block !important;
-    cursor: pointer !important;
-    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2) !important;
-    outline: none !important;
-    min-height: 44px !important;
-    line-height: 1.2 !important;
-    vertical-align: middle !important;
-    position: relative !important;
-    overflow: hidden !important;
-    font-family: inherit !important;
-}
-
-/* ✅ NOUVEAU : Hover pour TOUS les boutons WooCommerce - ULTRA RENFORCÉS */
-*[class*="woocommerce"] button:hover,
-*[class*="woocommerce"] input[type="submit"]:hover,
-*[class*="woocommerce"] .button:hover,
-*[class*="woocommerce"] a.button:hover,
-*[class*="woocommerce"] button.button:hover,
-*[class*="woocommerce"] input.button:hover,
-*[class*="woocommerce"] #respond input#submit:hover,
-*[class*="woocommerce"] button.button.alt:hover,
-*[class*="woocommerce"] input.button.alt:hover,
-*[class*="woocommerce"] .button.alt:hover,
-*[class*="woocommerce"] #respond input#submit.alt:hover,
-*[class*="woocommerce"] a.button.alt:hover,
-*[class*="add-to-cart"] button:hover,
-*[class*="add-to-cart"] input[type="submit"]:hover,
-*[class*="add-to-cart"] .button:hover,
-*[class*="add-to-cart"] a.button:hover,
-*[class*="checkout"] button:hover,
-*[class*="checkout"] input[type="submit"]:hover,
-*[class*="checkout"] .button:hover,
-*[class*="checkout"] a.button:hover,
-*[class*="cart"] button:hover,
-*[class*="cart"] input[type="submit"]:hover,
-*[class*="cart"] .button:hover,
-*[class*="cart"] a.button:hover,
-*[class*="order"] button:hover,
-*[class*="order"] input[type="submit"]:hover,
-*[class*="order"] .button:hover,
-*[class*="order"] a.button:hover {
-    background: linear-gradient(135deg, #1e7e34 0%, #155724 100%) !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3) !important;
-    text-decoration: none !important;
-    color: white !important;
-}
-
-/* ✅ NOUVEAU : Styles pour les boutons WooCommerce dans les iframes - RENFORCÉS */
-iframe .woocommerce button,
-iframe .woocommerce input[type="submit"],
-iframe .woocommerce .button,
-iframe .woocommerce a.button,
-iframe button.button,
-iframe input.button,
-iframe .button,
-iframe #respond input#submit,
-iframe a.button,
-iframe *[class*="woocommerce"] button,
-iframe *[class*="woocommerce"] input[type="submit"],
-iframe *[class*="woocommerce"] .button,
-iframe *[class*="woocommerce"] a.button {
-    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 6px !important;
-    padding: 12px 24px !important;
-    font-weight: 600 !important;
-    transition: all 0.3s ease !important;
-    text-transform: none !important;
-    text-decoration: none !important;
-    display: inline-block !important;
-    cursor: pointer !important;
-    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2) !important;
-    outline: none !important;
-    min-height: 44px !important;
-    line-height: 1.2 !important;
-    vertical-align: middle !important;
-    position: relative !important;
-    overflow: hidden !important;
-    font-family: inherit !important;
-}
+/* ✅ Styles WooCommerce iframes supprimés - Utiliser ceux de dpe-style.css */
 
 /* ========================================
    STYLES POUR LES SHORTCODES SCI_FAVORIS ET SCI_CAMPAIGNS
@@ -2746,7 +2147,7 @@ iframe *[class*="woocommerce"] a.button {
 .wrap {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 10px;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 

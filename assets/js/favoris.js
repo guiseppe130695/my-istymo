@@ -209,7 +209,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (isContacted) {
                 statusElement.className = 'contact-status contacted';
                 statusElement.style.display = 'inline-block';
-                iconElement.textContent = '✅';
+                iconElement.textContent = '✓';
                 statusElement.title = 'Cette SCI a déjà été contactée dans une campagne précédente';
                 const textElement = statusElement.querySelector('.contact-status-text');
                 if (textElement) {

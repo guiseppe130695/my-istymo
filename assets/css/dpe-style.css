@@ -1,3 +1,7 @@
+/* ========================================
+   🎨 DPE STYLES - Fichier principal consolidé
+   ======================================== */
+
 /* Styles pour les shortcodes DPE */
 
 /* Styles généraux */
@@ -5,14 +9,24 @@
     width: 100%;
     max-width: 100%!important;
     margin: 0;
-    padding: 20px;
+    padding: 10px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    box-sizing: border-box;
+}
+
+/* ✅ AJOUTÉ : Wrapper SCI avec largeur 100% */
+.sci-frontend-wrapper {
+    width: 100%;
+    max-width: 100%!important;
+    margin: 0;
+    padding: 10px;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     box-sizing: border-box;
 }
 
 .dpe-form {
     background: #f8f9fa;
-    padding: 20px;
+    padding: 10px;
     border-radius: 8px;
     margin-bottom: 20px;
     border: 1px solid #e9ecef;
@@ -191,7 +205,7 @@
     text-decoration: underline;
 }
 
-/* ✅ Styles améliorés pour les boutons favoris - sans bordures */
+/* ✅ Styles pour les boutons favoris - Version consolidée */
 .favorite-btn, .fav-btn {
     background: none !important;
     border: none !important;
@@ -501,7 +515,7 @@ button#search-btn {
     width: 100% !important;
     max-width: 100% !important;
     margin: 0 !important;
-    padding: 20px !important;
+    padding: 10px !important;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
     box-sizing: border-box !important;
     background: transparent !important;
@@ -509,15 +523,19 @@ button#search-btn {
     box-shadow: none !important;
 }
 
-/* Protection du formulaire */
-.dpe-form {
-    background: #f8f9fa !important;
-    padding: 20px !important;
-    border-radius: 8px !important;
-    margin-bottom: 20px !important;
-    border: 1px solid #e9ecef !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+/* ✅ AJOUTÉ : Protection du wrapper SCI */
+.sci-frontend-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 10px !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    box-sizing: border-box !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
 }
+
 
 /* Protection du tableau */
 .dpe-table {

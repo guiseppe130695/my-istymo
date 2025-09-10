@@ -1,0 +1,323 @@
+/* ========================================
+   🎨 MY ISTYMO GLOBAL STYLES
+   ======================================== */
+
+/* Import du design system DPE */
+@import url('dpe-design-system.css');
+
+/* ========================================
+   🎯 STYLES GLOBAUX MY ISTYMO
+   ======================================== */
+
+/* Container principal pour tous les modules */
+.my-istymo-container,
+.unified-leads-container,
+.sci-frontend-wrapper {
+    font-family: var(--dpe-font-family);
+    line-height: var(--dpe-line-height-normal);
+    color: var(--dpe-gray-800);
+    background-color: var(--dpe-gray-50);
+}
+
+/* ========================================
+   🔄 COMPATIBILITÉ AVEC L'ANCIEN SYSTÈME
+   ======================================== */
+
+/* Migration des anciennes classes vers le design system */
+.my-istymo-card {
+    background-color: var(--dpe-white);
+    border-radius: var(--dpe-radius-lg);
+    box-shadow: var(--dpe-shadow-sm);
+    padding: var(--dpe-space-lg);
+    margin-bottom: var(--dpe-space-md);
+    transition: box-shadow var(--dpe-transition-normal);
+}
+
+.my-istymo-card:hover {
+    box-shadow: var(--dpe-shadow-md);
+}
+
+/* Anciens boutons vers nouveaux boutons */
+.sci-button,
+.my-istymo-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--dpe-space-sm);
+    padding: var(--dpe-space-sm) var(--dpe-space-md);
+    border: none;
+    border-radius: var(--dpe-radius-md);
+    font-family: var(--dpe-font-family);
+    font-size: var(--dpe-font-size-md);
+    font-weight: var(--dpe-font-weight-medium);
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all var(--dpe-transition-fast);
+    white-space: nowrap;
+    user-select: none;
+    background-color: var(--dpe-primary);
+    color: var(--dpe-white);
+    box-shadow: var(--dpe-shadow-sm);
+}
+
+.sci-button:hover,
+.my-istymo-button:hover {
+    background-color: var(--dpe-primary-dark);
+    box-shadow: var(--dpe-shadow-md);
+    transform: translateY(-1px);
+}
+
+.sci-button.secondary,
+.my-istymo-button.secondary {
+    background-color: var(--dpe-white);
+    color: var(--dpe-primary);
+    border: 2px solid var(--dpe-primary);
+}
+
+.sci-button.secondary:hover,
+.my-istymo-button.secondary:hover {
+    background-color: var(--dpe-primary);
+    color: var(--dpe-white);
+}
+
+/* Anciens tableaux vers nouveaux tableaux */
+.sci-table,
+.my-istymo-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--dpe-white);
+    border-radius: var(--dpe-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--dpe-shadow-sm);
+}
+
+.sci-table th,
+.my-istymo-table th {
+    background-color: var(--dpe-gray-100);
+    color: var(--dpe-gray-800);
+    font-weight: var(--dpe-font-weight-semibold);
+    text-align: left;
+    padding: var(--dpe-space-md);
+    border-bottom: 2px solid var(--dpe-gray-200);
+}
+
+.sci-table td,
+.my-istymo-table td {
+    padding: var(--dpe-space-md);
+    border-bottom: 1px solid var(--dpe-gray-200);
+    color: var(--dpe-gray-700);
+}
+
+.sci-table tr:hover,
+.my-istymo-table tr:hover {
+    background-color: var(--dpe-gray-50);
+}
+
+.sci-table tr:last-child td,
+.my-istymo-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Anciens messages d'erreur vers nouvelles alertes */
+.sci-error,
+.my-istymo-error {
+    padding: var(--dpe-space-md);
+    border-radius: var(--dpe-radius-md);
+    margin-bottom: var(--dpe-space-md);
+    border-left: 4px solid var(--dpe-error);
+    background-color: rgba(244, 67, 54, 0.1);
+    color: var(--dpe-gray-800);
+}
+
+.sci-warning,
+.my-istymo-warning {
+    padding: var(--dpe-space-md);
+    border-radius: var(--dpe-radius-md);
+    margin-bottom: var(--dpe-space-md);
+    border-left: 4px solid var(--dpe-warning);
+    background-color: rgba(255, 152, 0, 0.1);
+    color: var(--dpe-gray-800);
+}
+
+.sci-info,
+.my-istymo-info {
+    padding: var(--dpe-space-md);
+    border-radius: var(--dpe-radius-md);
+    margin-bottom: var(--dpe-space-md);
+    border-left: 4px solid var(--dpe-info);
+    background-color: rgba(33, 150, 243, 0.1);
+    color: var(--dpe-gray-800);
+}
+
+/* ========================================
+   🎨 STYLES SPÉCIFIQUES PAR MODULE
+   ======================================== */
+
+/* Module SCI */
+.sci-frontend-wrapper {
+    background-color: var(--dpe-gray-50);
+    min-height: 100vh;
+    padding: var(--dpe-space-lg);
+}
+
+/* Module DPE */
+.dpe-container {
+    background-color: var(--dpe-gray-50);
+    min-height: 100vh;
+    padding: var(--dpe-space-lg);
+}
+
+/* Module Leads */
+.unified-leads-container {
+    background-color: var(--dpe-gray-50);
+    min-height: 100vh;
+    padding: var(--dpe-space-lg);
+}
+
+/* ========================================
+   📱 RESPONSIVE GLOBAL
+   ======================================== */
+
+@media (max-width: 768px) {
+    .my-istymo-container,
+    .unified-leads-container,
+    .sci-frontend-wrapper,
+    .dpe-container {
+        padding: var(--dpe-space-sm);
+    }
+    
+    .my-istymo-card {
+        padding: var(--dpe-space-md);
+    }
+    
+    .sci-button,
+    .my-istymo-button {
+        width: 100%;
+        margin-bottom: var(--dpe-space-sm);
+    }
+    
+    .sci-table,
+    .my-istymo-table {
+        font-size: var(--dpe-font-size-sm);
+    }
+    
+    .sci-table th,
+    .sci-table td,
+    .my-istymo-table th,
+    .my-istymo-table td {
+        padding: var(--dpe-space-sm);
+    }
+}
+
+/* ========================================
+   🎯 ANIMATIONS GLOBALES
+   ======================================== */
+
+/* Animation de chargement */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid var(--dpe-gray-300);
+    border-radius: 50%;
+    border-top-color: var(--dpe-primary);
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Animation de fade in pour les nouveaux éléments */
+.my-istymo-fade-in {
+    animation: dpe-fadeIn 0.3s ease-out;
+}
+
+/* ========================================
+   🎨 THÈMES SPÉCIAUX
+   ======================================== */
+
+/* Thème sombre pour tous les modules */
+.my-istymo-dark,
+.unified-leads-dark,
+.sci-dark,
+.dpe-dark {
+    --dpe-white: #1a1a1a;
+    --dpe-gray-50: #2d2d2d;
+    --dpe-gray-100: #3a3a3a;
+    --dpe-gray-200: #4a4a4a;
+    --dpe-gray-300: #5a5a5a;
+    --dpe-gray-400: #6a6a6a;
+    --dpe-gray-500: #7a7a7a;
+    --dpe-gray-600: #8a8a8a;
+    --dpe-gray-700: #9a9a9a;
+    --dpe-gray-800: #aaaaaa;
+    --dpe-gray-900: #ffffff;
+}
+
+/* ========================================
+   🔧 UTILITAIRES GLOBAUX
+   ======================================== */
+
+/* Classes utilitaires pour tous les modules */
+.my-istymo-text-center { text-align: center; }
+.my-istymo-text-left { text-align: left; }
+.my-istymo-text-right { text-align: right; }
+
+.my-istymo-mb-0 { margin-bottom: 0; }
+.my-istymo-mb-sm { margin-bottom: var(--dpe-space-sm); }
+.my-istymo-mb-md { margin-bottom: var(--dpe-space-md); }
+.my-istymo-mb-lg { margin-bottom: var(--dpe-space-lg); }
+.my-istymo-mb-xl { margin-bottom: var(--dpe-space-xl); }
+
+.my-istymo-mt-0 { margin-top: 0; }
+.my-istymo-mt-sm { margin-top: var(--dpe-space-sm); }
+.my-istymo-mt-md { margin-top: var(--dpe-space-md); }
+.my-istymo-mt-lg { margin-top: var(--dpe-space-lg); }
+.my-istymo-mt-xl { margin-top: var(--dpe-space-xl); }
+
+.my-istymo-p-0 { padding: 0; }
+.my-istymo-p-sm { padding: var(--dpe-space-sm); }
+.my-istymo-p-md { padding: var(--dpe-space-md); }
+.my-istymo-p-lg { padding: var(--dpe-space-lg); }
+.my-istymo-p-xl { padding: var(--dpe-space-xl); }
+
+.my-istymo-hidden { display: none; }
+.my-istymo-visible { display: block; }
+.my-istymo-flex { display: flex; }
+.my-istymo-inline-flex { display: inline-flex; }
+
+.my-istymo-gap-sm { gap: var(--dpe-space-sm); }
+.my-istymo-gap-md { gap: var(--dpe-space-md); }
+.my-istymo-gap-lg { gap: var(--dpe-space-lg); }
+
+.my-istymo-items-center { align-items: center; }
+.my-istymo-justify-center { justify-content: center; }
+.my-istymo-justify-between { justify-content: space-between; }
+
+/* ========================================
+   🎯 PRINT STYLES
+   ======================================== */
+
+@media print {
+    .my-istymo-container,
+    .unified-leads-container,
+    .sci-frontend-wrapper,
+    .dpe-container {
+        background-color: white !important;
+        color: black !important;
+    }
+    
+    .my-istymo-card,
+    .dpe-card {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+    }
+    
+    .sci-button,
+    .my-istymo-button,
+    .dpe-btn {
+        display: none !important;
+    }
+}
