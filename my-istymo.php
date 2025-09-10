@@ -102,8 +102,8 @@ function sci_ajouter_menu() {
         'read',
         'sci-panel',
         'sci_afficher_panel',
-        'dashicons-admin-home',
-        6
+        'dashicons-building',
+        -1
     );
 
     add_submenu_page(
@@ -142,8 +142,8 @@ function sci_ajouter_menu() {
         'read',
         'dpe-panel',
         'dpe_afficher_panel',
-        'dashicons-admin-home',
-        7
+        'dashicons-lightbulb',
+        -2
     );
 
     add_submenu_page(
@@ -163,7 +163,7 @@ function sci_ajouter_menu() {
            'unified-leads',
            'unified_leads_admin_page',
            'dashicons-groups',
-           8
+           -3
        );
        
        // ✅ PHASE 2 : Sous-menu pour la configuration
@@ -175,11 +175,73 @@ function sci_ajouter_menu() {
            'unified-leads-config',
            'unified_leads_config_page'
        );
+       
+       // ✅ NOUVEAU : Menu Lead Vendeur
+       add_menu_page(
+           'Lead Vendeur',
+           'Lead Vendeur',
+           'read',
+           'lead-vendeur',
+           'lead_vendeur_page',
+           'dashicons-businessman',
+           -4
+       );
+       
+       // ✅ NOUVEAU : Menu Carte de Succession
+       add_menu_page(
+           'Carte de Succession',
+           'Carte de Succession',
+           'read',
+           'carte-succession',
+           'carte_succession_page',
+           'dashicons-chart-area',
+           -5
+       );
 }
 
 
        // ✅ PHASE 1 : Inclure la page d'administration des leads unifiés
        require_once plugin_dir_path(__FILE__) . 'templates/unified-leads-admin.php';
+       
+       // ✅ NOUVEAU : Fonction pour la page Lead Vendeur
+       function lead_vendeur_page() {
+           // Vérifier si l'utilisateur est connecté
+           if (!is_user_logged_in()) {
+               echo '<div class="wrap"><h1>Lead Vendeur</h1><p>Vous devez être connecté pour accéder à cette page.</p></div>';
+               return;
+           }
+           
+           echo '<div class="wrap">';
+           echo '<h1>🏢 Lead Vendeur</h1>';
+           echo '<div class="my-istymo-container">';
+           echo '<div class="my-istymo-card">';
+           echo '<h2>📋 Gestion des Leads Vendeur</h2>';
+           echo '<p>Cette section sera dédiée à la gestion des leads vendeur.</p>';
+           echo '<p><em>Contenu à développer...</em></p>';
+           echo '</div>';
+           echo '</div>';
+           echo '</div>';
+       }
+       
+       // ✅ NOUVEAU : Fonction pour la page Carte de Succession
+       function carte_succession_page() {
+           // Vérifier si l'utilisateur est connecté
+           if (!is_user_logged_in()) {
+               echo '<div class="wrap"><h1>Carte de Succession</h1><p>Vous devez être connecté pour accéder à cette page.</p></div>';
+               return;
+           }
+           
+           echo '<div class="wrap">';
+           echo '<h1>🗺️ Carte de Succession</h1>';
+           echo '<div class="my-istymo-container">';
+           echo '<div class="my-istymo-card">';
+           echo '<h2>📊 Cartographie des Successions</h2>';
+           echo '<p>Cette section sera dédiée à la cartographie et à l\'analyse des successions immobilières.</p>';
+           echo '<p><em>Contenu à développer...</em></p>';
+           echo '</div>';
+           echo '</div>';
+           echo '</div>';
+       }
        
        // ✅ PHASE 2 : Inclure la page de configuration des leads unifiés
        require_once plugin_dir_path(__FILE__) . 'templates/unified-leads-config.php';
