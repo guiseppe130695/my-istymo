@@ -383,8 +383,8 @@ class DPE_Handler {
                 $stats['etiquettes_dpe'][$dpe] = ($stats['etiquettes_dpe'][$dpe] ?? 0) + 1;
             }
             
-            // Complément d'adresse (remplace les statistiques GES)
-            $complement = $item['complement_adresse_logement'] ?? $item['complement_adresse_batiment'] ?? '';
+            // Complément d'adresse (uniquement logement)
+            $complement = $item['complement_adresse_logement'] ?? '';
             if ($complement) {
                 $stats['complement_adresse'][$complement] = ($stats['complement_adresse'][$complement] ?? 0) + 1;
             }

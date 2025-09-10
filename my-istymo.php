@@ -1394,7 +1394,7 @@ function my_istymo_render_dpe_info($data) {
         </div>
 
         <!-- Performance énergétique -->
-        <?php if (!empty($data['etiquette_dpe']) || !empty($data['complement_adresse_logement']) || !empty($data['complement_adresse_batiment']) || !empty($data['conso_5_usages_ef_energie_n1']) || !empty($data['emission_ges_5_usages_energie_n1'])): ?>
+        <?php if (!empty($data['etiquette_dpe']) || !empty($data['complement_adresse_logement']) || !empty($data['conso_5_usages_ef_energie_n1']) || !empty($data['emission_ges_5_usages_energie_n1'])): ?>
         <div class="my-istymo-info-section">
             <h4 class="my-istymo-section-title">⚡ Performance énergétique</h4>
             <div class="my-istymo-info-grid">
@@ -1409,11 +1409,11 @@ function my_istymo_render_dpe_info($data) {
                 </div>
                 <?php endif; ?>
                 
-                <?php if (!empty($data['complement_adresse_logement']) || !empty($data['complement_adresse_batiment'])): ?>
+                <?php if (!empty($data['complement_adresse_logement'])): ?>
                 <div class="my-istymo-info-item">
                     <label>📍 Complément adresse</label>
                     <div class="my-istymo-info-value">
-                        <?php echo esc_html($data['complement_adresse_logement'] ?: $data['complement_adresse_batiment'] ?: 'Non spécifié'); ?>
+                        <?php echo esc_html($data['complement_adresse_logement']); ?>
                     </div>
                 </div>
                 <?php endif; ?>

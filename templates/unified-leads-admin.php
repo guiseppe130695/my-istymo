@@ -1066,10 +1066,10 @@ function unified_leads_admin_page($context = array()) {
                     html += '</div>';
                 }
                 
-                if (data.complement_adresse_logement || data.complement_adresse_batiment) {
+                if (data.complement_adresse_logement) {
                     html += '<div class="my-istymo-info-row">';
                     html += '<span class="my-istymo-info-label">Complément :</span>';
-                    html += '<span class="my-istymo-info-value">' + (data.complement_adresse_logement || data.complement_adresse_batiment || '—') + '</span>';
+                    html += '<span class="my-istymo-info-value">' + data.complement_adresse_logement + '</span>';
                     html += '</div>';
                 }
                 

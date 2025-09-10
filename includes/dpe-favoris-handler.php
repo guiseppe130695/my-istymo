@@ -251,7 +251,7 @@ class DPE_Favoris_Handler {
                     $dpe_data['code_postal_ban'] ?? '',
                     $dpe_data['nom_commune_ban'] ?? '',
                     $dpe_data['etiquette_dpe'] ?? '',
-                    $dpe_data['complement_adresse_logement'] ?? $dpe_data['complement_adresse_batiment'] ?? '',
+                    $dpe_data['complement_adresse_logement'] ?? '',
                     $dpe_data['surface_habitable_logement'] ?? '',
                     $dpe_data['type_batiment'] ?? ''
                 ),

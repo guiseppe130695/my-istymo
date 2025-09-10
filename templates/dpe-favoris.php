@@ -137,7 +137,7 @@ function createGoogleMapsLink($adresse, $codePostal, $commune) {
                                 </span>
                             </td>
                             <td class="complement-adresse">
-                                <?php echo esc_html($favori->complement_adresse_logement ?: 'Non spécifié'); ?>
+                                <?php echo esc_html($favori->complement_adresse_logement ?: ''); ?>
                             </td>
                             <td class="date-dpe"><?php echo formatDateFr($favori->date_etablissement_dpe); ?></td>
                             <td class="geolocalisation">

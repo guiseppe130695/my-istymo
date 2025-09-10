@@ -452,7 +452,7 @@ class DPE_Shortcodes {
                     
                     // Complément adresse
                     var complementCell = document.createElement('td');
-                    var complementText = result.complement_adresse_logement || result.complement_adresse_batiment || 'Non spécifié';
+                    var complementText = result.complement_adresse_logement || '';
                     complementCell.textContent = complementText;
                     row.appendChild(complementCell);
                     
