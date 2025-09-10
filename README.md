@@ -19,6 +19,13 @@ My Istymo est une solution complète pour les professionnels de l'immobilier qui
 - Géolocalisation Google Maps intégrée
 - Système de favoris avec gestion avancée
 
+### 🏠 Diagnostic de Performance Énergétique (DPE)
+- Recherche DPE via l'API ADEME
+- Affichage des informations énergétiques détaillées
+- Gestion des compléments d'adresse spécifiques au logement
+- Système de favoris DPE intégré
+- Création automatique de leads unifiés depuis les DPE
+
 ### 👥 Gestion des Leads
 - **Interface unifiée** pour la gestion des prospects
 - **5 actions essentielles** : Changer statut, Ajouter action, Programmer appel, Ajouter note, Supprimer
@@ -63,6 +70,7 @@ My Istymo est une solution complète pour les professionnels de l'immobilier qui
 
 ### APIs externes requises
 - **API INPI** : Pour la recherche des données SCI
+- **API ADEME** : Pour la recherche des données DPE
 - **API La Poste** : Pour l'envoi de courriers
 - **Google Maps** : Pour la géolocalisation
 
@@ -85,7 +93,17 @@ My Istymo est une solution complète pour les professionnels de l'immobilier qui
 [sci_campaigns title="📬 Mes Campagnes de Lettres" show_empty_message="true"]
 ```
 
-#### 4. Interface de gestion des leads
+#### 4. Panneau DPE
+```php
+[dpe_panel title="🏠 Diagnostic de Performance Énergétique" show_config_warnings="true"]
+```
+
+#### 5. Favoris DPE
+```php
+[dpe_favoris title="⭐ Mes DPE Favoris" show_empty_message="true"]
+```
+
+#### 6. Interface de gestion des leads
 ```php
 [unified_leads_admin]
 ```
@@ -98,6 +116,13 @@ My Istymo est une solution complète pour les professionnels de l'immobilier qui
 3. Parcourir les résultats avec la pagination
 4. Ajouter des SCI aux favoris (⭐)
 5. Sélectionner des SCI pour une campagne
+
+#### Recherche DPE
+1. Saisir une adresse dans le champ de recherche
+2. Cliquer sur "🔍 Rechercher les DPE"
+3. Consulter les informations énergétiques détaillées
+4. Ajouter des DPE aux favoris (⭐)
+5. Les DPE favoris créent automatiquement des leads unifiés
 
 #### Gestion des Leads
 1. Accéder à l'interface de gestion des leads
@@ -201,7 +226,11 @@ Le plugin utilise des styles CSS personnalisés pour :
 
 ## 📈 Versions
 
-### Version 1.7 (Actuelle)
+### Version 1.8 (Actuelle)
+- ✅ **Intégration DPE** complète avec API ADEME
+- ✅ **Gestion des compléments d'adresse** spécifiques au logement
+- ✅ **Système de favoris DPE** intégré
+- ✅ **Création automatique de leads** depuis les DPE
 - ✅ **Interface de gestion des leads** unifiée
 - ✅ **5 actions essentielles** pour les leads
 - ✅ **Système de statuts** avancé
@@ -212,6 +241,10 @@ Le plugin utilise des styles CSS personnalisés pour :
 - ✅ Styles CSS harmonisés
 
 ### Fonctionnalités ajoutées
+- **Intégration DPE** : Recherche et gestion des diagnostics énergétiques
+- **Compléments d'adresse** : Gestion spécifique des compléments de logement
+- **Favoris DPE** : Système de sauvegarde des DPE intéressants
+- **Leads automatiques** : Création de prospects depuis les DPE favoris
 - Gestion complète des leads
 - Actions rapides et intuitives
 - Système de notes et rappels

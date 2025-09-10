@@ -13,6 +13,9 @@ my-istymo/
 │   ├── sci-favoris.php          # Template de la page des favoris
 │   ├── sci-campaigns.php        # Template de la page des campagnes
 │   ├── sci-logs.php             # Template de la page des logs
+│   ├── dpe-panel-simple.php     # Template du panneau DPE simplifié
+│   ├── dpe-favoris.php          # Template de la page des favoris DPE
+│   ├── unified-leads-admin.php  # Template de l'interface de gestion des leads
 │   └── admin-notifications.php  # Template des notifications admin
 ├── includes/
 │   └── template-loader.php      # Système de chargement des templates
@@ -78,7 +81,31 @@ Récupère le contenu d'un template comme string (sans l'afficher).
 - `$log_content` : contenu des logs (si disponible)
 - `$log_stats` : statistiques du fichier de log (taille, date de modification)
 
-### 5. `admin-notifications.php`
+### 5. `dpe-panel-simple.php`
+**Fonction :** Panneau de recherche DPE simplifié
+
+**Variables attendues :**
+- `$dpe_data` : array des données DPE à afficher
+- `$search_results` : array des résultats de recherche DPE
+- `$favoris_dpe` : array des DPE favoris de l'utilisateur
+
+### 6. `dpe-favoris.php`
+**Fonction :** Page des favoris DPE
+
+**Variables attendues :**
+- `$favoris_dpe` : array des DPE favoris de l'utilisateur
+- `$dpe_stats` : statistiques des DPE favoris
+
+### 7. `unified-leads-admin.php`
+**Fonction :** Interface de gestion des leads unifiés
+
+**Variables attendues :**
+- `$leads` : array des leads à afficher
+- `$lead_actions` : array des actions disponibles
+- `$lead_statuses` : array des statuts possibles
+- `$filters` : array des filtres appliqués
+
+### 8. `admin-notifications.php`
 **Fonction :** Notifications d'administration
 
 **Variables attendues :**

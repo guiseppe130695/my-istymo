@@ -2,7 +2,7 @@
 
 ## 🎯 Vue d'ensemble
 
-Ce dossier contient tous les outils nécessaires pour tester la **Phase 3: Fonctionnalités Avancées** du système unifié de gestion des leads.
+Ce dossier contient tous les outils nécessaires pour tester la **Phase 3: Fonctionnalités Avancées** du système unifié de gestion des leads, incluant les nouvelles fonctionnalités DPE (Diagnostic de Performance Énergétique).
 
 ---
 
@@ -78,6 +78,14 @@ Ce dossier contient tous les outils nécessaires pour tester la **Phase 3: Fonct
 - Export avec filtres
 - Statistiques et métriques
 
+### ✅ Fonctionnalités DPE
+- Recherche DPE via l'API ADEME
+- Affichage des informations énergétiques
+- Gestion des compléments d'adresse spécifiques au logement
+- Système de favoris DPE
+- Création automatique de leads depuis les DPE
+- Intégration avec le système de leads unifié
+
 ---
 
 ## 🔍 Points de Validation Clés
@@ -107,6 +115,12 @@ Ce dossier contient tous les outils nécessaires pour tester la **Phase 3: Fonct
 - Export CSV → Téléchargement du fichier
 - Export avec filtres → Données filtrées uniquement
 
+### 6. **Fonctionnalités DPE**
+- Recherche DPE → Affichage des résultats énergétiques
+- Compléments d'adresse → Affichage uniquement des compléments de logement
+- Favoris DPE → Ajout/suppression fonctionnels
+- Création de leads → Leads automatiquement créés depuis les DPE favoris
+
 ---
 
 ## 🚨 Dépannage Rapide
@@ -134,6 +148,18 @@ Ce dossier contient tous les outils nécessaires pour tester la **Phase 3: Fonct
 1. Vérifiez les permissions d'écriture
 2. Vérifiez l'espace disque disponible
 3. Testez avec un autre navigateur
+
+### Problème : Recherche DPE ne fonctionne pas
+**Solution** :
+1. Vérifiez la configuration de l'API ADEME
+2. Contrôlez les logs d'erreur API
+3. Vérifiez la connectivité internet
+
+### Problème : Compléments d'adresse ne s'affichent pas
+**Solution** :
+1. Vérifiez que les données DPE contiennent `complement_adresse_logement`
+2. Contrôlez la logique d'affichage dans les templates
+3. Vérifiez les logs JavaScript dans la console
 
 ---
 
@@ -167,6 +193,10 @@ Ce dossier contient tous les outils nécessaires pour tester la **Phase 3: Fonct
 - [ ] Export fonctionne
 - [ ] Interface responsive
 - [ ] Gestion d'erreurs appropriée
+- [ ] Recherche DPE fonctionne
+- [ ] Compléments d'adresse s'affichent correctement
+- [ ] Favoris DPE fonctionnent
+- [ ] Création automatique de leads depuis DPE
 
 ### Résultat Final
 Si tous les points sont validés :
