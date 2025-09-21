@@ -28,6 +28,13 @@ function unified_leads_admin_page($context = array()) {
     
     // Récupérer les filtres
     $filters = array();
+    
+    // Appliquer les filtres par défaut du shortcode si disponibles
+    if (!empty($context['default_filters'])) {
+        $filters = array_merge($filters, $context['default_filters']);
+    }
+    
+    // Récupérer les filtres depuis l'URL (priorité sur les filtres par défaut)
     if (!empty($_GET['lead_type'])) $filters['lead_type'] = sanitize_text_field($_GET['lead_type']);
     if (!empty($_GET['status'])) $filters['status'] = sanitize_text_field($_GET['status']);
     if (!empty($_GET['priorite'])) $filters['priorite'] = sanitize_text_field($_GET['priorite']);
@@ -77,8 +84,11 @@ function unified_leads_admin_page($context = array()) {
                         <div class="my-istymo-filter-group">
                             <select name="lead_type" class="my-istymo-filter-select">
                             <option value="">Tous les types</option>
-                            <option value="sci" <?php selected($_GET['lead_type'] ?? '', 'sci'); ?>>SCI</option>
-                            <option value="dpe" <?php selected($_GET['lead_type'] ?? '', 'dpe'); ?>>DPE</option>
+                            <?php 
+                            $current_lead_type = $_GET['lead_type'] ?? $filters['lead_type'] ?? '';
+                            ?>
+                            <option value="sci" <?php selected($current_lead_type, 'sci'); ?>>SCI</option>
+                            <option value="dpe" <?php selected($current_lead_type, 'dpe'); ?>>DPE</option>
                         </select>
                     </div>
                     
@@ -86,7 +96,22 @@ function unified_leads_admin_page($context = array()) {
                         <div class="my-istymo-filter-group">
                             <select name="status" class="my-istymo-filter-select">
                             <option value="">Tous les statuts</option>
-                            <?php echo $status_options; ?>
+                            <?php 
+                            $current_status = $_GET['status'] ?? $filters['status'] ?? '';
+                            // Générer les options de statut avec la valeur sélectionnée
+                            $status_options_array = array(
+                                'nouveau' => 'Nouveau',
+                                'en_cours' => 'En cours',
+                                'qualifie' => 'Qualifié',
+                                'proposition' => 'Proposition',
+                                'negociation' => 'Négociation',
+                                'gagne' => 'Gagné',
+                                'perdu' => 'Perdu'
+                            );
+                            foreach ($status_options_array as $value => $label) {
+                                echo '<option value="' . esc_attr($value) . '"' . selected($current_status, $value, false) . '>' . esc_html($label) . '</option>';
+                            }
+                            ?>
                         </select>
                     </div>
                     
@@ -94,7 +119,18 @@ function unified_leads_admin_page($context = array()) {
                         <div class="my-istymo-filter-group">
                             <select name="priorite" class="my-istymo-filter-select">
                             <option value="">Toutes les priorités</option>
-                            <?php echo $priority_options; ?>
+                            <?php 
+                            $current_priorite = $_GET['priorite'] ?? $filters['priorite'] ?? '';
+                            // Générer les options de priorité avec la valeur sélectionnée
+                            $priority_options_array = array(
+                                'basse' => 'Basse',
+                                'normale' => 'Normale',
+                                'haute' => 'Haute'
+                            );
+                            foreach ($priority_options_array as $value => $label) {
+                                echo '<option value="' . esc_attr($value) . '"' . selected($current_priorite, $value, false) . '>' . esc_html($label) . '</option>';
+                            }
+                            ?>
                         </select>
                     </div>
                     
@@ -103,10 +139,16 @@ function unified_leads_admin_page($context = array()) {
                             <button type="submit" class="my-istymo-btn my-istymo-btn-primary">
                                 <span class="dashicons dashicons-filter"></span> Filtrer
                             </button>
-                            <?php if (!empty($_GET['lead_type']) || !empty($_GET['status']) || !empty($_GET['priorite']) || !empty($_GET['date_from']) || !empty($_GET['date_to'])): ?>
+                            <?php if (!empty($_GET['lead_type']) || !empty($_GET['status']) || !empty($_GET['priorite']) || !empty($_GET['date_from']) || !empty($_GET['date_to']) || !empty($filters['lead_type']) || !empty($filters['status']) || !empty($filters['priorite'])): ?>
+                            <?php if ($context['is_shortcode']): ?>
+                            <a href="<?php echo remove_query_arg(array('lead_type', 'status', 'priorite', 'date_from', 'date_to', 'paged')); ?>" class="my-istymo-filter-reset-btn">
+                                <span class="dashicons dashicons-dismiss"></span> Réinitialiser
+                            </a>
+                            <?php else: ?>
                             <a href="?page=unified-leads" class="my-istymo-filter-reset-btn">
                                 <span class="dashicons dashicons-dismiss"></span> Réinitialiser
                             </a>
+                            <?php endif; ?>
                             <?php endif; ?>
                         </div>
                     </form>

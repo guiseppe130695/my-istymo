@@ -1916,14 +1916,58 @@ function my_istymo_leads_shortcode($atts) {
     return $content;
 }
 
-// Enregistrer le shortcode
+// Shortcode pour l'interface d'administration des leads unifiés
+function unified_leads_admin_shortcode($atts) {
+    // Démarrer la capture de sortie
+    ob_start();
+    
+    // Attributs par défaut
+    $atts = shortcode_atts(array(
+        'title' => 'Gestion des Leads',
+        'show_filters' => 'true',
+        'show_actions' => 'true',
+        'per_page' => '20',
+        'lead_type' => '', // 'sci' ou 'dpe' pour filtrer par type
+        'status' => '', // statut spécifique
+        'priorite' => '' // priorité spécifique
+    ), $atts);
+    
+    // Convertir les attributs string en booléens
+    $show_filters = $atts['show_filters'] === 'true';
+    $show_actions = $atts['show_actions'] === 'true';
+    
+    // Créer le contexte pour le template
+    $context = array(
+        'title' => $atts['title'],
+        'show_filters' => $show_filters,
+        'show_actions' => $show_actions,
+        'per_page' => intval($atts['per_page']),
+        'is_shortcode' => true,
+        'shortcode_id' => uniqid('unified_leads_'),
+        'default_filters' => array(
+            'lead_type' => $atts['lead_type'],
+            'status' => $atts['status'],
+            'priorite' => $atts['priorite']
+        )
+    );
+    
+    // Inclure le template existant
+    unified_leads_admin_page($context);
+    
+    $content = ob_get_clean();
+    
+    return $content;
+}
+
+// Enregistrer les shortcodes
 add_shortcode('my_istymo_leads', 'my_istymo_leads_shortcode');
+add_shortcode('unified_leads_admin', 'unified_leads_admin_shortcode');
 
 // Hook pour charger les styles sur toutes les pages où le shortcode est utilisé
 function my_istymo_enqueue_shortcode_styles() {
     global $post;
     
-    if (is_a($post, 'WP_Post') && has_shortcode($post->post_content, 'my_istymo_leads')) {
+    if (is_a($post, 'WP_Post') && (has_shortcode($post->post_content, 'my_istymo_leads') || has_shortcode($post->post_content, 'unified_leads_admin'))) {
         // Charger les styles de manière globale
         wp_enqueue_style('unified-leads-css', plugin_dir_url(__FILE__) . 'assets/css/unified-leads.css', array(), '1.0.0');
         wp_enqueue_style('lead-edit-modal-css', plugin_dir_url(__FILE__) . 'assets/css/lead-edit-modal.css', array(), '1.0.0');
