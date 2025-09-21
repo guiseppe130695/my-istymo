@@ -117,27 +117,7 @@
     font-size: 14px;
 }
 
-.form-field select,
-.form-field input[type="text"],
-.form-field input[type="email"],
-.form-field input[type="number"] {
-    width: 100%;
-    padding: 10px 12px;
-    border: 2px solid #e1e5e9;
-    border-radius: 6px;
-    font-size: 14px;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    background-color: #fff;
-}
-
-.form-field select:focus,
-.form-field input[type="text"]:focus,
-.form-field input[type="email"]:focus,
-.form-field input[type="number"]:focus {
-    outline: none;
-    border-color: #0073aa;
-    box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
-}
+/* Styles des champs de formulaire déplacés vers theme-protection.css */
 
 /* Messages d'état */
 .alert {

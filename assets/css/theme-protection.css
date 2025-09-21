@@ -541,3 +541,53 @@ section.my-istymo .favorite-btn:hover {
     color: #ffd700 !important;
     background: #f0f0f0 !important;
 }
+
+/* ========================================
+   STYLES DES FORMULAIRES
+   ======================================== */
+
+/* Champs de formulaire - Protection contre les thèmes */
+body .my-istymo .form-field select,
+div.my-istymo .form-field select,
+section.my-istymo .form-field select,
+body .my-istymo .form-field input[type="text"],
+div.my-istymo .form-field input[type="text"],
+section.my-istymo .form-field input[type="text"],
+body .my-istymo .form-field input[type="email"],
+div.my-istymo .form-field input[type="email"],
+section.my-istymo .form-field input[type="email"],
+body .my-istymo .form-field input[type="number"],
+div.my-istymo .form-field input[type="number"],
+section.my-istymo .form-field input[type="number"] {
+    width: 100% !important;
+    padding: 10px 12px !important;
+    border: 1px solid #e1e5e9 !important;
+    border-radius: 6px !important;
+    font-size: 14px !important;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease !important;
+    background-color: #fff !important;
+    box-shadow: none !important;
+    box-sizing: border-box !important;
+    outline: none !important;
+    margin: 0 !important;
+    font-family: inherit !important;
+    line-height: 1.4 !important;
+}
+
+/* Focus des champs de formulaire */
+body .my-istymo .form-field select:focus,
+div.my-istymo .form-field select:focus,
+section.my-istymo .form-field select:focus,
+body .my-istymo .form-field input[type="text"]:focus,
+div.my-istymo .form-field input[type="text"]:focus,
+section.my-istymo .form-field input[type="text"]:focus,
+body .my-istymo .form-field input[type="email"]:focus,
+div.my-istymo .form-field input[type="email"]:focus,
+section.my-istymo .form-field input[type="email"]:focus,
+body .my-istymo .form-field input[type="number"]:focus,
+div.my-istymo .form-field input[type="number"]:focus,
+section.my-istymo .form-field input[type="number"]:focus {
+    outline: none !important;
+    border-color: #0073aa !important;
+    box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1) !important;
+}
