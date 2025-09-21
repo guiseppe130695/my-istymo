@@ -83,7 +83,8 @@ section.my-istymo .data-table {
     position: relative !important;
     z-index: 1 !important;
     display: table !important;
-    table-layout: auto !important;
+    table-layout: fixed !important;
+    min-width: 970px !important;
 }
 
 /* En-têtes de tableau */
@@ -355,6 +356,154 @@ body .my-istymo th i.fas.fa-certificate,
 div.my-istymo th i.fas.fa-certificate,
 section.my-istymo th i.fas.fa-certificate {
     margin-left: -12px !important;
+}
+
+/* Largeurs fixes pour les colonnes du tableau DPE */
+body .my-istymo .data-table th:nth-child(1),
+div.my-istymo .data-table th:nth-child(1),
+section.my-istymo .data-table th:nth-child(1) {
+    width: 60px !important;
+    min-width: 60px !important;
+    max-width: 60px !important;
+}
+
+body .my-istymo .data-table th:nth-child(2),
+div.my-istymo .data-table th:nth-child(2),
+section.my-istymo .data-table th:nth-child(2) {
+    width: 100px !important;
+    min-width: 100px !important;
+    max-width: 100px !important;
+}
+
+body .my-istymo .data-table th:nth-child(3),
+div.my-istymo .data-table th:nth-child(3),
+section.my-istymo .data-table th:nth-child(3) {
+    width: 80px !important;
+    min-width: 80px !important;
+    max-width: 80px !important;
+}
+
+body .my-istymo .data-table th:nth-child(4),
+div.my-istymo .data-table th:nth-child(4),
+section.my-istymo .data-table th:nth-child(4) {
+    width: 200px !important;
+    min-width: 200px !important;
+    max-width: 200px !important;
+}
+
+body .my-istymo .data-table th:nth-child(5),
+div.my-istymo .data-table th:nth-child(5),
+section.my-istymo .data-table th:nth-child(5) {
+    width: 120px !important;
+    min-width: 120px !important;
+    max-width: 120px !important;
+}
+
+body .my-istymo .data-table th:nth-child(6),
+div.my-istymo .data-table th:nth-child(6),
+section.my-istymo .data-table th:nth-child(6) {
+    width: 80px !important;
+    min-width: 80px !important;
+    max-width: 80px !important;
+}
+
+body .my-istymo .data-table th:nth-child(7),
+div.my-istymo .data-table th:nth-child(7),
+section.my-istymo .data-table th:nth-child(7) {
+    width: 60px !important;
+    min-width: 60px !important;
+    max-width: 60px !important;
+}
+
+body .my-istymo .data-table th:nth-child(8),
+div.my-istymo .data-table th:nth-child(8),
+section.my-istymo .data-table th:nth-child(8) {
+    width: 150px !important;
+    min-width: 150px !important;
+    max-width: 150px !important;
+}
+
+body .my-istymo .data-table th:nth-child(9),
+div.my-istymo .data-table th:nth-child(9),
+section.my-istymo .data-table th:nth-child(9) {
+    width: 120px !important;
+    min-width: 120px !important;
+    max-width: 120px !important;
+}
+
+/* Largeurs fixes pour les cellules du tableau DPE */
+body .my-istymo .data-table td:nth-child(1),
+div.my-istymo .data-table td:nth-child(1),
+section.my-istymo .data-table td:nth-child(1) {
+    width: 60px !important;
+    min-width: 60px !important;
+    max-width: 60px !important;
+}
+
+body .my-istymo .data-table td:nth-child(2),
+div.my-istymo .data-table td:nth-child(2),
+section.my-istymo .data-table td:nth-child(2) {
+    width: 100px !important;
+    min-width: 100px !important;
+    max-width: 100px !important;
+}
+
+body .my-istymo .data-table td:nth-child(3),
+div.my-istymo .data-table td:nth-child(3),
+section.my-istymo .data-table td:nth-child(3) {
+    width: 80px !important;
+    min-width: 80px !important;
+    max-width: 80px !important;
+}
+
+body .my-istymo .data-table td:nth-child(4),
+div.my-istymo .data-table td:nth-child(4),
+section.my-istymo .data-table td:nth-child(4) {
+    width: 200px !important;
+    min-width: 200px !important;
+    max-width: 200px !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+}
+
+body .my-istymo .data-table td:nth-child(5),
+div.my-istymo .data-table td:nth-child(5),
+section.my-istymo .data-table td:nth-child(5) {
+    width: 120px !important;
+    min-width: 120px !important;
+    max-width: 120px !important;
+}
+
+body .my-istymo .data-table td:nth-child(6),
+div.my-istymo .data-table td:nth-child(6),
+section.my-istymo .data-table td:nth-child(6) {
+    width: 80px !important;
+    min-width: 80px !important;
+    max-width: 80px !important;
+}
+
+body .my-istymo .data-table td:nth-child(7),
+div.my-istymo .data-table td:nth-child(7),
+section.my-istymo .data-table td:nth-child(7) {
+    width: 60px !important;
+    min-width: 60px !important;
+    max-width: 60px !important;
+}
+
+body .my-istymo .data-table td:nth-child(8),
+div.my-istymo .data-table td:nth-child(8),
+section.my-istymo .data-table td:nth-child(8) {
+    width: 150px !important;
+    min-width: 150px !important;
+    max-width: 150px !important;
+}
+
+body .my-istymo .data-table td:nth-child(9),
+div.my-istymo .data-table td:nth-child(9),
+section.my-istymo .data-table td:nth-child(9) {
+    width: 120px !important;
+    min-width: 120px !important;
+    max-width: 120px !important;
 }
 
 /* Correction des boutons favoris */
