@@ -1801,11 +1801,35 @@ function my_istymo_ajax_get_workflow_step_info() {
 
 // --- AFFICHAGE DU PANNEAU DPE ---
 function dpe_afficher_panel() {
-    // ✅ NOUVEAU : Charger le CSS DPE pour l'admin
+    // Charger Font Awesome
+    wp_enqueue_style(
+        'font-awesome',
+        'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+        array(),
+        '6.4.0'
+    );
+    
+    // Charger le CSS de protection contre les thèmes en premier
+    wp_enqueue_style(
+        'theme-protection-style',
+        plugin_dir_url(__FILE__) . 'assets/css/theme-protection.css',
+        array('font-awesome'),
+        '1.0.0'
+    );
+    
+    // Charger le CSS des composants génériques
+    wp_enqueue_style(
+        'components-style',
+        plugin_dir_url(__FILE__) . 'assets/css/components.css',
+        array('theme-protection-style'),
+        '1.0.0'
+    );
+    
+    // Charger le CSS DPE pour l'admin
     wp_enqueue_style(
         'dpe-admin-style',
         plugin_dir_url(__FILE__) . 'assets/css/dpe-style.css',
-        array(),
+        array('components-style'),
         '1.0.2'
     );
     
@@ -1827,11 +1851,35 @@ function dpe_afficher_panel() {
 
 // --- PAGE POUR AFFICHER LES FAVORIS DPE ---
 function dpe_favoris_page() {
-    // ✅ NOUVEAU : Charger le CSS DPE pour l'admin
+    // Charger Font Awesome
+    wp_enqueue_style(
+        'font-awesome',
+        'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+        array(),
+        '6.4.0'
+    );
+    
+    // Charger le CSS de protection contre les thèmes en premier
+    wp_enqueue_style(
+        'theme-protection-style',
+        plugin_dir_url(__FILE__) . 'assets/css/theme-protection.css',
+        array('font-awesome'),
+        '1.0.0'
+    );
+    
+    // Charger le CSS des composants génériques
+    wp_enqueue_style(
+        'components-style',
+        plugin_dir_url(__FILE__) . 'assets/css/components.css',
+        array('theme-protection-style'),
+        '1.0.0'
+    );
+    
+    // Charger le CSS DPE pour l'admin
     wp_enqueue_style(
         'dpe-admin-style',
         plugin_dir_url(__FILE__) . 'assets/css/dpe-style.css',
-        array(),
+        array('components-style'),
         '1.0.2'
     );
     

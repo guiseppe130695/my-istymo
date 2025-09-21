@@ -1,6 +1,72 @@
 /* ========================================
-   COMPOSANTS GÉNÉRIQUES RÉUTILISABLES
+   COMPOSANTS GÉNÉRIQUES RÉUTILISABLES - MY ISTYMO
    ======================================== */
+
+/* Protection contre les thèmes - Préfixe my-istymo */
+.my-istymo {
+    /* Variables CSS pour la cohérence */
+    --primary-color: #0073aa;
+    --secondary-color: #005177;
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --info-color: #17a2b8;
+    
+    /* Couleurs de fond */
+    --success-bg: #d4edda;
+    --warning-bg: #fff3cd;
+    --danger-bg: #f8d7da;
+    --info-bg: #d1ecf1;
+    
+    /* Couleurs de bordure */
+    --success-border: #28a745;
+    --warning-border: #ffc107;
+    --danger-border: #dc3545;
+    --info-border: #17a2b8;
+    
+    /* Couleurs neutres */
+    --light-bg: #f8f9fa;
+    --light-border: #e9ecef;
+    --dark-text: #333;
+    --muted-text: #666;
+    --white: #ffffff;
+    
+    /* Espacements */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 12px;
+    --spacing-lg: 15px;
+    --spacing-xl: 20px;
+    --spacing-xxl: 30px;
+    
+    /* Bordures */
+    --border-radius: 8px;
+    --border-radius-sm: 6px;
+    --border-width: 1px;
+    
+    /* Typographie */
+    --font-size-sm: 12px;
+    --font-size-base: 14px;
+    --font-size-lg: 16px;
+    --line-height-base: 1.4;
+    --line-height-lg: 1.5;
+}
+
+/* ========================================
+   RÈGLES CSS PROTÉGÉES CONTRE LES THÈMES
+   ======================================== */
+
+/* Protection ciblée pour les éléments critiques */
+.my-istymo .frontend-wrapper,
+.my-istymo .search-form,
+.my-istymo .data-table,
+.my-istymo .btn,
+.my-istymo .alert {
+    /* Reset ciblé des styles de thème */
+    box-sizing: border-box !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
 
 /* Wrapper générique pour les interfaces */
 .frontend-wrapper {
@@ -13,6 +79,13 @@
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
+}
+
+/* Container générique */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-lg);
 }
 
 /* Formulaires génériques */
@@ -64,6 +137,75 @@
     outline: none;
     border-color: #0073aa;
     box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+}
+
+/* Messages d'état */
+.alert {
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    border-left: 4px solid;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    border-color: #28a745;
+    color: #155724;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    border-color: #ffc107;
+    color: #856404;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    border-color: #dc3545;
+    color: #721c24;
+}
+
+.alert-info {
+    background-color: #d1ecf1;
+    border-color: #17a2b8;
+    color: #0c5460;
+}
+
+/* Messages d'information génériques */
+.info-message {
+    background: #e7f3ff;
+    border: 1px solid #bee5eb;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    color: #004085;
+}
+
+.info-message p {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+/* Messages de statut par défaut */
+.default-status {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 15px;
+    color: #155724;
+}
+
+.default-status p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.default-status .status-note {
+    color: #0c5460;
+    font-style: italic;
 }
 
 /* Boutons génériques */
@@ -182,38 +324,6 @@
     100% { transform: rotate(360deg); }
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .form-row {
-        flex-direction: column;
-        gap: 12px;
-    }
-    
-    .form-field {
-        min-width: 100%;
-    }
-    
-    .btn {
-        width: 100%;
-        justify-content: center;
-    }
-}
-
-@media (max-width: 480px) {
-    .search-form {
-        padding: 15px;
-        margin-bottom: 15px;
-    }
-    
-    .form-field select,
-    .form-field input[type="text"],
-    .form-field input[type="email"],
-    .form-field input[type="number"] {
-        padding: 12px;
-        font-size: 16px; /* Évite le zoom sur iOS */
-    }
-}
-
 /* Icônes dans les boutons */
 .btn i {
     font-size: 14px;
@@ -227,38 +337,6 @@
     font-size: 16px;
 }
 
-/* Messages d'état */
-.alert {
-    padding: 12px 16px;
-    border-radius: 6px;
-    margin-bottom: 15px;
-    border-left: 4px solid;
-}
-
-.alert-success {
-    background-color: #d4edda;
-    border-color: #28a745;
-    color: #155724;
-}
-
-.alert-warning {
-    background-color: #fff3cd;
-    border-color: #ffc107;
-    color: #856404;
-}
-
-.alert-danger {
-    background-color: #f8d7da;
-    border-color: #dc3545;
-    color: #721c24;
-}
-
-.alert-info {
-    background-color: #d1ecf1;
-    border-color: #17a2b8;
-    color: #0c5460;
-}
-
 /* Spinner de chargement */
 .loading-spinner {
     display: inline-block;
@@ -270,34 +348,6 @@
     animation: spin 1s linear infinite;
     margin-right: 10px;
 }
-
-/* Utilitaires */
-.text-center { text-align: center; }
-.text-left { text-align: left; }
-.text-right { text-align: right; }
-
-.mb-0 { margin-bottom: 0; }
-.mb-1 { margin-bottom: 0.25rem; }
-.mb-2 { margin-bottom: 0.5rem; }
-.mb-3 { margin-bottom: 1rem; }
-.mb-4 { margin-bottom: 1.5rem; }
-.mb-5 { margin-bottom: 3rem; }
-
-.mt-0 { margin-top: 0; }
-.mt-1 { margin-top: 0.25rem; }
-.mt-2 { margin-top: 0.5rem; }
-.mt-3 { margin-top: 1rem; }
-.mt-4 { margin-top: 1.5rem; }
-.mt-5 { margin-top: 3rem; }
-
-.d-none { display: none; }
-.d-block { display: block; }
-.d-inline { display: inline; }
-.d-inline-block { display: inline-block; }
-.d-flex { display: flex; }
-
-.w-100 { width: 100%; }
-.h-100 { height: 100%; }
 
 /* ========================================
    TABLEAUX GÉNÉRIQUES
@@ -325,7 +375,6 @@ div#pagination-info {
     margin: 0;
     font-size: 16px;
 }
-
 
 /* Tableau de base */
 .data-table {
@@ -359,10 +408,6 @@ div#pagination-info {
     transition: background-color 0.2s ease;
 }
 
-.data-table td:first-child {
-    text-align: center;
-    width: 60px;
-}
 
 .data-table tbody tr:hover {
     background-color: #f8f9fa;
@@ -382,6 +427,11 @@ div#pagination-info {
     transition: color 0.3s ease;
     padding: 5px;
     border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
 }
 
 .favorite-btn.active,
@@ -392,6 +442,18 @@ div#pagination-info {
 .favorite-btn:hover {
     color: #ffd700;
     background: #f0f0f0;
+}
+
+/* Colonne favoris - centrage de l'icône */
+
+th i.fas.fa-heart {
+    margin-left: 10px;
+}
+
+.data-table th:first-child,
+.data-table td:first-child {
+    width: 60px;
+    min-width: 60px;
 }
 
 /* Labels d'étiquettes (DPE, etc.) */
@@ -431,43 +493,6 @@ div#pagination-info {
     width: 100%;
     max-width: 100%;
     overflow-x: auto;
-}
-
-/* Messages d'information génériques */
-.info-message {
-    background: #e7f3ff;
-    border: 1px solid #bee5eb;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 20px;
-    color: #004085;
-}
-
-.info-message p {
-    margin: 0;
-    font-size: 16px;
-    line-height: 1.5;
-}
-
-/* Messages de statut par défaut */
-.default-status {
-    background: #d4edda;
-    border: 1px solid #c3e6cb;
-    border-radius: 8px;
-    padding: 12px;
-    margin-bottom: 15px;
-    color: #155724;
-}
-
-.default-status p {
-    margin: 0;
-    font-size: 14px;
-    line-height: 1.4;
-}
-
-.default-status .status-note {
-    color: #0c5460;
-    font-style: italic;
 }
 
 /* Contrôles de pagination génériques */
@@ -535,49 +560,36 @@ div#pagination-info {
     text-align: center;
 }
 
-/* Responsive pour les tableaux */
-@media (max-width: 768px) {
-    .frontend-wrapper {
-        padding: 10px !important;
-    }
-    
-    .data-table {
-        font-size: 12px;
-    }
-    
-    .data-table th,
-    .data-table td {
-        padding: 8px 4px;
-    }
-    
-    .favorite-btn {
-        font-size: 16px;
-    }
-    
-    .search-results {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-}
+/* Utilitaires */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
 
-@media (max-width: 480px) {
-    .data-table {
-        font-size: 11px;
-    }
-    
-    .data-table th,
-    .data-table td {
-        padding: 6px 2px;
-    }
-    
-    .favorite-btn {
-        font-size: 14px;
-    }
-}
+.mb-0 { margin-bottom: 0; }
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 1rem; }
+.mb-4 { margin-bottom: 1.5rem; }
+.mb-5 { margin-bottom: 3rem; }
+
+.mt-0 { margin-top: 0; }
+.mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-3 { margin-top: 1rem; }
+.mt-4 { margin-top: 1.5rem; }
+.mt-5 { margin-top: 3rem; }
+
+.d-none { display: none; }
+.d-block { display: block; }
+.d-inline { display: inline; }
+.d-inline-block { display: inline-block; }
+.d-flex { display: flex; }
+
+.w-100 { width: 100%; }
+.h-100 { height: 100%; }
 
 /* Styles pour le bouton de recherche */
 button#search-btn {
-    /* margin-left: 25px !important; */
     background: linear-gradient(135deg, #0073aa 0%, #005a87 100%) !important;
     color: white !important;
     border: none !important;
@@ -615,4 +627,71 @@ button#search-btn:disabled {
     cursor: not-allowed !important;
     transform: none !important;
     color: #666 !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .form-row {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .form-field {
+        min-width: 100%;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .frontend-wrapper {
+        padding: 10px !important;
+    }
+    
+    .data-table {
+        font-size: 12px;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 8px 4px;
+    }
+    
+    .favorite-btn {
+        font-size: 16px;
+    }
+    
+    .search-results {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+@media (max-width: 480px) {
+    .search-form {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .form-field select,
+    .form-field input[type="text"],
+    .form-field input[type="email"],
+    .form-field input[type="number"] {
+        padding: 12px;
+        font-size: 16px; /* Évite le zoom sur iOS */
+    }
+    
+    .data-table {
+        font-size: 11px;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 6px 2px;
+    }
+    
+    .favorite-btn {
+        font-size: 14px;
+    }
 }

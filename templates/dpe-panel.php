@@ -9,22 +9,23 @@
  */
 ?>
 
-<div class="dpe-frontend-wrapper">
-    <h1>DPE – Recherche de Diagnostics</h1>
+<div class="my-istymo">
+    <div class="frontend-wrapper">
+    <h1><i class="fas fa-search"></i> DPE – Recherche de Diagnostics</h1>
 
     <!-- Information pour les utilisateurs -->
-    <div class="dpe-info" style="background: #e7f3ff; border: 1px solid #bee5eb; border-radius: 8px; padding: 15px; margin-bottom: 20px; color: #004085;">
-        <p style="margin: 0; font-size: 16px; line-height: 1.5;">
-            Recherchez les diagnostics de performance énergétique (DPE) par code postal. Consultez les étiquettes énergétiques et les informations détaillées.
+    <div class="info-message">
+        <p>
+            <i class="fas fa-info-circle"></i> Recherchez les diagnostics de performance énergétique (DPE) par code postal. Consultez les étiquettes énergétiques et les informations détaillées.
         </p>
     </div>
     
     <!-- Affichage du code postal par défaut -->
     <?php if (!empty($codesPostauxArray)): ?>
-    <div class="dpe-default-postal" style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 12px; margin-bottom: 15px; color: #155724;">
-        <p style="margin: 0; font-size: 14px; line-height: 1.4;">
-            <strong>Codes postaux disponibles :</strong> <?php echo esc_html(implode(', ', $codesPostauxArray)); ?>
-            <span style="color: #0c5460; font-style: italic;">(le premier sera sélectionné automatiquement)</span>
+    <div class="default-status">
+        <p>
+            <i class="fas fa-map-marker-alt"></i> <strong>Codes postaux disponibles :</strong> <?php echo esc_html(implode(', ', $codesPostauxArray)); ?>
+            <span class="status-note">(le premier sera sélectionné automatiquement)</span>
         </p>
     </div>
     <?php endif; ?>
@@ -33,15 +34,15 @@
     <?php
     // Vérifier si la configuration API est complète
     if (!$config_manager->is_configured()) {
-        echo '<div class="dpe-error"><strong>⚠️ Configuration manquante :</strong> Veuillez configurer vos tokens API dans l\'administration.</div>';
+        echo '<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> <strong>Configuration manquante :</strong> Veuillez configurer vos tokens API dans l\'administration.</div>';
     }
     ?>
 
     <!-- ✅ FORMULAIRE DE RECHERCHE AJAX -->
-    <form id="dpe-search-form" class="dpe-form">
-        <div class="form-group-left">
-            <div class="form-group">
-                <label for="codePostal">Sélectionnez votre code postal :</label>
+    <form id="dpe-search-form" class="search-form">
+        <div class="form-row">
+            <div class="form-field">
+                <label for="codePostal"><i class="fas fa-map-marker-alt"></i> Sélectionnez votre code postal :</label>
                 <select name="codePostal" id="codePostal" required>
                     <option value="">— Choisir un code postal —</option>
                     <?php foreach ($codesPostauxArray as $index => $value): ?>
@@ -51,56 +52,56 @@
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="form-group">
-                <label for="buildingType">Type de bâtiment :</label>
+            <div class="form-field">
+                <label for="buildingType"><i class="fas fa-building"></i> Type de bâtiment :</label>
                 <select name="buildingType" id="buildingType">
                     <option value="">— Tous les types —</option>
-                    <option value="Maison">Maison</option>
-                    <option value="Appartement">Appartement</option>
-                    <option value="Immeuble">Immeuble</option>
+                    <option value="Maison"><i class="fas fa-home"></i> Maison</option>
+                    <option value="Appartement"><i class="fas fa-building"></i> Appartement</option>
+                    <option value="Immeuble"><i class="fas fa-city"></i> Immeuble</option>
                 </select>
             </div>
-            <button type="submit" id="search-btn" class="dpe-button">
-                Rechercher les DPE
+            <button type="submit" id="search-btn" class="btn btn-primary">
+                <i class="fas fa-search"></i> Rechercher les DPE
             </button>
         </div>
     </form>
 
     <!-- ✅ ZONE DE CHARGEMENT -->
-    <div id="search-loading" style="display: none;">
+    <div id="search-loading" class="d-none">
         <div class="loading-spinner"></div>
-        <span>Recherche en cours...</span>
+        <span><i class="fas fa-spinner fa-spin"></i> Recherche en cours...</span>
     </div>
 
     <!-- ✅ AFFICHAGE DE L'URL DE LA REQUÊTE -->
-    <div id="api-url-display" style="display: none; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; margin: 15px 0; font-family: monospace; font-size: 12px; word-break: break-all;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <strong>URL de la requête API :</strong>
-            <button type="button" onclick="document.getElementById('api-url-display').style.display='none'" style="background: #dc3545; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 10px; cursor: pointer;">Masquer</button>
+    <div id="api-url-display" class="alert alert-info d-none">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <strong><i class="fas fa-link"></i> URL de la requête API :</strong>
+            <button type="button" onclick="document.getElementById('api-url-display').classList.add('d-none')" class="btn btn-danger btn-sm"><i class="fas fa-times"></i> Masquer</button>
         </div>
-        <span id="current-api-url" style="color: #0073aa;"></span>
+        <span id="current-api-url" style="font-family: monospace; word-break: break-all; font-size: 12px;"></span>
     </div>
 
     <!-- ✅ ZONE DES RÉSULTATS - STRUCTURE STABLE -->
-    <div id="search-results" style="display: none;">
+    <div id="search-results" class="search-results d-none">
         <div id="results-header">
-            <h2 id="results-title">Résultats de recherche</h2>
-            <div id="pagination-info" style="display: none;"></div>
+            <h2 id="results-title"><i class="fas fa-list"></i> Résultats de recherche</h2>
+            <div id="pagination-info" class="d-none"></div>
         </div>
         
         <!-- ✅ TABLEAU DES RÉSULTATS - STRUCTURE STABLE -->
-        <table class="dpe-table" id="results-table">
+        <table class="data-table" id="results-table">
             <thead>
                 <tr>
-                    <th>Favoris</th>
-                    <th>Type bâtiment</th>
-                    <th>Date DPE</th>
-                    <th>Adresse</th>
-                    <th>Commune</th>
-                    <th>Surface</th>
-                    <th>Étiquette DPE</th>
-                                                <th>Complément adresse</th>
-                    <th>Géolocalisation</th>
+                    <th><i class="fas fa-heart" title="Favoris - Enregistrez les DPE pour les traiter dans la gestion des leads"></i></th>
+                    <th><i class="fas fa-building"></i> Type bâtiment</th>
+                    <th><i class="fas fa-calendar"></i> Date DPE</th>
+                    <th><i class="fas fa-map-marker-alt"></i> Adresse</th>
+                    <th><i class="fas fa-city"></i> Commune</th>
+                    <th><i class="fas fa-expand-arrows-alt"></i> Surface</th>
+                    <th><i class="fas fa-certificate"></i> Étiquette DPE</th>
+                    <th><i class="fas fa-plus"></i> Complément adresse</th>
+                    <th><i class="fas fa-map"></i> Géolocalisation</th>
                 </tr>
             </thead>
             <tbody id="results-tbody">
@@ -110,25 +111,26 @@
     </div>
     
     <!-- ✅ CONTRÔLES DE PAGINATION - HORS DE LA ZONE DES RÉSULTATS -->
-    <div id="pagination-controls" style="display: none; margin-top: 20px; text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
-        <div class="pagination-main" style="display: flex; align-items: center; justify-content: center; gap: 15px;">
-            <button id="prev-page" disabled style="padding: 10px 20px; font-size: 14px; font-weight: 500; border: none; border-radius: 0; background: #fff; color: #333; cursor: pointer; transition: all 0.2s ease; box-shadow: none;">Page précédente</button>
-            <span id="page-info" style="background: #0073aa; color: white; padding: 8px 15px; border-radius: 4px; font-size: 14px; font-weight: 500;">1/1</span>
-            <button id="next-page" disabled style="padding: 10px 20px; font-size: 14px; font-weight: 500; border: none; border-radius: 0; background: #fff; color: #333; cursor: pointer; transition: all 0.2s ease; box-shadow: none;">Page suivante</button>
+    <div id="pagination-controls" class="pagination-controls d-none">
+        <div class="pagination-main">
+            <button id="prev-page" class="pagination-btn" disabled><i class="fas fa-chevron-left"></i> Page précédente</button>
+            <span id="page-info" class="page-info">1/1</span>
+            <button id="next-page" class="pagination-btn" disabled>Page suivante <i class="fas fa-chevron-right"></i></button>
         </div>
     </div>
     
     <!-- ✅ CACHE DES DONNÉES - ÉVITE LES RECHARGEMENTS -->
-    <div id="data-cache" style="display: none;">
+    <div id="data-cache" class="d-none">
         <span id="cached-title"></span>
         <span id="cached-page"></span>
         <span id="cached-total"></span>
     </div>
 
     <!-- ✅ ZONE D'ERREUR -->
-    <div id="search-error" style="display: none;" class="dpe-error">
-        <p id="error-message"></p>
+    <div id="search-error" class="alert alert-danger d-none">
+        <p id="error-message"><i class="fas fa-exclamation-circle"></i> <span id="error-text"></span></p>
     </div>
+</div>
 </div>
 
 
@@ -218,7 +220,7 @@ function displayResults(data) {
             var favCell = document.createElement('td');
             var favBtn = document.createElement('button');
             favBtn.className = 'favorite-btn';
-            favBtn.innerHTML = '☆';
+            favBtn.innerHTML = '<i class="far fa-heart"></i>';
             favBtn.setAttribute('data-numero-dpe', result.numero_dpe || '');
             favBtn.setAttribute('data-type-batiment', result.type_batiment || '');
             favBtn.setAttribute('data-adresse', result.adresse_ban || result.adresse_brut || '');
@@ -228,7 +230,7 @@ function displayResults(data) {
             favBtn.setAttribute('data-etiquette-dpe', result.etiquette_dpe || '');
             favBtn.setAttribute('data-etiquette-ges', result.etiquette_ges || '');
             favBtn.setAttribute('data-date-dpe', result.date_etablissement_dpe || result.date_reception_dpe || '');
-            favBtn.title = 'Ajouter aux favoris';
+            favBtn.title = 'Ajouter aux favoris - Enregistrez ce DPE pour le traiter dans la gestion des leads';
             favCell.appendChild(favBtn);
             row.appendChild(favCell);
 
@@ -250,7 +252,7 @@ function displayResults(data) {
             // Étiquette DPE
             var dpeCell = document.createElement('td');
             var dpeLabel = document.createElement('span');
-            dpeLabel.className = 'dpe-label ' + (result.etiquette_dpe || '');
+            dpeLabel.className = 'label ' + (result.etiquette_dpe || '');
             dpeLabel.textContent = result.etiquette_dpe || 'Non spécifié';
             dpeCell.appendChild(dpeLabel);
             row.appendChild(dpeCell);
@@ -270,11 +272,11 @@ function displayResults(data) {
                 geoLink.href = 'https://www.google.com/maps/place/' + encodeURIComponent(result.adresse_ban.trim());
                 geoLink.target = '_blank';
                 geoLink.rel = 'noopener noreferrer';
-                geoLink.innerHTML = 'Localiser';
+                geoLink.innerHTML = '<i class="fas fa-map-marker-alt"></i> Localiser';
                 geoLink.title = 'Localiser sur Google Maps';
                 geoCell.appendChild(geoLink);
             } else {
-                geoCell.textContent = 'Non disponible';
+                geoCell.innerHTML = '<i class="fas fa-ban"></i> Non disponible';
             }
             row.appendChild(geoCell);
 
@@ -353,13 +355,13 @@ function updatePaginationInfo() {
     
     var paginationInfo = document.getElementById('pagination-info');
     paginationInfo.textContent = totalResults + ' résultat(s) trouvé(s)';
-    paginationInfo.style.display = 'block';
+    paginationInfo.classList.remove('d-none');
 }
 
 // Fonction pour afficher les contrôles de pagination
 function showPaginationControls() {
     var controls = document.getElementById('pagination-controls');
-    controls.style.display = 'block';
+    controls.classList.remove('d-none');
     
     var prevBtn = document.getElementById('prev-page');
     var nextBtn = document.getElementById('next-page');
@@ -374,7 +376,7 @@ function showPaginationControls() {
 // Fonction pour masquer les contrôles de pagination
 function hidePaginationControls() {
     var controls = document.getElementById('pagination-controls');
-    controls.style.display = 'none';
+    controls.classList.add('d-none');
 }
 
 // Fonction pour effectuer une recherche
@@ -414,29 +416,29 @@ function performSearch() {
 
 // Fonctions d'affichage/masquage
 function showLoading() {
-    document.getElementById('search-loading').style.display = 'block';
+    document.getElementById('search-loading').classList.remove('d-none');
 }
 
 function hideLoading() {
-    document.getElementById('search-loading').style.display = 'none';
+    document.getElementById('search-loading').classList.add('d-none');
 }
 
 function showResults() {
-    document.getElementById('search-results').style.display = 'block';
+    document.getElementById('search-results').classList.remove('d-none');
 }
 
 function hideResults() {
-    document.getElementById('search-results').style.display = 'none';
+    document.getElementById('search-results').classList.add('d-none');
 }
 
 function showError(message) {
     var errorDiv = document.getElementById('search-error');
-    document.getElementById('error-message').textContent = message;
-    errorDiv.style.display = 'block';
+    document.getElementById('error-text').textContent = message;
+    errorDiv.classList.remove('d-none');
 }
 
 function hideError() {
-    document.getElementById('search-error').style.display = 'none';
+    document.getElementById('search-error').classList.add('d-none');
 }
 
 // Gestionnaires d'événements
