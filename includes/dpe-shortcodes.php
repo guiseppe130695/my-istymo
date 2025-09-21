@@ -200,7 +200,7 @@ class DPE_Shortcodes {
             <form id="dpe-search-form" class="search-form">
                 <div class="form-row">
                     <div class="form-field">
-                        <label for="codePostal"><i class="fas fa-map-marker-alt"></i> Sélectionnez votre code postal :</label>
+                        <label for="codePostal"><i class="fas fa-map-marker-alt"></i> Votre code postal :</label>
                         <select name="codePostal" id="codePostal" required>
                             <option value="">— Choisir un code postal —</option>
                             <?php foreach ($codesPostauxArray as $index => $value): ?>
@@ -247,7 +247,7 @@ class DPE_Shortcodes {
             <!-- ✅ ZONE DES RÉSULTATS - STRUCTURE STABLE -->
             <div id="search-results" class="search-results d-none">
                 <div id="results-header">
-                    <h2 id="results-title"><i class="fas fa-list"></i> Résultats de recherche</h2>
+                    <h2 id="results-title"> Résultats de recherche</h2>
                     <div id="pagination-info" class="d-none"></div>
                 </div>
                 
@@ -256,12 +256,12 @@ class DPE_Shortcodes {
                     <thead>
                         <tr>
                             <th><i class="fas fa-heart" title="Favoris - Enregistrez les DPE pour les traiter dans la gestion des leads"></i></th>
-                            <th><i class="fas fa-building"></i> Type bâtiment</th>
-                            <th><i class="fas fa-calendar"></i> Date DPE</th>
+                            <th><i class="fas fa-building"></i> Type</th>
+                            <th><i class="fas fa-calendar"></i> Date</th>
                             <th><i class="fas fa-map-marker-alt"></i> Adresse</th>
                             <th><i class="fas fa-city"></i> Ville</th>
                             <th><i class="fas fa-expand-arrows-alt"></i> Surface</th>
-                            <th><i class="fas fa-certificate"></i> Étiquette DPE</th>
+                            <th><i class="fas fa-certificate" title="Étiquette DPE - Classe énergétique du bien (A à G)"></i></th>
                             <th><i class="fas fa-plus"></i> Complément adresse</th>
                             <th><i class="fas fa-map"></i> Géolocalisation</th>
                         </tr>

@@ -342,6 +342,21 @@ section.my-istymo th i.fas.fa-heart {
     margin-left: 10px !important;
 }
 
+/* Colonne étiquette DPE - centrage de l'icône */
+body .my-istymo .data-table th:nth-child(7),
+div.my-istymo .data-table th:nth-child(7),
+section.my-istymo .data-table th:nth-child(7) {
+    text-align: center !important;
+    width: 60px !important;
+    min-width: 60px !important;
+}
+
+body .my-istymo th i.fas.fa-certificate,
+div.my-istymo th i.fas.fa-certificate,
+section.my-istymo th i.fas.fa-certificate {
+    margin-left: -12px !important;
+}
+
 /* Correction des boutons favoris */
 body .my-istymo .favorite-btn,
 div.my-istymo .favorite-btn,
