@@ -81,7 +81,7 @@ Le module DPE (Diagnostic de Performance Énergétique) permet de rechercher, co
 - Templates avec JavaScript intégré pour l'affichage des résultats
 
 #### Templates
-- `templates/dpe-panel-simple.php` : Panneau de recherche simplifié
+- `templates/dpe-panel.php` : Panneau de recherche
 - `templates/dpe-favoris.php` : Page des favoris DPE
 - `templates/unified-leads-admin.php` : Affichage des leads DPE
 

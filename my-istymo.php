@@ -1822,7 +1822,7 @@ function dpe_afficher_panel() {
     ];
 
     // ✅ CHANGÉ : Utiliser le template simplifié qui fonctionne
-    sci_load_template('dpe-panel-simple', $context);
+    sci_load_template('dpe-panel', $context);
 }
 
 // --- PAGE POUR AFFICHER LES FAVORIS DPE ---

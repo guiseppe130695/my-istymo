@@ -43,7 +43,7 @@ wp-content/my-istymo/
 │   └── dpe-shortcodes.php (29KB) # Shortcodes DPE
 ├── 📁 templates/                 # Templates d'affichage
 │   ├── sci-panel.php (9.7KB)     # Panneau principal SCI
-│   ├── dpe-panel-simple.php (19KB) # Panneau DPE
+│   ├── dpe-panel.php (19KB)        # Panneau DPE
 │   ├── sci-campaigns.php (13KB)  # Gestion campagnes
 │   ├── sci-favoris.php (4.2KB)   # Liste favoris SCI
 │   ├── dpe-favoris.php (10KB)    # Liste favoris DPE
@@ -388,7 +388,7 @@ $campaign_manager     // Gestionnaire de campagnes
 
 ### 🏠 Templates DPE
 
-#### `dpe-panel-simple.php` (19KB, 488 lignes)
+#### `dpe-panel.php` (19KB, 488 lignes)
 **Description** : Panneau principal de recherche DPE
 
 **Fonctionnalités** :

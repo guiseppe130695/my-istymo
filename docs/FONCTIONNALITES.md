@@ -305,7 +305,7 @@ wp-content/my-istymo/
 
 #### Structure
 - `sci-panel.php` : Panneau principal SCI
-- `dpe-panel-simple.php` : Panneau DPE
+- `dpe-panel.php` : Panneau DPE
 - `sci-campaigns.php` : Gestion des campagnes
 - `sci-favoris.php` : Liste des favoris
 - `admin-notifications.php` : Notifications admin

@@ -13,7 +13,7 @@ my-istymo/
 │   ├── sci-favoris.php          # Template de la page des favoris
 │   ├── sci-campaigns.php        # Template de la page des campagnes
 │   ├── sci-logs.php             # Template de la page des logs
-│   ├── dpe-panel-simple.php     # Template du panneau DPE simplifié
+│   ├── dpe-panel.php            # Template du panneau DPE
 │   ├── dpe-favoris.php          # Template de la page des favoris DPE
 │   ├── unified-leads-admin.php  # Template de l'interface de gestion des leads
 │   └── admin-notifications.php  # Template des notifications admin
@@ -81,7 +81,7 @@ Récupère le contenu d'un template comme string (sans l'afficher).
 - `$log_content` : contenu des logs (si disponible)
 - `$log_stats` : statistiques du fichier de log (taille, date de modification)
 
-### 5. `dpe-panel-simple.php`
+### 5. `dpe-panel.php`
 **Fonction :** Panneau de recherche DPE simplifié
 
 **Variables attendues :**
