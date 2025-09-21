@@ -42,7 +42,7 @@
                         <td><?php echo esc_html($fav['ville']); ?></td>
                         <td><?php echo esc_html($fav['code_postal']); ?></td>
                         <td>
-                            <!-- ✅ LIEN GOOGLE MAPS -->
+                            <!-- LIEN GOOGLE MAPS -->
                             <?php 
                             $maps_query = urlencode($fav['adresse'] . ' ' . $fav['code_postal'] . ' ' . $fav['ville']);
                             $maps_url = 'https://www.google.com/maps/place/' . $maps_query;
@@ -57,7 +57,7 @@
                         <td>
                             <button data-siren="<?php echo esc_attr($fav['siren']); ?>"
                                     style="background: none!important; border: none!important; outline: none!important; box-shadow: none !important; color: #dc3545; font-size: 18px; cursor: pointer; padding: 0;">
-                                ❌
+                                Supprimer
                             </button>
                         </td>
                     </tr>

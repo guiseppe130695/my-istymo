@@ -171,6 +171,30 @@ class SCI_Shortcodes {
             '1.0.1'
         );
 
+        // Composants génériques réutilisables
+        wp_enqueue_style(
+            'components-style',
+            plugin_dir_url(dirname(__FILE__)) . 'assets/css/components.css',
+            array(),
+            '1.0.0'
+        );
+
+        // NOUVEAU : CSS spécifique pour les styles SCI
+        wp_enqueue_style(
+            'sci-style-specific',
+            plugin_dir_url(dirname(__FILE__)) . 'assets/css/sci-style.css',
+            array(),
+            '1.0.0'
+        );
+
+        // Font Awesome pour les icônes
+        wp_enqueue_style(
+            'font-awesome',
+            'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+            array(),
+            '6.4.0'
+        );
+
         if (!wp_script_is('sci-frontend-favoris', 'enqueued')) {
             wp_enqueue_script(
                 'sci-frontend-favoris',
@@ -273,12 +297,12 @@ class SCI_Shortcodes {
         
         ob_start();
         ?>
-        <div class="sci-frontend-wrapper">
+        <div class="frontend-wrapper">
             <h1><?php echo esc_html($atts['title']); ?></h1>
             
             <!-- Information pour les utilisateurs -->
-            <div class="sci-info" style="background: #e7f3ff!important; border: 1px solid #bee5eb!important; border-radius: 8px!important; padding: 15px!important; margin-bottom: 20px!important; color: #004085!important;">
-                <p style="margin: 0; font-size: 14px; line-height: 1.5;">
+            <div class="info-message">
+                <p>
                     <strong>Prospectez directement les SCI</strong><br><br>
                     Vous avez également la possibilité de proposer vos services en envoyant un courrier.
                 </p>
@@ -290,7 +314,7 @@ class SCI_Shortcodes {
                 // Vérifier si la configuration API est complète
                 $config_manager = sci_config_manager();
                 if (!$config_manager->is_configured()) {
-                    echo '<div class="sci-error"><strong>⚠️ Configuration manquante :</strong> Veuillez configurer vos tokens API dans l\'administration.</div>';
+                    echo '<div class="sci-error"><strong>Configuration manquante :</strong> Veuillez configurer vos tokens API dans l\'administration.</div>';
                 }
 
                 // Vérifier la configuration INPI
@@ -299,13 +323,13 @@ class SCI_Shortcodes {
                 $password = get_option('sci_inpi_password');
                 
                 if (!$username || !$password) {
-                    echo '<div class="sci-warning"><strong>⚠️ Identifiants INPI manquants :</strong> Veuillez configurer vos identifiants INPI pour la génération automatique de tokens.</div>';
+                    echo '<div class="sci-warning"><strong>Identifiants INPI manquants :</strong> Veuillez configurer vos identifiants INPI pour la génération automatique de tokens.</div>';
                 }
 
                 // Vérifier WooCommerce
                 $woocommerce_integration = sci_woocommerce();
                 if (!$woocommerce_integration->is_woocommerce_ready()) {
-                    echo '<div class="sci-warning"><strong>⚠️ WooCommerce requis :</strong> Veuillez installer et configurer WooCommerce pour utiliser le système de paiement.</div>';
+                    echo '<div class="sci-warning"><strong>WooCommerce requis :</strong> Veuillez installer et configurer WooCommerce pour utiliser le système de paiement.</div>';
                 }
 
                 // Vérifier la configuration des données expéditeur
@@ -315,7 +339,7 @@ class SCI_Shortcodes {
                 
                 if (!empty($validation_errors)) {
                     echo '<div class="sci-warning">';
-                    echo '<strong>⚠️ Configuration expéditeur incomplète :</strong>';
+                    echo '<strong>Configuration expéditeur incomplète :</strong>';
                     echo '<ul>';
                     foreach ($validation_errors as $error) {
                         echo '<li>' . esc_html($error) . '</li>';
@@ -326,51 +350,51 @@ class SCI_Shortcodes {
                 ?>
             <?php endif; ?>
 
-            <!-- ✅ FORMULAIRE DE RECHERCHE AJAX -->
-            <form id="sci-search-form" class="sci-form">
-                <div class="form-group-left">
-                    <div class="form-group">
-                        <label style="font-size:12px!important;" for="codePostal">Sélectionnez votre code postal :</label>
-                        <select style="font-size:12px!important;" name="codePostal" id="codePostal" required>
-                            <option style="font-size:12px!important;" value="">— Choisir un code postal —</option>
-                                                    <?php foreach ($codesPostauxArray as $index => $value): ?>
-                            <option value="<?php echo esc_attr($value); ?>" <?php echo ($index === 0) ? 'selected' : ''; ?>>
-                                <?php echo esc_html($value); ?>
-                            </option>
-                        <?php endforeach; ?>
+            <!-- FORMULAIRE DE RECHERCHE AJAX -->
+            <form id="sci-search-form" class="search-form">
+                <div class="form-row">
+                    <div class="form-field">
+                        <label for="codePostal">Sélectionnez votre code postal :</label>
+                        <select name="codePostal" id="codePostal" required>
+                            <option value="">— Choisir un code postal —</option>
+                            <?php foreach ($codesPostauxArray as $index => $value): ?>
+                                <option value="<?php echo esc_attr($value); ?>" <?php echo ($index === 0) ? 'selected' : ''; ?>>
+                                    <?php echo esc_html($value); ?>
+                                </option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
-                    <button type="submit" id="search-btn" class="sci-button" style="background: #000064 !important;">
-                        🔍 Rechercher les SCI
+                    <button type="submit" id="search-btn" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Rechercher les SCI
                     </button>
                 </div>
 
-                
-                <button id="send-letters-btn" type="button" class="sci-button secondary" disabled
-                        data-tooltip="Prospectez directement les SCI. Vous avez également la possibilité de proposer vos services en envoyant un courrier"
-                        style="font-size:12px!important; background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important; color: white !important; border: none !important;">
-                    📬 Créez une campagne d'envoi de courriers (<span id="selected-count">0</span>)
-                </button>
+                <div class="form-row mt-3">
+                    <button id="send-letters-btn" type="button" class="btn btn-success" disabled
+                            data-tooltip="Prospectez directement les SCI. Vous avez également la possibilité de proposer vos services en envoyant un courrier">
+                        <i class="fas fa-envelope"></i> Créez une campagne d'envoi de courriers (<span id="selected-count">0</span>)
+                    </button>
+                </div>
                 
 
                 
 
             </form>
 
-            <!-- ✅ ZONE DE CHARGEMENT -->
+            <!-- ZONE DE CHARGEMENT -->
             <div id="search-loading" style="display: none;">
                 <div class="loading-spinner"></div>
                 <span>Recherche en cours...</span>
             </div>
 
-                        <!-- ✅ ZONE DES RÉSULTATS - STRUCTURE STABLE -->
+                        <!-- ZONE DES RÉSULTATS - STRUCTURE STABLE -->
             <div id="search-results" style="display: none;">
                 <div id="results-header">
-                    <h2 id="results-title">📋 Résultats de recherche</h2>
+                    <h2 id="results-title">Résultats de recherche</h2>
                     <div id="pagination-info" style="display: none;"></div>
                 </div>
 
-                <!-- ✅ TABLEAU DES RÉSULTATS - STRUCTURE STABLE -->
+                <!-- TABLEAU DES RÉSULTATS - STRUCTURE STABLE -->
                 <table class="sci-table" id="results-table">
                     <thead>
                         <tr>
@@ -391,41 +415,41 @@ class SCI_Shortcodes {
                 </table>
             </div>
             
-            <!-- ✅ CONTRÔLES DE PAGINATION - HORS DE LA ZONE DES RÉSULTATS -->
+            <!-- CONTRÔLES DE PAGINATION - HORS DE LA ZONE DES RÉSULTATS -->
             <div id="pagination-controls" style="display: none; margin-top: 20px; text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
                 <div class="pagination-main" style="display: flex; align-items: center; justify-content: center; gap: 15px;">
-                    <button id="prev-page" disabled style="padding: 10px 20px; font-size: 10px!important; font-weight: 500; border-radius: 5px; background: #fff!important; color: #000064!important; cursor: pointer; transition: all 0.2s ease;">⬅️ Page précédente</button>
+                    <button id="prev-page" disabled style="padding: 10px 20px; font-size: 10px!important; font-weight: 500; border-radius: 5px; background: #fff!important; color: #000064!important; cursor: pointer; transition: all 0.2s ease;"><i class="fas fa-chevron-left"></i> Page précédente</button>
                     <span id="page-info" style="background: #0073aa; color: white; padding: 8px 15px; border-radius: 4px; font-size: 14px; font-weight: 500;">1/1</span>
-                    <button id="next-page" disabled style="padding: 10px 20px; font-size: 10px!important; font-weight: 500; border-radius: 5px; background: #fff!important; color: #000064!important; cursor: pointer; transition: all 0.2s ease;">Page suivante ➡️</button>
+                    <button id="next-page" disabled style="padding: 10px 20px; font-size: 10px!important; font-weight: 500; border-radius: 5px; background: #fff!important; color: #000064!important; cursor: pointer; transition: all 0.2s ease;">Page suivante <i class="fas fa-chevron-right"></i></button>
                 </div>
             </div>
             
-            <!-- ✅ CACHE DES DONNÉES - ÉVITE LES RECHARGEMENTS -->
+            <!-- CACHE DES DONNÉES - ÉVITE LES RECHARGEMENTS -->
             <div id="data-cache" style="display: none;">
                 <span id="cached-title"></span>
                 <span id="cached-page"></span>
                 <span id="cached-total"></span>
             </div>
 
-            <!-- ✅ ZONE D'ERREUR -->
+            <!-- ZONE D'ERREUR -->
             <div id="search-error" style="display: none;" class="sci-error">
                 <p id="error-message"></p>
             </div>
         </div>
         
-        <!-- ✅ POPUP LETTRE -->
+        <!-- POPUP LETTRE -->
         <div id="letters-popup" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.6); z-index:10000; justify-content:center; align-items:center;">
             <div style="background:#fff; padding:25px; width:700px; max-width:95vw; max-height:95vh; overflow-y:auto; border-radius:12px;">
                 <!-- Étape 1 : Liste des SCI sélectionnées -->
                 <div class="step" id="step-1">
-                    <h2>📋 SCI sélectionnées</h2>
+                    <h2><i class="fas fa-list"></i> SCI sélectionnées</h2>
                     <p style="color: #666; margin-bottom: 20px;">Vérifiez votre sélection avant de continuer</p>
                     <ul id="selected-sci-list" style="max-height:350px; overflow-y:auto; border:1px solid #ddd; padding:15px; margin-bottom:25px; border-radius:6px; background-color: #f9f9f9; list-style: none;">
                         <!-- Les SCI sélectionnées seront ajoutées ici par JavaScript -->
                     </ul>
                     <div style="text-align: center;">
                         <button id="to-step-2" class="sci-button" style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important; color: white !important; border: none !important; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 16px;">
-                            ✍️ Rédiger votre courrier →
+                            <i class="fas fa-edit"></i> Rédiger votre courrier <i class="fas fa-arrow-right"></i>
                         </button>
                     </div>
                 </div>
@@ -437,7 +461,7 @@ class SCI_Shortcodes {
             </div>
         </div>
         
-        <!-- ✅ STYLES CSS POUR LA PAGINATION ET LE FORMULAIRE -->
+        <!-- STYLES CSS POUR LA PAGINATION ET LE FORMULAIRE -->
         <style>
         /* Styles pour la pagination */
         #pagination-controls button:hover:not(:disabled) {
@@ -502,7 +526,7 @@ class SCI_Shortcodes {
             align-self: flex-end;
         }
         
-        /* ✅ TAILLE DE POLICE 12PX POUR TOUS LES ÉLÉMENTS DU TABLEAU */
+        /* TAILLE DE POLICE 12PX POUR TOUS LES ÉLÉMENTS DU TABLEAU */
         .sci-table,
         .sci-table th,
         .sci-table td,
@@ -513,7 +537,7 @@ class SCI_Shortcodes {
             font-size: 12px !important;
         }
         
-        /* ✅ TAILLE DE POLICE 12PX POUR TOUS LES ÉLÉMENTS DU POPUP */
+        /* TAILLE DE POLICE 12PX POUR TOUS LES ÉLÉMENTS DU POPUP */
         #letters-popup,
         #letters-popup h2,
         #letters-popup h3,
@@ -762,7 +786,7 @@ class SCI_Shortcodes {
                     paginationControls.style.display = 'block';
                 }
                 elements.searchBtn.disabled = true;
-                elements.searchBtn.textContent = '🔄 Recherche...';
+                elements.searchBtn.textContent = 'Recherche en cours...';
                 const formData = new FormData();
                 formData.append('action', 'sci_inpi_search_ajax');
                 formData.append('code_postal', codePostal);
@@ -790,7 +814,7 @@ class SCI_Shortcodes {
                     cache.isSearching = false;
                     elements.searchLoading.style.display = 'none';
                     elements.searchBtn.disabled = false;
-                    elements.searchBtn.textContent = '🔍 Rechercher les SCI';
+                    elements.searchBtn.innerHTML = '<i class="fas fa-search"></i> Rechercher les SCI';
                     if (data.success) {
                         displayResults(data.data);
                     } else {
@@ -802,7 +826,7 @@ class SCI_Shortcodes {
                     cache.isSearching = false;
                     elements.searchLoading.style.display = 'none';
                     elements.searchBtn.disabled = false;
-                    elements.searchBtn.textContent = '🔍 Rechercher les SCI';
+                    elements.searchBtn.innerHTML = '<i class="fas fa-search"></i> Rechercher les SCI';
                     displayError('Erreur réseau lors de la recherche: ' + error.message);
                 });
             }
@@ -823,7 +847,7 @@ class SCI_Shortcodes {
                 const currentCodePostal = elements.codePostalSelect ? elements.codePostalSelect.value : '';
                 
                 // ✅ NOUVEAU : Mettre à jour le cache avec les nouvelles données
-                const newTitle = `📋 Résultats de recherche (${pagination.total_count} SCI trouvées)`;
+                const newTitle = `Résultats de recherche (${pagination.total_count} SCI trouvées)`;
                 const newPage = parseInt(pagination.current_page) || 1;
                 const newTotalPages = parseInt(pagination.total_pages) || 1;
                 
@@ -1105,7 +1129,7 @@ class SCI_Shortcodes {
         $this->force_enqueue_assets([]);
         
         $atts = shortcode_atts(array(
-            'title' => '⭐ Mes SCI Favoris',
+            'title' => 'Mes SCI Favoris',
             'show_empty_message' => 'true'
         ), $atts);
         
@@ -1139,7 +1163,7 @@ class SCI_Shortcodes {
         $this->force_enqueue_assets([]);
         
         $atts = shortcode_atts(array(
-            'title' => '📬 Mes Campagnes de Lettres',
+            'title' => 'Mes Campagnes de Lettres',
             'show_empty_message' => 'true'
         ), $atts);
         

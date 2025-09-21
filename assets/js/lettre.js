@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const lettersPopup = document.getElementById('letters-popup');
     const checkboxes = document.querySelectorAll('.send-letter-checkbox');
     
-    // ✅ AMÉLIORÉ : Vérifier que les éléments nécessaires existent
+    //  AMÉLIORÉ : Vérifier que les éléments nécessaires existent
     if (!sendLettersBtn || !selectedCountSpan) {
         return;
     }
@@ -273,7 +273,7 @@ Dans l’attente de votre retour, je vous remercie de l’attention portée à m
 
     function resetStep2Content() {
         step2.innerHTML = `
-            <h2>✍️ Contenu du courrier</h2>
+            <h2><i class="fas fa-edit"></i> Contenu du courrier</h2>
             <p style="color: #666; margin-bottom: 20px;">Rédigez le titre et le contenu de votre courrier</p>
             
             <label for="campaign-title"><strong>Titre de la campagne :</strong></label><br>
@@ -283,7 +283,7 @@ Dans l’attente de votre retour, je vous remercie de l’attention portée à m
             <textarea id="campaign-content" style="width:100%; height:200px; margin-bottom:20px; padding:10px; border:1px solid #ddd; border-radius:4px;" required placeholder="Rédigez votre message...">${defaultEmailContent}</textarea>
 
             <div style="background: #e7f3ff; padding: 20px; border-radius: 6px; margin-bottom: 25px;">
-                <h4 style="margin-top: 0; color: #0056b3;">💡 Conseils pour votre courrier :</h4>
+                <h4 style="margin-top: 0; color: #0056b3;"><i class="fas fa-lightbulb"></i> Conseils pour votre courrier :</h4>
                 <ul style="margin-bottom: 0; font-size: 14px; color: #495057;">
                     <li> Pour afficher le nom du destinataire sur le courrier, tapez l'index <code style="background:#f8f9fa; padding:2px 4px; border-radius:3px;">[NOM]</code></li>
                     <li>Soyez professionnel et courtois dans votre approche</li>
@@ -294,9 +294,9 @@ Dans l’attente de votre retour, je vous remercie de l’attention portée à m
 
             <div style="display: flex; justify-content: center; align-items: flex-start; gap: 15px;">
                 <button id="send-campaign" class="button button-primary button-large">
-                    📋 Voir le récapitulatif →
+                    <i class="fas fa-clipboard-list"></i> Voir le récapitulatif <i class="fas fa-arrow-right"></i>
                 </button>
-                <button id="back-to-step-1" class="button" style="background:#FFF!important;  color: #000064!important;">← Précédent</button>
+                <button id="back-to-step-1" class="button" style="background:#FFF!important;  color: #000064!important;"><i class="fas fa-arrow-left"></i> Précédent</button>
             </div>
         `;
         

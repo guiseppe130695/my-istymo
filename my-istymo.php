@@ -10,7 +10,7 @@ if (!defined('ABSPATH')) exit; // Sécurité : Empêche l'accès direct au fichi
 
 include plugin_dir_path(__FILE__) . 'popup-lettre.php';
 
-// ✅ NOUVEAU : Fonction utilitaire pour récupérer les codes postaux de l'utilisateur
+// NOUVEAU : Fonction utilitaire pour récupérer les codes postaux de l'utilisateur
 function sci_get_user_postal_codes($user_id = null) {
     if (!$user_id) {
         $current_user = wp_get_current_user();
@@ -40,7 +40,7 @@ function sci_get_user_postal_codes($user_id = null) {
     return $codesPostauxArray;
 }
 
-// ✅ NOUVEAU : Fonction de log universelle pour tout le plugin
+// NOUVEAU : Fonction de log universelle pour tout le plugin
 function my_istymo_log($message, $context = 'general') {
     $upload_dir = wp_upload_dir();
     $log_dir = $upload_dir['basedir'] . '/my-istymo-logs/';
@@ -59,7 +59,7 @@ function my_istymo_log($message, $context = 'general') {
     file_put_contents($log_file, $log_entry, FILE_APPEND | LOCK_EX);
 }
 
-// ✅ ALIAS pour compatibilité avec le code existant
+// ALIAS pour compatibilité avec le code existant
 if (!function_exists('lettre_laposte_log')) {
     function lettre_laposte_log($message) {
         my_istymo_log($message, 'laposte');
@@ -73,22 +73,22 @@ require_once plugin_dir_path(__FILE__) . 'includes/shortcodes.php';
 require_once plugin_dir_path(__FILE__) . 'includes/inpi-token-manager.php';
 require_once plugin_dir_path(__FILE__) . 'includes/template-loader.php';
 
-// ✅ NOUVEAU : Inclure les fichiers DPE
+// NOUVEAU : Inclure les fichiers DPE
 require_once plugin_dir_path(__FILE__) . 'includes/dpe-config-manager.php';
 require_once plugin_dir_path(__FILE__) . 'includes/dpe-handler.php';
 require_once plugin_dir_path(__FILE__) . 'includes/dpe-shortcodes.php';
 
-// ✅ PHASE 1 : Système unifié de gestion des leads (AVANT les favoris)
+// PHASE 1 : Système unifié de gestion des leads (AVANT les favoris)
 require_once plugin_dir_path(__FILE__) . 'includes/unified-leads-manager.php';
 require_once plugin_dir_path(__FILE__) . 'includes/lead-status-manager.php';
 require_once plugin_dir_path(__FILE__) . 'includes/unified-leads-migration.php';
 require_once plugin_dir_path(__FILE__) . 'includes/unified-leads-test.php';
 
-// ✅ PHASE 3 : Système d'actions et workflow
+// PHASE 3 : Système d'actions et workflow
 require_once plugin_dir_path(__FILE__) . 'includes/lead-actions-manager.php';
 require_once plugin_dir_path(__FILE__) . 'includes/lead-workflow.php';
 
-// ✅ APRÈS le système unifié : Inclure les gestionnaires de favoris
+// APRÈS le système unifié : Inclure les gestionnaires de favoris
 require_once plugin_dir_path(__FILE__) . 'includes/favoris-handler.php';
 require_once plugin_dir_path(__FILE__) . 'includes/dpe-favoris-handler.php';
 
@@ -135,7 +135,7 @@ function sci_ajouter_menu() {
         'sci_logs_page'
     );
     
-    // ✅ NOUVEAU : Menu DPE
+    // NOUVEAU : Menu DPE
     add_menu_page(
         'DPE',
         'DPE',
@@ -155,7 +155,7 @@ function sci_ajouter_menu() {
         'dpe_favoris_page'
     );
     
-           // ✅ PHASE 2 : Menu principal pour le système unifié de gestion des leads
+           // PHASE 2 : Menu principal pour le système unifié de gestion des leads
        add_menu_page(
            'Gestion des Leads',
            'Leads',
@@ -166,7 +166,7 @@ function sci_ajouter_menu() {
            -3
        );
        
-       // ✅ PHASE 2 : Sous-menu pour la configuration
+       // PHASE 2 : Sous-menu pour la configuration
        add_submenu_page(
            'unified-leads',
            'Configuration',
@@ -176,7 +176,7 @@ function sci_ajouter_menu() {
            'unified_leads_config_page'
        );
        
-       // ✅ NOUVEAU : Menu Lead Vendeur
+       // NOUVEAU : Menu Lead Vendeur
        add_menu_page(
            'Lead Vendeur',
            'Lead Vendeur',
@@ -187,7 +187,7 @@ function sci_ajouter_menu() {
            -4
        );
        
-       // ✅ NOUVEAU : Menu Carte de Succession
+       // NOUVEAU : Menu Carte de Succession
        add_menu_page(
            'Carte de Succession',
            'Carte de Succession',
@@ -200,10 +200,10 @@ function sci_ajouter_menu() {
 }
 
 
-       // ✅ PHASE 1 : Inclure la page d'administration des leads unifiés
+       // PHASE 1 : Inclure la page d'administration des leads unifiés
        require_once plugin_dir_path(__FILE__) . 'templates/unified-leads-admin.php';
        
-       // ✅ NOUVEAU : Fonction pour la page Lead Vendeur
+       // NOUVEAU : Fonction pour la page Lead Vendeur
        function lead_vendeur_page() {
            // Vérifier si l'utilisateur est connecté
            if (!is_user_logged_in()) {
@@ -212,10 +212,10 @@ function sci_ajouter_menu() {
            }
            
            echo '<div class="wrap">';
-           echo '<h1>🏢 Lead Vendeur</h1>';
+           echo '<h1>Lead Vendeur</h1>';
            echo '<div class="my-istymo-container">';
            echo '<div class="my-istymo-card">';
-           echo '<h2>📋 Gestion des Leads Vendeur</h2>';
+           echo '<h2>Gestion des Leads Vendeur</h2>';
            echo '<p>Cette section sera dédiée à la gestion des leads vendeur.</p>';
            echo '<p><em>Contenu à développer...</em></p>';
            echo '</div>';
@@ -223,7 +223,7 @@ function sci_ajouter_menu() {
            echo '</div>';
        }
        
-       // ✅ NOUVEAU : Fonction pour la page Carte de Succession
+       // NOUVEAU : Fonction pour la page Carte de Succession
        function carte_succession_page() {
            // Vérifier si l'utilisateur est connecté
            if (!is_user_logged_in()) {
@@ -232,10 +232,10 @@ function sci_ajouter_menu() {
            }
            
            echo '<div class="wrap">';
-           echo '<h1>🗺️ Carte de Succession</h1>';
+           echo '<h1>Carte de Succession</h1>';
            echo '<div class="my-istymo-container">';
            echo '<div class="my-istymo-card">';
-           echo '<h2>📊 Cartographie des Successions</h2>';
+           echo '<h2>Cartographie des Successions</h2>';
            echo '<p>Cette section sera dédiée à la cartographie et à l\'analyse des successions immobilières.</p>';
            echo '<p><em>Contenu à développer...</em></p>';
            echo '</div>';
@@ -243,12 +243,12 @@ function sci_ajouter_menu() {
            echo '</div>';
        }
        
-       // ✅ PHASE 2 : Inclure la page de configuration des leads unifiés
+       // PHASE 2 : Inclure la page de configuration des leads unifiés
        require_once plugin_dir_path(__FILE__) . 'templates/unified-leads-config.php';
 
 // --- Affichage du panneau d'administration SCI ---
 function sci_afficher_panel() {
-    // ✅ MODIFIÉ : Utiliser la fonction utilitaire pour récupérer les codes postaux
+    // MODIFIÉ : Utiliser la fonction utilitaire pour récupérer les codes postaux
     $codesPostauxArray = sci_get_user_postal_codes();
 
     // Préparer le contexte pour les templates
@@ -267,7 +267,7 @@ function sci_afficher_panel() {
     sci_load_template('sci-panel', $context);
 }
 
-// ✅ NOUVEAU : AJAX Handler pour la recherche avec pagination
+// NOUVEAU : AJAX Handler pour la recherche avec pagination
 add_action('wp_ajax_sci_inpi_search_ajax', 'sci_inpi_search_ajax');
 add_action('wp_ajax_nopriv_sci_inpi_search_ajax', 'sci_inpi_search_ajax');
 
@@ -300,13 +300,13 @@ function sci_inpi_search_ajax() {
     $resultats = sci_fetch_inpi_data_with_pagination($code_postal, $page, $page_size);
     
     if (is_wp_error($resultats)) {
-        my_istymo_log("❌ Erreur recherche AJAX: " . $resultats->get_error_message(), 'inpi');
+        my_istymo_log("Erreur recherche AJAX: " . $resultats->get_error_message(), 'inpi');
         wp_send_json_error($resultats->get_error_message());
         return;
     }
     
     if (empty($resultats['data'])) {
-        my_istymo_log("⚠️ Aucun résultat trouvé", 'inpi');
+        my_istymo_log("Aucun résultat trouvé", 'inpi');
         wp_send_json_error('Aucun résultat trouvé pour ce code postal');
         return;
     }
@@ -314,7 +314,7 @@ function sci_inpi_search_ajax() {
     // Formater les résultats
     $formatted_results = sci_format_inpi_results($resultats['data']);
     
-    my_istymo_log("✅ Recherche AJAX réussie: " . count($formatted_results) . " résultats formatés", 'inpi');
+    my_istymo_log("Recherche AJAX réussie: " . count($formatted_results) . " résultats formatés", 'inpi');
     my_istymo_log("Pagination: " . json_encode($resultats['pagination']), 'inpi');
     
     wp_send_json_success([
@@ -323,7 +323,7 @@ function sci_inpi_search_ajax() {
     ]);
 }
 
-// ✅ MODIFIÉ : Appel API INPI avec pagination
+// MODIFIÉ : Appel API INPI avec pagination
 function sci_fetch_inpi_data_with_pagination($code_postal, $page = 1, $page_size = 50) {
     // Utiliser le gestionnaire de tokens INPI
     $inpi_token_manager = sci_inpi_token_manager();
@@ -337,7 +337,7 @@ function sci_fetch_inpi_data_with_pagination($code_postal, $page = 1, $page_size
     $config_manager = sci_config_manager();
     $api_url = $config_manager->get_inpi_api_url();
 
-    // ✅ URL avec paramètres de pagination
+    // URL avec paramètres de pagination
     $url = $api_url . '?' . http_build_query([
         'companyName' => 'SCI',
         'pageSize' => $page_size,
@@ -363,7 +363,7 @@ function sci_fetch_inpi_data_with_pagination($code_postal, $page = 1, $page_size
 
     // Vérifie s'il y a une erreur réseau
     if (is_wp_error($reponse)) {
-        my_istymo_log("❌ Erreur réseau INPI: " . $reponse->get_error_message(), 'inpi');
+        my_istymo_log("Erreur réseau INPI: " . $reponse->get_error_message(), 'inpi');
         return new WP_Error('requete_invalide', 'Erreur lors de la requête : ' . $reponse->get_error_message());
     }
 
@@ -375,15 +375,15 @@ function sci_fetch_inpi_data_with_pagination($code_postal, $page = 1, $page_size
     my_istymo_log("Code HTTP INPI: $code_http", 'inpi');
     my_istymo_log("Headers INPI: " . json_encode($headers->getAll()), 'inpi');
 
-    // ✅ NOUVEAU : Gestion automatique des erreurs d'authentification
+    // NOUVEAU : Gestion automatique des erreurs d'authentification
     if ($code_http === 401 || $code_http === 403) {
-        my_istymo_log("🔄 Erreur d'authentification INPI détectée, tentative de régénération du token...", 'inpi');
+        my_istymo_log("Erreur d'authentification INPI détectée, tentative de régénération du token...", 'inpi');
         
         // Tenter de régénérer le token
         $new_token = $inpi_token_manager->handle_auth_error();
         
         if ($new_token) {
-            my_istymo_log("✅ Nouveau token généré, nouvelle tentative de requête...", 'inpi');
+            my_istymo_log("Nouveau token généré, nouvelle tentative de requête...", 'inpi');
             
             // Refaire la requête avec le nouveau token
             $args['headers']['Authorization'] = 'Bearer ' . $new_token;
@@ -405,14 +405,14 @@ function sci_fetch_inpi_data_with_pagination($code_postal, $page = 1, $page_size
 
     // Si le code HTTP n'est toujours pas 200 OK, retourne une erreur
     if ($code_http !== 200) {
-        my_istymo_log("❌ Erreur API INPI finale: Code $code_http - $corps", 'inpi');
+        my_istymo_log("Erreur API INPI finale: Code $code_http - $corps", 'inpi');
         return new WP_Error('api_inpi', "Erreur de l'API INPI (code $code_http) : $corps");
     }
 
     // Décoder le JSON en tableau associatif PHP
     $donnees = json_decode($corps, true);
 
-    // ✅ EXTRAIRE LES INFORMATIONS DE PAGINATION DES HEADERS
+    // EXTRAIRE LES INFORMATIONS DE PAGINATION DES HEADERS
     $pagination_info = [
         'current_page' => intval($headers['pagination-page'] ?? $page),
         'page_size' => intval($headers['pagination-limit'] ?? $page_size),
@@ -420,7 +420,7 @@ function sci_fetch_inpi_data_with_pagination($code_postal, $page = 1, $page_size
         'total_pages' => intval($headers['pagination-max-page'] ?? 1)
     ];
 
-    my_istymo_log("✅ Requête INPI réussie", 'inpi');
+    my_istymo_log("Requête INPI réussie", 'inpi');
     my_istymo_log("Données: " . (is_array($donnees) ? count($donnees) : 0) . " résultats", 'inpi');
     my_istymo_log("Pagination: " . json_encode($pagination_info), 'inpi');
 
@@ -430,7 +430,7 @@ function sci_fetch_inpi_data_with_pagination($code_postal, $page = 1, $page_size
     ];
 }
 
-// ✅ FONCTION LEGACY POUR COMPATIBILITÉ (utilisée dans l'admin sans pagination)
+// FONCTION LEGACY POUR COMPATIBILITÉ (utilisée dans l'admin sans pagination)
 function sci_fetch_inpi_data($code_postal) {
     $result = sci_fetch_inpi_data_with_pagination($code_postal, 1, 100);
     
@@ -488,7 +488,7 @@ function sci_format_inpi_results(array $data): array {
 add_action('admin_enqueue_scripts', 'sci_enqueue_admin_scripts');
 
 function sci_enqueue_admin_scripts() {
-    // ✅ AMÉLIORÉ : Charger les scripts sur toutes les pages SCI
+    // AMÉLIORÉ : Charger les scripts sur toutes les pages SCI
     $current_screen = get_current_screen();
     $is_sci_page = false;
     
@@ -498,7 +498,7 @@ function sci_enqueue_admin_scripts() {
                       strpos($current_screen->id, 'toplevel_page_sci-panel') !== false;
     }
     
-    // ✅ NOUVEAU : Vérifier si on est sur une page DPE
+    // NOUVEAU : Vérifier si on est sur une page DPE
     $is_dpe_page = false;
     if ($current_screen) {
         $is_dpe_page = strpos($current_screen->id, 'dpe-') !== false || 
@@ -533,7 +533,7 @@ function sci_enqueue_admin_scripts() {
             true
         );
 
-        // ✅ NOUVEAU : Script principal pour la page admin SCI
+        // NOUVEAU : Script principal pour la page admin SCI
         wp_enqueue_script(
             'sci-admin-sci',
             plugin_dir_url(__FILE__) . 'assets/js/admin-sci.js',
@@ -542,7 +542,7 @@ function sci_enqueue_admin_scripts() {
             true
         );
 
-        // ✅ NOUVEAU : Script pour les favoris DPE
+        // NOUVEAU : Script pour les favoris DPE
         wp_enqueue_script(
             'dpe-favoris',
             plugin_dir_url(__FILE__) . 'assets/js/dpe-favoris.js',
@@ -553,7 +553,7 @@ function sci_enqueue_admin_scripts() {
 
 
 
-        // ✅ NOUVEAU : Script pour les fonctionnalités avancées (TEMPORAIREMENT DÉSACTIVÉ)
+        // NOUVEAU : Script pour les fonctionnalités avancées (TEMPORAIREMENT DÉSACTIVÉ)
         /*
         wp_enqueue_script(
             'sci-enhanced-features',
@@ -564,7 +564,7 @@ function sci_enqueue_admin_scripts() {
         );
         */
 
-        // ✅ NOUVEAU : Récupérer les SIRENs contactés pour l'admin
+        // NOUVEAU : Récupérer les SIRENs contactés pour l'admin
         $campaign_manager = sci_campaign_manager();
         $contacted_sirens = $campaign_manager->get_user_contacted_sirens();
 
@@ -572,7 +572,7 @@ function sci_enqueue_admin_scripts() {
         wp_localize_script('sci-favoris', 'sci_ajax', array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('sci_favoris_nonce'),
-            'contacted_sirens' => $contacted_sirens // ✅ NOUVEAU : Liste des SIRENs contactés
+            'contacted_sirens' => $contacted_sirens // NOUVEAU : Liste des SIRENs contactés
         ));
 
         // Localisation pour le paiement - UTILISE L'URL STOCKÉE
@@ -583,20 +583,20 @@ function sci_enqueue_admin_scripts() {
             'nonce' => wp_create_nonce('sci_campaign_nonce'),
             'unit_price' => $woocommerce_integration->get_unit_price(),
             'woocommerce_ready' => $woocommerce_integration->is_woocommerce_ready(),
-            'campaigns_url' => $config_manager->get_sci_campaigns_page_url() // ✅ MODIFIÉ : Utilise l'URL stockée
+            'campaigns_url' => $config_manager->get_sci_campaigns_page_url() // MODIFIÉ : Utilise l'URL stockée
         ));
 
         // Localisation pour lettre.js (ajaxurl)
         wp_localize_script('sci-lettre-js', 'ajaxurl', admin_url('admin-ajax.php'));
 
-        // ✅ NOUVEAU : Variables pour la recherche automatique
+        // NOUVEAU : Variables pour la recherche automatique
         // Récupérer les codes postaux de l'utilisateur connecté
         $codesPostauxArray = sci_get_user_postal_codes();
         
-        // ✅ CORRIGÉ : S'assurer que $contacted_sirens est un tableau
+        // CORRIGÉ : S'assurer que $contacted_sirens est un tableau
         $contacted_sirens_array = is_array($contacted_sirens) ? $contacted_sirens : [];
         
-        // ✅ MODIFIÉ : Passer les variables directement au script favoris
+        // MODIFIÉ : Passer les variables directement au script favoris
         wp_localize_script('sci-favoris', 'sciAutoSearch', array(
             'auto_search_enabled' => !empty($codesPostauxArray),
             'default_postal_code' => !empty($codesPostauxArray) ? $codesPostauxArray[0] : '',
@@ -604,14 +604,14 @@ function sci_enqueue_admin_scripts() {
             'nonce' => wp_create_nonce('sci_search_nonce')
         ));
 
-        // ✅ NOUVEAU : Localisation des variables pour le script admin-sci.js
+        // NOUVEAU : Localisation des variables pour le script admin-sci.js
         wp_localize_script('sci-admin-sci', 'sci_ajax', array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('sci_favoris_nonce'),
             'contacted_sirens' => $contacted_sirens_array
         ));
 
-        // ✅ NOUVEAU : Variables pour la recherche automatique pour admin-sci.js
+        // NOUVEAU : Variables pour la recherche automatique pour admin-sci.js
         wp_localize_script('sci-admin-sci', 'sciAutoSearch', array(
             'auto_search_enabled' => !empty($codesPostauxArray),
             'default_postal_code' => !empty($codesPostauxArray) ? $codesPostauxArray[0] : '',
@@ -619,7 +619,7 @@ function sci_enqueue_admin_scripts() {
             'nonce' => wp_create_nonce('sci_search_nonce')
         ));
 
-        // ✅ NOUVEAU : Variables pour les favoris DPE
+        // NOUVEAU : Variables pour les favoris DPE
         wp_localize_script('dpe-favoris', 'dpe_ajax', array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('dpe_favoris_nonce')
@@ -633,10 +633,34 @@ function sci_enqueue_admin_scripts() {
             plugin_dir_url(__FILE__) . 'assets/css/style.css'
         );
 
-        // ✅ NOUVEAU : CSS spécifique pour la page admin SCI
+        // NOUVEAU : CSS spécifique pour la page admin SCI
         wp_enqueue_style(
             'sci-admin-sci',
             plugin_dir_url(__FILE__) . 'assets/css/admin-sci.css'
+        );
+
+        // NOUVEAU : CSS spécifique pour les styles SCI
+        wp_enqueue_style(
+            'sci-style-specific',
+            plugin_dir_url(__FILE__) . 'assets/css/sci-style.css',
+            array(),
+            '1.0.0'
+        );
+
+        // Font Awesome pour les icônes
+        wp_enqueue_style(
+            'font-awesome',
+            'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+            array(),
+            '6.4.0'
+        );
+
+        // Composants génériques réutilisables
+        wp_enqueue_style(
+            'components-style',
+            plugin_dir_url(__FILE__) . 'assets/css/components.css',
+            array(),
+            '1.0.0'
         );
     }
 }
@@ -723,7 +747,7 @@ function sci_envoyer_lettre_laposte_ajax() {
     my_istymo_log("Réponse complète API: " . json_encode($response, JSON_PRETTY_PRINT), 'laposte');
 
     if ($response['success']) {
-        my_istymo_log("✅ SUCCÈS pour {$entry['denomination']} - UID: " . ($response['uid'] ?? 'N/A'), 'laposte');
+        my_istymo_log("SUCCÈS pour {$entry['denomination']} - UID: " . ($response['uid'] ?? 'N/A'), 'laposte');
         
         // Mettre à jour le statut dans la base de données
         if ($campaign_id > 0) {
@@ -750,7 +774,7 @@ function sci_envoyer_lettre_laposte_ajax() {
             $error_msg .= 'Erreur inconnue';
         }
 
-        my_istymo_log("❌ ERREUR pour {$entry['denomination']}: $error_msg", 'laposte');
+        my_istymo_log("ERREUR pour {$entry['denomination']}: $error_msg", 'laposte');
         my_istymo_log("Code HTTP: " . ($response['code'] ?? 'N/A'), 'laposte');
         my_istymo_log("Message détaillé: " . json_encode($response['message'] ?? [], JSON_PRETTY_PRINT), 'laposte');
         
@@ -799,7 +823,7 @@ function envoyer_lettre_via_api_la_poste_my_istymo($payload, $token) {
 
     // Gestion des erreurs WordPress
     if (is_wp_error($response)) {
-        my_istymo_log("❌ Erreur WordPress HTTP: " . $response->get_error_message(), 'laposte');
+        my_istymo_log("Erreur WordPress HTTP: " . $response->get_error_message(), 'laposte');
         return [
             'success' => false,
             'error'   => $response->get_error_message(),
@@ -822,14 +846,14 @@ function envoyer_lettre_via_api_la_poste_my_istymo($payload, $token) {
     my_istymo_log("Données JSON décodées: " . json_encode($data, JSON_PRETTY_PRINT), 'laposte');
 
     if ($code >= 200 && $code < 300) {
-        my_istymo_log("✅ Succès API (code $code)", 'laposte');
+        my_istymo_log("Succès API (code $code)", 'laposte');
         return [
             'success' => true,
             'data'    => $data,
-            'uid'     => $data['uid'] ?? null, // ✅ Extraction de l'UID
+            'uid'     => $data['uid'] ?? null, // Extraction de l'UID
         ];
     } else {
-        my_istymo_log("❌ Erreur API (code $code)", 'laposte');
+        my_istymo_log("Erreur API (code $code)", 'laposte');
         return [
             'success' => false,
             'code'    => $code,
@@ -886,7 +910,7 @@ function sci_logs_page() {
     $upload_dir = wp_upload_dir();
     $log_dir = $upload_dir['basedir'] . '/my-istymo-logs/';
     
-    // ✅ NOUVEAU : Récupérer tous les fichiers de logs disponibles
+    // NOUVEAU : Récupérer tous les fichiers de logs disponibles
     $log_files = [];
     if (file_exists($log_dir)) {
         $files = scandir($log_dir);
@@ -903,7 +927,7 @@ function sci_logs_page() {
         }
     }
     
-    // ✅ NOUVEAU : Sélectionner le fichier de log à afficher
+    // NOUVEAU : Sélectionner le fichier de log à afficher
     $selected_log = $_GET['log'] ?? 'laposte';
     $log_file = $log_files[$selected_log]['path'] ?? $log_dir . 'laposte-logs.txt';
     
@@ -937,7 +961,7 @@ function sci_logs_page() {
     // Charger le template des logs
     sci_load_template('sci-logs', $context);
     
-    // ✅ NOUVEAU : Gestion de l'effacement des logs avec sélection
+    // NOUVEAU : Gestion de l'effacement des logs avec sélection
     if (isset($_GET['clear']) && $_GET['clear'] == '1') {
         $log_to_clear = $_GET['log'] ?? 'laposte';
         $file_to_clear = $log_dir . $log_to_clear . '-logs.txt';
@@ -981,12 +1005,12 @@ function sci_generer_pdfs() {
     $campaign_id = $campaign_manager->create_campaign($data['title'], $data['content'], $data['entries']);
     
     if (is_wp_error($campaign_id)) {
-        my_istymo_log("❌ Erreur création campagne: " . $campaign_id->get_error_message(), 'pdf');
+        my_istymo_log("Erreur création campagne: " . $campaign_id->get_error_message(), 'pdf');
         wp_send_json_error("Erreur lors de la création de la campagne : " . $campaign_id->get_error_message());
         return;
     }
 
-    my_istymo_log("✅ Campagne créée avec ID: $campaign_id", 'pdf');
+    my_istymo_log("Campagne créée avec ID: $campaign_id", 'pdf');
 
     // Inclure TCPDF
     if (!class_exists('TCPDF')) {
@@ -1000,14 +1024,14 @@ function sci_generer_pdfs() {
     // Créer le dossier s'il n'existe pas
     if (!file_exists($pdf_dir)) {
         wp_mkdir_p($pdf_dir);
-        my_istymo_log("📁 Dossier créé: $pdf_dir", 'pdf');
+        my_istymo_log("Dossier créé: $pdf_dir", 'pdf');
     }
 
     $pdf_links = [];
 
     foreach ($data['entries'] as $index => $entry) {
         try {
-            my_istymo_log("📄 Génération PDF " . ($index + 1) . "/" . count($data['entries']) . " pour: " . ($entry['denomination'] ?? 'N/A'), 'pdf');
+            my_istymo_log("Génération PDF " . ($index + 1) . "/" . count($data['entries']) . " pour: " . ($entry['denomination'] ?? 'N/A'), 'pdf');
             
             $nom = $entry['dirigeant'] ?? 'Dirigeant';
             $texte = str_replace('[NOM]', $nom, $data['content']);
@@ -1050,23 +1074,23 @@ function sci_generer_pdfs() {
                     'path' => $filepath
                 ];
                 
-                my_istymo_log("✅ PDF généré avec succès : $filename pour {$entry['denomination']}", 'pdf');
+                my_istymo_log("PDF généré avec succès : $filename pour {$entry['denomination']}", 'pdf');
             } else {
-                my_istymo_log("❌ Erreur : PDF non créé pour {$entry['denomination']}", 'pdf');
+                my_istymo_log("Erreur : PDF non créé pour {$entry['denomination']}", 'pdf');
             }
 
         } catch (Exception $e) {
-            my_istymo_log("❌ Erreur lors de la génération PDF pour {$entry['denomination']}: " . $e->getMessage(), 'pdf');
+            my_istymo_log("Erreur lors de la génération PDF pour {$entry['denomination']}: " . $e->getMessage(), 'pdf');
         }
     }
 
     if (empty($pdf_links)) {
-        my_istymo_log("❌ Aucun PDF généré", 'pdf');
+        my_istymo_log("Aucun PDF généré", 'pdf');
         wp_send_json_error('Aucun PDF n\'a pu être généré');
         return;
     }
 
-    my_istymo_log("✅ Génération terminée : " . count($pdf_links) . " PDFs créés sur " . count($data['entries']) . " demandés", 'pdf');
+    my_istymo_log("Génération terminée : " . count($pdf_links) . " PDFs créés sur " . count($data['entries']) . " demandés", 'pdf');
 
     wp_send_json_success([
         'files' => $pdf_links,
@@ -1908,5 +1932,17 @@ require_once plugin_dir_path(__FILE__) . 'migrations/migration-remove-etiquette-
 if (is_admin()) {
     require_once plugin_dir_path(__FILE__) . 'admin/migration-admin.php';
 }
+
+// TEST: Shortcode de test simple pour vérifier que le système fonctionne
+function test_shortcode_simple() {
+    return '<div style="background: yellow; padding: 20px; border: 2px solid red; margin: 20px;"><h2>✅ TEST SIMPLE RÉUSSI</h2><p>Le système de shortcodes fonctionne !</p></div>';
+}
+add_shortcode('test_simple', 'test_shortcode_simple');
+
+// TEST: Shortcode DPE de test
+function test_dpe_shortcode() {
+    return '<div style="background: lightblue; padding: 20px; border: 2px solid blue; margin: 20px;"><h2>🔧 TEST DPE SHORTCODE</h2><p>Shortcode DPE de test fonctionne !</p><p>Utilisateur connecté: ' . (is_user_logged_in() ? 'OUI' : 'NON') . '</p></div>';
+}
+add_shortcode('test_dpe', 'test_dpe_shortcode');
 
 ?>

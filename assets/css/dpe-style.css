@@ -1,14 +1,6 @@
 /* Styles pour les shortcodes DPE */
 
-/* Styles généraux */
-.dpe-frontend-wrapper {
-    width: 100%;
-    max-width: 100%!important;
-    margin: 0;
-    padding: 20px;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    box-sizing: border-box;
-}
+/* Styles généraux - wrapper maintenant dans components.css */
 
 .dpe-form {
     background: #f8f9fa;
@@ -116,18 +108,8 @@
     background: #f8f9fa;
 }
 
-/* Conteneur des résultats */
-#search-results {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: auto;
-}
+/* Conteneur des résultats - maintenant dans components.css */
 
-/* Zone des résultats */
-#results-header {
-    width: 100%;
-    margin-bottom: 15px;
-}
 
 /* Étiquettes DPE */
 .dpe-label {
@@ -289,9 +271,7 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-    .dpe-frontend-wrapper {
-        padding: 10px;
-    }
+    /* Styles responsive du wrapper maintenant dans components.css */
     
     .form-group-left {
         flex-direction: column;
@@ -315,10 +295,7 @@
         font-size: 11px !important;
     }
     
-    #search-results {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
+    /* Styles de search-results maintenant dans components.css */
 }
 
 /* ======================================== */
@@ -347,45 +324,6 @@ input#keywordSearch:focus {
     outline: none !important;
 }
 
-/* Bouton de recherche */
-button#search-btn {
-    margin-left: 25px !important;
-    background: linear-gradient(135deg, #0073aa 0%, #005a87 100%) !important;
-    color: white !important;
-    border: none !important;
-    padding: 12px 24px !important;
-    border-radius: 6px !important;
-    cursor: pointer !important;
-    font-weight: 600 !important;
-    font-size: 16px !important;
-    transition: all 0.3s ease !important;
-    outline: none !important;
-    box-shadow: none !important;
-    text-decoration: none !important;
-    display: inline-block !important;
-    line-height: 1 !important;
-    vertical-align: middle !important;
-}
-
-button#search-btn:hover {
-    background: linear-gradient(135deg, #005a87 0%, #004a6b 100%) !important;
-    transform: translateY(-1px) !important;
-    color: white !important;
-    text-decoration: none !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
-}
-
-button#search-btn:active {
-    transform: translateY(0) !important;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.2) !important;
-}
-
-button#search-btn:disabled {
-    background: #ccc !important;
-    cursor: not-allowed !important;
-    transform: none !important;
-    color: #666 !important;
-}
 
 /* Protection des champs de formulaire */
 .form-group select,
@@ -496,18 +434,7 @@ button#search-btn {
     justify-content: flex-end !important;
 }
 
-/* Protection du wrapper principal */
-.dpe-frontend-wrapper {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
-    padding: 20px !important;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-    box-sizing: border-box !important;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-}
+/* Protection du wrapper principal - maintenant dans components.css */
 
 /* Protection du formulaire */
 .dpe-form {

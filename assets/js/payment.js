@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function() {
             updateDirectProgress(100, 'Envoi terminé !');
             
             setTimeout(() => {
-                let message = `✅ Campagne terminée !\n\n`;
+                let message = ` Campagne terminée !\n\n`;
                 message += `📊 Résultats :\n`;
                 message += `• ${successCount} lettres envoyées avec succès\n`;
                 if (errorCount > 0) {
@@ -240,7 +240,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             <div class="campaign-recap">
                 <div class="recap-section">
-                    <h3>💰 Tarification</h3>
+                    <h3> Tarification</h3>
                     <div class="pricing-table">
                         <div class="pricing-row">
                             <span>Nombre de courriers :</span>
@@ -256,9 +256,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="recap-section">
                     <h3>📦 Services inclus</h3>
                     <div class="services-list">
-                        <div class="service-item">✅ Accompagnement</div>
-                        <div class="service-item">✅ Historique complet de vos campagnes</div>
-                        <div class="service-item">✅ Support technique inclus</div>
+                        <div class="service-item"> Accompagnement</div>
+                        <div class="service-item"> Historique complet de vos campagnes</div>
+                        <div class="service-item"> Support technique inclus</div>
                     </div>
                 </div>
             </div>
@@ -328,7 +328,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             <div id="payment-success" style="display: none;">
                 <div class="success-container">
-                    <div class="success-icon">✅</div>
+                    <div class="success-icon"></div>
                     <h3>Paiement confirmé !</h3>
                     <p>Votre campagne est en cours de traitement.</p>
                     <div class="progress-bar">
@@ -476,11 +476,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 900000);
     }
     
-    // ✅ VARIABLE GLOBALE POUR ÉVITER LES DOUBLONS
+    //  VARIABLE GLOBALE POUR ÉVITER LES DOUBLONS
     let paymentProcessed = false;
     
     function handlePaymentSuccess(orderId) {
-        // ✅ VÉRIFICATION ANTI-DOUBLON
+        //  VÉRIFICATION ANTI-DOUBLON
         if (paymentProcessed) {
             // Paiement déjà traité, ignoré
             return;
@@ -494,17 +494,17 @@ document.addEventListener('DOMContentLoaded', function() {
         if (checkoutContainer) checkoutContainer.style.display = 'none';
         if (successDiv) successDiv.style.display = 'block';
         
-        // ✅ DÉSACTIVER LE MENU CONTEXTUEL SUR TOUTE LA PAGE
+        //  DÉSACTIVER LE MENU CONTEXTUEL SUR TOUTE LA PAGE
         disableContextMenu();
         
-        // ✅ DÉMARRER LA PROGRESSION RÉALISTE
+        //  DÉMARRER LA PROGRESSION RÉALISTE
         startRealisticSendingProgress(orderId);
         
         // Event listener pour le bouton "Voir mes campagnes"
         const viewCampaignsBtn = document.getElementById('view-campaigns');
         if (viewCampaignsBtn) {
             viewCampaignsBtn.addEventListener('click', function() {
-                // ✅ RÉACTIVER LE MENU CONTEXTUEL AVANT DE QUITTER
+                //  RÉACTIVER LE MENU CONTEXTUEL AVANT DE QUITTER
                 enableContextMenu();
                 paymentProcessed = false; // Reset pour la prochaine fois
                 
@@ -515,14 +515,14 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        // ✅ PROGRAMMER LA RÉACTIVATION AUTOMATIQUE APRÈS 60 SECONDES
+        //  PROGRAMMER LA RÉACTIVATION AUTOMATIQUE APRÈS 60 SECONDES
         setTimeout(() => {
             enableContextMenu();
             paymentProcessed = false; // Reset
         }, 60000);
     }
     
-    // ✅ NOUVELLE FONCTION : PROGRESSION RÉALISTE BASÉE SUR LE NOMBRE DE LETTRES
+    //  NOUVELLE FONCTION : PROGRESSION RÉALISTE BASÉE SUR LE NOMBRE DE LETTRES
     function startRealisticSendingProgress(orderId) {
         const progressBar = document.getElementById('sending-progress');
         const statusDiv = document.getElementById('sending-status');
@@ -544,7 +544,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let currentLetter = 0;
         let currentProgress = 0;
         
-        // ✅ ÉTAPES INITIALES (20% du temps total)
+        //  ÉTAPES INITIALES (20% du temps total)
         const initialSteps = [
             { progress: 5, text: 'Validation du paiement...', duration: 1000 },
             { progress: 15, text: 'Génération des PDFs personnalisés...', duration: 2000 },
@@ -604,7 +604,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Étapes finales
             setTimeout(() => {
                 animateProgress(progressBar, currentProgress, 98, 1000);
-                statusDiv.textContent = '✅ Finalisation de l\'envoi...';
+                statusDiv.textContent = ' Finalisation de l\'envoi...';
             }, 500);
             
             setTimeout(() => {
@@ -617,7 +617,7 @@ document.addEventListener('DOMContentLoaded', function() {
         executeInitialSteps();
     }
     
-    // ✅ NOUVELLE FONCTION : DÉSACTIVER LE MENU CONTEXTUEL
+    //  NOUVELLE FONCTION : DÉSACTIVER LE MENU CONTEXTUEL
     function disableContextMenu() {
         // Vérifier si déjà désactivé pour éviter les doublons
         if (document.body.hasAttribute('data-context-menu-disabled')) {
@@ -668,7 +668,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Menu contextuel désactivé
     }
     
-    // ✅ NOUVELLE FONCTION : RÉACTIVER LE MENU CONTEXTUEL
+    //  NOUVELLE FONCTION : RÉACTIVER LE MENU CONTEXTUEL
     function enableContextMenu() {
         // Vérifier si déjà réactivé
         if (!document.body.hasAttribute('data-context-menu-disabled')) {
@@ -702,7 +702,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Menu contextuel réactivé
     }
     
-    // ✅ FONCTIONS DE PRÉVENTION
+    //  FONCTIONS DE PRÉVENTION
     function preventContextMenu(e) {
         e.preventDefault();
         e.stopPropagation();

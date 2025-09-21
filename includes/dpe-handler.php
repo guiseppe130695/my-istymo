@@ -60,10 +60,10 @@ class DPE_Handler {
             return;
         }
         
-        // ✅ DEBUG : Retourner la réponse JSON brute pour voir la structure
+        // Retourner les données dans le format attendu par le JavaScript
         wp_send_json_success([
-            'raw_json_response' => $resultats['raw_data'] ?? $resultats['data'],
-            'total_results' => count($resultats['data']),
+            'results' => $resultats['data'],
+            'total' => count($resultats['data']),
             'pagination' => $resultats['pagination'],
             'debug_info' => [
                 'code_postal' => $code_postal,

@@ -66,7 +66,7 @@
     align-self: flex-end;
 }
 
-/* ✅ TAILLE DE POLICE 12PX POUR TOUS LES ÉLÉMENTS DU TABLEAU */
+/*  TAILLE DE POLICE 12PX POUR TOUS LES ÉLÉMENTS DU TABLEAU */
 .sci-table,
 .sci-table th,
 .sci-table td,
@@ -77,7 +77,7 @@
     font-size: 12px !important;
 }
 
-/* ✅ TAILLE DE POLICE 12PX POUR TOUS LES ÉLÉMENTS DU POPUP */
+/*  TAILLE DE POLICE 12PX POUR TOUS LES ÉLÉMENTS DU POPUP */
 #letters-popup,
 #letters-popup h2,
 #letters-popup h3,
@@ -97,13 +97,13 @@
     font-size: 12px !important;
 }
 
-/* ✅ EXCEPTIONS POUR LES TITRES PRINCIPAUX DU POPUP */
+/*  EXCEPTIONS POUR LES TITRES PRINCIPAUX DU POPUP */
 #letters-popup h2 {
     font-size: 16px !important;
     font-weight: 600 !important;
 }
 
-/* ✅ NOUVEAUX STYLES POUR LES BOUTONS */
+/*  NOUVEAUX STYLES POUR LES BOUTONS */
 /* Boutons standards (fond blanc, hover vert) */
 .sci-button:not(.secondary):not([id*="send-letters"]):not([id*="to-step"]):not([id*="send-campaign"]):not([id*="back-to-step"]) {
     background: white !important;
@@ -159,7 +159,7 @@
     box-shadow: none !important;
 }
 
-/* ✅ STYLE POUR LE BOUTON DE PAIEMENT WOOCOMMERCE */
+/*  STYLE POUR LE BOUTON DE PAIEMENT WOOCOMMERCE */
 .woocommerce #payment #place_order,
 .woocommerce #payment input[type="submit"],
 .woocommerce #payment button[type="submit"],

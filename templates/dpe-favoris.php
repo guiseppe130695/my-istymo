@@ -132,7 +132,7 @@ function createGoogleMapsLink($adresse, $codePostal, $commune) {
                             <td class="type-batiment"><?php echo esc_html($favori->type_batiment ?: 'Non spécifié'); ?></td>
                             <td class="surface"><?php echo $favori->surface_habitable_logement ? esc_html($favori->surface_habitable_logement . ' m²') : 'Non spécifié'; ?></td>
                             <td>
-                                <span class="dpe-label <?php echo dpe_class($favori->etiquette_dpe); ?>">
+                                <span class="label <?php echo dpe_class($favori->etiquette_dpe); ?>">
                                     <?php echo esc_html($favori->etiquette_dpe ?: 'Non spécifié'); ?>
                                 </span>
                             </td>
@@ -177,25 +177,7 @@ function createGoogleMapsLink($adresse, $codePostal, $commune) {
     color: #005a87;
 }
 
-/* Styles pour les étiquettes DPE */
-.dpe-label {
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-weight: bold;
-    font-size: 12px;
-    text-align: center;
-    min-width: 30px;
-    display: inline-block;
-}
-
-/* Étiquettes DPE */
-.dpe-label.A { background-color: #009639 !important; color: white !important; }
-.dpe-label.B { background-color: #85bb2f !important; color: white !important; }
-.dpe-label.C { background-color: #ffcc02 !important; color: black !important; }
-.dpe-label.D { background-color: #f68b1f !important; color: white !important; }
-.dpe-label.E { background-color: #e30613 !important; color: white !important; }
-.dpe-label.F { background-color: #8b0000 !important; color: white !important; }
-.dpe-label.G { background-color: #4a4a4a !important; color: white !important; }
+/* Styles des étiquettes maintenant dans components.css */
 
 /* Styles pour les boutons favoris */
 .btn-favori {

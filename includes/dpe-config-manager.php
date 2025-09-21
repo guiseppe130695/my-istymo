@@ -192,7 +192,7 @@ class DPE_Config_Manager {
                 <h3>🧪 Test de connexion API</h3>
                 <p>Testez la connexion à l'API DPE ADEME pour vérifier que tout fonctionne correctement.</p>
                 <button type="button" id="test-dpe-api" class="button button-secondary">
-                    🔍 Tester la connexion API
+                    <i class="fas fa-search"></i> Tester la connexion API
                 </button>
                 <div id="test-result" style="margin-top: 10px; padding: 10px; border-radius: 4px; display: none;"></div>
             </div>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Urgent - Shortcodes DPE</title>
+</head>
+<body>
+    <h1>🚨 TEST URGENT - Shortcodes DPE</h1>
+    
+    <h2>Instructions de test :</h2>
+    <ol>
+        <li><strong>Créez une nouvelle page WordPress</strong></li>
+        <li><strong>Ajoutez ces shortcodes dans l'ordre :</strong></li>
+    </ol>
+    
+    <h3>1. Test du système de base :</h3>
+    <code>[test_simple]</code>
+    <p><em>Doit afficher une boîte jaune avec "TEST SIMPLE RÉUSSI"</em></p>
+    
+    <h3>2. Test DPE de base :</h3>
+    <code>[test_dpe]</code>
+    <p><em>Doit afficher une boîte bleue avec "TEST DPE SHORTCODE"</em></p>
+    
+    <h3>3. Test des shortcodes DPE :</h3>
+    <code>[dpe_test]</code>
+    <p><em>Doit afficher une boîte jaune avec "TEST SIMPLE RÉUSSI"</em></p>
+    
+    <code>[dpe_panel]</code>
+    <p><em>Doit afficher le diagnostic complet + formulaire DPE</em></p>
+    
+    <code>[dpe_simple]</code>
+    <p><em>Doit afficher la même chose que [dpe_panel]</em></p>
+    
+    <h2>🔍 Diagnostic :</h2>
+    <ul>
+        <li><strong>Si [test_simple] ne fonctionne pas :</strong> Le plugin n'est pas activé ou il y a une erreur PHP</li>
+        <li><strong>Si [test_simple] fonctionne mais pas [dpe_test] :</strong> Problème avec la classe DPE_Shortcodes</li>
+        <li><strong>Si tout fonctionne :</strong> Le système est OK, problème ailleurs</li>
+    </ul>
+    
+    <h2>📝 Résultats attendus :</h2>
+    <p>Vous devriez voir 5 boîtes colorées différentes sur votre page.</p>
+    
+    <h2>🚨 Si rien ne fonctionne :</h2>
+    <ol>
+        <li>Vérifiez que le plugin "My Istymo" est activé</li>
+        <li>Vérifiez les logs d'erreur WordPress</li>
+        <li>Désactivez et réactivez le plugin</li>
+    </ol>
+</body>
+</html>

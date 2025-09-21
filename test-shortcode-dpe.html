@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Shortcode DPE</title>
+</head>
+<body>
+    <h1>Test du Shortcode DPE</h1>
+    <p>Utilisez ces shortcodes dans une page WordPress :</p>
+    <ul>
+        <li><code>[dpe_test]</code> - Test simple (doit afficher une boîte jaune)</li>
+        <li><code>[dpe_panel]</code> - Test complet avec diagnostic</li>
+        <li><code>[dpe_simple]</code> - Alias pour dpe_panel (même fonctionnalité)</li>
+    </ul>
+    
+    <h2>Instructions de test :</h2>
+    <ol>
+        <li>Créez une nouvelle page dans WordPress</li>
+        <li>Ajoutez d'abord <code>[dpe_test]</code> pour vérifier que les shortcodes fonctionnent</li>
+        <li>Si ça marche, ajoutez <code>[dpe_panel]</code> pour le test complet</li>
+        <li>Publiez la page</li>
+        <li>Visitez la page pour voir les résultats</li>
+    </ol>
+    
+    <h2>Ce que vous devriez voir :</h2>
+    <ul>
+        <li>Une boîte rouge avec "TEST SHORTCODE DPE"</li>
+        <li>Des vérifications en vert/rouge pour chaque composant</li>
+        <li>Le template DPE complet si tout fonctionne</li>
+    </ul>
+    
+    <h2>Si vous ne voyez rien :</h2>
+    <ul>
+        <li>Le shortcode n'est pas enregistré</li>
+        <li>Il y a une erreur PHP</li>
+        <li>Le plugin n'est pas activé</li>
+    </ul>
+</body>
+</html>

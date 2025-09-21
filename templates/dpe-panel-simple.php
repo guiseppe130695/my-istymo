@@ -9,22 +9,22 @@
  */
 ?>
 
-<div class="dpe-frontend-wrapper">
-    <h1>DPE – Recherche de Diagnostics</h1>
+<div class="frontend-wrapper">
+    <h1>DPE - Recherche de Diagnostics</h1>
 
     <!-- Information pour les utilisateurs -->
-    <div class="dpe-info" style="background: #e7f3ff; border: 1px solid #bee5eb; border-radius: 8px; padding: 15px; margin-bottom: 20px; color: #004085;">
-        <p style="margin: 0; font-size: 16px; line-height: 1.5;">
+    <div class="info-message">
+        <p>
             Recherchez les diagnostics de performance énergétique (DPE) par code postal. Consultez les étiquettes énergétiques et les informations détaillées.
         </p>
     </div>
     
     <!-- Affichage du code postal par défaut -->
     <?php if (!empty($codesPostauxArray)): ?>
-    <div class="dpe-default-postal" style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 12px; margin-bottom: 15px; color: #155724;">
-        <p style="margin: 0; font-size: 14px; line-height: 1.4;">
+    <div class="default-status">
+        <p>
             <strong>Codes postaux disponibles :</strong> <?php echo esc_html(implode(', ', $codesPostauxArray)); ?>
-            <span style="color: #0c5460; font-style: italic;">(le premier sera sélectionné automatiquement)</span>
+            <span class="status-note">(le premier sera sélectionné automatiquement)</span>
         </p>
     </div>
     <?php endif; ?>
@@ -33,14 +33,14 @@
     <?php
     // Vérifier si la configuration API est complète
     if (!$config_manager->is_configured()) {
-        echo '<div class="dpe-error"><strong>⚠️ Configuration manquante :</strong> Veuillez configurer vos tokens API dans l\'administration.</div>';
+        echo '<div class="dpe-error"><strong>Configuration manquante :</strong> Veuillez configurer vos tokens API dans l\'administration.</div>';
     }
     ?>
 
     <!-- ✅ FORMULAIRE DE RECHERCHE AJAX -->
-    <form id="dpe-search-form" class="dpe-form">
-        <div class="form-group-left">
-            <div class="form-group">
+    <form id="dpe-search-form" class="search-form">
+        <div class="form-row">
+            <div class="form-field">
                 <label for="codePostal">Sélectionnez votre code postal :</label>
                 <select name="codePostal" id="codePostal" required>
                     <option value="">— Choisir un code postal —</option>
@@ -51,7 +51,7 @@
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="form-group">
+            <div class="form-field">
                 <label for="buildingType">Type de bâtiment :</label>
                 <select name="buildingType" id="buildingType">
                     <option value="">— Tous les types —</option>
@@ -60,8 +60,8 @@
                     <option value="Immeuble">Immeuble</option>
                 </select>
             </div>
-            <button type="submit" id="search-btn" class="dpe-button">
-                Rechercher les DPE
+            <button type="submit" id="search-btn" class="btn btn-primary">
+                <i class="fas fa-search"></i> Rechercher les DPE
             </button>
         </div>
     </form>
@@ -89,7 +89,7 @@
         </div>
         
         <!-- ✅ TABLEAU DES RÉSULTATS - STRUCTURE STABLE -->
-        <table class="dpe-table" id="results-table">
+        <table class="data-table" id="results-table">
             <thead>
                 <tr>
                     <th>Favoris</th>
@@ -110,11 +110,15 @@
     </div>
     
     <!-- ✅ CONTRÔLES DE PAGINATION - HORS DE LA ZONE DES RÉSULTATS -->
-    <div id="pagination-controls" style="display: none; margin-top: 20px; text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
-        <div class="pagination-main" style="display: flex; align-items: center; justify-content: center; gap: 15px;">
-            <button id="prev-page" disabled style="padding: 10px 20px; font-size: 14px; font-weight: 500; border: none; border-radius: 0; background: #fff; color: #333; cursor: pointer; transition: all 0.2s ease; box-shadow: none;">Page précédente</button>
-            <span id="page-info" style="background: #0073aa; color: white; padding: 8px 15px; border-radius: 4px; font-size: 14px; font-weight: 500;">1/1</span>
-            <button id="next-page" disabled style="padding: 10px 20px; font-size: 14px; font-weight: 500; border: none; border-radius: 0; background: #fff; color: #333; cursor: pointer; transition: all 0.2s ease; box-shadow: none;">Page suivante</button>
+    <div id="pagination-controls" class="pagination-controls" style="display: none;">
+        <div class="pagination-main">
+            <button id="prev-page" class="pagination-btn" disabled>
+                <i class="fas fa-chevron-left"></i> Page précédente
+            </button>
+            <span id="page-info" class="page-info">1/1</span>
+            <button id="next-page" class="pagination-btn" disabled>
+                Page suivante <i class="fas fa-chevron-right"></i>
+            </button>
         </div>
     </div>
     
@@ -250,7 +254,7 @@ function displayResults(data) {
             // Étiquette DPE
             var dpeCell = document.createElement('td');
             var dpeLabel = document.createElement('span');
-            dpeLabel.className = 'dpe-label ' + (result.etiquette_dpe || '');
+            dpeLabel.className = 'label ' + (result.etiquette_dpe || '');
             dpeLabel.textContent = result.etiquette_dpe || 'Non spécifié';
             dpeCell.appendChild(dpeLabel);
             row.appendChild(dpeCell);

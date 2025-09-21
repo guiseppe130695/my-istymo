@@ -62,7 +62,7 @@
     padding: 12px;
     border-left: 4px solid;
     background: #fff;
-    /* ✅ SUPPRIMÉ : box-shadow: 0 1px 1px 0 rgba(0,0,0,.1); */
+    /*  SUPPRIMÉ : box-shadow: 0 1px 1px 0 rgba(0,0,0,.1); */
 }
 
 .notice-error {
@@ -77,53 +77,9 @@
     border-left-color: #46b450;
 }
 
-/* ✅ MODIFIÉ : Styles pour le statut de contact des SCI - SANS STYLE BOUTON */
-#sci-search-form button #search-btn {
-    background: #000064 !important;
-}
+/*  NOUVEAU : Styles statut de contact SCI déplacés vers sci-style.css */
 
-.sci-frontend-wrapper table.sci-table th, .sci-frontend-wrapper .sci-table th, .sci-frontend-wrapper table.sci-table td, .sci-frontend-wrapper .sci-table td {
-    color: #545454 !important;
-    font-size: 13px !important;
-}
-
-.contact-status {
-    display: inline-block;
-    font-size: 16px;
-    color: #28a745;
-    /* ✅ SUPPRIMÉ TOUS LES STYLES BOUTON :
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    transition: all 0.3s ease;
-    background: #e8f5e8;
-    border: 1px solid #c3e6c3;
-    */
-}
-
-.contact-status.contacted {
-    /* ✅ GARDE SEULEMENT LA COULEUR */
-    color: #28a745;
-}
-
-.contact-status.not-contacted {
-    /* ✅ MASQUÉ PAR DÉFAUT */
-    display: none;
-}
-
-.contact-status-icon {
-    /* ✅ SIMPLIFIÉ : Juste l'emoji sans marge */
-    font-size: 16px;
-}
-
-.contact-status-text {
-    /* ✅ SUPPRIMÉ : Le texte ne s'affiche plus */
-    display: none;
-}
-
-/* ✅ NOUVEAU : Styles pour les liens Google Maps */
+/*  NOUVEAU : Styles pour les liens Google Maps */
 .maps-link {
     display: inline-block;
     padding: 4px 8px;
@@ -430,7 +386,7 @@
     border-radius: 4px;
     overflow: hidden;
     margin: 20px 0;
-    /* ✅ SUPPRIMÉ : box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); */
+    /*  SUPPRIMÉ : box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); */
 }
 
 .progress-bar-fill {
@@ -478,7 +434,7 @@
 
 .button.button-primary:active {
     transform: translateY(0);
-    /* ✅ SUPPRIMÉ : box-shadow: 0 3px 6px rgba(0,115,170,0.2); */
+    /*  SUPPRIMÉ : box-shadow: 0 3px 6px rgba(0,115,170,0.2); */
 }
 
 .button.button-large {
@@ -528,7 +484,7 @@
 }
 
 .validation-success::before {
-    content: '✅';
+    content: '';
     font-size: 18px;
 }
 
@@ -577,7 +533,7 @@
         height: 600px !important;
     }
     
-    /* ✅ RESPONSIVE POUR LE STATUT DE CONTACT - SIMPLIFIÉ */
+    /*  RESPONSIVE POUR LE STATUT DE CONTACT - SIMPLIFIÉ */
     .contact-status {
         font-size: 14px;
     }
@@ -586,7 +542,7 @@
         font-size: 14px;
     }
     
-    /* ✅ RESPONSIVE POUR LES LIENS MAPS */
+    /*  RESPONSIVE POUR LES LIENS MAPS */
     .maps-link {
         font-size: 11px;
         padding: 3px 6px;
@@ -630,7 +586,7 @@
     background: white;
     border-radius: 8px;
     overflow: hidden;
-    /* ✅ SUPPRIMÉ : box-shadow: 0 4px 12px rgba(0,0,0,0.1); */
+    /*  SUPPRIMÉ : box-shadow: 0 4px 12px rgba(0,0,0,0.1); */
 }
 
 #embedded-checkout iframe {
@@ -674,7 +630,7 @@
    STYLES MINIMALISTES POUR LES SHORTCODES FRONTEND
    ======================================== */
 
-/* ✅ NOUVEAU : Wrapper principal pour les shortcodes */
+/*  NOUVEAU : Wrapper principal pour les shortcodes */
 .sci-frontend-wrapper {
     /* Isolation complète du thème */
     all: initial;
@@ -695,7 +651,7 @@
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ✅ NOUVEAU : Reset spécifique pour RealHome */
+/*  NOUVEAU : Reset spécifique pour RealHome */
 .sci-frontend-wrapper *,
 .sci-frontend-wrapper *::before,
 .sci-frontend-wrapper *::after {
@@ -714,12 +670,7 @@
     color: inherit !important;
 }
 
-.sci-frontend-wrapper p {
-    margin: 0 0 1rem 0 !important;
-    line-height: 1.6 !important;
-}
-
-/* ✅ NOUVEAU : Correction spécifique pour le loading */
+/*  NOUVEAU : Correction spécifique pour le loading */
 .sci-frontend-wrapper #search-loading {
     display: none !important;
     text-align: center !important;
@@ -750,7 +701,7 @@
     100% { transform: rotate(360deg); }
 }
 
-/* ✅ NOUVEAU : Protection contre les styles de thème pour les formulaires */
+/*  NOUVEAU : Protection contre les styles de thème pour les formulaires */
 .sci-frontend-wrapper form {
     margin: 0 !important;
     padding: 0 !important;
@@ -786,7 +737,7 @@
     box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25) !important;
 }
 
-/* ✅ NOUVEAU : Protection contre les styles de thème pour les tableaux */
+/*  NOUVEAU : Protection contre les styles de thème pour les tableaux */
 .sci-frontend-wrapper table {
     border-collapse: collapse !important;
     border-spacing: 0 !important;
@@ -821,7 +772,7 @@
     background-color: rgba(52, 152, 219, 0.05) !important;
 }
 
-/* ✅ NOUVEAU : Protection contre les styles de thème pour les boutons */
+/*  NOUVEAU : Protection contre les styles de thème pour les boutons */
 .sci-frontend-wrapper button {
     font-family: inherit !important;
     font-size: 1rem !important;
@@ -872,7 +823,7 @@
     opacity: 0.6 !important;
 }
 
-/* ✅ NOUVEAU : Protection contre les styles de thème pour les liens */
+/*  NOUVEAU : Protection contre les styles de thème pour les liens */
 .sci-frontend-wrapper a {
     color: var(--primary-color) !important;
     text-decoration: none !important;
@@ -891,7 +842,7 @@
     background: none !important;
 }
 
-/* ✅ NOUVEAU : Protection contre les styles de thème pour les listes */
+/*  NOUVEAU : Protection contre les styles de thème pour les listes */
 .sci-frontend-wrapper ul,
 .sci-frontend-wrapper ol {
     margin: 0 0 1rem 0 !important;
@@ -906,7 +857,7 @@
     border: none !important;
 }
 
-/* ✅ NOUVEAU : Protection contre les styles de thème pour les labels */
+/*  NOUVEAU : Protection contre les styles de thème pour les labels */
 .sci-frontend-wrapper label {
     display: inline-block !important;
     margin-bottom: 0.5rem !important;
@@ -920,7 +871,7 @@
     line-height: inherit !important;
 }
 
-/* ✅ NOUVEAU : Protection contre les styles de thème pour les spans */
+/*  NOUVEAU : Protection contre les styles de thème pour les spans */
 .sci-frontend-wrapper span {
     background: none !important;
     border: none !important;
@@ -932,20 +883,7 @@
     color: inherit !important;
 }
 
-/* ✅ NOUVEAU : Protection contre les styles de thème pour les divs */
-.sci-frontend-wrapper div {
-    background: none !important;
-    border: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    font-family: inherit !important;
-    font-size: inherit !important;
-    line-height: inherit !important;
-    color: inherit !important;
-    box-sizing: border-box !important;
-}
-
-/* ✅ NOUVEAU : Styles spécifiques pour les éléments SCI */
+/*  NOUVEAU : Styles spécifiques pour les éléments SCI */
 .sci-frontend-wrapper .sci-form {
     background: var(--light-bg) !important;
     padding: 1.5rem !important;
@@ -954,18 +892,7 @@
     margin-bottom: 1.5rem !important;
 }
 
-.sci-frontend-wrapper .sci-table {
-    margin-top: 1rem !important;
-}
-
-.sci-frontend-wrapper .sci-error {
-    background: #f8d7da !important;
-    color: #721c24 !important;
-    padding: 1rem !important;
-    border: 1px solid #f5c6cb !important;
-    border-radius: var(--border-radius) !important;
-    margin: 1rem 0 !important;
-}
+/*  NOUVEAU : Styles tableaux et erreurs SCI déplacés vers sci-style.css */
 
 .sci-frontend-wrapper .sci-warning {
     background: #fff3cd !important;
@@ -985,7 +912,7 @@
     margin: 1rem 0 !important;
 }
 
-/* ✅ NOUVEAU : Styles pour les éléments spécifiques aux shortcodes */
+/*  NOUVEAU : Styles pour les éléments spécifiques aux shortcodes */
 .sci-frontend-wrapper #results-header {
     display: flex;
     justify-content: space-between;
@@ -1019,7 +946,7 @@
     box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
 }
 
-/* ✅ NOUVEAU : Amélioration des messages d'état */
+/*  NOUVEAU : Amélioration des messages d'état */
 .sci-frontend-wrapper .sci-error ul,
 .sci-frontend-wrapper .sci-warning ul {
     margin: 0.5rem 0 0 0;
@@ -1031,7 +958,7 @@
     margin-bottom: 0.25rem;
 }
 
-/* ✅ NOUVEAU : Animation pour les éléments qui apparaissent */
+/*  NOUVEAU : Animation pour les éléments qui apparaissent */
 .sci-frontend-wrapper #search-results {
     animation: fadeInUp 0.3s ease-out;
 }
@@ -1060,7 +987,7 @@
     }
 }
 
-/* ✅ NOUVEAU : Amélioration de l'accessibilité */
+/*  NOUVEAU : Amélioration de l'accessibilité */
 .sci-frontend-wrapper .sci-button:focus,
 .sci-frontend-wrapper .sci-form select:focus,
 .sci-frontend-wrapper .fav-btn:focus,
@@ -1077,7 +1004,7 @@
     outline-offset: 2px;
 }
 
-/* ✅ NOUVEAU : Styles pour les états de chargement */
+/*  NOUVEAU : Styles pour les états de chargement */
 .sci-frontend-wrapper .sci-button:disabled {
     position: relative;
 }
@@ -1097,2014 +1024,50 @@
     opacity: 0.7;
 }
 
-/* ✅ NOUVEAU : Amélioration des tableaux sur mobile */
-@media (max-width: 480px) {
-    .sci-frontend-wrapper .sci-table {
-        font-size: 0.75rem;
-    }
-    
-    .sci-frontend-wrapper .sci-table th,
-    .sci-frontend-wrapper .sci-table td {
-        padding: 0.5rem 0.25rem;
-    }
-    
-    .sci-frontend-wrapper .sci-table th:nth-child(3),
-    .sci-frontend-wrapper .sci-table td:nth-child(3),
-    .sci-frontend-wrapper .sci-table th:nth-child(5),
-    .sci-frontend-wrapper .sci-table td:nth-child(5) {
-        display: none;
-    }
-    
-    .sci-frontend-wrapper #results-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    
-    .sci-frontend-wrapper #pagination-controls {
-        padding: 0.75rem;
-        gap: 0.5rem;
-        flex-direction: row;
-        flex-wrap: wrap;
-    }
-    
-    .sci-frontend-wrapper .pagination-main {
-        flex-direction: row;
-        gap: 0.25rem;
-        flex-wrap: wrap;
-    }
-    
-    .sci-frontend-wrapper #pagination-controls button {
-        min-width: auto;
-        padding: 0.4rem 0.8rem;
-        font-size: 0.8rem;
-    }
-    
-    .sci-frontend-wrapper #page-info {
-        min-width: auto;
-        padding: 0.4rem 0.8rem;
-        font-size: 0.8rem;
-    }
-    
-    .sci-frontend-wrapper .pagination-size {
-        flex-direction: row;
-        gap: 0.25rem;
-        align-items: center;
-        font-size: 0.8rem;
-    }
-    
-    .sci-frontend-wrapper #page-size {
-        min-width: 60px;
-        max-width: 80px;
-        padding: 0.2rem 0.4rem;
-        font-size: 0.8rem;
-    }
-}
+/*  NOUVEAU : Amélioration des tableaux sur mobile */
+/*  NOUVEAU : Styles responsive tableaux SCI déplacés vers sci-style.css */
 
-/* ✅ NOUVEAU : Styles très spécifiques pour forcer l'application */
-.sci-frontend-wrapper,
-.sci-frontend-wrapper *,
-.sci-frontend-wrapper *::before,
-.sci-frontend-wrapper *::after {
-    box-sizing: border-box !important;
-}
+/*  NOUVEAU : Styles reset et conflits thèmes SCI déplacés vers sci-style.css */
 
-/* ✅ NOUVEAU : Reset complet pour éviter les styles du thème */
-.sci-frontend-wrapper table,
-.sci-frontend-wrapper table *,
-.sci-frontend-wrapper form,
-.sci-frontend-wrapper form *,
-.sci-frontend-wrapper button,
-.sci-frontend-wrapper input,
-.sci-frontend-wrapper select,
-.sci-frontend-wrapper label {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
-    line-height: 1.6 !important;
-    color: inherit !important;
-}
+/*  NOUVEAU : Styles tableaux SCI déplacés vers sci-style.css */
 
-/* ✅ NOUVEAU : Override des styles de thème pour les tableaux */
-.sci-frontend-wrapper table.sci-table,
-.sci-frontend-wrapper .sci-table {
-    border: none !important;
-    border-collapse: separate !important;
-    border-spacing: 0 !important;
-    background: white !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
-    border-radius: 12px !important;
-    overflow: hidden !important;
-    margin: 1.5rem 0 !important;
-    width: 100% !important;
-}
+/*  NOUVEAU : Styles formulaires SCI déplacés vers sci-style.css */
 
-.sci-frontend-wrapper table.sci-table th,
-.sci-frontend-wrapper .sci-table th,
-.sci-frontend-wrapper table.sci-table td,
-.sci-frontend-wrapper .sci-table td {
-    border: none !important;
-    border-bottom: 1px solid #f1f3f4 !important;
-    padding: 0.5rem !important;
-    text-align: left !important;
-    vertical-align: middle !important;
-    background: none !important;
-    font-family: inherit !important;
-    font-size: 12px !important;
-    line-height: inherit !important;
-}
+/*  NOUVEAU : Styles labels et selects SCI déplacés vers sci-style.css */
 
-.sci-frontend-wrapper #sci-search-form {
-    background-color: white !important;
-    box-shadow: none !important;
-    border: none !important;
-}
+/*  NOUVEAU : Styles boutons SCI déplacés vers sci-style.css */
 
-.sci-frontend-wrapper table.sci-table th,
-.sci-frontend-wrapper .sci-table th {
-    background: #f8f9fa !important;
-    padding: 12px 12px !important;
-    text-align: left !important;
-    font-weight: 600 !important;
-    color: #333 !important;
-    border-bottom: 2px solid #dee2e6 !important;
-    font-size: 14px !important;
-    word-wrap: break-word !important;
-    white-space: nowrap !important;
-    border: none !important;
-    box-shadow: none !important;
-}
+/*  NOUVEAU : Styles boutons secondaires SCI déplacés vers sci-style.css */
 
-.sci-frontend-wrapper table.sci-table tr:last-child td,
-.sci-frontend-wrapper .sci-table tr:last-child td {
-    border-bottom: none !important;
-}
+/*  NOUVEAU : Styles conflits thèmes SCI déplacés vers sci-style.css */
 
-/* ✅ NOUVEAU : Override des styles de thème pour les formulaires */
-.sci-frontend-wrapper form.sci-form,
-.sci-frontend-wrapper .sci-form {
-    background: #f8f9fa !important;
-    padding: 1.5rem !important;
-    border-radius: 12px !important;
-    margin-bottom: 1.5rem !important;
-    border: 1px solid #e9ecef !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
-}
+/*  NOUVEAU : Styles animations et indicateurs SCI déplacés vers sci-style.css */
 
-.sci-frontend-wrapper form.sci-form label,
-.sci-frontend-wrapper .sci-form label {
-    font-weight: 500 !important;
-    color: #495057 !important;
-    display: block !important;
-    margin-bottom: 0.5rem !important;
-    font-size: 0.95rem !important;
-    background: none !important;
-    border: none !important;
-}
+/*  NOUVEAU : Styles tooltips et chargement SCI déplacés vers sci-style.css */
 
-.sci-frontend-wrapper form.sci-form select,
-.sci-frontend-wrapper .sci-form select {
-    width: 100% !important;
-    max-width: 300px !important;
-    padding: 0.75rem 1rem !important;
-    border: 2px solid #e9ecef !important;
-    border-radius: 8px !important;
-    margin-bottom: 1rem !important;
-    font-size: 0.95rem !important;
-    background: white !important;
-    transition: all 0.2s ease !important;
-    appearance: none !important;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e") !important;
-    background-position: right 0.75rem center !important;
-    background-repeat: no-repeat !important;
-    background-size: 1.5em 1.5em !important;
-    padding-right: 2.5rem !important;
-    box-shadow: none !important;
-}
+/*  NOUVEAU : Styles notifications et filtres SCI déplacés vers sci-style.css */
 
-/* ✅ NOUVEAU : Override des styles de thème pour les boutons */
+/*  NOUVEAU : Styles filtres et statistiques SCI déplacés vers sci-style.css */
 
+/*  NOUVEAU : Styles mode sombre et responsive SCI déplacés vers sci-style.css */
 
-.sci-frontend-wrapper button.sci-button,
-.sci-frontend-wrapper .sci-button,
-.sci-frontend-wrapper input[type="submit"].sci-button {
-    background: #28a745 !important;
-    color: white !important;
-    border: none !important;
-    padding: 0.75rem 1.5rem !important;
-    border-radius: 8px !important;
-    cursor: pointer !important;
-    font-weight: 500 !important;
-    font-size: 0.95rem !important;
-    margin-right: 0.75rem !important;
-    margin-bottom: 0.75rem !important;
-    transition: all 0.2s ease !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 0.5rem !important;
-    text-decoration: none !important;
-    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2) !important;
-    font-family: inherit !important;
-    outline: none !important;
-    min-height: 44px !important;
-    line-height: 1.2 !important;
-    vertical-align: middle !important;
-    position: relative !important;
-    overflow: hidden !important;
-}
+/*  NOUVEAU : Styles formulaire de recherche SCI déplacés vers sci-style.css */
 
-.sci-frontend-wrapper button.sci-button:hover,
-.sci-frontend-wrapper .sci-button:hover,
-.sci-frontend-wrapper input[type="submit"].sci-button:hover {
-    background: #1e7e34 !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3) !important;
-    text-decoration: none !important;
-    color: white !important;
-}
+/*  NOUVEAU : Styles spécifiques pour le formulaire de recherche SCI dans l'admin - maintenant dans sci-style.css */
 
-.sci-frontend-wrapper button.sci-button:focus,
-.sci-frontend-wrapper .sci-button:focus,
-.sci-frontend-wrapper input[type="submit"].sci-button:focus {
-    outline: 2px solid #28a745 !important;
-    outline-offset: 2px !important;
-}
+/*  NOUVEAU : Styles SCI déplacés vers sci-style.css */
 
-.sci-frontend-wrapper button.sci-button:disabled,
-.sci-frontend-wrapper .sci-button:disabled,
-.sci-frontend-wrapper input[type="submit"].sci-button:disabled {
-    background: #e9ecef !important;
-    color: #6c757d !important;
-    cursor: not-allowed !important;
-    transform: none !important;
-    box-shadow: none !important;
-    opacity: 0.6 !important;
-}
+/*  NOUVEAU : Styles frontend SCI déplacés vers sci-style.css */
 
-.sci-frontend-wrapper button.sci-button.secondary,
-.sci-frontend-wrapper .sci-button.secondary {
-    background: #28a745 !important;
-    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2) !important;
-    color: white !important;
-}
+/*  NOUVEAU : Styles boutons favoris SCI déplacés vers sci-style.css */
 
-.sci-frontend-wrapper button.sci-button.secondary:hover,
-.sci-frontend-wrapper .sci-button.secondary:hover {
-    background: #1e7e34 !important;
-    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3) !important;
-    color: white !important;
-}
+/*  NOUVEAU : Styles pagination et résultats SCI déplacés vers sci-style.css */
 
-.sci-frontend-wrapper button.sci-button.secondary:disabled,
-.sci-frontend-wrapper .sci-button.secondary:disabled {
-    background: #e9ecef !important;
-    color: #6c757d !important;
-    box-shadow: none !important;
-}
-
-/* ✅ NOUVEAU : Correction du problème de chargement sur les boutons */
-.sci-frontend-wrapper button.sci-button:disabled::after,
-.sci-frontend-wrapper .sci-button:disabled::after,
-.sci-frontend-wrapper input[type="submit"].sci-button:disabled::after {
-    display: none !important;
-}
-
-/* ✅ NOUVEAU : Styles pour les boutons d'action spécifiques */
-.sci-frontend-wrapper button[type="submit"],
-.sci-frontend-wrapper button.button-primary,
-.sci-frontend-wrapper .button.button-primary {
-    background: #28a745 !important;
-    color: white !important;
-    border: none !important;
-    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2) !important;
-}
-
-.sci-frontend-wrapper button[type="submit"]:hover,
-.sci-frontend-wrapper button.button-primary:hover,
-.sci-frontend-wrapper .button.button-primary:hover {
-    background: #1e7e34 !important;
-    color: white !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3) !important;
-}
-
-.sci-frontend-wrapper button[type="submit"]:disabled,
-.sci-frontend-wrapper button.button-primary:disabled,
-.sci-frontend-wrapper .button.button-primary:disabled {
-    background: #e9ecef !important;
-    color: #6c757d !important;
-    transform: none !important;
-    box-shadow: none !important;
-    opacity: 0.6 !important;
-}
-
-/* ✅ NOUVEAU : Styles pour les boutons secondaires d'action */
-.sci-frontend-wrapper button.button-secondary,
-.sci-frontend-wrapper .button.button-secondary {
-    background: #28a745 !important;
-    color: white !important;
-    border: none !important;
-    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2) !important;
-}
-
-.sci-frontend-wrapper button.button-secondary:hover,
-.sci-frontend-wrapper .button.button-secondary:hover {
-    background: #1e7e34 !important;
-    color: white !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3) !important;
-}
-
-.sci-frontend-wrapper button.button-secondary:disabled,
-.sci-frontend-wrapper .button.button-secondary:disabled {
-    background: #e9ecef !important;
-    color: #6c757d !important;
-    transform: none !important;
-    box-shadow: none !important;
-    opacity: 0.6 !important;
-}
-
-/* ✅ NOUVEAU : Styles pour éviter les conflits avec les thèmes populaires */
-.sci-frontend-wrapper .elementor-widget-container,
-.sci-frontend-wrapper .elementor-container,
-.sci-frontend-wrapper .elementor-row,
-.sci-frontend-wrapper .elementor-column {
-    background: none !important;
-    border: none !important;
-    box-shadow: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-.sci-frontend-wrapper .wp-block-group,
-.sci-frontend-wrapper .wp-block-columns,
-.sci-frontend-wrapper .wp-block-column {
-    background: none !important;
-    border: none !important;
-    box-shadow: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-/* ✅ NOUVEAU : Animations d'entrée pour les résultats */
-.sci-frontend-wrapper .result-row {
-    animation: slideInUp 0.4s ease-out;
-    transition: var(--transition);
-}
-
-.sci-frontend-wrapper .result-row:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-@keyframes slideInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* ✅ NOUVEAU : Indicateurs de statut visuels */
-.sci-frontend-wrapper .status-indicator {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.sci-frontend-wrapper .status-new {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    color: white;
-    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
-}
-
-.sci-frontend-wrapper .status-contacted {
-    background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
-    color: white;
-    box-shadow: 0 2px 4px rgba(255, 193, 7, 0.3);
-}
-
-/* ✅ NOUVEAU : Tooltips améliorés */
-.sci-frontend-wrapper .tooltip {
-    position: relative;
-    cursor: help;
-}
-
-.sci-frontend-wrapper .tooltip::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: 125%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0,0,0,0.9);
-    color: white;
-    padding: 0.5rem 0.75rem;
-    border-radius: 6px;
-    font-size: 0.8rem;
-    white-space: nowrap;
-    opacity: 0;
-    visibility: hidden;
-    transition: var(--transition);
-    z-index: 1000;
-    pointer-events: none;
-}
-
-.sci-frontend-wrapper .tooltip:hover::after {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* ✅ NOUVEAU : Boutons avec états de chargement */
-.sci-frontend-wrapper .loading {
-    position: relative;
-    pointer-events: none;
-}
-
-.sci-frontend-wrapper .loading::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 16px;
-    height: 16px;
-    margin: -8px 0 0 -8px;
-    border: 2px solid transparent;
-    border-top: 2px solid currentColor;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-/* ✅ NOUVEAU : Notifications toast */
-.sci-frontend-wrapper .toast {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: white;
-    border: 1px solid #dee2e6;
-    border-radius: var(--border-radius);
-    padding: 1rem 1.5rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    z-index: 10000;
-    transform: translateX(100%);
-    transition: var(--transition);
-    max-width: 300px;
-}
-
-.sci-frontend-wrapper .toast.show {
-    transform: translateX(0);
-}
-
-.sci-frontend-wrapper .toast.success {
-    border-left: 4px solid var(--success-color);
-}
-
-.sci-frontend-wrapper .toast.error {
-    border-left: 4px solid var(--danger-color);
-}
-
-/* ✅ NOUVEAU : Filtres et recherche avancée */
-.sci-frontend-wrapper .filters-panel {
-    background: var(--light-bg);
-    padding: 1.5rem;
-    border-radius: var(--border-radius);
-    margin-bottom: 1.5rem;
-    border: 1px solid #dee2e6;
-}
-
-.sci-frontend-wrapper .filter-group {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.sci-frontend-wrapper .filter-group label {
-    font-weight: 500;
-    color: #495057;
-    margin-bottom: 0;
-}
-
-.sci-frontend-wrapper .filter-group select,
-.sci-frontend-wrapper .filter-group input {
-    padding: 0.5rem 0.75rem;
-    border: 1px solid #ced4da;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    min-width: 120px;
-}
-
-/* ✅ NOUVEAU : Statistiques en temps réel */
-.sci-frontend-wrapper .stats-panel {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-
-.sci-frontend-wrapper .stat-card {
-    background: white;
-    padding: 1.5rem;
-    border-radius: var(--border-radius);
-    border: 1px solid #dee2e6;
-    text-align: center;
-    transition: var(--transition);
-}
-
-.sci-frontend-wrapper .stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.sci-frontend-wrapper .stat-number {
-    font-size: 2rem;
-    font-weight: bold;
-    color: var(--primary-color);
-    margin-bottom: 0.5rem;
-}
-
-.sci-frontend-wrapper .stat-label {
-    color: #6c757d;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-/* ✅ NOUVEAU : Mode sombre */
-.sci-frontend-wrapper.dark-mode {
-    --light-bg: #2d3748;
-    --primary-color: #4299e1;
-    --secondary-color: #a0aec0;
-    color: #e2e8f0;
-}
-
-.sci-frontend-wrapper.dark-mode .stat-card,
-.sci-frontend-wrapper.dark-mode .filters-panel {
-    background: #4a5568;
-    border-color: #718096;
-    color: #e2e8f0;
-}
-
-/* ✅ NOUVEAU : Responsive amélioré */
-@media (max-width: 768px) {
-    .sci-frontend-wrapper .filter-group {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .sci-frontend-wrapper .stats-panel {
-        grid-template-columns: 1fr;
-    }
-    
-    .sci-frontend-wrapper .toast {
-        right: 10px;
-        left: 10px;
-        max-width: none;
-    }
-}
-
-/* ✅ NOUVEAU : Styles spécifiques pour le formulaire de recherche SCI */
-.sci-frontend-wrapper #sci-search-form {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: end !important;
-    gap: 1rem !important;
-    flex-wrap: wrap !important;
-    background: #f8f9fa !important;
-    padding: 1.5rem !important;
-    border-radius: 12px !important;
-    margin-bottom: 1.5rem !important;
-    border: 1px solid #e9ecef !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
-    justify-content: space-between;
-}
-
-.sci-frontend-wrapper #sci-search-form label {
-    font-weight: 500 !important;
-    color: #495057 !important;
-    margin: 0 !important;
-    font-size: 0.95rem !important;
-    white-space: nowrap !important;
-    background: none !important;
-    border: none !important;
-}
-
-.sci-frontend-wrapper #sci-search-form select {
-    width: auto !important;
-    min-width: 200px !important;
-    max-width: 300px !important;
-    padding: 0.75rem 1rem !important;
-    border: 2px solid #e9ecef !important;
-    border-radius: 8px !important;
-    margin: 0 !important;
-    font-size: 0.95rem !important;
-    background: white !important;
-    transition: all 0.2s ease !important;
-    appearance: none !important;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e") !important;
-    background-position: right 0.75rem center !important;
-    background-repeat: no-repeat !important;
-    background-size: 1.5em 1.5em !important;
-    padding-right: 2.5rem !important;
-    box-shadow: none !important;
-}
-
-.sci-frontend-wrapper #sci-search-form button {
-    margin: 0 !important;
-    /* align-self: flex-start !important; */
-}
-
-/* ✅ NOUVEAU : Responsive pour le formulaire de recherche */
-@media (max-width: 768px) {
-    .sci-frontend-wrapper #sci-search-form {
-        flex-direction: column !important;
-        align-items: stretch !important;
-        gap: 0.75rem !important;
-    }
-    
-    .sci-frontend-wrapper #sci-search-form label {
-        white-space: normal !important;
-        margin-bottom: 0.25rem !important;
-    }
-    
-    .sci-frontend-wrapper #sci-search-form select {
-        width: 100% !important;
-        min-width: auto !important;
-    }
-    
-    .sci-frontend-wrapper #sci-search-form button {
-        align-self: stretch !important;
-        width: 100% !important;
-    }
-}
-
-/* ✅ NOUVEAU : Styles spécifiques pour le formulaire de recherche SCI dans l'admin */
-#sci-search-form {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    gap: 1rem !important;
-    flex-wrap: wrap !important;
-    background: #f8f9fa !important;
-    padding: 1.5rem !important;
-    border-radius: 12px !important;
-    margin-bottom: 1.5rem !important;
-    border: 1px solid #e9ecef !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
-}
-
-/* ✅ NOUVEAU : Container pour label et select */
-#sci-search-form .form-group {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 0.5rem !important;
-    align-items: flex-start !important;
-}
-
-#sci-search-form label {
-    font-weight: 500 !important;
-    color: #495057 !important;
-    margin: 0 !important;
-    font-size: 0.95rem !important;
-    white-space: nowrap !important;
-    background: none !important;
-    border: none !important;
-}
-
-#sci-search-form select {
-    width: auto !important;
-    min-width: 200px !important;
-    max-width: 300px !important;
-    height: 44px !important;
-    padding: 0.5rem 1rem !important;
-    border: 2px solid #e9ecef !important;
-    border-radius: 8px !important;
-    margin: 0 !important;
-    font-size: 0.95rem !important;
-    background: white !important;
-    transition: all 0.2s ease !important;
-    appearance: none !important;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e") !important;
-    background-position: right 0.75rem center !important;
-    background-repeat: no-repeat !important;
-    background-size: 1.5em 1.5em !important;
-    padding-right: 2.5rem !important;
-    box-shadow: none !important;
-}
-
-#sci-search-form button {
-    margin: 0 !important;
-    /* align-self: flex-start !important; */
-}
-
-/* ✅ NOUVEAU : Responsive pour le formulaire de recherche dans l'admin */
-@media (max-width: 768px) {
-    #sci-search-form {
-        flex-direction: column !important;
-        align-items: stretch !important;
-        gap: 0.75rem !important;
-    }
-    
-    #sci-search-form .form-group {
-        align-items: stretch !important;
-    }
-    
-    #sci-search-form label {
-        white-space: normal !important;
-        margin-bottom: 0.25rem !important;
-    }
-    
-    #sci-search-form select {
-        width: 100% !important;
-        min-width: auto !important;
-    }
-    
-    #sci-search-form button {
-        align-self: stretch !important;
-        width: 100% !important;
-    }
-}
-
-/* ✅ NOUVEAU : Styles verts pour les boutons dans l'admin */
-#sci-search-form button,
-#sci-search-form .button,
-button.button-primary,
-.button.button-primary,
-button.button-secondary,
-.button.button-secondary {
-    background: #28a745 !important;
-    color: white !important;
-    border: none !important;
-    padding: 0.75rem 1.5rem !important;
-    border-radius: 8px !important;
-    cursor: pointer !important;
-    font-weight: 500 !important;
-    font-size: 0.95rem !important;
-    margin-right: 0.75rem !important;
-    margin-bottom: 0.75rem !important;
-    transition: all 0.2s ease !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 0.5rem !important;
-    text-decoration: none !important;
-    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2) !important;
-    font-family: inherit !important;
-    outline: none !important;
-    min-height: 44px !important;
-    line-height: 1.2 !important;
-    vertical-align: middle !important;
-    position: relative !important;
-    overflow: hidden !important;
-}
-
-#sci-search-form button:hover,
-#sci-search-form .button:hover,
-button.button-primary:hover,
-.button.button-primary:hover,
-button.button-secondary:hover,
-.button.button-secondary:hover {
-    background: #1e7e34 !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3) !important;
-    text-decoration: none !important;
-    color: white !important;
-}
-
-#sci-search-form button:focus,
-#sci-search-form .button:focus,
-button.button-primary:focus,
-.button.button-primary:focus,
-button.button-secondary:focus,
-.button.button-secondary:focus {
-    outline: 2px solid #28a745 !important;
-    outline-offset: 2px !important;
-}
-
-#sci-search-form button:disabled,
-#sci-search-form .button:disabled,
-button.button-primary:disabled,
-.button.button-primary:disabled,
-button.button-secondary:disabled,
-.button.button-secondary:disabled {
-    background: #e9ecef !important;
-    color: #6c757d !important;
-    transform: none !important;
-    box-shadow: none !important;
-    opacity: 0.6 !important;
-}
-
-/* ✅ NOUVEAU : Correction du problème de chargement sur les boutons dans l'admin */
-#sci-search-form button:disabled::after,
-#sci-search-form .button:disabled::after,
-button.button-primary:disabled::after,
-.button.button-primary:disabled::after,
-button.button-secondary:disabled::after,
-.button.button-secondary:disabled::after {
-    display: none !important;
-}
-
-/* ✅ NOUVEAU : Container pour label et select dans le frontend */
-.sci-frontend-wrapper #sci-search-form .form-group {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 0.5rem !important;
-    align-items: flex-start !important;
-}
-
-.sci-frontend-wrapper #sci-search-form .form-group label {
-    font-weight: 500 !important;
-    color: #495057 !important;
-    margin: 0 !important;
-    font-size: 0.65rem !important;
-    white-space: nowrap !important;
-    background: none !important;
-    border: none !important;
-}
-
-.sci-frontend-wrapper #sci-search-form .form-group select {
-    width: auto !important;
-    min-width: 200px !important;
-    max-width: 300px !important;
-    height: 44px !important;
-    padding: 0.5rem 1rem !important;
-    border: 2px solid #e9ecef !important;
-    border-radius: 8px !important;
-    margin: 0 !important;
-    font-size: 0.95rem !important;
-    background: white !important;
-    transition: all 0.2s ease !important;
-    appearance: none !important;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e") !important;
-    background-position: right 0.75rem center !important;
-    background-repeat: no-repeat !important;
-    background-size: 1.5em 1.5em !important;
-    padding-right: 2.5rem !important;
-    box-shadow: none !important;
-}
-
-/* ✅ NOUVEAU : Responsive pour le formulaire de recherche dans le frontend */
-@media (max-width: 768px) {
-    .sci-frontend-wrapper #sci-search-form .form-group {
-        align-items: stretch !important;
-    }
-    
-    .sci-frontend-wrapper #sci-search-form .form-group label {
-        white-space: normal !important;
-        margin-bottom: 0.25rem !important;
-    }
-    
-    .sci-frontend-wrapper #sci-search-form .form-group select {
-        width: 100% !important;
-        min-width: auto !important;
-    }
-}
-
-/* ✅ NOUVEAU : Styles spécifiques pour les boutons favoris */
-.sci-frontend-wrapper button.fav-btn,
-button.fav-btn,
-.sci-frontend-wrapper .fav-btn,
-.fav-btn {
-    font-size: 1.5rem !important;
-    background: none !important;
-    background-image: none !important;
-    background-color: transparent !important;
-    border: none !important;
-    border-radius: 0 !important;
-    cursor: pointer !important;
-    color: #ccc !important;
-    transition: all 0.3s ease !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    line-height: 1 !important;
-    vertical-align: middle !important;
-    outline: none !important;
-    box-shadow: none !important;
-    transform: none !important;
-    font-family: inherit !important;
-    font-weight: normal !important;
-    text-decoration: none !important;
-    display: inline-block !important;
-    min-height: auto !important;
-    min-width: auto !important;
-    width: auto !important;
-    height: auto !important;
-}
-
-.sci-frontend-wrapper button.fav-btn:hover,
-button.fav-btn:hover,
-.sci-frontend-wrapper .fav-btn:hover,
-.fav-btn:hover {
-    color: orange !important;
-    background: none !important;
-    background-image: none !important;
-    background-color: transparent !important;
-    border: none !important;
-    transform: scale(1.1) !important;
-    box-shadow: none !important;
-    text-decoration: none !important;
-}
-
-.sci-frontend-wrapper button.fav-btn.favori,
-button.fav-btn.favori,
-.sci-frontend-wrapper .fav-btn.favori,
-.fav-btn.favori {
-    color: gold !important;
-    background: none !important;
-    background-image: none !important;
-    background-color: transparent !important;
-    border: none !important;
-    transform: none !important;
-    box-shadow: none !important;
-}
-
-.sci-frontend-wrapper button.fav-btn.favori:hover,
-button.fav-btn.favori:hover,
-.sci-frontend-wrapper .fav-btn.favori:hover,
-.fav-btn.favori:hover {
-    color: #ffd700 !important;
-    background: none !important;
-    background-image: none !important;
-    background-color: transparent !important;
-    border: none !important;
-    transform: scale(1.1) !important;
-    box-shadow: none !important;
-}
-
-.sci-frontend-wrapper button.fav-btn:focus,
-button.fav-btn:focus,
-.sci-frontend-wrapper .fav-btn:focus,
-.fav-btn:focus {
-    outline: none !important;
-    box-shadow: none !important;
-    background: none !important;
-    border: none !important;
-}
-
-.sci-frontend-wrapper button.fav-btn:active,
-button.fav-btn:active,
-.sci-frontend-wrapper .fav-btn:active,
-.fav-btn:active {
-    background: none !important;
-    border: none !important;
-    transform: scale(0.95) !important;
-}
-
-/* ✅ NOUVEAU : Masquer les informations de pagination dans les shortcodes */
-.sci-frontend-wrapper #pagination-info {
-    display: none !important;
-}
-
-/* ✅ NOUVEAU : Réduire la taille du titre des résultats */
-.sci-frontend-wrapper #results-title {
-    font-size: 10px !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-/* ✅ NOUVEAU : Masquer le label "Résultats par page" */
-.sci-frontend-wrapper .pagination-size label {
-    display: none !important;
-}
-
-/* ✅ NOUVEAU : Pagination minimaliste pour les shortcodes */
-.sci-frontend-wrapper #pagination-controls {
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    gap: 0.5rem !important;
-    margin: 1rem 0 !important;
-    padding: 0.5rem !important;
-    background: #f8f9fa !important;
-    border-radius: 6px !important;
-    border: 1px solid #e9ecef !important;
-}
-
-.sci-frontend-wrapper .pagination-main {
-    display: flex !important;
-    align-items: center !important;
-    gap: 0.5rem !important;
-}
-
-.sci-frontend-wrapper #pagination-controls button {
-    background: #28a745 !important;
-    color: white !important;
-    border: none !important;
-    padding: 0.25rem 0.5rem !important;
-    border-radius: 0 !important;
-    cursor: pointer !important;
-    font-size: 0.8rem !important;
-    font-weight: 500 !important;
-    min-width: 30px !important;
-    height: 30px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    transition: all 0.2s ease !important;
-    box-shadow: none !important;
-}
-
-.sci-frontend-wrapper #pagination-controls button:hover {
-    background: #1e7e34 !important;
-    transform: none !important;
-    box-shadow: none !important;
-}
-
-.sci-frontend-wrapper #pagination-controls button:disabled {
-    background: #e9ecef !important;
-    color: #6c757d !important;
-    cursor: not-allowed !important;
-    transform: none !important;
-    box-shadow: none !important;
-    border: none !important;
-}
-
-/* ✅ NOUVEAU : Styles pour tous les boutons de pagination (plats) */
-.sci-frontend-wrapper #pagination-controls button,
-.sci-frontend-wrapper #prev-page,
-.sci-frontend-wrapper #next-page {
-    border: none !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    outline: none !important;
-}
-
-.sci-frontend-wrapper #pagination-controls button:hover,
-.sci-frontend-wrapper #prev-page:hover,
-.sci-frontend-wrapper #next-page:hover {
-    transform: none !important;
-    box-shadow: none !important;
-    border: none !important;
-}
-
-.sci-frontend-wrapper #pagination-controls button:focus,
-.sci-frontend-wrapper #prev-page:focus,
-.sci-frontend-wrapper #next-page:focus {
-    outline: none !important;
-    box-shadow: none !important;
-    border: none !important;
-}
-
-.sci-frontend-wrapper #page-info {
-    background: #e9ecef !important;
-    color: #495057 !important;
-    padding: 0.25rem 0.5rem !important;
-    border-radius: 4px !important;
-    font-size: 0.8rem !important;
-    font-weight: 500 !important;
-    min-width: 40px !important;
-    text-align: center !important;
-    border: 1px solid #dee2e6 !important;
-}
-
-/* ✅ NOUVEAU : Masquer complètement la section pagination-size */
-.sci-frontend-wrapper .pagination-size {
-    display: none !important;
-}
-
-/* ✅ NOUVEAU : Tooltip pour le bouton "Créer une campagne" */
-#send-letters-btn,
-.sci-frontend-wrapper #send-letters-btn {
-    position: relative !important;
-    cursor: pointer !important;
-}
-
-#send-letters-btn::after,
-.sci-frontend-wrapper #send-letters-btn::after {
-    content: attr(data-tooltip) !important;
-    position: absolute !important;
-    bottom: 125% !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    background: rgba(0, 0, 0, 0.9) !important;
-    color: white !important;
-    padding: 0.75rem 1rem !important;
-    border-radius: 8px !important;
-    font-size: 0.85rem !important;
-    font-weight: 400 !important;
-    white-space: nowrap !important;
-    opacity: 0 !important;
-    visibility: hidden !important;
-    transition: all 0.3s ease !important;
-    z-index: 1000 !important;
-    pointer-events: none !important;
-    max-width: 300px !important;
-    text-align: center !important;
-    line-height: 1.4 !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
-}
-
-#send-letters-btn::before,
-.sci-frontend-wrapper #send-letters-btn::before {
-    content: '' !important;
-    position: absolute !important;
-    bottom: 120% !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    border: 6px solid transparent !important;
-    border-top-color: rgba(0, 0, 0, 0.9) !important;
-    opacity: 0 !important;
-    visibility: hidden !important;
-    transition: all 0.3s ease !important;
-    z-index: 1000 !important;
-    pointer-events: none !important;
-}
-
-#send-letters-btn:hover::after,
-.sci-frontend-wrapper #send-letters-btn:hover::after {
-    opacity: 1 !important;
-    visibility: visible !important;
-    transform: translateX(-50%) translateY(-5px) !important;
-}
-
-#send-letters-btn:hover::before,
-.sci-frontend-wrapper #send-letters-btn:hover::before {
-    opacity: 1 !important;
-    visibility: visible !important;
-    transform: translateX(-50%) translateY(-5px) !important;
-}
-
-/* ✅ NOUVEAU : Responsive pour le tooltip */
-@media (max-width: 768px) {
-    #send-letters-btn::after,
-    .sci-frontend-wrapper #send-letters-btn::after {
-        white-space: normal !important;
-        max-width: 250px !important;
-        font-size: 0.8rem !important;
-        padding: 0.5rem 0.75rem !important;
-    }
-}
-
-/* ✅ NOUVEAU : Styles pour les boutons WooCommerce - RENFORCÉS */
-.woocommerce button.button,
-.woocommerce input.button,
-.woocommerce .button,
-.woocommerce #respond input#submit,
-.woocommerce a.button,
-.woocommerce button.button.alt,
-.woocommerce input.button.alt,
-.woocommerce .button.alt,
-.woocommerce #respond input#submit.alt,
-.woocommerce a.button.alt,
-.woocommerce button.button.alt.disabled,
-.woocommerce button.button.alt:disabled,
-.woocommerce button.button.alt:disabled[disabled],
-.woocommerce input.button.alt.disabled,
-.woocommerce input.button.alt:disabled,
-.woocommerce input.button.alt:disabled[disabled],
-.woocommerce .button.alt.disabled,
-.woocommerce .button.alt:disabled,
-.woocommerce .button.alt:disabled[disabled],
-.woocommerce #respond input#submit.alt.disabled,
-.woocommerce #respond input#submit.alt:disabled,
-.woocommerce #respond input#submit.alt:disabled[disabled],
-.woocommerce a.button.alt.disabled,
-.woocommerce a.button.alt:disabled,
-.woocommerce a.button.alt:disabled[disabled],
-.woocommerce button.button.alt:hover,
-.woocommerce input.button.alt:hover,
-.woocommerce .button.alt:hover,
-.woocommerce #respond input#submit.alt:hover,
-.woocommerce a.button.alt:hover,
-.woocommerce button.button:hover,
-.woocommerce input.button:hover,
-.woocommerce .button:hover,
-.woocommerce #respond input#submit:hover,
-.woocommerce a.button:hover,
-.woocommerce button.button:focus,
-.woocommerce input.button:focus,
-.woocommerce .button:focus,
-.woocommerce #respond input#submit:focus,
-.woocommerce a.button:focus,
-.woocommerce button.button.alt:focus,
-.woocommerce input.button.alt:focus,
-.woocommerce .button.alt:focus,
-.woocommerce #respond input#submit.alt:focus,
-.woocommerce a.button.alt:focus,
-/* ✅ NOUVEAU : Sélecteurs supplémentaires pour WooCommerce */
-button.button,
-input.button,
-.button,
-#respond input#submit,
-a.button,
-button.button.alt,
-input.button.alt,
-.button.alt,
-#respond input#submit.alt,
-a.button.alt,
-/* ✅ NOUVEAU : Sélecteurs pour les boutons de produit */
-.woocommerce .products .product .button,
-.woocommerce .products .product button,
-.woocommerce .products .product input[type="submit"],
-.woocommerce .products .product a.button,
-/* ✅ NOUVEAU : Sélecteurs pour les boutons de panier */
-.woocommerce .cart .button,
-.woocommerce .cart button,
-.woocommerce .cart input[type="submit"],
-.woocommerce .cart a.button,
-/* ✅ NOUVEAU : Sélecteurs pour les boutons de checkout */
-.woocommerce .checkout .button,
-.woocommerce .checkout button,
-.woocommerce .checkout input[type="submit"],
-.woocommerce .checkout a.button,
-/* ✅ NOUVEAU : Sélecteurs pour les boutons de my-account */
-.woocommerce .my-account .button,
-.woocommerce .my-account button,
-.woocommerce .my-account input[type="submit"],
-.woocommerce .my-account a.button,
-/* ✅ NOUVEAU : Sélecteurs génériques pour tous les boutons */
-body .woocommerce button,
-body .woocommerce input[type="submit"],
-body .woocommerce .button,
-body .woocommerce a.button,
-body button.button,
-body input.button,
-body .button,
-body #respond input#submit,
-body a.button {
-    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 6px !important;
-    padding: 12px 24px !important;
-    font-weight: 600 !important;
-    transition: all 0.3s ease !important;
-    text-transform: none !important;
-    text-decoration: none !important;
-    display: inline-block !important;
-    cursor: pointer !important;
-    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2) !important;
-    outline: none !important;
-    min-height: 44px !important;
-    line-height: 1.2 !important;
-    vertical-align: middle !important;
-    position: relative !important;
-    overflow: hidden !important;
-    font-family: inherit !important;
-}
-
-.woocommerce button.button:hover,
-.woocommerce input.button:hover,
-.woocommerce .button:hover,
-.woocommerce #respond input#submit:hover,
-.woocommerce a.button:hover,
-.woocommerce button.button.alt:hover,
-.woocommerce input.button.alt:hover,
-.woocommerce .button.alt:hover,
-.woocommerce #respond input#submit.alt:hover,
-.woocommerce a.button.alt:hover,
-/* ✅ NOUVEAU : Hover pour tous les boutons WooCommerce */
-button.button:hover,
-input.button:hover,
-.button:hover,
-#respond input#submit:hover,
-a.button:hover,
-button.button.alt:hover,
-input.button.alt:hover,
-.button.alt:hover,
-#respond input#submit.alt:hover,
-a.button.alt:hover,
-.woocommerce .products .product .button:hover,
-.woocommerce .products .product button:hover,
-.woocommerce .products .product input[type="submit"]:hover,
-.woocommerce .products .product a.button:hover,
-.woocommerce .cart .button:hover,
-.woocommerce .cart button:hover,
-.woocommerce .cart input[type="submit"]:hover,
-.woocommerce .cart a.button:hover,
-.woocommerce .checkout .button:hover,
-.woocommerce .checkout button:hover,
-.woocommerce .checkout input[type="submit"]:hover,
-.woocommerce .checkout a.button:hover,
-.woocommerce .my-account .button:hover,
-.woocommerce .my-account button:hover,
-.woocommerce .my-account input[type="submit"]:hover,
-.woocommerce .my-account a.button:hover,
-body .woocommerce button:hover,
-body .woocommerce input[type="submit"]:hover,
-body .woocommerce .button:hover,
-body .woocommerce a.button:hover,
-body button.button:hover,
-body input.button:hover,
-body .button:hover,
-body #respond input#submit:hover,
-body a.button:hover {
-    background: linear-gradient(135deg, #1e7e34 0%, #155724 100%) !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3) !important;
-    text-decoration: none !important;
-    color: white !important;
-}
-
-.woocommerce button.button:focus,
-.woocommerce input.button:focus,
-.woocommerce .button:focus,
-.woocommerce #respond input#submit:focus,
-.woocommerce a.button:focus,
-.woocommerce button.button.alt:focus,
-.woocommerce input.button.alt:focus,
-.woocommerce .button.alt:focus,
-.woocommerce #respond input#submit.alt:focus,
-.woocommerce a.button.alt:focus {
-    outline: 2px solid #28a745 !important;
-    outline-offset: 2px !important;
-    color: white !important;
-}
-
-.woocommerce button.button:disabled,
-.woocommerce input.button:disabled,
-.woocommerce .button:disabled,
-.woocommerce #respond input#submit:disabled,
-.woocommerce a.button:disabled,
-.woocommerce button.button.alt:disabled,
-.woocommerce input.button.alt:disabled,
-.woocommerce .button.alt:disabled,
-.woocommerce #respond input#submit.alt:disabled,
-.woocommerce a.button.alt:disabled,
-.woocommerce button.button.disabled,
-.woocommerce input.button.disabled,
-.woocommerce .button.disabled,
-.woocommerce #respond input#submit.disabled,
-.woocommerce a.button.disabled,
-.woocommerce button.button.alt.disabled,
-.woocommerce input.button.alt.disabled,
-.woocommerce .button.alt.disabled,
-.woocommerce #respond input#submit.alt.disabled,
-.woocommerce a.button.alt.disabled {
-    background: #e9ecef !important;
-    color: #6c757d !important;
-    transform: none !important;
-    box-shadow: none !important;
-    opacity: 0.6 !important;
-    cursor: not-allowed !important;
-}
-
-/* ✅ NOUVEAU : Styles pour les boutons WooCommerce dans les iframes et popups */
-#embedded-checkout button,
-#embedded-checkout input[type="submit"],
-#embedded-checkout .button,
-#embedded-checkout .woocommerce button,
-#embedded-checkout .woocommerce input.button,
-#embedded-checkout .woocommerce .button,
-#embedded-checkout .woocommerce #respond input#submit,
-#embedded-checkout .woocommerce a.button,
-#checkout-container button,
-#checkout-container input[type="submit"],
-#checkout-container .button,
-#checkout-container .woocommerce button,
-#checkout-container .woocommerce input.button,
-#checkout-container .woocommerce .button,
-#checkout-container .woocommerce #respond input#submit,
-#checkout-container .woocommerce a.button {
-    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 6px !important;
-    padding: 12px 24px !important;
-    font-weight: 600 !important;
-    transition: all 0.3s ease !important;
-    text-transform: none !important;
-    text-decoration: none !important;
-    display: inline-block !important;
-    cursor: pointer !important;
-    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2) !important;
-    outline: none !important;
-    min-height: 44px !important;
-    line-height: 1.2 !important;
-    vertical-align: middle !important;
-    position: relative !important;
-    overflow: hidden !important;
-}
-
-#embedded-checkout button:hover,
-#embedded-checkout input[type="submit"]:hover,
-#embedded-checkout .button:hover,
-#embedded-checkout .woocommerce button:hover,
-#embedded-checkout .woocommerce input.button:hover,
-#embedded-checkout .woocommerce .button:hover,
-#embedded-checkout .woocommerce #respond input#submit:hover,
-#embedded-checkout .woocommerce a.button:hover,
-#checkout-container button:hover,
-#checkout-container input[type="submit"]:hover,
-#checkout-container .button:hover,
-#checkout-container .woocommerce button:hover,
-#checkout-container .woocommerce input.button:hover,
-#checkout-container .woocommerce .button:hover,
-#checkout-container .woocommerce #respond input#submit:hover,
-#checkout-container .woocommerce a.button:hover {
-    background: linear-gradient(135deg, #1e7e34 0%, #155724 100%) !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3) !important;
-    text-decoration: none !important;
-    color: white !important;
-}
-
-/* ✅ NOUVEAU : Styles pour les boutons de paiement WooCommerce spécifiques */
-.woocommerce-checkout button#place_order,
-.woocommerce-checkout input#place_order,
-.woocommerce-checkout .button#place_order,
-.woocommerce-checkout .woocommerce button#place_order,
-.woocommerce-checkout .woocommerce input#place_order,
-.woocommerce-checkout .woocommerce .button#place_order,
-/* ✅ NOUVEAU : Styles pour tous les boutons de commande */
-#place_order,
-button#place_order,
-input#place_order,
-.button#place_order,
-.woocommerce #place_order,
-.woocommerce button#place_order,
-.woocommerce input#place_order,
-.woocommerce .button#place_order {
-    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 6px !important;
-    padding: 16px 32px !important;
-    font-weight: 700 !important;
-    font-size: 16px !important;
-    transition: all 0.3s ease !important;
-    text-transform: none !important;
-    text-decoration: none !important;
-    display: inline-block !important;
-    cursor: pointer !important;
-    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3) !important;
-    outline: none !important;
-    min-height: 50px !important;
-    line-height: 1.2 !important;
-    vertical-align: middle !important;
-    position: relative !important;
-    overflow: hidden !important;
-    width: 100% !important;
-    max-width: 300px !important;
-}
-
-.woocommerce-checkout button#place_order:hover,
-.woocommerce-checkout input#place_order:hover,
-.woocommerce-checkout .button#place_order:hover,
-.woocommerce-checkout .woocommerce button#place_order:hover,
-.woocommerce-checkout .woocommerce input#place_order:hover,
-.woocommerce-checkout .woocommerce .button#place_order:hover {
-    background: linear-gradient(135deg, #1e7e34 0%, #155724 100%) !important;
-    transform: translateY(-2px) !important;
-    box-shadow: 0 6px 12px rgba(40, 167, 69, 0.4) !important;
-    text-decoration: none !important;
-    color: white !important;
-}
-
-/* ✅ NOUVEAU : Styles pour les boutons de navigation WooCommerce */
-.woocommerce .woocommerce-breadcrumb a,
-.woocommerce .woocommerce-breadcrumb .breadcrumb-separator,
-.woocommerce .woocommerce-breadcrumb .breadcrumb-separator:before {
-    color: #28a745 !important;
-}
-
-.woocommerce .woocommerce-breadcrumb a:hover {
-    color: #1e7e34 !important;
-    text-decoration: none !important;
-}
-
-/* ✅ NOUVEAU : Styles pour les liens WooCommerce */
-.woocommerce a,
-.woocommerce a:visited {
-    color: #28a745 !important;
-}
-
-.woocommerce a:hover,
-.woocommerce a:focus {
-    color: #1e7e34 !important;
-    text-decoration: none !important;
-}
-
-/* ✅ NOUVEAU : Styles pour les boutons de quantité WooCommerce */
-.woocommerce .quantity .qty {
-    border: 2px solid #e9ecef !important;
-    border-radius: 6px !important;
-    padding: 8px 12px !important;
-    font-size: 14px !important;
-    transition: all 0.2s ease !important;
-}
-
-.woocommerce .quantity .qty:focus {
-    border-color: #28a745 !important;
-    outline: none !important;
-    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1) !important;
-}
-
-/* ✅ NOUVEAU : Styles pour les boutons de quantité */
-.woocommerce .quantity .plus,
-.woocommerce .quantity .minus {
-    background: #28a745 !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 4px !important;
-    padding: 8px 12px !important;
-    font-weight: 600 !important;
-    transition: all 0.2s ease !important;
-    cursor: pointer !important;
-}
-
-.woocommerce .quantity .plus:hover,
-.woocommerce .quantity .minus:hover {
-    background: #1e7e34 !important;
-    transform: translateY(-1px) !important;
-}
-
-/* ✅ NOUVEAU : Styles génériques pour TOUS les boutons WooCommerce - ULTRA RENFORCÉS */
-*[class*="woocommerce"] button,
-*[class*="woocommerce"] input[type="submit"],
-*[class*="woocommerce"] .button,
-*[class*="woocommerce"] a.button,
-*[class*="woocommerce"] button.button,
-*[class*="woocommerce"] input.button,
-*[class*="woocommerce"] #respond input#submit,
-*[class*="woocommerce"] button.button.alt,
-*[class*="woocommerce"] input.button.alt,
-*[class*="woocommerce"] .button.alt,
-*[class*="woocommerce"] #respond input#submit.alt,
-*[class*="woocommerce"] a.button.alt,
-/* ✅ NOUVEAU : Styles pour les boutons avec des classes contenant "add-to-cart" */
-*[class*="add-to-cart"] button,
-*[class*="add-to-cart"] input[type="submit"],
-*[class*="add-to-cart"] .button,
-*[class*="add-to-cart"] a.button,
-/* ✅ NOUVEAU : Styles pour les boutons avec des classes contenant "checkout" */
-*[class*="checkout"] button,
-*[class*="checkout"] input[type="submit"],
-*[class*="checkout"] .button,
-*[class*="checkout"] a.button,
-/* ✅ NOUVEAU : Styles pour les boutons avec des classes contenant "cart" */
-*[class*="cart"] button,
-*[class*="cart"] input[type="submit"],
-*[class*="cart"] .button,
-*[class*="cart"] a.button,
-/* ✅ NOUVEAU : Styles pour les boutons avec des classes contenant "order" */
-*[class*="order"] button,
-*[class*="order"] input[type="submit"],
-*[class*="order"] .button,
-*[class*="order"] a.button {
-    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 6px !important;
-    padding: 12px 24px !important;
-    font-weight: 600 !important;
-    transition: all 0.3s ease !important;
-    text-transform: none !important;
-    text-decoration: none !important;
-    display: inline-block !important;
-    cursor: pointer !important;
-    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2) !important;
-    outline: none !important;
-    min-height: 44px !important;
-    line-height: 1.2 !important;
-    vertical-align: middle !important;
-    position: relative !important;
-    overflow: hidden !important;
-    font-family: inherit !important;
-}
-
-/* ✅ NOUVEAU : Hover pour TOUS les boutons WooCommerce - ULTRA RENFORCÉS */
-*[class*="woocommerce"] button:hover,
-*[class*="woocommerce"] input[type="submit"]:hover,
-*[class*="woocommerce"] .button:hover,
-*[class*="woocommerce"] a.button:hover,
-*[class*="woocommerce"] button.button:hover,
-*[class*="woocommerce"] input.button:hover,
-*[class*="woocommerce"] #respond input#submit:hover,
-*[class*="woocommerce"] button.button.alt:hover,
-*[class*="woocommerce"] input.button.alt:hover,
-*[class*="woocommerce"] .button.alt:hover,
-*[class*="woocommerce"] #respond input#submit.alt:hover,
-*[class*="woocommerce"] a.button.alt:hover,
-*[class*="add-to-cart"] button:hover,
-*[class*="add-to-cart"] input[type="submit"]:hover,
-*[class*="add-to-cart"] .button:hover,
-*[class*="add-to-cart"] a.button:hover,
-*[class*="checkout"] button:hover,
-*[class*="checkout"] input[type="submit"]:hover,
-*[class*="checkout"] .button:hover,
-*[class*="checkout"] a.button:hover,
-*[class*="cart"] button:hover,
-*[class*="cart"] input[type="submit"]:hover,
-*[class*="cart"] .button:hover,
-*[class*="cart"] a.button:hover,
-*[class*="order"] button:hover,
-*[class*="order"] input[type="submit"]:hover,
-*[class*="order"] .button:hover,
-*[class*="order"] a.button:hover {
-    background: linear-gradient(135deg, #1e7e34 0%, #155724 100%) !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3) !important;
-    text-decoration: none !important;
-    color: white !important;
-}
-
-/* ✅ NOUVEAU : Styles pour les boutons WooCommerce dans les iframes - RENFORCÉS */
-iframe .woocommerce button,
-iframe .woocommerce input[type="submit"],
-iframe .woocommerce .button,
-iframe .woocommerce a.button,
-iframe button.button,
-iframe input.button,
-iframe .button,
-iframe #respond input#submit,
-iframe a.button,
-iframe *[class*="woocommerce"] button,
-iframe *[class*="woocommerce"] input[type="submit"],
-iframe *[class*="woocommerce"] .button,
-iframe *[class*="woocommerce"] a.button {
-    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 6px !important;
-    padding: 12px 24px !important;
-    font-weight: 600 !important;
-    transition: all 0.3s ease !important;
-    text-transform: none !important;
-    text-decoration: none !important;
-    display: inline-block !important;
-    cursor: pointer !important;
-    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2) !important;
-    outline: none !important;
-    min-height: 44px !important;
-    line-height: 1.2 !important;
-    vertical-align: middle !important;
-    position: relative !important;
-    overflow: hidden !important;
-    font-family: inherit !important;
-}
-
-/* ========================================
-   STYLES POUR LES SHORTCODES SCI_FAVORIS ET SCI_CAMPAIGNS
-   ======================================== */
-
-/* Styles généraux pour les shortcodes SCI */
-.wrap {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-.wrap h1 {
-    color: #1e1e1e;
-    font-size: 2em;
-    font-weight: 600;
-    margin-bottom: 30px;
-    padding-bottom: 15px;
-    border-bottom: 3px solid #28a745;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-/* Styles pour les tableaux des shortcodes */
-.wrap table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
-}
-
-.wrap table th {
-    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
-    color: white;
-    font-weight: 600;
-    padding: 15px 12px;
-    text-align: left;
-    font-size: 14px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.wrap table td {
-    padding: 12px;
-    border-bottom: 1px solid #e9ecef;
-    font-size: 13px;
-    color: #545454;
-    vertical-align: middle;
-}
-
-.wrap table tr:hover {
-    background-color: #f8f9fa;
-    transition: background-color 0.2s ease;
-}
-
-.wrap table tr:last-child td {
-    border-bottom: none;
-}
-
-/* Styles pour les boutons dans les shortcodes */
-.wrap .button {
-    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 8px 16px;
-    font-weight: 600;
-    font-size: 12px;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    display: inline-block;
-    cursor: pointer;
-    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
-    outline: none;
-    min-height: 36px;
-    line-height: 1.2;
-    vertical-align: middle;
-    position: relative;
-    overflow: hidden;
-}
-
-.wrap .button:hover {
-    background: linear-gradient(135deg, #1e7e34 0%, #155724 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
-    text-decoration: none;
-    color: white;
-}
-
-.wrap .button:focus {
-    outline: 2px solid #28a745;
-    outline-offset: 2px;
-}
-
-.wrap .button.button-small {
-    padding: 6px 12px;
-    font-size: 11px;
-    min-height: 32px;
-}
-
-/* Styles pour les boutons de suppression des favoris */
-.wrap .remove-fav-btn {
-    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 6px !important;
-    padding: 6px 12px !important;
-    font-weight: 600 !important;
-    font-size: 11px !important;
-    transition: all 0.3s ease !important;
-    text-decoration: none !important;
-    display: inline-block !important;
-    cursor: pointer !important;
-    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2) !important;
-    outline: none !important;
-    min-height: 32px !important;
-    line-height: 1.2 !important;
-    vertical-align: middle !important;
-    position: relative !important;
-    overflow: hidden !important;
-}
-
-.wrap .remove-fav-btn:hover {
-    background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%) !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3) !important;
-    text-decoration: none !important;
-    color: white !important;
-}
-
-/* Styles pour les liens Google Maps */
-.wrap .maps-link {
-    display: inline-block;
-    padding: 6px 12px;
-    background: linear-gradient(135deg, #4285f4 0%, #3367d6 100%);
-    color: white;
-    text-decoration: none;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(66, 133, 244, 0.2);
-}
-
-.wrap .maps-link:hover {
-    background: linear-gradient(135deg, #3367d6 0%, #2a56c6 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(66, 133, 244, 0.3);
-    color: white;
-    text-decoration: none;
-}
-
-.wrap .maps-link:focus {
-    outline: 2px solid #4285f4;
-    outline-offset: 2px;
-}
-
-/* Styles pour les notices et messages */
-.wrap .notice {
-    margin: 20px 0;
-    padding: 15px;
-    border-left: 4px solid;
-    background: #fff;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.wrap .notice-info {
-    border-left-color: #17a2b8;
-    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
-}
-
-.wrap .notice p {
-    margin: 0;
-    font-size: 14px;
-    line-height: 1.5;
-    color: #0c5460;
-}
-
-/* Styles pour les messages d'erreur */
-.wrap .sci-error {
-    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
-    border: 1px solid #f5c6cb;
-    border-radius: 8px;
-    padding: 15px;
-    margin: 20px 0;
-    color: #721c24;
-    font-weight: 500;
-    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.1);
-}
-
-/* Styles pour les détails de campagne */
-.wrap .campaign-details {
-    background: #fff;
-    padding: 25px;
-    margin: 20px 0;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.wrap .campaign-details h3 {
-    color: #1e1e1e;
-    font-size: 1.3em;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #e9ecef;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.wrap .campaign-details h4 {
-    color: #495057;
-    font-size: 1.1em;
-    margin: 20px 0 10px 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.wrap .campaign-content {
-    background: #f8f9fa;
-    padding: 20px;
-    border-left: 4px solid #0073aa;
-    border-radius: 4px;
-    margin: 15px 0;
-    font-size: 14px;
-    line-height: 1.6;
-    color: #495057;
-}
-
-/* Styles pour les statuts de campagne */
-.wrap .status-labels {
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.wrap .status-draft {
-    background: #fff3cd;
-    color: #856404;
-}
-
-.wrap .status-processing {
-    background: #d1ecf1;
-    color: #0c5460;
-}
-
-.wrap .status-completed {
-    background: #d4edda;
-    color: #155724;
-}
-
-.wrap .status-completed_with_errors {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-/* Styles pour les liens de navigation */
-.wrap .back-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 20px;
-    color: #28a745;
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.3s ease;
-}
-
-.wrap .back-link:hover {
-    color: #1e7e34;
-    text-decoration: none;
-}
-
-/* Styles pour les codes UID */
-.wrap code {
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 4px;
-    padding: 2px 6px;
-    font-family: 'Courier New', monospace;
-    font-size: 12px;
-    color: #495057;
-}
-
-/* Styles pour les messages d'erreur dans les tableaux */
-.wrap .error-message {
-    color: #dc3545;
-    font-size: 11px;
-    font-weight: 500;
-}
-
-/* Responsive design pour les shortcodes */
-@media (max-width: 768px) {
-    .wrap {
-        padding: 15px;
-    }
-    
-    .wrap h1 {
-        font-size: 1.5em;
-        margin-bottom: 20px;
-    }
-    
-    .wrap table {
-        font-size: 12px;
-    }
-    
-    .wrap table th,
-    .wrap table td {
-        padding: 8px 6px;
-    }
-    
-    .wrap .button {
-        padding: 6px 10px;
-        font-size: 11px;
-        min-height: 32px;
-    }
-    
-    .wrap .maps-link {
-        padding: 4px 8px;
-        font-size: 10px;
-    }
-    
-    .wrap .remove-fav-btn {
-        padding: 4px 8px;
-        font-size: 10px;
-        min-height: 28px;
-    }
-    
-    .wrap .campaign-details {
-        padding: 15px;
-    }
-    
-    .wrap .campaign-content {
-        padding: 15px;
-        font-size: 13px;
-    }
-}
-
-@media (max-width: 480px) {
-    .wrap table {
-        display: block;
-        overflow-x: auto;
-        white-space: nowrap;
-    }
-    
-    .wrap table th,
-    .wrap table td {
-        min-width: 100px;
-    }
-    
-    .wrap h1 {
-        font-size: 1.3em;
-    }
-    
-    .wrap .button {
-        width: 100%;
-        margin-bottom: 5px;
-    }
-}
+/*  NOUVEAU : Styles pagination minimaliste SCI déplacés vers sci-style.css */
+/*  NOUVEAU : Styles boutons pagination plats SCI déplacés vers sci-style.css */
+/*  NOUVEAU : Styles page-info et tooltips SCI déplacés vers sci-style.css */
+/*  NOUVEAU : Styles tooltips send-letters-btn SCI déplacés vers sci-style.css */
+/*  NOUVEAU : Styles tooltips hover et responsive SCI déplacés vers sci-style.css */
+/*  NOUVEAU : Styles WooCommerce SCI déplacés vers sci-style.css */
+/*  NOUVEAU : Tous les styles WooCommerce SCI déplacés vers sci-style.css */
+/*  NOUVEAU : Tous les styles boutons génériques SCI déplacés vers sci-style.css */
