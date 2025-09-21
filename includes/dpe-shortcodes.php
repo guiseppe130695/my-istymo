@@ -245,7 +245,7 @@ class DPE_Shortcodes {
             </div>
 
             <!-- ✅ ZONE DES RÉSULTATS - STRUCTURE STABLE -->
-            <div id="search-results" class="search-results d-none">
+            <div id="search-results" class="search-results">
                 <div id="results-header">
                     <h2 id="results-title"> Résultats de recherche</h2>
                     <div id="pagination-info" class="d-none"></div>
