@@ -111,7 +111,7 @@
     </div>
     
     <!-- ✅ CONTRÔLES DE PAGINATION - HORS DE LA ZONE DES RÉSULTATS -->
-    <div id="pagination-controls" class="pagination-controls d-none">
+    <div id="pagination-controls" class="pagination-controls">
         <div class="pagination-main">
             <button id="prev-page" class="pagination-btn" disabled><i class="fas fa-chevron-left"></i> Page précédente</button>
             <span id="page-info" class="page-info">1/1</span>
