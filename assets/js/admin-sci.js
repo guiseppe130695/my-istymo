@@ -21,18 +21,18 @@
     
     const cache = window.sciCache;
     
-    // ✅ NOUVEAU : Fonction pour mettre à jour le cache
+    // NOUVEAU : Fonction pour mettre à jour le cache
     function updateCache(key, value) {
         cache[key] = value;
         cache.lastUpdate = Date.now();
     }
     
-    // ✅ NOUVEAU : Fonction pour vérifier si les données ont changé
+    // NOUVEAU : Fonction pour vérifier si les données ont changé
     function hasDataChanged(key, newValue) {
         return cache[key] !== newValue;
     }
     
-    // ✅ NOUVEAU : Fonction pour forcer la mise à jour de la pagination
+    // NOUVEAU : Fonction pour forcer la mise à jour de la pagination
     function forceUpdatePagination() {
         const elements = getElements();
         if (elements && elements.pageInfo) {
@@ -41,7 +41,7 @@
         }
     }
     
-    // ✅ AMÉLIORÉ : Fonction pour obtenir les paramètres de pagination
+    // AMÉLIORÉ : Fonction pour obtenir les paramètres de pagination
     function getCurrentPaginationParams() {
         return { 
             page: cache.currentPage, 
@@ -49,7 +49,7 @@
         };
     }
     
-    // ✅ NOUVEAU : Fonction pour mettre à jour le contenu du tableau de manière optimisée
+    // NOUVEAU : Fonction pour mettre à jour le contenu du tableau de manière optimisée
     function updateTableContent(results) {
         const elements = getElements();
         if (!elements) return;
@@ -111,7 +111,7 @@
             return;
         }
         
-        // ✅ MODIFIÉ : Ne mettre à jour que le code postal et la taille de page
+        // MODIFIÉ : Ne mettre à jour que le code postal et la taille de page
         updateCache('codePostal', codePostal);
         updateCache('pageSize', pageSize);
         
@@ -125,7 +125,7 @@
             paginationControls.style.display = 'block';
         }
         elements.searchBtn.disabled = true;
-        elements.searchBtn.textContent = '🔄 Recherche...';
+        elements.searchBtn.textContent = 'Recherche...';
         const formData = new FormData();
         formData.append('action', 'sci_inpi_search_ajax');
         formData.append('code_postal', codePostal);
@@ -153,7 +153,7 @@
             cache.isSearching = false;
             elements.searchLoading.style.display = 'none';
             elements.searchBtn.disabled = false;
-            elements.searchBtn.textContent = '🔍 Rechercher les SCI';
+            elements.searchBtn.textContent = 'Rechercher les SCI';
             if (data.success) {
                 displayResults(data.data);
             } else {
@@ -165,7 +165,7 @@
             cache.isSearching = false;
             elements.searchLoading.style.display = 'none';
             elements.searchBtn.disabled = false;
-            elements.searchBtn.textContent = '🔍 Rechercher les SCI';
+            elements.searchBtn.textContent = 'Rechercher les SCI';
             displayError('Erreur réseau lors de la recherche: ' + error.message);
         });
     }
@@ -177,17 +177,17 @@
         
                         // Logs supprimés pour la production
         
-        // ✅ VALIDATION : Vérifier que les données de pagination sont valides
+        //  VALIDATION : Vérifier que les données de pagination sont valides
         if (!pagination || typeof pagination.current_page === 'undefined' || typeof pagination.total_pages === 'undefined') {
-            console.error('❌ Données de pagination invalides:', pagination);
+            console.error(' Données de pagination invalides:', pagination);
             displayError('Erreur: données de pagination manquantes');
             return;
         }
         
-        // ✅ MODIFIÉ : Récupérer le code postal actuel depuis le select
+        //  MODIFIÉ : Récupérer le code postal actuel depuis le select
         const currentCodePostal = elements.codePostalSelect ? elements.codePostalSelect.value : '';
         
-        // ✅ NOUVEAU : Mettre à jour le cache avec les nouvelles données
+        //  NOUVEAU : Mettre à jour le cache avec les nouvelles données
         updateCache('currentPage', pagination.current_page);
         updateCache('totalPages', pagination.total_pages);
         updateCache('totalResults', pagination.total_count);
@@ -200,7 +200,7 @@
         elements.searchError.style.display = 'none';
         
         // Mettre à jour le titre et les infos
-        elements.resultsTitle.textContent = `📋 Résultats de recherche (${pagination.total_count} SCI trouvées)`;
+        elements.resultsTitle.textContent = ` Résultats de recherche (${pagination.total_count} SCI trouvées)`;
         if (elements.paginationInfo) {
             elements.paginationInfo.textContent = `Page ${pagination.current_page} sur ${pagination.total_pages} - ${results.length} résultats affichés`;
             elements.paginationInfo.style.display = 'block';
@@ -284,62 +284,62 @@
         const shouldDisablePrev = cache.currentPage <= 1;
         if (elements.prevPageBtn) {
             elements.prevPageBtn.disabled = shouldDisablePrev;
-            console.log('⬅️ Bouton précédent disabled:', shouldDisablePrev);
+            console.log(' Bouton précédent disabled:', shouldDisablePrev);
         }
         
         // Boutons suivant
         const shouldDisableNext = cache.currentPage >= cache.totalPages;
         if (elements.nextPageBtn) {
             elements.nextPageBtn.disabled = shouldDisableNext;
-            console.log('➡️ Bouton suivant disabled:', shouldDisableNext);
+            console.log(' Bouton suivant disabled:', shouldDisableNext);
         }
         
         // Informations de page
         if (elements.pageInfo) {
             const pageText = `Page ${cache.currentPage} / ${cache.totalPages}`;
             elements.pageInfo.textContent = pageText;
-            console.log('📄 Info page:', pageText);
+            console.log(' Info page:', pageText);
         }
     }
     
     function reinitializeJavaScriptFeatures() {
-        console.log('🔄 Début reinitializeJavaScriptFeatures');
+        console.log(' Début reinitializeJavaScriptFeatures');
         
         setTimeout(() => {
             console.log('⏰ Timeout reinitializeJavaScriptFeatures exécuté');
             
-            // ✅ SIMPLIFIÉ : Avec la délégation d'événements, on n'a plus besoin d'attacher des listeners individuels
+            //  SIMPLIFIÉ : Avec la délégation d'événements, on n'a plus besoin d'attacher des listeners individuels
             if (typeof window.attachFavorisListeners === 'function') {
                 window.attachFavorisListeners();
-                console.log('✅ Délégation d\'événements favoris configurée');
+                console.log(' Délégation d\'événements favoris configurée');
             } else {
-                console.warn('⚠️ Fonction attachFavorisListeners non disponible');
+                console.warn(' Fonction attachFavorisListeners non disponible');
             }
             
-            // ✅ NOUVEAU : Configurer le MutationObserver pour détecter automatiquement les nouveaux boutons
+            //  NOUVEAU : Configurer le MutationObserver pour détecter automatiquement les nouveaux boutons
             if (typeof window.setupFavorisObserver === 'function') {
                 window.setupFavorisObserver();
-                console.log('✅ MutationObserver favoris configuré');
+                console.log(' MutationObserver favoris configuré');
             } else {
-                console.warn('⚠️ Fonction setupFavorisObserver non disponible');
+                console.warn(' Fonction setupFavorisObserver non disponible');
             }
             
-            // ✅ Mettre à jour l'affichage des boutons favoris
+            //  Mettre à jour l'affichage des boutons favoris
             if (typeof window.forceUpdateFavoris === 'function') {
                 window.forceUpdateFavoris();
-                console.log('✅ Mise à jour forcée des favoris lancée');
+                console.log(' Mise à jour forcée des favoris lancée');
             } else if (typeof window.updateFavButtons === 'function') {
                 window.updateFavButtons();
-                console.log('✅ Boutons favoris mis à jour');
+                console.log(' Boutons favoris mis à jour');
             } else {
-                console.warn('⚠️ Fonction updateFavButtons non disponible');
+                console.warn(' Fonction updateFavButtons non disponible');
             }
             
             if (typeof window.updateContactStatus === 'function') {
                 window.updateContactStatus();
-                console.log('✅ Statut de contact réinitialisé');
+                console.log(' Statut de contact réinitialisé');
             } else {
-                console.warn('⚠️ Fonction updateContactStatus non disponible');
+                console.warn(' Fonction updateContactStatus non disponible');
             }
             
             if (typeof window.updateSelectedCount === 'function') {
@@ -350,11 +350,11 @@
                 });
                 
                 window.updateSelectedCount();
-                console.log('✅ Checkboxes réinitialisées:', newCheckboxes.length, 'checkboxes trouvées');
+                console.log(' Checkboxes réinitialisées:', newCheckboxes.length, 'checkboxes trouvées');
             } else {
-                console.warn('⚠️ Fonction updateSelectedCount non disponible');
+                console.warn(' Fonction updateSelectedCount non disponible');
             }
-        }, 1000); // ✅ AUGMENTÉ : Délai plus long pour s'assurer que les boutons sont créés
+        }, 1000); //  AUGMENTÉ : Délai plus long pour s'assurer que les boutons sont créés
     }
     
     function displayError(message) {
@@ -379,14 +379,14 @@
         
         function autoLoadFirstCodePostal() {
             console.log('🚀 Début autoLoadFirstCodePostal (admin)');
-            console.log('🔍 sciAutoSearch disponible:', typeof sciAutoSearch !== 'undefined');
+            console.log(' sciAutoSearch disponible:', typeof sciAutoSearch !== 'undefined');
             
             if (typeof sciAutoSearch !== 'undefined') {
-                console.log('🔍 sciAutoSearch.auto_search_enabled:', sciAutoSearch.auto_search_enabled);
-                console.log('🔍 sciAutoSearch.default_postal_code:', sciAutoSearch.default_postal_code);
+                console.log(' sciAutoSearch.auto_search_enabled:', sciAutoSearch.auto_search_enabled);
+                console.log(' sciAutoSearch.default_postal_code:', sciAutoSearch.default_postal_code);
             }
             
-            // ✅ AMÉLIORÉ : Vérifier si la recherche automatique est activée
+            //  AMÉLIORÉ : Vérifier si la recherche automatique est activée
             if (typeof sciAutoSearch !== 'undefined' && sciAutoSearch.auto_search_enabled && sciAutoSearch.default_postal_code) {
                 // Utiliser le premier code postal de l'utilisateur
                 const defaultCodePostal = sciAutoSearch.default_postal_code;
@@ -394,8 +394,8 @@
                 // S'assurer que le premier code postal est sélectionné
                 elements.codePostalSelect.value = defaultCodePostal;
                 
-                console.log('🔄 Chargement automatique du premier code postal (admin):', defaultCodePostal);
-                console.log('🔍 elements.codePostalSelect.value après sélection:', elements.codePostalSelect.value);
+                console.log(' Chargement automatique du premier code postal (admin):', defaultCodePostal);
+                console.log(' elements.codePostalSelect.value après sélection:', elements.codePostalSelect.value);
                 
                 // Lancer automatiquement la recherche
                 console.log('🚀 Lancement de performSearch (admin) avec:', defaultCodePostal, 1, cache.pageSize);
@@ -405,13 +405,13 @@
                 elements.codePostalSelect.selectedIndex = 1;
                 const firstCodePostal = elements.codePostalSelect.value;
                 
-                console.log('🔄 Chargement automatique du premier code postal disponible (admin):', firstCodePostal);
+                console.log(' Chargement automatique du premier code postal disponible (admin):', firstCodePostal);
                 
                 // Lancer automatiquement la recherche
                 performSearch(firstCodePostal, 1, cache.pageSize);
             } else {
-                console.log('⚠️ Aucun code postal configuré pour le chargement automatique (admin)');
-                console.log('🔍 elements.codePostalSelect.options.length:', elements.codePostalSelect.options.length);
+                console.log(' Aucun code postal configuré pour le chargement automatique (admin)');
+                console.log(' elements.codePostalSelect.options.length:', elements.codePostalSelect.options.length);
             }
         }
         
@@ -434,49 +434,49 @@
             performSearch(codePostal, 1, cache.pageSize);
         });
         
-        // ✅ AMÉLIORÉ : Vérifier que les boutons de pagination existent
-        console.log('🔍 Éléments pagination admin trouvés:');
-        console.log('- Bouton précédent:', elements.prevPageBtn ? '✅' : '❌');
-        console.log('- Bouton suivant:', elements.nextPageBtn ? '✅' : '❌');
-        console.log('- Info page:', elements.pageInfo ? '✅' : '❌');
+        //  AMÉLIORÉ : Vérifier que les boutons de pagination existent
+        console.log(' Éléments pagination admin trouvés:');
+        console.log('- Bouton précédent:', elements.prevPageBtn ? '' : '');
+        console.log('- Bouton suivant:', elements.nextPageBtn ? '' : '');
+        console.log('- Info page:', elements.pageInfo ? '' : '');
         
         if (elements.prevPageBtn) {
             elements.prevPageBtn.addEventListener('click', function() {
-                console.log('🔄 Clic bouton précédent (admin)');
+                console.log(' Clic bouton précédent (admin)');
                 console.log('📊 État du cache:', {
                     currentPage: cache.currentPage,
                     totalPages: cache.totalPages,
                     codePostal: cache.codePostal,
                     pageSize: cache.pageSize
                 });
-                console.log('🔍 Bouton désactivé?', elements.prevPageBtn.disabled);
+                console.log(' Bouton désactivé?', elements.prevPageBtn.disabled);
                 
                 const codePostal = elements.codePostalSelect ? elements.codePostalSelect.value : cache.codePostal;
                 const prevPage = cache.currentPage - 1;
                 
                 console.log('🧮 Calcul: Page actuelle', cache.currentPage, '- 1 =', prevPage);
-                console.log('✅ Condition prevPage >= 1:', prevPage >= 1);
+                console.log(' Condition prevPage >= 1:', prevPage >= 1);
                 
                 if (prevPage >= 1) {
-                    console.log('✅ Navigation vers page:', prevPage, 'avec code postal:', codePostal);
+                    console.log(' Navigation vers page:', prevPage, 'avec code postal:', codePostal);
                     performSearch(codePostal, prevPage, cache.pageSize);
                 } else {
-                    console.log('⚠️ Déjà sur la première page - navigation bloquée');
+                    console.log(' Déjà sur la première page - navigation bloquée');
                 }
             });
         }
         
         if (elements.nextPageBtn) {
             elements.nextPageBtn.addEventListener('click', function() {
-                console.log('🔄 Clic bouton suivant (admin) - Page actuelle:', cache.currentPage, 'Total pages:', cache.totalPages);
+                console.log(' Clic bouton suivant (admin) - Page actuelle:', cache.currentPage, 'Total pages:', cache.totalPages);
                 const codePostal = elements.codePostalSelect ? elements.codePostalSelect.value : cache.codePostal;
                 const nextPage = cache.currentPage + 1;
                 
                 if (nextPage <= cache.totalPages) {
-                    console.log('✅ Navigation vers page:', nextPage);
+                    console.log(' Navigation vers page:', nextPage);
                     performSearch(codePostal, nextPage, cache.pageSize);
                 } else {
-                    console.log('⚠️ Déjà sur la dernière page');
+                    console.log(' Déjà sur la dernière page');
                 }
             });
         }
@@ -488,7 +488,7 @@
         setTimeout(initialize, 0);
     }
     
-    // ✅ NOUVEAU : Exposer les fonctions de débogage (optionnel)
+    //  NOUVEAU : Exposer les fonctions de débogage (optionnel)
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         window.forceUpdatePagination = forceUpdatePagination;
         window.sciCache = cache;

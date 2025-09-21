@@ -46,7 +46,12 @@ class SCI_Shortcodes {
         $page = max(1, $page);
         $page_size = max(1, min(100, $page_size)); // Limiter à 100 max
         
-        // Logs supprimés pour la production
+        // Logs conditionnés pour la production
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            my_istymo_log("=== RECHERCHE AJAX INPI FRONTEND ===", 'inpi');
+            my_istymo_log("Code postal: $code_postal", 'inpi');
+            my_istymo_log("Page: $page", 'inpi');
+        }
         
         // Appeler la fonction de recherche avec pagination
         $resultats = sci_fetch_inpi_data_with_pagination($code_postal, $page, $page_size);
@@ -290,7 +295,7 @@ class SCI_Shortcodes {
                 // Vérifier si la configuration API est complète
                 $config_manager = sci_config_manager();
                 if (!$config_manager->is_configured()) {
-                    echo '<div class="sci-error"><strong>⚠️ Configuration manquante :</strong> Veuillez configurer vos tokens API dans l\'administration.</div>';
+                    echo '<div class="sci-error"><strong>Configuration manquante :</strong> Veuillez configurer vos tokens API dans l\'administration.</div>';
                 }
 
                 // Vérifier la configuration INPI
@@ -299,13 +304,13 @@ class SCI_Shortcodes {
                 $password = get_option('sci_inpi_password');
                 
                 if (!$username || !$password) {
-                    echo '<div class="sci-warning"><strong>⚠️ Identifiants INPI manquants :</strong> Veuillez configurer vos identifiants INPI pour la génération automatique de tokens.</div>';
+                    echo '<div class="sci-warning"><strong>Identifiants INPI manquants :</strong> Veuillez configurer vos identifiants INPI pour la génération automatique de tokens.</div>';
                 }
 
                 // Vérifier WooCommerce
                 $woocommerce_integration = sci_woocommerce();
                 if (!$woocommerce_integration->is_woocommerce_ready()) {
-                    echo '<div class="sci-warning"><strong>⚠️ WooCommerce requis :</strong> Veuillez installer et configurer WooCommerce pour utiliser le système de paiement.</div>';
+                    echo '<div class="sci-warning"><strong>WooCommerce requis :</strong> Veuillez installer et configurer WooCommerce pour utiliser le système de paiement.</div>';
                 }
 
                 // Vérifier la configuration des données expéditeur
@@ -315,7 +320,7 @@ class SCI_Shortcodes {
                 
                 if (!empty($validation_errors)) {
                     echo '<div class="sci-warning">';
-                    echo '<strong>⚠️ Configuration expéditeur incomplète :</strong>';
+                    echo '<strong>Configuration expéditeur incomplète :</strong>';
                     echo '<ul>';
                     foreach ($validation_errors as $error) {
                         echo '<li>' . esc_html($error) . '</li>';
@@ -326,7 +331,7 @@ class SCI_Shortcodes {
                 ?>
             <?php endif; ?>
 
-            <!-- ✅ FORMULAIRE DE RECHERCHE AJAX -->
+            <!-- FORMULAIRE DE RECHERCHE AJAX -->
             <form id="sci-search-form" class="sci-form">
                 <div class="form-group-left">
                     <div class="form-group">
@@ -341,7 +346,7 @@ class SCI_Shortcodes {
                         </select>
                     </div>
                     <button type="submit" id="search-btn" class="sci-button" style="background: #000064 !important;">
-                        🔍 Rechercher les SCI
+                        Rechercher les SCI
                     </button>
                 </div>
 
@@ -349,7 +354,7 @@ class SCI_Shortcodes {
                 <button id="send-letters-btn" type="button" class="sci-button secondary" disabled
                         data-tooltip="Prospectez directement les SCI. Vous avez également la possibilité de proposer vos services en envoyant un courrier"
                         style="font-size:12px!important; background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important; color: white !important; border: none !important;">
-                    📬 Créez une campagne d'envoi de courriers (<span id="selected-count">0</span>)
+                    Créez une campagne d'envoi de courriers (<span id="selected-count">0</span>)
                 </button>
                 
 
@@ -357,20 +362,20 @@ class SCI_Shortcodes {
 
             </form>
 
-            <!-- ✅ ZONE DE CHARGEMENT -->
+            <!-- ZONE DE CHARGEMENT -->
             <div id="search-loading" style="display: none;">
                 <div class="loading-spinner"></div>
                 <span>Recherche en cours...</span>
             </div>
 
-                        <!-- ✅ ZONE DES RÉSULTATS - STRUCTURE STABLE -->
+                        <!-- ZONE DES RÉSULTATS - STRUCTURE STABLE -->
             <div id="search-results" style="display: none;">
                 <div id="results-header">
-                    <h2 id="results-title">📋 Résultats de recherche</h2>
+                    <h2 id="results-title">Résultats de recherche</h2>
                     <div id="pagination-info" style="display: none;"></div>
                 </div>
 
-                <!-- ✅ TABLEAU DES RÉSULTATS - STRUCTURE STABLE -->
+                <!-- TABLEAU DES RÉSULTATS - STRUCTURE STABLE -->
                 <table class="sci-table" id="results-table">
                     <thead>
                         <tr>
@@ -391,41 +396,41 @@ class SCI_Shortcodes {
                 </table>
             </div>
             
-            <!-- ✅ CONTRÔLES DE PAGINATION - HORS DE LA ZONE DES RÉSULTATS -->
+            <!-- CONTRÔLES DE PAGINATION - HORS DE LA ZONE DES RÉSULTATS -->
             <div id="pagination-controls" style="display: none; margin-top: 20px; text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
                 <div class="pagination-main" style="display: flex; align-items: center; justify-content: center; gap: 15px;">
-                    <button id="prev-page" disabled style="padding: 10px 20px; font-size: 10px!important; font-weight: 500; border-radius: 5px; background: #fff!important; color: #000064!important; cursor: pointer; transition: all 0.2s ease;">⬅️ Page précédente</button>
+                    <button id="prev-page" disabled style="padding: 10px 20px; font-size: 10px!important; font-weight: 500; border-radius: 5px; background: #fff!important; color: #000064!important; cursor: pointer; transition: all 0.2s ease;">Page précédente</button>
                     <span id="page-info" style="background: #0073aa; color: white; padding: 8px 15px; border-radius: 4px; font-size: 14px; font-weight: 500;">1/1</span>
-                    <button id="next-page" disabled style="padding: 10px 20px; font-size: 10px!important; font-weight: 500; border-radius: 5px; background: #fff!important; color: #000064!important; cursor: pointer; transition: all 0.2s ease;">Page suivante ➡️</button>
+                    <button id="next-page" disabled style="padding: 10px 20px; font-size: 10px!important; font-weight: 500; border-radius: 5px; background: #fff!important; color: #000064!important; cursor: pointer; transition: all 0.2s ease;">Page suivante</button>
                 </div>
             </div>
             
-            <!-- ✅ CACHE DES DONNÉES - ÉVITE LES RECHARGEMENTS -->
+            <!-- CACHE DES DONNÉES - ÉVITE LES RECHARGEMENTS -->
             <div id="data-cache" style="display: none;">
                 <span id="cached-title"></span>
                 <span id="cached-page"></span>
                 <span id="cached-total"></span>
             </div>
 
-            <!-- ✅ ZONE D'ERREUR -->
+            <!-- ZONE D'ERREUR -->
             <div id="search-error" style="display: none;" class="sci-error">
                 <p id="error-message"></p>
             </div>
         </div>
         
-        <!-- ✅ POPUP LETTRE -->
+        <!-- POPUP LETTRE -->
         <div id="letters-popup" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.6); z-index:10000; justify-content:center; align-items:center;">
             <div style="background:#fff; padding:25px; width:700px; max-width:95vw; max-height:95vh; overflow-y:auto; border-radius:12px;">
                 <!-- Étape 1 : Liste des SCI sélectionnées -->
                 <div class="step" id="step-1">
-                    <h2>📋 SCI sélectionnées</h2>
+                    <h2>SCI sélectionnées</h2>
                     <p style="color: #666; margin-bottom: 20px;">Vérifiez votre sélection avant de continuer</p>
                     <ul id="selected-sci-list" style="max-height:350px; overflow-y:auto; border:1px solid #ddd; padding:15px; margin-bottom:25px; border-radius:6px; background-color: #f9f9f9; list-style: none;">
                         <!-- Les SCI sélectionnées seront ajoutées ici par JavaScript -->
                     </ul>
                     <div style="text-align: center;">
                         <button id="to-step-2" class="sci-button" style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important; color: white !important; border: none !important; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 16px;">
-                            ✍️ Rédiger votre courrier →
+                            Rédiger votre courrier →
                         </button>
                     </div>
                 </div>
@@ -437,7 +442,7 @@ class SCI_Shortcodes {
             </div>
         </div>
         
-        <!-- ✅ STYLES CSS POUR LA PAGINATION ET LE FORMULAIRE -->
+        <!-- STYLES CSS POUR LA PAGINATION ET LE FORMULAIRE -->
         <style>
         /* Styles pour la pagination */
         #pagination-controls button:hover:not(:disabled) {
@@ -502,7 +507,7 @@ class SCI_Shortcodes {
             align-self: flex-end;
         }
         
-        /* ✅ TAILLE DE POLICE 12PX POUR TOUS LES ÉLÉMENTS DU TABLEAU */
+        /* TAILLE DE POLICE 12PX POUR TOUS LES ÉLÉMENTS DU TABLEAU */
         .sci-table,
         .sci-table th,
         .sci-table td,
@@ -513,7 +518,7 @@ class SCI_Shortcodes {
             font-size: 12px !important;
         }
         
-        /* ✅ TAILLE DE POLICE 12PX POUR TOUS LES ÉLÉMENTS DU POPUP */
+        /* TAILLE DE POLICE 12PX POUR TOUS LES ÉLÉMENTS DU POPUP */
         #letters-popup,
         #letters-popup h2,
         #letters-popup h3,
@@ -533,13 +538,13 @@ class SCI_Shortcodes {
             font-size: 12px !important;
         }
         
-        /* ✅ EXCEPTIONS POUR LES TITRES PRINCIPAUX DU POPUP */
+        /* EXCEPTIONS POUR LES TITRES PRINCIPAUX DU POPUP */
         #letters-popup h2 {
             font-size: 16px !important;
             font-weight: 600 !important;
         }
         
-        /* ✅ NOUVEAUX STYLES POUR LES BOUTONS */
+        /* NOUVEAUX STYLES POUR LES BOUTONS */
         /* Boutons standards (fond blanc, hover vert) */
         .sci-button:not(.secondary):not([id*="send-letters"]):not([id*="to-step"]):not([id*="send-campaign"]):not([id*="back-to-step"]) {
             background: white !important;
@@ -593,7 +598,7 @@ class SCI_Shortcodes {
             box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
         }
         
-        /* ✅ STYLE POUR LE BOUTON DE PAIEMENT WOOCOMMERCE */
+        /* STYLE POUR LE BOUTON DE PAIEMENT WOOCOMMERCE */
         .woocommerce #payment #place_order,
         .woocommerce #payment input[type="submit"],
         .woocommerce #payment button[type="submit"],
@@ -627,7 +632,7 @@ class SCI_Shortcodes {
         }
         </style>
         
-        <!-- ✅ SCRIPT JAVASCRIPT POUR LA PAGINATION -->
+        <!-- SCRIPT JAVASCRIPT POUR LA PAGINATION -->
         <script>
         (function() {
             if (window.sciFrontendInitialized && window.sciFrontendInitialized === true) {
@@ -652,19 +657,19 @@ class SCI_Shortcodes {
             
             const cache = window.sciCache;
             
-            // ✅ NOUVEAU : Fonction pour mettre à jour le cache
+            // NOUVEAU : Fonction pour mettre à jour le cache
             function updateCache(key, value) {
                 cache[key] = value;
                 cache.lastUpdate = Date.now();
 
             }
             
-            // ✅ NOUVEAU : Fonction pour vérifier si les données ont changé
+            // NOUVEAU : Fonction pour vérifier si les données ont changé
             function hasDataChanged(key, newValue) {
                 return cache[key] !== newValue;
             }
             
-            // ✅ NOUVEAU : Fonction pour forcer la mise à jour de la pagination
+            // NOUVEAU : Fonction pour forcer la mise à jour de la pagination
             function forceUpdatePagination() {
                 const elements = getElements();
                 if (elements && elements.pageInfo) {
@@ -675,7 +680,7 @@ class SCI_Shortcodes {
             
 
             
-            // ✅ AMÉLIORÉ : Fonction pour obtenir les paramètres de pagination
+            // AMÉLIORÉ : Fonction pour obtenir les paramètres de pagination
             function getCurrentPaginationParams() {
                 return { 
                     page: cache.currentPage, 
@@ -683,7 +688,7 @@ class SCI_Shortcodes {
                 };
             }
             
-            // ✅ NOUVEAU : Fonction pour mettre à jour le contenu du tableau de manière optimisée
+            // NOUVEAU : Fonction pour mettre à jour le contenu du tableau de manière optimisée
             function updateTableContent(results) {
                 const elements = getElements();
                 if (!elements) return;
@@ -703,7 +708,7 @@ class SCI_Shortcodes {
 
             }
             
-            // ✅ SUPPRIMÉ : Cette fonction n'est plus nécessaire car le cache est mis à jour dans displayResults
+            // SUPPRIMÉ : Cette fonction n'est plus nécessaire car le cache est mis à jour dans displayResults
             function getElements() {
                 const elements = {
                     searchForm: document.getElementById('sci-search-form'),
@@ -747,7 +752,7 @@ class SCI_Shortcodes {
                     return;
                 }
                 
-                // ✅ MODIFIÉ : Ne mettre à jour que le code postal et la taille de page
+                // MODIFIÉ : Ne mettre à jour que le code postal et la taille de page
                 // La page actuelle sera mise à jour dans displayResults après réception des données
                 updateCache('codePostal', codePostal);
                 updateCache('pageSize', pageSize);
@@ -762,7 +767,7 @@ class SCI_Shortcodes {
                     paginationControls.style.display = 'block';
                 }
                 elements.searchBtn.disabled = true;
-                elements.searchBtn.textContent = '🔄 Recherche...';
+                elements.searchBtn.textContent = 'Recherche...';
                 const formData = new FormData();
                 formData.append('action', 'sci_inpi_search_ajax');
                 formData.append('code_postal', codePostal);
@@ -790,7 +795,7 @@ class SCI_Shortcodes {
                     cache.isSearching = false;
                     elements.searchLoading.style.display = 'none';
                     elements.searchBtn.disabled = false;
-                    elements.searchBtn.textContent = '🔍 Rechercher les SCI';
+                    elements.searchBtn.textContent = 'Rechercher les SCI';
                     if (data.success) {
                         displayResults(data.data);
                     } else {
@@ -802,7 +807,7 @@ class SCI_Shortcodes {
                     cache.isSearching = false;
                     elements.searchLoading.style.display = 'none';
                     elements.searchBtn.disabled = false;
-                    elements.searchBtn.textContent = '🔍 Rechercher les SCI';
+                    elements.searchBtn.textContent = 'Rechercher les SCI';
                     displayError('Erreur réseau lors de la recherche: ' + error.message);
                 });
             }
@@ -813,17 +818,17 @@ class SCI_Shortcodes {
                 
                 // Logs supprimés pour la production
                 
-                // ✅ VALIDATION : Vérifier que les données de pagination sont valides
+                // VALIDATION : Vérifier que les données de pagination sont valides
                 if (!pagination || typeof pagination.current_page === 'undefined' || typeof pagination.total_pages === 'undefined') {
                     displayError('Erreur: données de pagination manquantes');
                     return;
                 }
                 
-                // ✅ MODIFIÉ : Récupérer le code postal actuel depuis le select
+                // MODIFIÉ : Récupérer le code postal actuel depuis le select
                 const currentCodePostal = elements.codePostalSelect ? elements.codePostalSelect.value : '';
                 
-                // ✅ NOUVEAU : Mettre à jour le cache avec les nouvelles données
-                const newTitle = `📋 Résultats de recherche (${pagination.total_count} SCI trouvées)`;
+                // NOUVEAU : Mettre à jour le cache avec les nouvelles données
+                const newTitle = `Résultats de recherche (${pagination.total_count} SCI trouvées)`;
                 const newPage = parseInt(pagination.current_page) || 1;
                 const newTotalPages = parseInt(pagination.total_pages) || 1;
                 
@@ -833,7 +838,7 @@ class SCI_Shortcodes {
                 const pageChanged = hasDataChanged('currentPage', newPage);
                 const totalPagesChanged = hasDataChanged('totalPages', newTotalPages);
                 
-                // ✅ NOUVEAU : Mettre à jour le cache seulement si nécessaire
+                // NOUVEAU : Mettre à jour le cache seulement si nécessaire
                 if (titleChanged) updateCache('title', newTitle);
                 if (pageChanged) updateCache('currentPage', newPage);
                 if (totalPagesChanged) updateCache('totalPages', newTotalPages);
@@ -842,7 +847,7 @@ class SCI_Shortcodes {
                 
                 // Logs supprimés pour la production
                 
-                // ✅ AMÉLIORÉ : Afficher la zone de résultats seulement si cachée
+                // AMÉLIORÉ : Afficher la zone de résultats seulement si cachée
                 if (elements.searchResults.style.display === 'none') {
                     elements.searchResults.style.display = 'block';
                 }
@@ -852,13 +857,13 @@ class SCI_Shortcodes {
                     elements.resultsTitle.textContent = newTitle;
                 }
                 
-                // ✅ NOUVEAU : Afficher les contrôles de pagination seulement si nécessaire
+                // NOUVEAU : Afficher les contrôles de pagination seulement si nécessaire
                 const paginationControls = document.getElementById('pagination-controls');
                 if (paginationControls && paginationControls.style.display === 'none') {
                     paginationControls.style.display = 'block';
                 }
                 
-                // ✅ AMÉLIORÉ : Mettre à jour le contenu du tableau seulement
+                // AMÉLIORÉ : Mettre à jour le contenu du tableau seulement
                 updateTableContent(results);
                 
                 if (pageChanged || totalPagesChanged || cache.lastUpdate === 0) {
@@ -954,7 +959,7 @@ class SCI_Shortcodes {
                         window.attachFavorisListeners();
                     }
                     
-                    // ✅ NOUVEAU : Mettre à jour l'affichage des boutons favoris
+                    // NOUVEAU : Mettre à jour l'affichage des boutons favoris
                     if (typeof window.forceUpdateFavoris === 'function') {
                         window.forceUpdateFavoris();
                     } else if (typeof window.updateFavButtons === 'function') {
@@ -1066,7 +1071,7 @@ class SCI_Shortcodes {
                 setTimeout(initialize, 0);
             }
             
-            // ✅ SUPPRIMÉ : Fonctions de sélections exposées (gérées par lettre.js)
+            // SUPPRIMÉ : Fonctions de sélections exposées (gérées par lettre.js)
             
             // Fonctions de débogage supprimées pour la production
             
@@ -1105,7 +1110,7 @@ class SCI_Shortcodes {
         $this->force_enqueue_assets([]);
         
         $atts = shortcode_atts(array(
-            'title' => '⭐ Mes SCI Favoris',
+            'title' => 'Mes SCI Favoris',
             'show_empty_message' => 'true'
         ), $atts);
         
@@ -1139,7 +1144,7 @@ class SCI_Shortcodes {
         $this->force_enqueue_assets([]);
         
         $atts = shortcode_atts(array(
-            'title' => '📬 Mes Campagnes de Lettres',
+            'title' => 'Mes Campagnes de Lettres',
             'show_empty_message' => 'true'
         ), $atts);
         
@@ -1151,16 +1156,22 @@ class SCI_Shortcodes {
         $view_mode = false;
         $campaign_details = null;
         
-        // Debug temporaire
-        // error_log("DEBUG: GET params: " . print_r($_GET, true));
+        // Debug conditionnel pour la production
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log("DEBUG: GET params: " . print_r($_GET, true));
+        }
         
         if (isset($_GET['view']) && is_numeric($_GET['view'])) {
             $campaign_details = $campaign_manager->get_campaign_details(intval($_GET['view']));
             if ($campaign_details) {
                 $view_mode = true;
-                // error_log("DEBUG: Campaign details found for ID: " . $_GET['view']);
+                if (defined('WP_DEBUG') && WP_DEBUG) {
+                    error_log("DEBUG: Campaign details found for ID: " . $_GET['view']);
+                }
             } else {
-                // error_log("DEBUG: No campaign details found for ID: " . $_GET['view']);
+                if (defined('WP_DEBUG') && WP_DEBUG) {
+                    error_log("DEBUG: No campaign details found for ID: " . $_GET['view']);
+                }
             }
         }
         

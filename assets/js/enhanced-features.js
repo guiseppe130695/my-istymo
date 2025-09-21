@@ -1,5 +1,5 @@
 /**
- * ✅ NOUVEAU : Fonctionnalités avancées pour le plugin SCI
+ * NOUVEAU : Fonctionnalités avancées pour le plugin SCI
  * - Filtres et recherche avancée
  * - Statistiques en temps réel
  * - Notifications toast
@@ -31,17 +31,17 @@ class SCIEnhancedFeatures {
         this.initDarkMode();
         this.initExport();
         this.updateStats();
-        this.initAutoSearch(); // ✅ NOUVEAU : Initialisation de la recherche automatique
+        this.initAutoSearch(); // NOUVEAU : Initialisation de la recherche automatique
     }
 
-    // ✅ Filtres et recherche avancée
+    // Filtres et recherche avancée
     initFilters() {
         const filterPanel = document.querySelector('.filters-panel');
         if (!filterPanel) return;
 
         // Créer le panel de filtres
         filterPanel.innerHTML = `
-            <h4>🔍 Filtres avancés</h4>
+            <h4>Filtres avancés</h4>
             <div class="filter-group">
                 <label for="filter-status">Statut :</label>
                 <select id="filter-status">
@@ -57,7 +57,7 @@ class SCIEnhancedFeatures {
                 <label for="filter-denomination">Dénomination :</label>
                 <input type="text" id="filter-denomination" placeholder="Rechercher dans le nom">
 
-                <button class="sci-button secondary" id="clear-filters">🗑️ Effacer</button>
+                <button class="sci-button secondary" id="clear-filters">Effacer</button>
             </div>
         `;
 
@@ -135,7 +135,7 @@ class SCIEnhancedFeatures {
         this.updateStats();
     }
 
-    // ✅ Statistiques en temps réel
+    // Statistiques en temps réel
     initStats() {
         const statsContainer = document.querySelector('.stats-panel');
         if (!statsContainer) return;
@@ -182,7 +182,7 @@ class SCIEnhancedFeatures {
         document.getElementById('stat-contacted')?.textContent = this.stats.contactedCount;
     }
 
-    // ✅ Système de notifications toast
+    // Système de notifications toast
     initNotifications() {
         // Créer le conteneur de notifications
         const toastContainer = document.createElement('div');
@@ -215,19 +215,19 @@ class SCIEnhancedFeatures {
 
     getNotificationIcon(type) {
         const icons = {
-            success: '✅',
-            error: '❌',
-            warning: '⚠️',
-            info: 'ℹ️'
+            success: 'Succès',
+            error: 'Erreur',
+            warning: '',
+            info: ''
         };
         return icons[type] || icons.info;
     }
 
-    // ✅ Mode sombre
+    //  Mode sombre
     initDarkMode() {
         const darkModeToggle = document.createElement('button');
         darkModeToggle.className = 'sci-button secondary';
-        darkModeToggle.innerHTML = '🌙 Mode sombre';
+        darkModeToggle.innerHTML = ' Mode sombre';
         darkModeToggle.style.position = 'fixed';
         darkModeToggle.style.top = '20px';
         darkModeToggle.style.left = '20px';
@@ -238,7 +238,7 @@ class SCIEnhancedFeatures {
             wrapper.classList.toggle('dark-mode');
             
             const isDark = wrapper.classList.contains('dark-mode');
-            darkModeToggle.innerHTML = isDark ? '☀️ Mode clair' : '🌙 Mode sombre';
+            darkModeToggle.innerHTML = isDark ? ' Mode clair' : ' Mode sombre';
             
             // Sauvegarder la préférence
             localStorage.setItem('sci_dark_mode', isDark);
@@ -253,7 +253,7 @@ class SCIEnhancedFeatures {
         document.body.appendChild(darkModeToggle);
     }
 
-    // ✅ Export de données
+    //  Export de données
     initExport() {
         const exportButton = document.createElement('button');
         exportButton.className = 'sci-button secondary';
@@ -317,11 +317,11 @@ class SCIEnhancedFeatures {
         this.showNotification(`Export réussi : ${data.length} SCI exportées`, 'success');
     }
 
-    // ✅ NOUVEAU : Recherche automatique au chargement de la page
+    //  NOUVEAU : Recherche automatique au chargement de la page
     initAutoSearch() {
         // Vérifier si la recherche automatique est activée
         if (typeof sciAutoSearch !== 'undefined' && sciAutoSearch.auto_search_enabled) {
-            // ✅ AMÉLIORÉ : Ne pas lancer de recherche automatique si elle est déjà gérée par le script principal
+            //  AMÉLIORÉ : Ne pas lancer de recherche automatique si elle est déjà gérée par le script principal
             // Le script principal (my-istymo.php) gère déjà la recherche automatique
             // Recherche automatique gérée par le script principal
             
@@ -335,11 +335,11 @@ class SCIEnhancedFeatures {
 
 }
 
-// ✅ Initialisation des fonctionnalités avancées
+//  Initialisation des fonctionnalités avancées
 document.addEventListener('DOMContentLoaded', function() {
     window.sciEnhancedFeatures = new SCIEnhancedFeatures();
     
-    // ✅ Exposer les fonctions globalement
+    //  Exposer les fonctions globalement
     window.showNotification = (message, type, duration) => {
         window.sciEnhancedFeatures.showNotification(message, type, duration);
     };

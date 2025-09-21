@@ -56,9 +56,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Afficher le processus d'envoi direct
         step2.innerHTML = `
-            <h2>📬 Envoi en cours</h2>
+            <h2>Envoi en cours</h2>
             <div class="processing-container">
-                <div class="processing-icon">⏳</div>
+                <div class="processing-icon">En cours</div>
                 <div class="processing-text">Génération des PDFs...</div>
                 <div class="progress-bar">
                     <div class="progress-bar-fill" id="direct-progress"></div>
@@ -110,13 +110,13 @@ document.addEventListener('DOMContentLoaded', function() {
             updateDirectProgress(100, 'Envoi terminé !');
             
             setTimeout(() => {
-                let message = `✅ Campagne terminée !\n\n`;
+                let message = `Campagne terminée !\n\n`;
                 message += `📊 Résultats :\n`;
                 message += `• ${successCount} lettres envoyées avec succès\n`;
                 if (errorCount > 0) {
                     message += `• ${errorCount} erreurs d'envoi\n`;
                 }
-                message += `\n📋 Consultez le détail dans "SCI > Mes Campagnes"`;
+                message += `\nConsultez le détail dans "SCI > Mes Campagnes"`;
                 
                 alert(message);
                 
@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Réactiver le bouton
             if (sendBtn) {
                 sendBtn.disabled = false;
-                sendBtn.textContent = '📬 Créer une campagne (0)';
+                sendBtn.textContent = 'Créer une campagne (0)';
             }
         });
     }
@@ -236,11 +236,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Créer l'interface de récapitulatif simplifiée (étape 3)
         const recapHtml = `
-            <h2>📋 Récapitulatif de votre campagne</h2>
+            <h2>Récapitulatif de votre campagne</h2>
             
             <div class="campaign-recap">
                 <div class="recap-section">
-                    <h3>💰 Tarification</h3>
+                    <h3>Tarification</h3>
                     <div class="pricing-table">
                         <div class="pricing-row">
                             <span>Nombre de courriers :</span>
@@ -254,18 +254,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 
                 <div class="recap-section">
-                    <h3>📦 Services inclus</h3>
+                    <h3>Services inclus</h3>
                     <div class="services-list">
-                        <div class="service-item">✅ Accompagnement</div>
-                        <div class="service-item">✅ Historique complet de vos campagnes</div>
-                        <div class="service-item">✅ Support technique inclus</div>
+                        <div class="service-item">Accompagnement</div>
+                        <div class="service-item">Historique complet de vos campagnes</div>
+                        <div class="service-item">Support technique inclus</div>
                     </div>
                 </div>
             </div>
             
             <div class="recap-buttons">
                 <button id="proceed-to-payment" class="button button-primary button-large">
-                    💳 Procéder au paiement (${totalPrice}€)
+                    Procéder au paiement (${totalPrice}€)
                 </button>
             </div>
         `;
@@ -287,7 +287,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Afficher le loader pendant la création de commande
         step2.innerHTML = `
-            <h2>💳 Paiement sécurisé</h2>
+            <h2>Paiement sécurisé</h2>
             
             <div class="payment-header">
                 <div class="payment-summary-compact">
@@ -304,7 +304,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             <div id="payment-processing">
                 <div class="processing-container">
-                    <div class="processing-icon">⏳</div>
+                    <div class="processing-icon">En cours</div>
                     <div class="processing-text">Création de la commande...</div>
                     <div class="progress-bar">
                         <div class="progress-bar-fill" id="payment-progress"></div>
@@ -328,7 +328,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             <div id="payment-success" style="display: none;">
                 <div class="success-container">
-                    <div class="success-icon">✅</div>
+                    <div class="success-icon">Succès</div>
                     <h3>Paiement confirmé !</h3>
                     <p>Votre campagne est en cours de traitement.</p>
                     <div class="progress-bar">
@@ -337,7 +337,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div id="sending-status">Préparation de l'envoi...</div>
                     <div class="success-actions">
                         <button id="view-campaigns" class="button button-primary">
-                            📋 Voir mes campagnes
+                            Voir mes campagnes
                         </button>
                     </div>
                 </div>
@@ -414,7 +414,7 @@ document.addEventListener('DOMContentLoaded', function() {
         checkoutDiv.innerHTML = `
             <div class="checkout-loading">
                 <div class="loading-spinner"></div>
-                <div class="loading-text">🔒 Chargement du paiement sécurisé...</div>
+                <div class="loading-text">Chargement du paiement sécurisé...</div>
                 <div class="loading-subtext">Connexion sécurisée en cours</div>
             </div>
         `;
@@ -476,11 +476,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 900000);
     }
     
-    // ✅ VARIABLE GLOBALE POUR ÉVITER LES DOUBLONS
+    // VARIABLE GLOBALE POUR ÉVITER LES DOUBLONS
     let paymentProcessed = false;
     
     function handlePaymentSuccess(orderId) {
-        // ✅ VÉRIFICATION ANTI-DOUBLON
+        // VÉRIFICATION ANTI-DOUBLON
         if (paymentProcessed) {
             // Paiement déjà traité, ignoré
             return;
@@ -494,17 +494,17 @@ document.addEventListener('DOMContentLoaded', function() {
         if (checkoutContainer) checkoutContainer.style.display = 'none';
         if (successDiv) successDiv.style.display = 'block';
         
-        // ✅ DÉSACTIVER LE MENU CONTEXTUEL SUR TOUTE LA PAGE
+        // DÉSACTIVER LE MENU CONTEXTUEL SUR TOUTE LA PAGE
         disableContextMenu();
         
-        // ✅ DÉMARRER LA PROGRESSION RÉALISTE
+        // DÉMARRER LA PROGRESSION RÉALISTE
         startRealisticSendingProgress(orderId);
         
         // Event listener pour le bouton "Voir mes campagnes"
         const viewCampaignsBtn = document.getElementById('view-campaigns');
         if (viewCampaignsBtn) {
             viewCampaignsBtn.addEventListener('click', function() {
-                // ✅ RÉACTIVER LE MENU CONTEXTUEL AVANT DE QUITTER
+                // RÉACTIVER LE MENU CONTEXTUEL AVANT DE QUITTER
                 enableContextMenu();
                 paymentProcessed = false; // Reset pour la prochaine fois
                 
@@ -515,14 +515,14 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        // ✅ PROGRAMMER LA RÉACTIVATION AUTOMATIQUE APRÈS 60 SECONDES
+        // PROGRAMMER LA RÉACTIVATION AUTOMATIQUE APRÈS 60 SECONDES
         setTimeout(() => {
             enableContextMenu();
             paymentProcessed = false; // Reset
         }, 60000);
     }
     
-    // ✅ NOUVELLE FONCTION : PROGRESSION RÉALISTE BASÉE SUR LE NOMBRE DE LETTRES
+    // NOUVELLE FONCTION : PROGRESSION RÉALISTE BASÉE SUR LE NOMBRE DE LETTRES
     function startRealisticSendingProgress(orderId) {
         const progressBar = document.getElementById('sending-progress');
         const statusDiv = document.getElementById('sending-status');
@@ -544,7 +544,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let currentLetter = 0;
         let currentProgress = 0;
         
-        // ✅ ÉTAPES INITIALES (20% du temps total)
+        // ÉTAPES INITIALES (20% du temps total)
         const initialSteps = [
             { progress: 5, text: 'Validation du paiement...', duration: 1000 },
             { progress: 15, text: 'Génération des PDFs personnalisés...', duration: 2000 },
@@ -585,7 +585,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     
                     animateProgress(progressBar, currentProgress, letterProgress, 1200);
-                    statusDiv.textContent = `📤 Envoi ${currentLetter}/${totalLetters} : ${letterName}`;
+                    statusDiv.textContent = `Envoi ${currentLetter}/${totalLetters} : ${letterName}`;
                     currentProgress = letterProgress;
                     
                     // Temps d'attente réaliste entre les lettres (2-4 secondes)
@@ -604,12 +604,12 @@ document.addEventListener('DOMContentLoaded', function() {
             // Étapes finales
             setTimeout(() => {
                 animateProgress(progressBar, currentProgress, 98, 1000);
-                statusDiv.textContent = '✅ Finalisation de l\'envoi...';
+                statusDiv.textContent = 'Finalisation de l\'envoi...';
             }, 500);
             
             setTimeout(() => {
                 animateProgress(progressBar, 98, 100, 800);
-                statusDiv.textContent = `🎉 ${totalLetters} lettre${totalLetters > 1 ? 's' : ''} envoyée${totalLetters > 1 ? 's' : ''} avec succès !`;
+                statusDiv.textContent = `${totalLetters} lettre${totalLetters > 1 ? 's' : ''} envoyée${totalLetters > 1 ? 's' : ''} avec succès !`;
             }, 1500);
         }
         
@@ -617,7 +617,7 @@ document.addEventListener('DOMContentLoaded', function() {
         executeInitialSteps();
     }
     
-    // ✅ NOUVELLE FONCTION : DÉSACTIVER LE MENU CONTEXTUEL
+    // NOUVELLE FONCTION : DÉSACTIVER LE MENU CONTEXTUEL
     function disableContextMenu() {
         // Vérifier si déjà désactivé pour éviter les doublons
         if (document.body.hasAttribute('data-context-menu-disabled')) {
@@ -668,7 +668,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Menu contextuel désactivé
     }
     
-    // ✅ NOUVELLE FONCTION : RÉACTIVER LE MENU CONTEXTUEL
+    // NOUVELLE FONCTION : RÉACTIVER LE MENU CONTEXTUEL
     function enableContextMenu() {
         // Vérifier si déjà réactivé
         if (!document.body.hasAttribute('data-context-menu-disabled')) {
@@ -702,7 +702,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Menu contextuel réactivé
     }
     
-    // ✅ FONCTIONS DE PRÉVENTION
+    // FONCTIONS DE PRÉVENTION
     function preventContextMenu(e) {
         e.preventDefault();
         e.stopPropagation();
@@ -737,7 +737,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const step2 = document.getElementById('step-2');
         
         const contentHtml = `
-            <h2>✍️ Contenu du courrier</h2>
+            <h2>Contenu du courrier</h2>
             <p style="color: #666; margin-bottom: 20px;">Rédigez le titre et le contenu de votre courrier</p>
             
             <label for="campaign-title"><strong>Titre de la campagne :</strong></label><br>
@@ -747,7 +747,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <textarea id="campaign-content" style="width:100%; height:200px; margin-bottom:20px; padding:10px; border:1px solid #ddd; border-radius:4px;" required placeholder="Rédigez votre message...">${escapeHtml(content)}</textarea>
 
             <div style="background: #e7f3ff; padding: 20px; border-radius: 6px; margin-bottom: 25px;">
-                <h4 style="margin-top: 0; color: #0056b3;">💡 Conseils pour votre courrier :</h4>
+                <h4 style="margin-top: 0; color: #0056b3;">Conseils pour votre courrier :</h4>
                 <ul style="margin-bottom: 0; font-size: 14px; color: #495057;">
                     <li>Pour afficher le nom du destinataire sur le couriel tapez l'index <code style="background:#f8f9fa; padding:2px 4px; border-radius:3px;">[NOM]</code></li>
                     <li>Soyez professionnel et courtois dans votre approche</li>
@@ -758,7 +758,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             <div style="text-align: center;">
                 <button id="send-campaign" class="button button-primary button-large">
-                    📋 Voir le récapitulatif →
+                    Voir le récapitulatif →
                 </button>
             </div>
         `;

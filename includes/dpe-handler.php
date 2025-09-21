@@ -60,17 +60,27 @@ class DPE_Handler {
             return;
         }
         
-        // ✅ DEBUG : Retourner la réponse JSON brute pour voir la structure
+        // Debug conditionnel pour la production
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            // Retourner la réponse JSON brute pour voir la structure
+            wp_send_json_success([
+                'raw_json_response' => $resultats['raw_data'] ?? $resultats['data'],
+                'total_results' => count($resultats['data']),
+                'pagination' => $resultats['pagination'],
+                'debug_info' => [
+                    'code_postal' => $code_postal,
+                    'adresse' => $adresse,
+                    'page' => $page,
+                    'page_size' => $page_size
+                ]
+            ]);
+            return;
+        }
+        
+        // En production, retourner les données formatées normalement
         wp_send_json_success([
-            'raw_json_response' => $resultats['raw_data'] ?? $resultats['data'],
-            'total_results' => count($resultats['data']),
-            'pagination' => $resultats['pagination'],
-            'debug_info' => [
-                'code_postal' => $code_postal,
-                'adresse' => $adresse,
-                'page' => $page,
-                'page_size' => $page_size
-            ]
+            'results' => $resultats['data'],
+            'pagination' => $resultats['pagination']
         ]);
     }
     
@@ -117,7 +127,7 @@ class DPE_Handler {
         ));
         
         if (is_wp_error($response)) {
-            my_istymo_log("❌ Erreur réseau DPE: " . $response->get_error_message(), 'dpe');
+            my_istymo_log(" Erreur réseau DPE: " . $response->get_error_message(), 'dpe');
             return new WP_Error('api_error', 'Erreur de connexion à l\'API ADEME: ' . $response->get_error_message());
         }
         
@@ -130,36 +140,39 @@ class DPE_Handler {
         my_istymo_log("Body preview: " . substr($body, 0, 200) . "...", 'dpe');
         
         if ($status_code !== 200) {
-            my_istymo_log("❌ Erreur HTTP DPE: $status_code", 'dpe');
+            my_istymo_log(" Erreur HTTP DPE: $status_code", 'dpe');
             return new WP_Error('api_error', 'Erreur API ADEME (HTTP ' . $status_code . ')');
         }
         
         // Vérifier si le contenu est du JSON
         $content_type = $headers->get('content-type');
         if (strpos($content_type, 'application/json') === false) {
-            my_istymo_log("❌ Content-Type invalide: $content_type", 'dpe');
-            my_istymo_log("❌ Body complet reçu: " . substr($body, 0, 500), 'dpe');
+            my_istymo_log(" Content-Type invalide: $content_type", 'dpe');
+            my_istymo_log(" Body complet reçu: " . substr($body, 0, 500), 'dpe');
             return new WP_Error('content_type_error', 'L\'API a retourné du HTML au lieu du JSON attendu. Vérifiez l\'URL de l\'API dans la configuration.');
         }
         
         $data = json_decode($body, true);
         
         if (json_last_error() !== JSON_ERROR_NONE) {
-            my_istymo_log("❌ Erreur JSON DPE: " . json_last_error_msg(), 'dpe');
+            my_istymo_log(" Erreur JSON DPE: " . json_last_error_msg(), 'dpe');
             my_istymo_log("Body complet: $body", 'dpe');
             return new WP_Error('json_error', 'Erreur de décodage JSON: ' . json_last_error_msg());
         }
         
         // Vérifier la structure des données
         if (!isset($data['results']) || !is_array($data['results'])) {
-            my_istymo_log("❌ Structure de données invalide", 'dpe');
+            my_istymo_log(" Structure de données invalide", 'dpe');
             return new WP_Error('data_error', 'Structure de données invalide - résultats manquants');
         }
         
-        my_istymo_log("✅ Recherche DPE réussie: " . count($data['results']) . " résultats", 'dpe');
+        my_istymo_log("Recherche DPE réussie: " . count($data['results']) . " résultats", 'dpe');
         
-        // ✅ DEBUG : Logger la structure complète des données
-        my_istymo_log("Structure JSON complète: " . json_encode($data, JSON_PRETTY_PRINT), 'dpe');
+        // Debug conditionnel pour la production
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            // Logger la structure complète des données
+            my_istymo_log("Structure JSON complète: " . json_encode($data, JSON_PRETTY_PRINT), 'dpe');
+        }
         
         // Préparer les informations de pagination
         $pagination = array(
@@ -172,7 +185,7 @@ class DPE_Handler {
         
         return array(
             'data' => $data['results'],
-            'raw_data' => $data,  // ✅ DEBUG : Données JSON brutes
+            'raw_data' => (defined('WP_DEBUG') && WP_DEBUG) ? $data : null,  // Données JSON brutes seulement en debug
             'pagination' => $pagination
         );
     }
@@ -202,7 +215,7 @@ class DPE_Handler {
         ));
         
         if (is_wp_error($response)) {
-            lettre_laposte_log("❌ Erreur de connexion: " . $response->get_error_message());
+            lettre_laposte_log(" Erreur de connexion: " . $response->get_error_message());
             return array(
                 'success' => false,
                 'error' => 'Erreur de connexion: ' . $response->get_error_message()
@@ -218,7 +231,7 @@ class DPE_Handler {
         lettre_laposte_log("Taille réponse: " . strlen($body) . " caractères");
         
         if ($status_code !== 200) {
-            lettre_laposte_log("❌ Erreur HTTP: $status_code");
+            lettre_laposte_log(" Erreur HTTP: $status_code");
             return array(
                 'success' => false,
                 'error' => "Erreur HTTP $status_code"
@@ -227,7 +240,7 @@ class DPE_Handler {
         
         $content_type = $headers->get('content-type');
         if (strpos($content_type, 'application/json') === false) {
-            lettre_laposte_log("❌ Content-Type invalide: $content_type");
+            lettre_laposte_log(" Content-Type invalide: $content_type");
             return array(
                 'success' => false,
                 'error' => "Content-Type invalide: $content_type"
@@ -236,7 +249,7 @@ class DPE_Handler {
         
         $data = json_decode($body, true);
         if (json_last_error() !== JSON_ERROR_NONE) {
-            lettre_laposte_log("❌ Erreur JSON: " . json_last_error_msg());
+            lettre_laposte_log(" Erreur JSON: " . json_last_error_msg());
             return array(
                 'success' => false,
                 'error' => 'Erreur de décodage JSON: ' . json_last_error_msg()

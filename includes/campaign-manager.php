@@ -429,9 +429,9 @@ class SCI_Campaign_Manager {
         ], 'FRANCE');
         
         // Log des données récupérées pour debug
-        sci_plugin_log("=== DONNÉES EXPÉDITEUR RÉCUPÉRÉES ===");
-        sci_plugin_log("User ID: $user_id");
-        sci_plugin_log("Données: " . json_encode($data, JSON_PRETTY_PRINT));
+        my_istymo_log("=== DONNÉES EXPÉDITEUR RÉCUPÉRÉES ===", 'campaign');
+        my_istymo_log("User ID: $user_id", 'campaign');
+        my_istymo_log("Données: " . json_encode($data, JSON_PRETTY_PRINT), 'campaign');
         
         // Validation des champs obligatoires
         $required_fields = ['adresse_ligne1', 'code_postal', 'ville'];
@@ -449,9 +449,9 @@ class SCI_Campaign_Manager {
         }
         
         if (!empty($missing_fields)) {
-            sci_plugin_log("❌ CHAMPS MANQUANTS: " . implode(', ', $missing_fields));
+            my_istymo_log("CHAMPS MANQUANTS: " . implode(', ', $missing_fields), 'campaign');
         } else {
-            sci_plugin_log("✅ TOUTES LES DONNÉES REQUISES SONT PRÉSENTES");
+            my_istymo_log("TOUTES LES DONNÉES REQUISES SONT PRÉSENTES", 'campaign');
         }
         
         return $data;

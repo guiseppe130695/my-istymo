@@ -86,7 +86,7 @@
 </style>
         <!-- En-tête avec navigation -->
         <div class="campaign-page-header">
-            <h1 class="campaign-page-title">📬 <?php echo esc_html($campaign_details['title']); ?></h1>
+            <h1 class="campaign-page-title"><?php echo esc_html($campaign_details['title']); ?></h1>
             <a href="<?php echo esc_url(remove_query_arg('view')); ?>" class="campaign-back-link">
                 ← Retour
             </a>
@@ -100,10 +100,10 @@
                 <p class="campaign-stat-value">
                 <?php
                 $status_labels = [
-                    'draft' => '📝 Brouillon',
-                    'processing' => '⏳ En cours',
-                    'completed' => '✅ Terminée',
-                    'completed_with_errors' => '⚠️ Terminée avec erreurs'
+                    'draft' => 'Brouillon',
+                    'processing' => 'En cours',
+                    'completed' => 'Terminée',
+                    'completed_with_errors' => 'Terminée avec erreurs'
                 ];
                 echo $status_labels[$campaign_details['status']] ?? $campaign_details['status'];
                 ?>
@@ -132,9 +132,9 @@
         <!-- Section Contenu de la lettre avec popup -->
         <div class="campaign-letter-section">
             <div class="campaign-letter-header">
-                <h3 class="campaign-letter-title">📝 Contenu de la lettre</h3>
+                <h3 class="campaign-letter-title">Contenu de la lettre</h3>
                 <button id="show-letter-popup" class="letter-popup-trigger">
-                    👁️ Voir le contenu
+                    Voir le contenu
                 </button>
             </div>
             <p class="campaign-letter-date">
@@ -145,7 +145,7 @@
         <!-- Popup pour le contenu de la lettre (modale identique à sci-panel.php) -->
         <div id="letter-content-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.6)!important; z-index:10000; justify-content:center; align-items:center;">
             <div style="background:#fff!important; padding:25px!important; width:700px; max-width:80vw; max-height:80vh; overflow-y:auto; border-radius:12px; display:flex; flex-direction:column;">
-                <h3 style="margin:0 0 20px 0; color:#1e1e1e; font-size:1.3em;">📝 Contenu de la lettre</h3>
+                <h3 style="margin:0 0 20px 0; color:#1e1e1e; font-size:1.3em;">Contenu de la lettre</h3>
                 <div style="background:#f9f9f9; padding:15px; border:1px solid #ddd; border-radius:6px; font-size:14px; line-height:1.7; color:#495057; white-space:pre-wrap; font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; margin-bottom:20px;">
                     <?php echo esc_html($campaign_details['content']); ?>
                 </div>
@@ -190,7 +190,7 @@
         
         <!-- Section Détail des envois -->
         <div class="campaign-details-section">
-            <h3 class="campaign-details-title">📋 Détail des envois</h3>
+            <h3 class="campaign-details-title">Détail des envois</h3>
         <table class="sci-table">
             <thead>
                 <tr>
@@ -214,9 +214,9 @@
                         <td>
                             <?php
                             $status_icons = [
-                                'pending' => '⏳ En attente',
-                                'sent' => '✅ Envoyée',
-                                'failed' => '❌ Erreur'
+                                'pending' => 'En attente',
+                                'sent' => 'Envoyée',
+                                'failed' => 'Erreur'
                             ];
                             echo $status_icons[$letter['status']] ?? $letter['status'];
                             ?>
@@ -277,10 +277,10 @@
                             <td>
                                 <?php
                                 $status_labels = [
-                                    'draft' => '📝 Brouillon',
-                                    'processing' => '⏳ En cours',
-                                    'completed' => '✅ Terminée',
-                                    'completed_with_errors' => '⚠️ Terminée avec erreurs'
+                                    'draft' => 'Brouillon',
+                                    'processing' => 'En cours',
+                                    'completed' => 'Terminée',
+                                    'completed_with_errors' => 'Terminée avec erreurs'
                                 ];
                                 echo $status_labels[$campaign['status']] ?? $campaign['status'];
                                 ?>
@@ -293,7 +293,7 @@
                                 <a href="<?php echo esc_url(add_query_arg('view', intval($campaign['id']))); ?>" 
                                    class="sci-button"
                                    style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important; color: white !important; border: none !important; text-decoration: none !important; display: inline-block !important; padding: 8px 16px !important; border-radius: 6px !important;">
-                                    👁️ Voir détails
+                                    Voir détails
                                 </a>
                             </td>
                         </tr>

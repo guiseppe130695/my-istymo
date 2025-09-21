@@ -202,7 +202,7 @@ jQuery(document).ready(function($) {
             deleteLead(leadId);
         });
         
-        // ✅ PHASE 3 : Ajouter une action - Utiliser le système de lead-actions.js
+        // PHASE 3 : Ajouter une action - Utiliser le système de lead-actions.js
         $(document).on('click', '.my-istymo-add-action', function(e) {
             e.preventDefault();
             const leadId = $(this).data('lead-id');
@@ -213,7 +213,7 @@ jQuery(document).ready(function($) {
             }
         });
         
-        // ✅ PHASE 3 : Changer le statut - Utiliser le système de lead-actions.js
+        // PHASE 3 : Changer le statut - Utiliser le système de lead-actions.js
         $(document).on('click', '.my-istymo-change-status', function(e) {
             e.preventDefault();
             const leadId = $(this).data('lead-id');
@@ -230,7 +230,7 @@ jQuery(document).ready(function($) {
      * Modifie un lead
      */
     function editLead(leadId) {
-        console.log('✏️ Édition du lead:', leadId);
+        console.log('Édition du lead:', leadId);
         
         // Charger les détails du lead
         $.ajax({
@@ -242,7 +242,7 @@ jQuery(document).ready(function($) {
                 nonce: unifiedLeadsAjax.nonce
             },
             success: function(response) {
-                console.log('📡 Réponse des détails:', response);
+                console.log('Réponse des détails:', response);
                 
                 if (response.success) {
                     const lead = response.data;
@@ -258,12 +258,12 @@ jQuery(document).ready(function($) {
                     $('#edit-lead-modal').removeClass('my-istymo-hidden').addClass('my-istymo-show');
                     $('#edit-lead-modal').show();
                 } else {
-                    console.error('❌ Erreur lors du chargement des détails:', response.data);
+                    console.error(' Erreur lors du chargement des détails:', response.data);
                     alert('Erreur lors du chargement des détails : ' + (response.data || 'Erreur inconnue'));
                 }
             },
             error: function(xhr, status, error) {
-                console.error('❌ Erreur AJAX:', {xhr: xhr, status: status, error: error});
+                console.error(' Erreur AJAX:', {xhr: xhr, status: status, error: error});
                 alert('Erreur lors de la communication avec le serveur');
             }
         });
@@ -273,7 +273,7 @@ jQuery(document).ready(function($) {
      * Affiche les détails d'un lead
      */
     function viewLead(leadId) {
-        console.log('👁️ Affichage des détails du lead:', leadId);
+        console.log(' Affichage des détails du lead:', leadId);
         
         // Utiliser le nouveau système de modal si disponible
         if (window.leadActionsManager && typeof window.leadActionsManager.getLeadDetails === 'function') {
@@ -291,7 +291,7 @@ jQuery(document).ready(function($) {
                 nonce: unifiedLeadsAjax.nonce
             },
             success: function(response) {
-                console.log('📡 Réponse des détails:', response);
+                console.log('Réponse des détails:', response);
                 
                 if (response.success) {
                     // Créer un modal temporaire pour afficher les détails
@@ -314,19 +314,19 @@ jQuery(document).ready(function($) {
                     // Ajouter le modal au body
                     $('body').append(modalHtml);
                 } else {
-                    console.error('❌ Erreur lors du chargement des détails:', response.data);
+                    console.error(' Erreur lors du chargement des détails:', response.data);
                     alert('Erreur lors du chargement des détails : ' + (response.data || 'Erreur inconnue'));
                 }
             },
             error: function(xhr, status, error) {
-                console.error('❌ Erreur AJAX:', {xhr: xhr, status: status, error: error});
+                console.error(' Erreur AJAX:', {xhr: xhr, status: status, error: error});
                 alert('Erreur lors de la communication avec le serveur');
             }
         });
     }
     
     /**
-     * ✅ PHASE 3 : Ajoute une action à un lead
+     *  PHASE 3 : Ajoute une action à un lead
      */
     function addAction(leadId) {
         console.log('📝 Ajout d\'action pour le lead:', leadId);
@@ -339,10 +339,10 @@ jQuery(document).ready(function($) {
     }
     
     /**
-     * ✅ PHASE 3 : Change le statut d'un lead
+     *  PHASE 3 : Change le statut d'un lead
      */
     function changeStatus(leadId, currentStatus) {
-        console.log('🔄 Changement de statut pour le lead:', leadId, 'Statut actuel:', currentStatus);
+        console.log(' Changement de statut pour le lead:', leadId, 'Statut actuel:', currentStatus);
         
         // Remplir les champs du formulaire
         $('#status-lead-id').val(leadId);
@@ -357,7 +357,7 @@ jQuery(document).ready(function($) {
      */
     function deleteLead(leadId) {
         if (confirm('Êtes-vous sûr de vouloir supprimer ce lead ?')) {
-            console.log('🗑️ Suppression du lead:', leadId);
+            console.log(' Suppression du lead:', leadId);
             
             $.ajax({
                 url: unifiedLeadsAjax.ajaxurl,
@@ -368,20 +368,20 @@ jQuery(document).ready(function($) {
                     nonce: unifiedLeadsAjax.nonce
                 },
                 success: function(response) {
-                    console.log('📡 Réponse de suppression:', response);
+                    console.log(' Réponse de suppression:', response);
                     
                     if (response.success) {
-                        console.log('✅ Lead supprimé avec succès');
+                        console.log(' Lead supprimé avec succès');
                         // Recharger la page pour mettre à jour la liste
                         location.reload();
                     } else {
-                        console.error('❌ Erreur lors de la suppression:', response.data);
+                        console.error(' Erreur lors de la suppression:', response.data);
                         alert('Erreur lors de la suppression : ' + (response.data || 'Erreur inconnue'));
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.error('❌ Erreur AJAX:', {xhr: xhr, status: status, error: error});
-                    console.error('❌ Réponse du serveur:', xhr.responseText);
+                    console.error(' Erreur AJAX:', {xhr: xhr, status: status, error: error});
+                    console.error(' Réponse du serveur:', xhr.responseText);
                     
                     // Essayer de parser la réponse pour voir s'il y a des détails
                     try {
@@ -437,17 +437,17 @@ jQuery(document).ready(function($) {
             nonce: unifiedLeadsAjax.nonce
         };
         
-        console.log('📤 Envoi des données d\'édition:', formData);
+        console.log(' Envoi des données d\'édition:', formData);
         
         $.ajax({
             url: unifiedLeadsAjax.ajaxurl,
             type: 'POST',
             data: formData,
             success: function(response) {
-                console.log('📡 Réponse de mise à jour:', response);
+                console.log(' Réponse de mise à jour:', response);
                 
                 if (response.success) {
-                    console.log('✅ Lead mis à jour avec succès');
+                    console.log(' Lead mis à jour avec succès');
                     alert('Lead mis à jour avec succès');
                     
                     // Fermer le modal
@@ -456,12 +456,12 @@ jQuery(document).ready(function($) {
                     // Recharger la page pour mettre à jour la liste
                     location.reload();
                 } else {
-                    console.error('❌ Erreur lors de la mise à jour:', response.data);
+                    console.error(' Erreur lors de la mise à jour:', response.data);
                     alert('Erreur lors de la mise à jour : ' + (response.data || 'Erreur inconnue'));
                 }
             },
             error: function(xhr, status, error) {
-                console.error('❌ Erreur AJAX:', {xhr: xhr, status: status, error: error});
+                console.error(' Erreur AJAX:', {xhr: xhr, status: status, error: error});
                 alert('Erreur lors de la communication avec le serveur');
             }
         });
@@ -592,7 +592,7 @@ jQuery(document).ready(function($) {
         }
     });
     
-    // ✅ PHASE 3 : Gestionnaires pour les modals d'actions et workflow
+    //  PHASE 3 : Gestionnaires pour les modals d'actions et workflow
     
     /**
      * Gestionnaire pour le formulaire d'ajout d'action
@@ -613,22 +613,22 @@ jQuery(document).ready(function($) {
             processData: false,
             contentType: false,
             success: function(response) {
-                console.log('📡 Réponse ajout action:', response);
+                console.log(' Réponse ajout action:', response);
                 
                 if (response.success) {
-                    console.log('✅ Action ajoutée avec succès');
+                    console.log(' Action ajoutée avec succès');
                     $('#add-action-modal').hide();
                     $('#add-action-form')[0].reset();
                     showNotification('Action ajoutée avec succès', 'success');
                     // Recharger la page pour mettre à jour l'affichage
                     setTimeout(() => location.reload(), 1000);
                 } else {
-                    console.error('❌ Erreur lors de l\'ajout de l\'action:', response.data);
+                    console.error(' Erreur lors de l\'ajout de l\'action:', response.data);
                     alert('Erreur lors de l\'ajout de l\'action : ' + (response.data || 'Erreur inconnue'));
                 }
             },
             error: function(xhr, status, error) {
-                console.error('❌ Erreur AJAX ajout action:', {xhr: xhr, status: status, error: error});
+                console.error(' Erreur AJAX ajout action:', {xhr: xhr, status: status, error: error});
                 alert('Erreur lors de la communication avec le serveur');
             }
         });
@@ -644,7 +644,7 @@ jQuery(document).ready(function($) {
         formData.append('action', 'my_istymo_change_lead_status');
         formData.append('nonce', unifiedLeadsAjax.nonce);
         
-        console.log('🔄 Soumission changement statut:', Object.fromEntries(formData));
+        console.log(' Soumission changement statut:', Object.fromEntries(formData));
         
         $.ajax({
             url: unifiedLeadsAjax.ajaxurl,
@@ -653,10 +653,10 @@ jQuery(document).ready(function($) {
             processData: false,
             contentType: false,
             success: function(response) {
-                console.log('📡 Réponse changement statut:', response);
+                console.log(' Réponse changement statut:', response);
                 
                 if (response.success) {
-                    console.log('✅ Statut changé avec succès');
+                    console.log(' Statut changé avec succès');
                     if (window.leadActionsManager) {
                         window.leadActionsManager.closeAllModals();
                     } else {
@@ -667,12 +667,12 @@ jQuery(document).ready(function($) {
                     // Recharger la page pour mettre à jour l'affichage
                     setTimeout(() => location.reload(), 1000);
                 } else {
-                    console.error('❌ Erreur lors du changement de statut:', response.data);
+                    console.error(' Erreur lors du changement de statut:', response.data);
                     alert('Erreur lors du changement de statut : ' + (response.data || 'Erreur inconnue'));
                 }
             },
             error: function(xhr, status, error) {
-                console.error('❌ Erreur AJAX changement statut:', {xhr: xhr, status: status, error: error});
+                console.error(' Erreur AJAX changement statut:', {xhr: xhr, status: status, error: error});
                 alert('Erreur lors de la communication avec le serveur');
             }
         });
@@ -715,7 +715,7 @@ jQuery(document).ready(function($) {
         formData.append('action', 'my_istymo_update_lead');
         formData.append('nonce', unifiedLeadsAjax.nonce);
         
-        console.log('✏️ Soumission édition lead:', Object.fromEntries(formData));
+        console.log(' Soumission édition lead:', Object.fromEntries(formData));
         
         $.ajax({
             url: unifiedLeadsAjax.ajaxurl,
@@ -724,21 +724,21 @@ jQuery(document).ready(function($) {
             processData: false,
             contentType: false,
             success: function(response) {
-                console.log('📡 Réponse édition lead:', response);
+                console.log(' Réponse édition lead:', response);
                 
                 if (response.success) {
-                    console.log('✅ Lead modifié avec succès');
+                    console.log(' Lead modifié avec succès');
                     closeEditLeadModal();
                     showNotification('Lead modifié avec succès', 'success');
                     // Recharger la page pour mettre à jour l'affichage
                     setTimeout(() => location.reload(), 1000);
                 } else {
-                    console.error('❌ Erreur lors de la modification:', response.data);
+                    console.error(' Erreur lors de la modification:', response.data);
                     alert('Erreur lors de la modification : ' + (response.data || 'Erreur inconnue'));
                 }
             },
             error: function(xhr, status, error) {
-                console.error('❌ Erreur AJAX édition lead:', {xhr: xhr, status: status, error: error});
+                console.error(' Erreur AJAX édition lead:', {xhr: xhr, status: status, error: error});
                 alert('Erreur lors de la communication avec le serveur');
             }
         });

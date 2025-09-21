@@ -4,11 +4,44 @@ Plugin Name: My Istymo
 Description: Plugin personnalisé SCI avec un panneau admin et un sélecteur de codes postaux.
 Version: 1.6
 Author: Brio Guiseppe
+Requires at least: 5.0
+Tested up to: 6.4
+Requires PHP: 7.4
+License: GPL v2 or later
+Text Domain: my-istymo
+Network: false
 */
 
 if (!defined('ABSPATH')) exit; // Sécurité : Empêche l'accès direct au fichier
 
-include plugin_dir_path(__FILE__) . 'popup-lettre.php';
+// ✅ VÉRIFICATIONS DE DÉPENDANCES POUR LA PRODUCTION
+add_action('admin_init', 'my_istymo_check_dependencies');
+
+function my_istymo_check_dependencies() {
+    $missing_deps = [];
+    
+    // Vérifier WooCommerce
+    if (!class_exists('WooCommerce')) {
+        $missing_deps[] = 'WooCommerce';
+    }
+    
+    // Vérifier ACF (Advanced Custom Fields)
+    if (!function_exists('get_field')) {
+        $missing_deps[] = 'Advanced Custom Fields (ACF)';
+    }
+    
+    // Afficher les avertissements si des dépendances manquent
+    if (!empty($missing_deps)) {
+        add_action('admin_notices', function() use ($missing_deps) {
+            $deps_list = implode(', ', $missing_deps);
+            echo '<div class="notice notice-warning is-dismissible">';
+            echo '<p><strong>My Istymo :</strong> Les plugins suivants sont requis pour un fonctionnement optimal : ' . esc_html($deps_list) . '</p>';
+            echo '</div>';
+        });
+    }
+}
+
+// popup-lettre.php supprimé - fonctions intégrées dans le système principal
 
 // ✅ NOUVEAU : Fonction utilitaire pour récupérer les codes postaux de l'utilisateur
 function sci_get_user_postal_codes($user_id = null) {
@@ -40,8 +73,16 @@ function sci_get_user_postal_codes($user_id = null) {
     return $codesPostauxArray;
 }
 
-// ✅ NOUVEAU : Fonction de log universelle pour tout le plugin
+// ✅ NOUVEAU : Fonction de log universelle pour tout le plugin (PRODUCTION READY)
 function my_istymo_log($message, $context = 'general') {
+    // Logs seulement en mode debug ou si explicitement activés
+    if (!defined('WP_DEBUG') || !WP_DEBUG) {
+        // En production, logs seulement pour les erreurs critiques
+        if ($context !== 'error' && $context !== 'critical') {
+            return;
+        }
+    }
+    
     $upload_dir = wp_upload_dir();
     $log_dir = $upload_dir['basedir'] . '/my-istymo-logs/';
     $log_file = $log_dir . $context . '-logs.txt';
@@ -82,7 +123,7 @@ require_once plugin_dir_path(__FILE__) . 'includes/dpe-shortcodes.php';
 require_once plugin_dir_path(__FILE__) . 'includes/unified-leads-manager.php';
 require_once plugin_dir_path(__FILE__) . 'includes/lead-status-manager.php';
 require_once plugin_dir_path(__FILE__) . 'includes/unified-leads-migration.php';
-require_once plugin_dir_path(__FILE__) . 'includes/unified-leads-test.php';
+// unified-leads-test.php supprimé - fichier de test pour le développement uniquement
 
 // ✅ PHASE 3 : Système d'actions et workflow
 require_once plugin_dir_path(__FILE__) . 'includes/lead-actions-manager.php';
@@ -291,10 +332,13 @@ function sci_inpi_search_ajax() {
     $page = max(1, $page);
     $page_size = max(1, min(100, $page_size)); // Limiter à 100 max
     
-    my_istymo_log("=== RECHERCHE AJAX INPI ===", 'inpi');
-    my_istymo_log("Code postal: $code_postal", 'inpi');
-    my_istymo_log("Page: $page", 'inpi');
-    my_istymo_log("Taille page: $page_size", 'inpi');
+    // Logs conditionnés pour la production
+    if (defined('WP_DEBUG') && WP_DEBUG) {
+        my_istymo_log("=== RECHERCHE AJAX INPI ===", 'inpi');
+        my_istymo_log("Code postal: $code_postal", 'inpi');
+        my_istymo_log("Page: $page", 'inpi');
+        my_istymo_log("Taille page: $page_size", 'inpi');
+    }
     
     // Appeler la fonction de recherche avec pagination
     $resultats = sci_fetch_inpi_data_with_pagination($code_postal, $page, $page_size);
@@ -354,9 +398,12 @@ function sci_fetch_inpi_data_with_pagination($code_postal, $page = 1, $page_size
         'timeout' => 30
     ];
 
-    my_istymo_log("=== REQUÊTE API INPI AVEC PAGINATION ===", 'inpi');
-    my_istymo_log("URL: $url", 'inpi');
-    my_istymo_log("Token: " . substr($token, 0, 20) . "...", 'inpi');
+    // Logs conditionnés pour la production
+    if (defined('WP_DEBUG') && WP_DEBUG) {
+        my_istymo_log("=== REQUÊTE API INPI AVEC PAGINATION ===", 'inpi');
+        my_istymo_log("URL: $url", 'inpi');
+        my_istymo_log("Token: " . substr($token, 0, 20) . "...", 'inpi');
+    }
 
     // Effectue la requête HTTP GET via WordPress HTTP API
     $reponse = wp_remote_get($url, $args);
@@ -372,12 +419,15 @@ function sci_fetch_inpi_data_with_pagination($code_postal, $page = 1, $page_size
     $corps     = wp_remote_retrieve_body($reponse);
     $headers   = wp_remote_retrieve_headers($reponse);
 
-    my_istymo_log("Code HTTP INPI: $code_http", 'inpi');
-    my_istymo_log("Headers INPI: " . json_encode($headers->getAll()), 'inpi');
+    // Logs conditionnés pour la production
+    if (defined('WP_DEBUG') && WP_DEBUG) {
+        my_istymo_log("Code HTTP INPI: $code_http", 'inpi');
+        my_istymo_log("Headers INPI: " . json_encode($headers->getAll()), 'inpi');
+    }
 
     // ✅ NOUVEAU : Gestion automatique des erreurs d'authentification
     if ($code_http === 401 || $code_http === 403) {
-        my_istymo_log("🔄 Erreur d'authentification INPI détectée, tentative de régénération du token...", 'inpi');
+        my_istymo_log("🔄 Erreur d'authentification INPI détectée, tentative de régénération du token...", 'error');
         
         // Tenter de régénérer le token
         $new_token = $inpi_token_manager->handle_auth_error();
@@ -572,7 +622,8 @@ function sci_enqueue_admin_scripts() {
         wp_localize_script('sci-favoris', 'sci_ajax', array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('sci_favoris_nonce'),
-            'contacted_sirens' => $contacted_sirens // ✅ NOUVEAU : Liste des SIRENs contactés
+            'contacted_sirens' => $contacted_sirens, // ✅ NOUVEAU : Liste des SIRENs contactés
+            'debug_mode' => defined('WP_DEBUG') && WP_DEBUG // ✅ NOUVEAU : Mode debug pour JavaScript
         ));
 
         // Localisation pour le paiement - UTILISE L'URL STOCKÉE

@@ -484,9 +484,9 @@
         updateWorkflowSteps(currentStatus) {
             const workflowSteps = [
                 { status: 'nouveau', label: 'Nouveau', icon: '🆕' },
-                { status: 'en_cours', label: 'En cours', icon: '🔄' },
-                { status: 'qualifie', label: 'Qualifié', icon: '✅' },
-                { status: 'proposition', label: 'Proposition', icon: '📋' },
+                { status: 'en_cours', label: 'En cours', icon: 'En cours' },
+                { status: 'qualifie', label: 'Qualifié', icon: 'Qualifié' },
+                { status: 'proposition', label: 'Proposition', icon: 'Proposition' },
                 { status: 'negocie', label: 'Négocié', icon: '🤝' },
                 { status: 'gagne', label: 'Gagné', icon: '🏆' }
             ];

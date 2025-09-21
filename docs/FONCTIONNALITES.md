@@ -1,6 +1,6 @@
-# 🏢 My Istymo - Documentation Complète des Fonctionnalités
+# My Istymo - Documentation Complète des Fonctionnalités
 
-## 📋 Vue d'ensemble
+## Vue d'ensemble
 
 **My Istymo** est un plugin WordPress personnalisé développé par Brio Guiseppe, spécialisé dans la prospection et la gestion des Sociétés Civiles Immobilières (SCI) et des Diagnostics de Performance Énergétique (DPE). Le plugin offre une solution complète pour la recherche, la gestion des favoris, et l'envoi de campagnes de courriers personnalisés.
 
@@ -33,7 +33,7 @@ wp-content/my-istymo/
 
 ---
 
-## 🔍 Module SCI - Recherche et Prospection
+## Module SCI - Recherche et Prospection
 
 ### Fonctionnalités principales
 
@@ -59,7 +59,7 @@ wp-content/my-istymo/
 
 #### `[sci_panel]`
 ```php
-[sci_panel title="🏢 SCI – Recherche et Contact" show_config_warnings="true"]
+[sci_panel title="SCI – Recherche et Contact" show_config_warnings="true"]
 ```
 - **Fonction** : Affiche le panneau principal de recherche SCI
 - **Paramètres** :
@@ -68,7 +68,7 @@ wp-content/my-istymo/
 
 #### `[sci_favoris]`
 ```php
-[sci_favoris title="⭐ Mes SCI Favoris" show_empty_message="true"]
+[sci_favoris title="Mes SCI Favoris" show_empty_message="true"]
 ```
 - **Fonction** : Liste des SCI ajoutées aux favoris
 - **Paramètres** :
@@ -77,7 +77,7 @@ wp-content/my-istymo/
 
 #### `[sci_campaigns]`
 ```php
-[sci_campaigns title="📬 Mes Campagnes de Lettres" show_empty_message="true"]
+[sci_campaigns title="Mes Campagnes de Lettres" show_empty_message="true"]
 ```
 - **Fonction** : Gestion des campagnes de courriers
 - **Paramètres** :
@@ -99,7 +99,7 @@ wp-content/my-istymo/
 
 ---
 
-## 📬 Module Campagnes - Envoi de Courriers
+## Module Campagnes - Envoi de Courriers
 
 ### Fonctionnalités principales
 
@@ -173,7 +173,7 @@ wp-content/my-istymo/
 
 ---
 
-## 💳 Module Paiement - Intégration WooCommerce
+## Module Paiement - Intégration WooCommerce
 
 ### Fonctionnalités principales
 
@@ -366,18 +366,18 @@ wp-content/my-istymo/
 ## 📈 Versions et Évolutions
 
 ### Version 1.6 (Actuelle)
-- ✅ Interface utilisateur modernisée
-- ✅ Système de pagination amélioré
-- ✅ Styles CSS harmonisés
-- ✅ Intégration WooCommerce complète
-- ✅ Module DPE ajouté
-- ✅ Sécurité renforcée
+- Interface utilisateur modernisée
+- Système de pagination amélioré
+- Styles CSS harmonisés
+- Intégration WooCommerce complète
+- Module DPE ajouté
+- Sécurité renforcée
 
 ### Fonctionnalités prévues
-- 🔄 Module de reporting avancé
-- 🔄 Intégration avec d'autres APIs
-- 🔄 Système de notifications push
-- 🔄 Application mobile
+- Module de reporting avancé
+- Intégration avec d'autres APIs
+- Système de notifications push
+- Application mobile
 
 ---
 
@@ -407,7 +407,7 @@ wp-content/my-istymo/
 
 ---
 
-## 📄 Licence et Support
+## Licence et Support
 
 **Développeur :** Brio Guiseppe  
 **Version :** 1.6  

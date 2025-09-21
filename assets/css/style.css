@@ -62,7 +62,7 @@
     padding: 12px;
     border-left: 4px solid;
     background: #fff;
-    /* ✅ SUPPRIMÉ : box-shadow: 0 1px 1px 0 rgba(0,0,0,.1); */
+    /* SUPPRIMÉ : box-shadow: 0 1px 1px 0 rgba(0,0,0,.1); */
 }
 
 .notice-error {
@@ -77,7 +77,7 @@
     border-left-color: #46b450;
 }
 
-/* ✅ MODIFIÉ : Styles pour le statut de contact des SCI - SANS STYLE BOUTON */
+/* MODIFIÉ : Styles pour le statut de contact des SCI - SANS STYLE BOUTON */
 #sci-search-form button #search-btn {
     background: #000064 !important;
 }
@@ -91,7 +91,7 @@
     display: inline-block;
     font-size: 16px;
     color: #28a745;
-    /* ✅ SUPPRIMÉ TOUS LES STYLES BOUTON :
+    /* SUPPRIMÉ TOUS LES STYLES BOUTON :
     padding: 4px 8px;
     border-radius: 12px;
     font-weight: 600;
@@ -104,26 +104,26 @@
 }
 
 .contact-status.contacted {
-    /* ✅ GARDE SEULEMENT LA COULEUR */
+    /* GARDE SEULEMENT LA COULEUR */
     color: #28a745;
 }
 
 .contact-status.not-contacted {
-    /* ✅ MASQUÉ PAR DÉFAUT */
+    /* MASQUÉ PAR DÉFAUT */
     display: none;
 }
 
 .contact-status-icon {
-    /* ✅ SIMPLIFIÉ : Juste l'emoji sans marge */
+    /* SIMPLIFIÉ : Juste le texte sans marge */
     font-size: 16px;
 }
 
 .contact-status-text {
-    /* ✅ SUPPRIMÉ : Le texte ne s'affiche plus */
+    /* SUPPRIMÉ : Le texte ne s'affiche plus */
     display: none;
 }
 
-/* ✅ NOUVEAU : Styles pour les liens Google Maps */
+/* NOUVEAU : Styles pour les liens Google Maps */
 .maps-link {
     display: inline-block;
     padding: 4px 8px;
@@ -430,7 +430,7 @@
     border-radius: 4px;
     overflow: hidden;
     margin: 20px 0;
-    /* ✅ SUPPRIMÉ : box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); */
+    /* SUPPRIMÉ : box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); */
 }
 
 .progress-bar-fill {
@@ -478,7 +478,7 @@
 
 .button.button-primary:active {
     transform: translateY(0);
-    /* ✅ SUPPRIMÉ : box-shadow: 0 3px 6px rgba(0,115,170,0.2); */
+    /* SUPPRIMÉ : box-shadow: 0 3px 6px rgba(0,115,170,0.2); */
 }
 
 .button.button-large {
@@ -511,7 +511,7 @@
 }
 
 .validation-error::before {
-    content: '⚠️';
+    content: 'Attention';
     font-size: 18px;
 }
 
@@ -528,7 +528,7 @@
 }
 
 .validation-success::before {
-    content: '✅';
+    content: 'Succès';
     font-size: 18px;
 }
 
@@ -577,7 +577,7 @@
         height: 600px !important;
     }
     
-    /* ✅ RESPONSIVE POUR LE STATUT DE CONTACT - SIMPLIFIÉ */
+    /* RESPONSIVE POUR LE STATUT DE CONTACT - SIMPLIFIÉ */
     .contact-status {
         font-size: 14px;
     }
@@ -586,7 +586,7 @@
         font-size: 14px;
     }
     
-    /* ✅ RESPONSIVE POUR LES LIENS MAPS */
+    /* RESPONSIVE POUR LES LIENS MAPS */
     .maps-link {
         font-size: 11px;
         padding: 3px 6px;
@@ -630,7 +630,7 @@
     background: white;
     border-radius: 8px;
     overflow: hidden;
-    /* ✅ SUPPRIMÉ : box-shadow: 0 4px 12px rgba(0,0,0,0.1); */
+    /* SUPPRIMÉ : box-shadow: 0 4px 12px rgba(0,0,0,0.1); */
 }
 
 #embedded-checkout iframe {
@@ -674,7 +674,7 @@
    STYLES MINIMALISTES POUR LES SHORTCODES FRONTEND
    ======================================== */
 
-/* ✅ NOUVEAU : Wrapper principal pour les shortcodes */
+/* NOUVEAU : Wrapper principal pour les shortcodes */
 .sci-frontend-wrapper {
     /* Isolation complète du thème */
     all: initial;
@@ -695,7 +695,7 @@
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ✅ NOUVEAU : Reset spécifique pour RealHome */
+/* NOUVEAU : Reset spécifique pour RealHome */
 .sci-frontend-wrapper *,
 .sci-frontend-wrapper *::before,
 .sci-frontend-wrapper *::after {
@@ -719,7 +719,7 @@
     line-height: 1.6 !important;
 }
 
-/* ✅ NOUVEAU : Correction spécifique pour le loading */
+/* NOUVEAU : Correction spécifique pour le loading */
 .sci-frontend-wrapper #search-loading {
     display: none !important;
     text-align: center !important;
@@ -750,7 +750,7 @@
     100% { transform: rotate(360deg); }
 }
 
-/* ✅ NOUVEAU : Protection contre les styles de thème pour les formulaires */
+/* NOUVEAU : Protection contre les styles de thème pour les formulaires */
 .sci-frontend-wrapper form {
     margin: 0 !important;
     padding: 0 !important;
@@ -786,7 +786,7 @@
     box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25) !important;
 }
 
-/* ✅ NOUVEAU : Protection contre les styles de thème pour les tableaux */
+/* NOUVEAU : Protection contre les styles de thème pour les tableaux */
 .sci-frontend-wrapper table {
     border-collapse: collapse !important;
     border-spacing: 0 !important;
@@ -821,7 +821,7 @@
     background-color: rgba(52, 152, 219, 0.05) !important;
 }
 
-/* ✅ NOUVEAU : Protection contre les styles de thème pour les boutons */
+/* NOUVEAU : Protection contre les styles de thème pour les boutons */
 .sci-frontend-wrapper button {
     font-family: inherit !important;
     font-size: 1rem !important;
@@ -872,7 +872,7 @@
     opacity: 0.6 !important;
 }
 
-/* ✅ NOUVEAU : Protection contre les styles de thème pour les liens */
+/* NOUVEAU : Protection contre les styles de thème pour les liens */
 .sci-frontend-wrapper a {
     color: var(--primary-color) !important;
     text-decoration: none !important;
@@ -891,7 +891,7 @@
     background: none !important;
 }
 
-/* ✅ NOUVEAU : Protection contre les styles de thème pour les listes */
+/* NOUVEAU : Protection contre les styles de thème pour les listes */
 .sci-frontend-wrapper ul,
 .sci-frontend-wrapper ol {
     margin: 0 0 1rem 0 !important;
@@ -906,7 +906,7 @@
     border: none !important;
 }
 
-/* ✅ NOUVEAU : Protection contre les styles de thème pour les labels */
+/* NOUVEAU : Protection contre les styles de thème pour les labels */
 .sci-frontend-wrapper label {
     display: inline-block !important;
     margin-bottom: 0.5rem !important;
@@ -920,7 +920,7 @@
     line-height: inherit !important;
 }
 
-/* ✅ NOUVEAU : Protection contre les styles de thème pour les spans */
+/* NOUVEAU : Protection contre les styles de thème pour les spans */
 .sci-frontend-wrapper span {
     background: none !important;
     border: none !important;
@@ -932,7 +932,7 @@
     color: inherit !important;
 }
 
-/* ✅ NOUVEAU : Protection contre les styles de thème pour les divs */
+/* NOUVEAU : Protection contre les styles de thème pour les divs */
 .sci-frontend-wrapper div {
     background: none !important;
     border: none !important;
@@ -945,7 +945,7 @@
     box-sizing: border-box !important;
 }
 
-/* ✅ NOUVEAU : Styles spécifiques pour les éléments SCI */
+/* NOUVEAU : Styles spécifiques pour les éléments SCI */
 .sci-frontend-wrapper .sci-form {
     background: var(--light-bg) !important;
     padding: 1.5rem !important;
@@ -985,7 +985,7 @@
     margin: 1rem 0 !important;
 }
 
-/* ✅ NOUVEAU : Styles pour les éléments spécifiques aux shortcodes */
+/* NOUVEAU : Styles pour les éléments spécifiques aux shortcodes */
 .sci-frontend-wrapper #results-header {
     display: flex;
     justify-content: space-between;
@@ -1019,7 +1019,7 @@
     box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
 }
 
-/* ✅ NOUVEAU : Amélioration des messages d'état */
+/* NOUVEAU : Amélioration des messages d'état */
 .sci-frontend-wrapper .sci-error ul,
 .sci-frontend-wrapper .sci-warning ul {
     margin: 0.5rem 0 0 0;
@@ -1031,7 +1031,7 @@
     margin-bottom: 0.25rem;
 }
 
-/* ✅ NOUVEAU : Animation pour les éléments qui apparaissent */
+/* NOUVEAU : Animation pour les éléments qui apparaissent */
 .sci-frontend-wrapper #search-results {
     animation: fadeInUp 0.3s ease-out;
 }
@@ -1060,7 +1060,7 @@
     }
 }
 
-/* ✅ NOUVEAU : Amélioration de l'accessibilité */
+/* NOUVEAU : Amélioration de l'accessibilité */
 .sci-frontend-wrapper .sci-button:focus,
 .sci-frontend-wrapper .sci-form select:focus,
 .sci-frontend-wrapper .fav-btn:focus,
@@ -1077,7 +1077,7 @@
     outline-offset: 2px;
 }
 
-/* ✅ NOUVEAU : Styles pour les états de chargement */
+/* NOUVEAU : Styles pour les états de chargement */
 .sci-frontend-wrapper .sci-button:disabled {
     position: relative;
 }
@@ -1097,7 +1097,7 @@
     opacity: 0.7;
 }
 
-/* ✅ NOUVEAU : Amélioration des tableaux sur mobile */
+/* NOUVEAU : Amélioration des tableaux sur mobile */
 @media (max-width: 480px) {
     .sci-frontend-wrapper .sci-table {
         font-size: 0.75rem;
@@ -1160,7 +1160,7 @@
     }
 }
 
-/* ✅ NOUVEAU : Styles très spécifiques pour forcer l'application */
+/* NOUVEAU : Styles très spécifiques pour forcer l'application */
 .sci-frontend-wrapper,
 .sci-frontend-wrapper *,
 .sci-frontend-wrapper *::before,
@@ -1168,7 +1168,7 @@
     box-sizing: border-box !important;
 }
 
-/* ✅ NOUVEAU : Reset complet pour éviter les styles du thème */
+/* NOUVEAU : Reset complet pour éviter les styles du thème */
 .sci-frontend-wrapper table,
 .sci-frontend-wrapper table *,
 .sci-frontend-wrapper form,
@@ -1182,7 +1182,7 @@
     color: inherit !important;
 }
 
-/* ✅ NOUVEAU : Override des styles de thème pour les tableaux */
+/* NOUVEAU : Override des styles de thème pour les tableaux */
 .sci-frontend-wrapper table.sci-table,
 .sci-frontend-wrapper .sci-table {
     border: none !important;
@@ -1237,7 +1237,7 @@
     border-bottom: none !important;
 }
 
-/* ✅ NOUVEAU : Override des styles de thème pour les formulaires */
+/* NOUVEAU : Override des styles de thème pour les formulaires */
 .sci-frontend-wrapper form.sci-form,
 .sci-frontend-wrapper .sci-form {
     background: #f8f9fa !important;
@@ -1279,7 +1279,7 @@
     box-shadow: none !important;
 }
 
-/* ✅ NOUVEAU : Override des styles de thème pour les boutons */
+/* NOUVEAU : Override des styles de thème pour les boutons */
 
 
 .sci-frontend-wrapper button.sci-button,
@@ -1359,14 +1359,14 @@
     box-shadow: none !important;
 }
 
-/* ✅ NOUVEAU : Correction du problème de chargement sur les boutons */
+/* NOUVEAU : Correction du problème de chargement sur les boutons */
 .sci-frontend-wrapper button.sci-button:disabled::after,
 .sci-frontend-wrapper .sci-button:disabled::after,
 .sci-frontend-wrapper input[type="submit"].sci-button:disabled::after {
     display: none !important;
 }
 
-/* ✅ NOUVEAU : Styles pour les boutons d'action spécifiques */
+/* NOUVEAU : Styles pour les boutons d'action spécifiques */
 .sci-frontend-wrapper button[type="submit"],
 .sci-frontend-wrapper button.button-primary,
 .sci-frontend-wrapper .button.button-primary {
@@ -1395,7 +1395,7 @@
     opacity: 0.6 !important;
 }
 
-/* ✅ NOUVEAU : Styles pour les boutons secondaires d'action */
+/* NOUVEAU : Styles pour les boutons secondaires d'action */
 .sci-frontend-wrapper button.button-secondary,
 .sci-frontend-wrapper .button.button-secondary {
     background: #28a745 !important;
@@ -1421,7 +1421,7 @@
     opacity: 0.6 !important;
 }
 
-/* ✅ NOUVEAU : Styles pour éviter les conflits avec les thèmes populaires */
+/* NOUVEAU : Styles pour éviter les conflits avec les thèmes populaires */
 .sci-frontend-wrapper .elementor-widget-container,
 .sci-frontend-wrapper .elementor-container,
 .sci-frontend-wrapper .elementor-row,
@@ -1443,7 +1443,7 @@
     padding: 0 !important;
 }
 
-/* ✅ NOUVEAU : Animations d'entrée pour les résultats */
+/* NOUVEAU : Animations d'entrée pour les résultats */
 .sci-frontend-wrapper .result-row {
     animation: slideInUp 0.4s ease-out;
     transition: var(--transition);
@@ -1465,7 +1465,7 @@
     }
 }
 
-/* ✅ NOUVEAU : Indicateurs de statut visuels */
+/* NOUVEAU : Indicateurs de statut visuels */
 .sci-frontend-wrapper .status-indicator {
     display: inline-flex;
     align-items: center;
@@ -1490,7 +1490,7 @@
     box-shadow: 0 2px 4px rgba(255, 193, 7, 0.3);
 }
 
-/* ✅ NOUVEAU : Tooltips améliorés */
+/* NOUVEAU : Tooltips améliorés */
 .sci-frontend-wrapper .tooltip {
     position: relative;
     cursor: help;
@@ -1520,7 +1520,7 @@
     visibility: visible;
 }
 
-/* ✅ NOUVEAU : Boutons avec états de chargement */
+/* NOUVEAU : Boutons avec états de chargement */
 .sci-frontend-wrapper .loading {
     position: relative;
     pointer-events: none;
@@ -1540,7 +1540,7 @@
     animation: spin 1s linear infinite;
 }
 
-/* ✅ NOUVEAU : Notifications toast */
+/* NOUVEAU : Notifications toast */
 .sci-frontend-wrapper .toast {
     position: fixed;
     top: 20px;
@@ -1568,7 +1568,7 @@
     border-left: 4px solid var(--danger-color);
 }
 
-/* ✅ NOUVEAU : Filtres et recherche avancée */
+/* NOUVEAU : Filtres et recherche avancée */
 .sci-frontend-wrapper .filters-panel {
     background: var(--light-bg);
     padding: 1.5rem;
@@ -1599,7 +1599,7 @@
     min-width: 120px;
 }
 
-/* ✅ NOUVEAU : Statistiques en temps réel */
+/* NOUVEAU : Statistiques en temps réel */
 .sci-frontend-wrapper .stats-panel {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -1635,7 +1635,7 @@
     letter-spacing: 0.5px;
 }
 
-/* ✅ NOUVEAU : Mode sombre */
+/* NOUVEAU : Mode sombre */
 .sci-frontend-wrapper.dark-mode {
     --light-bg: #2d3748;
     --primary-color: #4299e1;
@@ -1650,7 +1650,7 @@
     color: #e2e8f0;
 }
 
-/* ✅ NOUVEAU : Responsive amélioré */
+/* NOUVEAU : Responsive amélioré */
 @media (max-width: 768px) {
     .sci-frontend-wrapper .filter-group {
         flex-direction: column;
@@ -1668,7 +1668,7 @@
     }
 }
 
-/* ✅ NOUVEAU : Styles spécifiques pour le formulaire de recherche SCI */
+/* NOUVEAU : Styles spécifiques pour le formulaire de recherche SCI */
 .sci-frontend-wrapper #sci-search-form {
     display: flex !important;
     flex-direction: row !important;
@@ -1719,7 +1719,7 @@
     /* align-self: flex-start !important; */
 }
 
-/* ✅ NOUVEAU : Responsive pour le formulaire de recherche */
+/* NOUVEAU : Responsive pour le formulaire de recherche */
 @media (max-width: 768px) {
     .sci-frontend-wrapper #sci-search-form {
         flex-direction: column !important;
@@ -1743,7 +1743,7 @@
     }
 }
 
-/* ✅ NOUVEAU : Styles spécifiques pour le formulaire de recherche SCI dans l'admin */
+/* NOUVEAU : Styles spécifiques pour le formulaire de recherche SCI dans l'admin */
 #sci-search-form {
     display: flex !important;
     flex-direction: row !important;
@@ -1758,7 +1758,7 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
 }
 
-/* ✅ NOUVEAU : Container pour label et select */
+/* NOUVEAU : Container pour label et select */
 #sci-search-form .form-group {
     display: flex !important;
     flex-direction: column !important;
@@ -1802,7 +1802,7 @@
     /* align-self: flex-start !important; */
 }
 
-/* ✅ NOUVEAU : Responsive pour le formulaire de recherche dans l'admin */
+/* NOUVEAU : Responsive pour le formulaire de recherche dans l'admin */
 @media (max-width: 768px) {
     #sci-search-form {
         flex-direction: column !important;
@@ -1830,7 +1830,7 @@
     }
 }
 
-/* ✅ NOUVEAU : Styles verts pour les boutons dans l'admin */
+/* NOUVEAU : Styles verts pour les boutons dans l'admin */
 #sci-search-form button,
 #sci-search-form .button,
 button.button-primary,
@@ -1898,7 +1898,7 @@ button.button-secondary:disabled,
     opacity: 0.6 !important;
 }
 
-/* ✅ NOUVEAU : Correction du problème de chargement sur les boutons dans l'admin */
+/* NOUVEAU : Correction du problème de chargement sur les boutons dans l'admin */
 #sci-search-form button:disabled::after,
 #sci-search-form .button:disabled::after,
 button.button-primary:disabled::after,
@@ -1908,7 +1908,7 @@ button.button-secondary:disabled::after,
     display: none !important;
 }
 
-/* ✅ NOUVEAU : Container pour label et select dans le frontend */
+/* NOUVEAU : Container pour label et select dans le frontend */
 .sci-frontend-wrapper #sci-search-form .form-group {
     display: flex !important;
     flex-direction: column !important;
@@ -1947,7 +1947,7 @@ button.button-secondary:disabled::after,
     box-shadow: none !important;
 }
 
-/* ✅ NOUVEAU : Responsive pour le formulaire de recherche dans le frontend */
+/* NOUVEAU : Responsive pour le formulaire de recherche dans le frontend */
 @media (max-width: 768px) {
     .sci-frontend-wrapper #sci-search-form .form-group {
         align-items: stretch !important;
@@ -1964,7 +1964,7 @@ button.button-secondary:disabled::after,
     }
 }
 
-/* ✅ NOUVEAU : Styles spécifiques pour les boutons favoris */
+/* NOUVEAU : Styles spécifiques pour les boutons favoris */
 .sci-frontend-wrapper button.fav-btn,
 button.fav-btn,
 .sci-frontend-wrapper .fav-btn,
@@ -2054,24 +2054,24 @@ button.fav-btn:active,
     transform: scale(0.95) !important;
 }
 
-/* ✅ NOUVEAU : Masquer les informations de pagination dans les shortcodes */
+/* NOUVEAU : Masquer les informations de pagination dans les shortcodes */
 .sci-frontend-wrapper #pagination-info {
     display: none !important;
 }
 
-/* ✅ NOUVEAU : Réduire la taille du titre des résultats */
+/* NOUVEAU : Réduire la taille du titre des résultats */
 .sci-frontend-wrapper #results-title {
     font-size: 10px !important;
     margin: 0 !important;
     padding: 0 !important;
 }
 
-/* ✅ NOUVEAU : Masquer le label "Résultats par page" */
+/* NOUVEAU : Masquer le label "Résultats par page" */
 .sci-frontend-wrapper .pagination-size label {
     display: none !important;
 }
 
-/* ✅ NOUVEAU : Pagination minimaliste pour les shortcodes */
+/* NOUVEAU : Pagination minimaliste pour les shortcodes */
 .sci-frontend-wrapper #pagination-controls {
     display: flex !important;
     justify-content: center !important;
@@ -2123,7 +2123,7 @@ button.fav-btn:active,
     border: none !important;
 }
 
-/* ✅ NOUVEAU : Styles pour tous les boutons de pagination (plats) */
+/* NOUVEAU : Styles pour tous les boutons de pagination (plats) */
 .sci-frontend-wrapper #pagination-controls button,
 .sci-frontend-wrapper #prev-page,
 .sci-frontend-wrapper #next-page {
@@ -2161,12 +2161,12 @@ button.fav-btn:active,
     border: 1px solid #dee2e6 !important;
 }
 
-/* ✅ NOUVEAU : Masquer complètement la section pagination-size */
+/* NOUVEAU : Masquer complètement la section pagination-size */
 .sci-frontend-wrapper .pagination-size {
     display: none !important;
 }
 
-/* ✅ NOUVEAU : Tooltip pour le bouton "Créer une campagne" */
+/* NOUVEAU : Tooltip pour le bouton "Créer une campagne" */
 #send-letters-btn,
 .sci-frontend-wrapper #send-letters-btn {
     position: relative !important;
@@ -2228,7 +2228,7 @@ button.fav-btn:active,
     transform: translateX(-50%) translateY(-5px) !important;
 }
 
-/* ✅ NOUVEAU : Responsive pour le tooltip */
+/* NOUVEAU : Responsive pour le tooltip */
 @media (max-width: 768px) {
     #send-letters-btn::after,
     .sci-frontend-wrapper #send-letters-btn::after {
@@ -2239,7 +2239,7 @@ button.fav-btn:active,
     }
 }
 
-/* ✅ NOUVEAU : Styles pour les boutons WooCommerce - RENFORCÉS */
+/* NOUVEAU : Styles pour les boutons WooCommerce - RENFORCÉS */
 .woocommerce button.button,
 .woocommerce input.button,
 .woocommerce .button,
@@ -2285,7 +2285,7 @@ button.fav-btn:active,
 .woocommerce .button.alt:focus,
 .woocommerce #respond input#submit.alt:focus,
 .woocommerce a.button.alt:focus,
-/* ✅ NOUVEAU : Sélecteurs supplémentaires pour WooCommerce */
+/* NOUVEAU : Sélecteurs supplémentaires pour WooCommerce */
 button.button,
 input.button,
 .button,
@@ -2296,27 +2296,27 @@ input.button.alt,
 .button.alt,
 #respond input#submit.alt,
 a.button.alt,
-/* ✅ NOUVEAU : Sélecteurs pour les boutons de produit */
+/* NOUVEAU : Sélecteurs pour les boutons de produit */
 .woocommerce .products .product .button,
 .woocommerce .products .product button,
 .woocommerce .products .product input[type="submit"],
 .woocommerce .products .product a.button,
-/* ✅ NOUVEAU : Sélecteurs pour les boutons de panier */
+/* NOUVEAU : Sélecteurs pour les boutons de panier */
 .woocommerce .cart .button,
 .woocommerce .cart button,
 .woocommerce .cart input[type="submit"],
 .woocommerce .cart a.button,
-/* ✅ NOUVEAU : Sélecteurs pour les boutons de checkout */
+/* NOUVEAU : Sélecteurs pour les boutons de checkout */
 .woocommerce .checkout .button,
 .woocommerce .checkout button,
 .woocommerce .checkout input[type="submit"],
 .woocommerce .checkout a.button,
-/* ✅ NOUVEAU : Sélecteurs pour les boutons de my-account */
+/* NOUVEAU : Sélecteurs pour les boutons de my-account */
 .woocommerce .my-account .button,
 .woocommerce .my-account button,
 .woocommerce .my-account input[type="submit"],
 .woocommerce .my-account a.button,
-/* ✅ NOUVEAU : Sélecteurs génériques pour tous les boutons */
+/* NOUVEAU : Sélecteurs génériques pour tous les boutons */
 body .woocommerce button,
 body .woocommerce input[type="submit"],
 body .woocommerce .button,
@@ -2357,7 +2357,7 @@ body a.button {
 .woocommerce .button.alt:hover,
 .woocommerce #respond input#submit.alt:hover,
 .woocommerce a.button.alt:hover,
-/* ✅ NOUVEAU : Hover pour tous les boutons WooCommerce */
+/* NOUVEAU : Hover pour tous les boutons WooCommerce */
 button.button:hover,
 input.button:hover,
 .button:hover,
@@ -2443,7 +2443,7 @@ body a.button:hover {
     cursor: not-allowed !important;
 }
 
-/* ✅ NOUVEAU : Styles pour les boutons WooCommerce dans les iframes et popups */
+/* NOUVEAU : Styles pour les boutons WooCommerce dans les iframes et popups */
 #embedded-checkout button,
 #embedded-checkout input[type="submit"],
 #embedded-checkout .button,
@@ -2503,14 +2503,14 @@ body a.button:hover {
     color: white !important;
 }
 
-/* ✅ NOUVEAU : Styles pour les boutons de paiement WooCommerce spécifiques */
+/* NOUVEAU : Styles pour les boutons de paiement WooCommerce spécifiques */
 .woocommerce-checkout button#place_order,
 .woocommerce-checkout input#place_order,
 .woocommerce-checkout .button#place_order,
 .woocommerce-checkout .woocommerce button#place_order,
 .woocommerce-checkout .woocommerce input#place_order,
 .woocommerce-checkout .woocommerce .button#place_order,
-/* ✅ NOUVEAU : Styles pour tous les boutons de commande */
+/* NOUVEAU : Styles pour tous les boutons de commande */
 #place_order,
 button#place_order,
 input#place_order,
@@ -2555,7 +2555,7 @@ input#place_order,
     color: white !important;
 }
 
-/* ✅ NOUVEAU : Styles pour les boutons de navigation WooCommerce */
+/* NOUVEAU : Styles pour les boutons de navigation WooCommerce */
 .woocommerce .woocommerce-breadcrumb a,
 .woocommerce .woocommerce-breadcrumb .breadcrumb-separator,
 .woocommerce .woocommerce-breadcrumb .breadcrumb-separator:before {
@@ -2567,7 +2567,7 @@ input#place_order,
     text-decoration: none !important;
 }
 
-/* ✅ NOUVEAU : Styles pour les liens WooCommerce */
+/* NOUVEAU : Styles pour les liens WooCommerce */
 .woocommerce a,
 .woocommerce a:visited {
     color: #28a745 !important;
@@ -2579,7 +2579,7 @@ input#place_order,
     text-decoration: none !important;
 }
 
-/* ✅ NOUVEAU : Styles pour les boutons de quantité WooCommerce */
+/* NOUVEAU : Styles pour les boutons de quantité WooCommerce */
 .woocommerce .quantity .qty {
     border: 2px solid #e9ecef !important;
     border-radius: 6px !important;
@@ -2594,7 +2594,7 @@ input#place_order,
     box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1) !important;
 }
 
-/* ✅ NOUVEAU : Styles pour les boutons de quantité */
+/* NOUVEAU : Styles pour les boutons de quantité */
 .woocommerce .quantity .plus,
 .woocommerce .quantity .minus {
     background: #28a745 !important;
@@ -2613,7 +2613,7 @@ input#place_order,
     transform: translateY(-1px) !important;
 }
 
-/* ✅ NOUVEAU : Styles génériques pour TOUS les boutons WooCommerce - ULTRA RENFORCÉS */
+/* NOUVEAU : Styles génériques pour TOUS les boutons WooCommerce - ULTRA RENFORCÉS */
 *[class*="woocommerce"] button,
 *[class*="woocommerce"] input[type="submit"],
 *[class*="woocommerce"] .button,
@@ -2626,22 +2626,22 @@ input#place_order,
 *[class*="woocommerce"] .button.alt,
 *[class*="woocommerce"] #respond input#submit.alt,
 *[class*="woocommerce"] a.button.alt,
-/* ✅ NOUVEAU : Styles pour les boutons avec des classes contenant "add-to-cart" */
+/* NOUVEAU : Styles pour les boutons avec des classes contenant "add-to-cart" */
 *[class*="add-to-cart"] button,
 *[class*="add-to-cart"] input[type="submit"],
 *[class*="add-to-cart"] .button,
 *[class*="add-to-cart"] a.button,
-/* ✅ NOUVEAU : Styles pour les boutons avec des classes contenant "checkout" */
+/* NOUVEAU : Styles pour les boutons avec des classes contenant "checkout" */
 *[class*="checkout"] button,
 *[class*="checkout"] input[type="submit"],
 *[class*="checkout"] .button,
 *[class*="checkout"] a.button,
-/* ✅ NOUVEAU : Styles pour les boutons avec des classes contenant "cart" */
+/* NOUVEAU : Styles pour les boutons avec des classes contenant "cart" */
 *[class*="cart"] button,
 *[class*="cart"] input[type="submit"],
 *[class*="cart"] .button,
 *[class*="cart"] a.button,
-/* ✅ NOUVEAU : Styles pour les boutons avec des classes contenant "order" */
+/* NOUVEAU : Styles pour les boutons avec des classes contenant "order" */
 *[class*="order"] button,
 *[class*="order"] input[type="submit"],
 *[class*="order"] .button,
@@ -2667,7 +2667,7 @@ input#place_order,
     font-family: inherit !important;
 }
 
-/* ✅ NOUVEAU : Hover pour TOUS les boutons WooCommerce - ULTRA RENFORCÉS */
+/* NOUVEAU : Hover pour TOUS les boutons WooCommerce - ULTRA RENFORCÉS */
 *[class*="woocommerce"] button:hover,
 *[class*="woocommerce"] input[type="submit"]:hover,
 *[class*="woocommerce"] .button:hover,
@@ -2703,7 +2703,7 @@ input#place_order,
     color: white !important;
 }
 
-/* ✅ NOUVEAU : Styles pour les boutons WooCommerce dans les iframes - RENFORCÉS */
+/* NOUVEAU : Styles pour les boutons WooCommerce dans les iframes - RENFORCÉS */
 iframe .woocommerce button,
 iframe .woocommerce input[type="submit"],
 iframe .woocommerce .button,

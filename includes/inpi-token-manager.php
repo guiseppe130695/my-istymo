@@ -320,7 +320,7 @@ class SCI_INPI_Token_Manager {
 
         // Vérifier si le token existe et n'est pas expiré (avec marge de 1 heure)
         if (!$token || !$expiry || $current_time >= ($expiry - 3600)) {
-            sci_plugin_log('INPI Token invalid or expired, attempting refresh');
+            my_istymo_log('INPI Token invalid or expired, attempting refresh');
             
             if ($auto_refresh) {
                 // Supprimer l'ancien token
@@ -330,7 +330,7 @@ class SCI_INPI_Token_Manager {
                 // Tenter de générer un nouveau token
                 $refresh_result = $this->refresh_token();
                 if (!$refresh_result) {
-                    sci_plugin_log('INPI Token refresh failed');
+                    my_istymo_log('INPI Token refresh failed');
                     return false;
                 }
                 
@@ -353,13 +353,13 @@ class SCI_INPI_Token_Manager {
         $password = get_option('sci_inpi_password');
 
         if (!$username || !$password) {
-            sci_plugin_log('INPI credentials missing - username: ' . ($username ? 'OK' : 'MISSING') . ', password: ' . ($password ? 'OK' : 'MISSING'));
+            my_istymo_log('INPI credentials missing - username: ' . ($username ? 'OK' : 'MISSING') . ', password: ' . ($password ? 'OK' : 'MISSING'));
             return false;
         }
 
-        sci_plugin_log('=== GÉNÉRATION TOKEN INPI ===');
-        sci_plugin_log('Username: ' . $username);
-        sci_plugin_log('API URL: ' . $this->api_login_url);
+        my_istymo_log('=== GÉNÉRATION TOKEN INPI ===');
+        my_istymo_log('Username: ' . $username);
+        my_istymo_log('API URL: ' . $this->api_login_url);
 
         $response = wp_remote_post($this->api_login_url, array(
             'timeout' => 30,
@@ -374,25 +374,25 @@ class SCI_INPI_Token_Manager {
         ));
 
         if (is_wp_error($response)) {
-            sci_plugin_log('INPI API Error: ' . $response->get_error_message());
+            my_istymo_log('INPI API Error: ' . $response->get_error_message());
             return false;
         }
 
         $response_code = wp_remote_retrieve_response_code($response);
         $response_body = wp_remote_retrieve_body($response);
         
-        sci_plugin_log('INPI API Response Code: ' . $response_code);
-        sci_plugin_log('INPI API Response Body: ' . $response_body);
+        my_istymo_log('INPI API Response Code: ' . $response_code);
+        my_istymo_log('INPI API Response Body: ' . $response_body);
         
         if ($response_code !== 200) {
-            sci_plugin_log('INPI API Error - Status Code: ' . $response_code);
+            my_istymo_log('INPI API Error - Status Code: ' . $response_code);
             return false;
         }
 
         $body = json_decode($response_body, true);
         
         if (!is_array($body) || !isset($body['token'])) {
-            sci_plugin_log('INPI API Invalid Response - No token found');
+            my_istymo_log('INPI API Invalid Response - No token found');
             return false;
         }
 
@@ -426,9 +426,9 @@ class SCI_INPI_Token_Manager {
             array('%s', '%s', '%s', '%s', '%s', '%s', '%s')
         );
 
-        sci_plugin_log('✅ INPI Token generated successfully');
-        sci_plugin_log('Token: ' . substr($body['token'], 0, 20) . '...');
-        sci_plugin_log('Expires: ' . date('Y-m-d H:i:s', $expiry_timestamp));
+        my_istymo_log('✅ INPI Token generated successfully');
+        my_istymo_log('Token: ' . substr($body['token'], 0, 20) . '...');
+        my_istymo_log('Expires: ' . date('Y-m-d H:i:s', $expiry_timestamp));
 
         return true;
     }
@@ -438,7 +438,7 @@ class SCI_INPI_Token_Manager {
      */
     public function get_token() {
         if (!$this->check_token_validity()) {
-            sci_plugin_log('INPI Token validation failed');
+            my_istymo_log('INPI Token validation failed');
             return false;
         }
         return get_option($this->token_option);
@@ -448,8 +448,8 @@ class SCI_INPI_Token_Manager {
      * ✅ FONCTION PUBLIQUE : Gère les erreurs d'authentification et régénère le token
      */
     public function handle_auth_error() {
-        sci_plugin_log('=== GESTION ERREUR AUTHENTIFICATION INPI ===');
-        sci_plugin_log('Suppression du token actuel et régénération...');
+        my_istymo_log('=== GESTION ERREUR AUTHENTIFICATION INPI ===');
+        my_istymo_log('Suppression du token actuel et régénération...');
         
         // Supprimer le token actuel
         delete_option($this->token_option);
@@ -459,10 +459,10 @@ class SCI_INPI_Token_Manager {
         $success = $this->refresh_token();
         
         if ($success) {
-            sci_plugin_log('✅ Nouveau token généré avec succès après erreur d\'authentification');
+            my_istymo_log('✅ Nouveau token généré avec succès après erreur d\'authentification');
             return $this->get_token();
         } else {
-            sci_plugin_log('❌ Échec de génération du nouveau token après erreur d\'authentification');
+            my_istymo_log('❌ Échec de génération du nouveau token après erreur d\'authentification');
             return false;
         }
     }
@@ -481,7 +481,7 @@ class SCI_INPI_Token_Manager {
         // Sauvegarder la configuration mise à jour
         update_option($config_option_name, $current_config);
         
-        sci_plugin_log('✅ Token INPI synchronisé dans la configuration principale');
+        my_istymo_log('✅ Token INPI synchronisé dans la configuration principale');
     }
 }
 

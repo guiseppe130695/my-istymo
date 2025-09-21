@@ -309,9 +309,11 @@ class DPE_Shortcodes {
                 baseUrl += '&q=' + encodeURIComponent(keyword);
             }
 
-            // Afficher l'URL dans la console pour debug
-            console.log('URL de recherche DPE:', baseUrl);
-            console.log('Paramètres de recherche:', currentSearchParams);
+            // Debug conditionnel pour la production
+            if (typeof window.myIstymoDebug !== 'undefined' && window.myIstymoDebug) {
+                console.log('URL de recherche DPE:', baseUrl);
+                console.log('Paramètres de recherche:', currentSearchParams);
+            }
 
             return baseUrl;
         }

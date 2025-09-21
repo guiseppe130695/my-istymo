@@ -7,7 +7,7 @@ if (!defined('ABSPATH')) exit;
 class SCI_WooCommerce_Integration {
     
     private $product_id;
-    private $processing_orders = []; // ✅ NOUVEAU : Éviter les doublons
+    private $processing_orders = []; //  NOUVEAU : Éviter les doublons
     
     public function __construct() {
         // Hooks d'initialisation
@@ -20,7 +20,7 @@ class SCI_WooCommerce_Integration {
         // Hooks pour traiter les commandes payées - TOUS LES STATUTS POSSIBLES
         add_action('woocommerce_order_status_completed', array($this, 'process_paid_campaign'));
         add_action('woocommerce_order_status_processing', array($this, 'process_paid_campaign'));
-        add_action('woocommerce_order_status_on-hold', array($this, 'process_paid_campaign')); // ✅ AJOUTÉ
+        add_action('woocommerce_order_status_on-hold', array($this, 'process_paid_campaign')); //  AJOUTÉ
         
         // Hook pour les paiements instantanés (cartes, PayPal, etc.)
         add_action('woocommerce_payment_complete', array($this, 'process_paid_campaign'));
@@ -47,14 +47,14 @@ class SCI_WooCommerce_Integration {
     }
     
     /**
-     * ✅ NOUVEAU : Vérification anti-doublon
+     *  NOUVEAU : Vérification anti-doublon
      */
     private function is_order_being_processed($order_id) {
         return in_array($order_id, $this->processing_orders);
     }
     
     /**
-     * ✅ NOUVEAU : Marquer une commande comme en cours de traitement
+     *  NOUVEAU : Marquer une commande comme en cours de traitement
      */
     private function mark_order_processing($order_id) {
         if (!in_array($order_id, $this->processing_orders)) {
@@ -63,7 +63,7 @@ class SCI_WooCommerce_Integration {
     }
     
     /**
-     * ✅ NOUVEAU : Libérer une commande du traitement
+     *  NOUVEAU : Libérer une commande du traitement
      */
     private function unmark_order_processing($order_id) {
         $this->processing_orders = array_diff($this->processing_orders, [$order_id]);
@@ -73,26 +73,26 @@ class SCI_WooCommerce_Integration {
      * Nouveau handler pour tous les changements de statut
      */
     public function handle_status_change($order_id, $old_status, $new_status, $order) {
-        sci_plugin_log("=== CHANGEMENT STATUT COMMANDE ===");
-        sci_plugin_log("Commande #$order_id: $old_status → $new_status");
+        my_istymo_log("=== CHANGEMENT STATUT COMMANDE ===", 'woocommerce');
+        my_istymo_log("Commande #$order_id: $old_status → $new_status", 'woocommerce');
         
-        // ✅ VÉRIFICATION ANTI-DOUBLON
+        //  VÉRIFICATION ANTI-DOUBLON
         if ($this->is_order_being_processed($order_id)) {
-            sci_plugin_log("⚠️ Commande #$order_id déjà en cours de traitement, ignoré");
+            my_istymo_log("Commande #$order_id déjà en cours de traitement, ignoré", 'woocommerce');
             return;
         }
         
         // Vérifier si c'est une commande SCI
         $campaign_data = $order->get_meta('_sci_campaign_data');
         if (!$campaign_data) {
-            sci_plugin_log("❌ Pas une commande SCI");
+            my_istymo_log("Pas une commande SCI", 'woocommerce');
             return;
         }
         
         // Vérifier si déjà traité
         $campaign_status = $order->get_meta('_sci_campaign_status');
         if (in_array($campaign_status, ['processed', 'processing', 'scheduled', 'completed', 'processing_letters'])) {
-            sci_plugin_log("ℹ️ Commande #$order_id déjà traitée (statut: $campaign_status)");
+            my_istymo_log("Commande #$order_id déjà traitée (statut: $campaign_status)", 'woocommerce');
             return;
         }
         
@@ -100,10 +100,10 @@ class SCI_WooCommerce_Integration {
         $paid_statuses = ['processing', 'completed', 'on-hold'];
         
         if (in_array($new_status, $paid_statuses)) {
-            sci_plugin_log("✅ Statut payé détecté: $new_status");
+            my_istymo_log("Statut payé détecté: $new_status", 'woocommerce');
             $this->process_paid_campaign($order_id);
         } else {
-            sci_plugin_log("ℹ️ Statut non-payé: $new_status");
+            my_istymo_log("Statut non-payé: $new_status", 'woocommerce');
         }
     }
     
@@ -119,12 +119,12 @@ class SCI_WooCommerce_Integration {
             add_action('wp_head', function() {
                 ?>
                 <style>
-                /* ✅ MASQUER COMPLÈTEMENT LA BARRE D'ADMIN */
+                /*  MASQUER COMPLÈTEMENT LA BARRE D'ADMIN */
                 #wpadminbar {
                     display: none !important;
                 }
                 
-                /* ✅ AJUSTER LE MARGIN-TOP DU BODY */
+                /*  AJUSTER LE MARGIN-TOP DU BODY */
                 body.admin-bar {
                     margin-top: 0 !important;
                 }
@@ -133,14 +133,14 @@ class SCI_WooCommerce_Integration {
                     margin-top: 0 !important;
                 }
                 
-                /* ✅ OPTIMISER L'AFFICHAGE POUR L'IFRAME */
+                /*  OPTIMISER L'AFFICHAGE POUR L'IFRAME */
                 body {
                     background: #f9f9f9 !important;
                     margin: 0 !important;
                     padding: 15px !important;
                 }
                 
-                /* ✅ MASQUER LES ÉLÉMENTS NON ESSENTIELS */
+                /*  MASQUER LES ÉLÉMENTS NON ESSENTIELS */
                 .site-header,
                 .site-footer,
                 .breadcrumb,
@@ -150,7 +150,7 @@ class SCI_WooCommerce_Integration {
                     display: none !important;
                 }
                 
-                /* ✅ OPTIMISER LE CONTENU PRINCIPAL */
+                /*  OPTIMISER LE CONTENU PRINCIPAL */
                 .site-content,
                 .content-area,
                 main {
@@ -160,7 +160,7 @@ class SCI_WooCommerce_Integration {
                     padding: 0 !important;
                 }
                 
-                /* ✅ FORCER LA DÉSACTIVATION DU TABLEAU DE RÉCAPITULATIF WOOCOMMERCE */
+                /*  FORCER LA DÉSACTIVATION DU TABLEAU DE RÉCAPITULATIF WOOCOMMERCE */
                 .woocommerce-checkout-review-order-table,
                 .woocommerce-checkout-review-order,
                 .order_review,
@@ -220,7 +220,7 @@ class SCI_WooCommerce_Integration {
                     top: -9999px !important;
                 }
                 
-                /* ✅ MASQUER AUSSI LES TITRES ET SECTIONS LIÉS AU RÉCAPITULATIF */
+                /*  MASQUER AUSSI LES TITRES ET SECTIONS LIÉS AU RÉCAPITULATIF */
                 .woocommerce-checkout h3:contains("Votre commande"),
                 .woocommerce-checkout h3:contains("Your order"),
                 .woocommerce-checkout h3:contains("Order review"),
@@ -233,7 +233,7 @@ class SCI_WooCommerce_Integration {
                     display: none !important;
                 }
                 
-                /* ✅ AMÉLIORER L'AFFICHAGE DU CHECKOUT */
+                /*  AMÉLIORER L'AFFICHAGE DU CHECKOUT */
                 .woocommerce {
                     background: white;
                     padding: 20px;
@@ -253,7 +253,7 @@ class SCI_WooCommerce_Integration {
                     margin-bottom: 20px;
                 }
                 
-                /* ✅ AMÉLIORER LES FORMULAIRES */
+                /*  AMÉLIORER LES FORMULAIRES */
                 .woocommerce-checkout-payment {
                     background: #f8f9fa;
                     padding: 20px;
@@ -269,7 +269,7 @@ class SCI_WooCommerce_Integration {
                     border: 1px solid #dee2e6;
                 }
                 
-                /* ✅ AMÉLIORER LES BOUTONS */
+                /*  AMÉLIORER LES BOUTONS */
                 .woocommerce #payment #place_order {
                     background: linear-gradient(135deg, #0073aa 0%, #005a87 100%) !important;
                     border: none !important;
@@ -287,7 +287,7 @@ class SCI_WooCommerce_Integration {
                     box-shadow: 0 4px 8px rgba(0,115,170,0.3) !important;
                 }
                 
-                /* ✅ MESSAGES D'ERREUR ET DE SUCCÈS */
+                /*  MESSAGES D'ERREUR ET DE SUCCÈS */
                 .woocommerce-message,
                 .woocommerce-error,
                 .woocommerce-info {
@@ -308,7 +308,7 @@ class SCI_WooCommerce_Integration {
                     color: #721c24 !important;
                 }
                 
-                /* ✅ RESPONSIVE POUR MOBILE */
+                /*  RESPONSIVE POUR MOBILE */
                 @media (max-width: 768px) {
                     body {
                         padding: 10px !important;
@@ -323,12 +323,12 @@ class SCI_WooCommerce_Integration {
                     }
                 }
                 
-                /* ✅ MASQUER AVEC JAVASCRIPT AUSSI (FALLBACK) */
+                /*  MASQUER AVEC JAVASCRIPT AUSSI (FALLBACK) */
                 </style>
                 
                 <script>
                 document.addEventListener('DOMContentLoaded', function() {
-                    // ✅ FONCTION POUR MASQUER LE RÉCAPITULATIF
+                    //  FONCTION POUR MASQUER LE RÉCAPITULATIF
                     function hideOrderReview() {
                         const selectors = [
                             '.woocommerce-checkout-review-order-table',
@@ -363,7 +363,7 @@ class SCI_WooCommerce_Integration {
                             });
                         });
                         
-                        // ✅ MASQUER AUSSI LES TITRES
+                        //  MASQUER AUSSI LES TITRES
                         const titles = document.querySelectorAll('h3');
                         titles.forEach(title => {
                             const text = title.textContent.toLowerCase();
@@ -377,10 +377,10 @@ class SCI_WooCommerce_Integration {
                         });
                     }
                     
-                    // ✅ EXÉCUTER IMMÉDIATEMENT
+                    //  EXÉCUTER IMMÉDIATEMENT
                     hideOrderReview();
                     
-                    // ✅ OBSERVER LES CHANGEMENTS DOM
+                    //  OBSERVER LES CHANGEMENTS DOM
                     const observer = new MutationObserver(function(mutations) {
                         mutations.forEach(function(mutation) {
                             if (mutation.addedNodes.length > 0) {
@@ -394,7 +394,7 @@ class SCI_WooCommerce_Integration {
                         subtree: true
                     });
                     
-                    // ✅ VÉRIFIER PÉRIODIQUEMENT (FALLBACK)
+                    //  VÉRIFIER PÉRIODIQUEMENT (FALLBACK)
                     setInterval(hideOrderReview, 1000);
                 });
                 </script>
@@ -608,21 +608,21 @@ class SCI_WooCommerce_Integration {
             return;
         }
         
-        sci_plugin_log("=== CRÉATION COMMANDE WOOCOMMERCE ===");
-        sci_plugin_log("Utilisateur: " . get_current_user_id());
-        sci_plugin_log("Nombre SCI: $sci_count");
-        sci_plugin_log("Titre campagne: " . ($campaign_data['title'] ?? 'N/A'));
+        my_istymo_log("=== CRÉATION COMMANDE WOOCOMMERCE ===", 'woocommerce');
+        my_istymo_log("Utilisateur: " . get_current_user_id(), 'woocommerce');
+        my_istymo_log("Nombre SCI: $sci_count", 'woocommerce');
+        my_istymo_log("Titre campagne: " . ($campaign_data['title'] ?? 'N/A'), 'woocommerce');
         
         // Créer la commande WooCommerce
         $order_id = $this->create_woocommerce_order($campaign_data, $sci_count);
         
         if (is_wp_error($order_id)) {
-            sci_plugin_log("❌ Erreur création commande: " . $order_id->get_error_message());
+            my_istymo_log("Erreur création commande: " . $order_id->get_error_message(), 'woocommerce');
             wp_send_json_error('Erreur lors de la création de la commande : ' . $order_id->get_error_message());
             return;
         }
         
-        sci_plugin_log("✅ Commande créée avec ID: $order_id");
+        my_istymo_log("Commande créée avec ID: $order_id", 'woocommerce');
         
         // Retourner l'URL de paiement avec paramètres optimisés pour iframe
         $order = wc_get_order($order_id);
@@ -667,7 +667,7 @@ class SCI_WooCommerce_Integration {
         $status = $order->get_status();
         $is_paid = in_array($status, ['processing', 'completed', 'on-hold']);
         
-        sci_plugin_log("Vérification statut commande #$order_id: $status (payé: " . ($is_paid ? 'oui' : 'non') . ")");
+        my_istymo_log("Vérification statut commande #$order_id: $status (payé: " . ($is_paid ? 'oui' : 'non') . ")");
         
         wp_send_json_success(array(
             'status' => $is_paid ? 'paid' : 'pending',
@@ -763,37 +763,37 @@ class SCI_WooCommerce_Integration {
      * Traite une campagne après paiement réussi
      */
     public function process_paid_campaign($order_id) {
-        // ✅ VÉRIFICATION ANTI-DOUBLON
+        //  VÉRIFICATION ANTI-DOUBLON
         if ($this->is_order_being_processed($order_id)) {
-            sci_plugin_log("⚠️ Commande #$order_id déjà en cours de traitement, ignoré");
+            my_istymo_log("⚠️ Commande #$order_id déjà en cours de traitement, ignoré");
             return;
         }
         
         $order = wc_get_order($order_id);
         if (!$order) {
-            sci_plugin_log("❌ Commande #$order_id introuvable");
+            my_istymo_log(" Commande #$order_id introuvable");
             return;
         }
         
         // Vérifier si c'est une commande SCI
         $campaign_data = $order->get_meta('_sci_campaign_data');
         if (!$campaign_data) {
-            sci_plugin_log("ℹ️ Commande #$order_id n'est pas une commande SCI");
+            my_istymo_log("ℹ️ Commande #$order_id n'est pas une commande SCI");
             return; // Pas une commande SCI
         }
         
         // Vérifier si déjà traité
         $campaign_status = $order->get_meta('_sci_campaign_status');
         if (in_array($campaign_status, ['processed', 'processing', 'scheduled', 'completed', 'processing_letters'])) {
-            sci_plugin_log("ℹ️ Commande #$order_id déjà traitée (statut: $campaign_status)");
+            my_istymo_log("ℹ️ Commande #$order_id déjà traitée (statut: $campaign_status)");
             return; // Déjà traité
         }
         
-        // ✅ MARQUER COMME EN COURS DE TRAITEMENT
+        //  MARQUER COMME EN COURS DE TRAITEMENT
         $this->mark_order_processing($order_id);
         
-        sci_plugin_log("=== TRAITEMENT CAMPAGNE PAYÉE ===");
-        sci_plugin_log("Commande #$order_id - Statut: " . $order->get_status());
+        my_istymo_log("=== TRAITEMENT CAMPAGNE PAYÉE ===");
+        my_istymo_log("Commande #$order_id - Statut: " . $order->get_status());
         
         // Marquer comme en cours de traitement
         $order->update_meta_data('_sci_campaign_status', 'processing');
@@ -803,12 +803,12 @@ class SCI_WooCommerce_Integration {
         $campaign_data = json_decode($campaign_data, true);
         if (!$campaign_data) {
             $order->add_order_note('Erreur : données de campagne invalides');
-            sci_plugin_log("❌ Données de campagne invalides");
-            $this->unmark_order_processing($order_id); // ✅ LIBÉRER
+            my_istymo_log(" Données de campagne invalides");
+            $this->unmark_order_processing($order_id); //  LIBÉRER
             return;
         }
         
-        sci_plugin_log("Données campagne décodées: " . json_encode($campaign_data, JSON_PRETTY_PRINT));
+        my_istymo_log("Données campagne décodées: " . json_encode($campaign_data, JSON_PRETTY_PRINT));
         
         // Créer la campagne en base de données
         $campaign_manager = sci_campaign_manager();
@@ -823,18 +823,18 @@ class SCI_WooCommerce_Integration {
             $order->add_order_note($error_msg);
             $order->update_meta_data('_sci_campaign_status', 'error');
             $order->save();
-            sci_plugin_log("❌ " . $error_msg);
-            $this->unmark_order_processing($order_id); // ✅ LIBÉRER
+            my_istymo_log(" " . $error_msg);
+            $this->unmark_order_processing($order_id); //  LIBÉRER
             return;
         }
         
-        sci_plugin_log("✅ Campagne créée avec ID: $campaign_id");
+        my_istymo_log(" Campagne créée avec ID: $campaign_id");
         
         // Sauvegarder l'ID de campagne
         $order->update_meta_data('_sci_campaign_id', $campaign_id);
         
-        // ✅ TRAITEMENT IMMÉDIAT AU LIEU DE PROGRAMMER
-        sci_plugin_log("🚀 Démarrage du traitement immédiat");
+        //  TRAITEMENT IMMÉDIAT AU LIEU DE PROGRAMMER
+        my_istymo_log("🚀 Démarrage du traitement immédiat");
         $this->process_campaign_immediately($order_id, $campaign_id, $campaign_data);
         
         $order->add_order_note(sprintf(
@@ -845,26 +845,26 @@ class SCI_WooCommerce_Integration {
         $order->update_meta_data('_sci_campaign_status', 'processing_letters');
         $order->save();
         
-        sci_plugin_log("✅ Traitement immédiat démarré");
+        my_istymo_log(" Traitement immédiat démarré");
         
-        // ✅ LIBÉRER À LA FIN
+        //  LIBÉRER À LA FIN
         $this->unmark_order_processing($order_id);
     }
     
     /**
-     * ✅ NOUVEAU : Traitement immédiat de la campagne
+     *  NOUVEAU : Traitement immédiat de la campagne
      */
     private function process_campaign_immediately($order_id, $campaign_id, $campaign_data) {
-        sci_plugin_log("=== DÉBUT TRAITEMENT IMMÉDIAT ===");
-        sci_plugin_log("Commande #$order_id - Campagne #$campaign_id");
+        my_istymo_log("=== DÉBUT TRAITEMENT IMMÉDIAT ===");
+        my_istymo_log("Commande #$order_id - Campagne #$campaign_id");
         
         $order = wc_get_order($order_id);
         if (!$order) {
-            sci_plugin_log("❌ Commande introuvable");
+            my_istymo_log(" Commande introuvable");
             return;
         }
         
-        sci_plugin_log("Traitement de " . count($campaign_data['entries']) . " lettres");
+        my_istymo_log("Traitement de " . count($campaign_data['entries']) . " lettres");
         
         // Générer les PDFs
         if (!class_exists('TCPDF')) {
@@ -888,14 +888,14 @@ class SCI_WooCommerce_Integration {
         
         // Récupérer les données expéditeur une seule fois
         $expedition_data = $campaign_manager->get_user_expedition_data($order->get_customer_id());
-        sci_plugin_log("Données expéditeur: " . json_encode($expedition_data, JSON_PRETTY_PRINT));
+        my_istymo_log("Données expéditeur: " . json_encode($expedition_data, JSON_PRETTY_PRINT));
         
         foreach ($campaign_data['entries'] as $index => $entry) {
             try {
                 my_istymo_log("=== TRAITEMENT LETTRE " . ($index + 1) . "/" . count($campaign_data['entries']) . " ===", 'woocommerce');
                 my_istymo_log("SCI: " . ($entry['denomination'] ?? 'N/A'), 'woocommerce');
                 
-                // ✅ ÉTAPE 1: GÉNÉRATION DU PDF
+                //  ÉTAPE 1: GÉNÉRATION DU PDF
                 $nom = $entry['dirigeant'] ?? 'Dirigeant';
                 $texte = str_replace('[NOM]', $nom, $campaign_data['content']);
                 
@@ -916,25 +916,25 @@ class SCI_WooCommerce_Integration {
                 $pdf->SetFont('helvetica', '', 12);
                 $pdf->writeHTML(nl2br(htmlspecialchars($texte)), true, false, true, false, '');
                 
-                // ✅ ÉTAPE 2: SAUVEGARDE TEMPORAIRE DU PDF
+                //  ÉTAPE 2: SAUVEGARDE TEMPORAIRE DU PDF
                 $filename = sanitize_file_name($entry['denomination'] . '-' . $nom . '-' . time() . '-' . $index) . '.pdf';
                 $pdf_tmp_path = $pdf_dir . $filename;
                 
                 $pdf->Output($pdf_tmp_path, 'F');
                 
                 if (!file_exists($pdf_tmp_path)) {
-                    my_istymo_log("❌ Échec génération PDF pour: " . $entry['denomination'], 'woocommerce');
+                    my_istymo_log(" Échec génération PDF pour: " . $entry['denomination'], 'woocommerce');
                     $error_count++;
                     continue;
                 }
                 
-                my_istymo_log("✅ PDF généré: $filename (" . filesize($pdf_tmp_path) . " bytes)", 'woocommerce');
+                my_istymo_log("PDF généré: $filename (" . filesize($pdf_tmp_path) . " bytes)", 'woocommerce');
                 
-                // ✅ ÉTAPE 3: ENCODAGE BASE64 (COMME DANS VOTRE ANCIEN SYSTÈME)
+                //  ÉTAPE 3: ENCODAGE BASE64 (COMME DANS VOTRE ANCIEN SYSTÈME)
                 $pdf_base64 = base64_encode(file_get_contents($pdf_tmp_path));
-                my_istymo_log("✅ PDF encodé en base64: " . strlen($pdf_base64) . " caractères", 'woocommerce');
+                my_istymo_log("PDF encodé en base64: " . strlen($pdf_base64) . " caractères", 'woocommerce');
                 
-                // ✅ ÉTAPE 4: PRÉPARATION DU PAYLOAD
+                //  ÉTAPE 4: PRÉPARATION DU PAYLOAD
                 $laposte_params = $config_manager->get_laposte_payload_params();
                 $payload = array_merge($laposte_params, [
                     "adresse_expedition" => $expedition_data,
@@ -951,7 +951,7 @@ class SCI_WooCommerce_Integration {
                     ],
                     "fichier" => [
                         "format" => "pdf",
-                        "contenu_base64" => $pdf_base64, // ✅ VRAIE VALEUR BASE64
+                        "contenu_base64" => $pdf_base64, //  VRAIE VALEUR BASE64
                     ],
                 ]);
                 
@@ -960,11 +960,11 @@ class SCI_WooCommerce_Integration {
                 $payload_for_log['fichier']['contenu_base64'] = '[PDF_BASE64_' . strlen($pdf_base64) . '_CHARS]';
                 my_istymo_log("Payload pour {$entry['denomination']}: " . json_encode($payload_for_log, JSON_PRETTY_PRINT), 'woocommerce');
                 
-                // ✅ ÉTAPE 5: ENVOI VIA L'API LA POSTE
+                //  ÉTAPE 5: ENVOI VIA L'API LA POSTE
                 my_istymo_log("🚀 Envoi vers l'API La Poste...", 'woocommerce');
                 $response = envoyer_lettre_via_api_la_poste_my_istymo($payload, $config_manager->get_laposte_token());
                 
-                // ✅ ÉTAPE 6: TRAITEMENT DE LA RÉPONSE
+                //  ÉTAPE 6: TRAITEMENT DE LA RÉPONSE
                 if ($response['success']) {
                     $campaign_manager->update_letter_status(
                         $campaign_id,
@@ -973,7 +973,7 @@ class SCI_WooCommerce_Integration {
                         $response['uid'] ?? null
                     );
                     $success_count++;
-                    my_istymo_log("✅ Lettre envoyée avec succès - UID: " . ($response['uid'] ?? 'N/A'), 'woocommerce');
+                    my_istymo_log(" Lettre envoyée avec succès - UID: " . ($response['uid'] ?? 'N/A'), 'woocommerce');
                 } else {
                     $error_msg = isset($response['message']) ? json_encode($response['message']) : ($response['error'] ?? 'Erreur inconnue');
                     $campaign_manager->update_letter_status(
@@ -984,20 +984,20 @@ class SCI_WooCommerce_Integration {
                         $error_msg
                     );
                     $error_count++;
-                    my_istymo_log("❌ Erreur envoi: $error_msg", 'woocommerce');
+                    my_istymo_log(" Erreur envoi: $error_msg", 'woocommerce');
                 }
                 
-                // ✅ ÉTAPE 7: NETTOYAGE DU FICHIER TEMPORAIRE
+                //  ÉTAPE 7: NETTOYAGE DU FICHIER TEMPORAIRE
                 if (file_exists($pdf_tmp_path)) {
                     unlink($pdf_tmp_path);
-                    my_istymo_log("🗑️ Fichier temporaire supprimé: $filename", 'woocommerce');
+                    my_istymo_log(" Fichier temporaire supprimé: $filename", 'woocommerce');
                 }
                 
                 // Pause entre les envois pour éviter de surcharger l'API
                 sleep(1);
                 
             } catch (Exception $e) {
-                sci_plugin_log("❌ Erreur lors du traitement de {$entry['denomination']}: " . $e->getMessage());
+                my_istymo_log(" Erreur lors du traitement de {$entry['denomination']}: " . $e->getMessage());
                 $error_count++;
                 
                 // Nettoyer le fichier en cas d'erreur
@@ -1007,7 +1007,7 @@ class SCI_WooCommerce_Integration {
             }
         }
         
-        // ✅ ÉTAPE 8: FINALISATION
+        //  ÉTAPE 8: FINALISATION
         $order->add_order_note(sprintf(
             'Campagne terminée : %d lettres envoyées, %d erreurs',
             $success_count,
@@ -1019,9 +1019,9 @@ class SCI_WooCommerce_Integration {
         $order->update_meta_data('_sci_campaign_error_count', $error_count);
         $order->save();
         
-        sci_plugin_log("=== CAMPAGNE TERMINÉE ===");
-        sci_plugin_log("Succès: $success_count, Erreurs: $error_count");
-        sci_plugin_log("Statut final: completed");
+        my_istymo_log("=== CAMPAGNE TERMINÉE ===");
+        my_istymo_log("Succès: $success_count, Erreurs: $error_count");
+        my_istymo_log("Statut final: completed");
     }
     
     /**

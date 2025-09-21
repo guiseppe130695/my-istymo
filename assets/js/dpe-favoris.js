@@ -1,5 +1,5 @@
 /**
- * ✅ NOUVEAU : Système de favoris DPE robuste avec délégation d'événements
+ * NOUVEAU : Système de favoris DPE robuste avec délégation d'événements
  * Gestion des favoris pour les diagnostics de performance énergétique (DPE)
  * Compatible avec les boutons créés dynamiquement et la pagination
  */
@@ -7,12 +7,12 @@
 (function() {
     'use strict';
 
-    // ✅ Variables globales pour les favoris DPE
+    // Variables globales pour les favoris DPE
     let dpeFavoris = [];
     let isInitialized = false;
 
     /**
-     * ✅ Initialisation du système de favoris DPE
+     * Initialisation du système de favoris DPE
      */
     function initDpeFavoris() {
         if (isInitialized) {
@@ -25,7 +25,7 @@
         // Attacher les listeners avec délégation d'événements
         attachDpeFavorisListeners();
         
-        // ✅ NOUVEAU : Observer les changements du DOM pour les boutons dynamiques
+        // NOUVEAU : Observer les changements du DOM pour les boutons dynamiques
         setupDpeFavorisObserver();
         
         // Mettre à jour l'état visuel de tous les boutons
@@ -35,7 +35,7 @@
     }
 
     /**
-     * ✅ Charger les favoris DPE depuis la base de données
+     *  Charger les favoris DPE depuis la base de données
      */
     function loadDpeFavoris() {
         // Vérifier que les variables AJAX sont disponibles
@@ -68,17 +68,17 @@
     }
 
     /**
-     * ✅ Sauvegarder les favoris DPE dans la base de données
+     *  Sauvegarder les favoris DPE dans la base de données
      */
     function saveDpeFavoris() {
         // Cette fonction n'est plus utilisée car on sauvegarde directement via AJAX
     }
 
     /**
-     * ✅ Attacher les listeners avec délégation d'événements (plus robuste)
+     *  Attacher les listeners avec délégation d'événements (plus robuste)
      */
     function attachDpeFavorisListeners() {
-        // ✅ Délégation d'événements sur le document pour capturer tous les boutons
+        //  Délégation d'événements sur le document pour capturer tous les boutons
         document.addEventListener('click', function(event) {
             const target = event.target;
             
@@ -96,7 +96,7 @@
     }
 
     /**
-     * ✅ Observer les changements du DOM pour détecter les nouveaux boutons
+     *  Observer les changements du DOM pour détecter les nouveaux boutons
      */
     function setupDpeFavorisObserver() {
         if (!window.MutationObserver) {
@@ -133,7 +133,7 @@
     }
 
     /**
-     * ✅ Basculer l'état d'un favori DPE
+     *  Basculer l'état d'un favori DPE
      */
     function toggleDpeFavori(numeroDpe, button) {
         const index = dpeFavoris.findIndex(fav => fav.numero_dpe === numeroDpe);
@@ -217,7 +217,7 @@
     }
 
     /**
-     * ✅ Mettre à jour l'état visuel d'un bouton favoris
+     *  Mettre à jour l'état visuel d'un bouton favoris
      */
     function updateDpeButtonState(button, isFavori) {
         if (isFavori) {
@@ -232,7 +232,7 @@
     }
 
     /**
-     * ✅ Mettre à jour tous les boutons favoris DPE
+     *  Mettre à jour tous les boutons favoris DPE
      */
     function updateDpeFavButtons() {
         const buttons = document.querySelectorAll('.favorite-btn, .fav-btn');
@@ -254,7 +254,7 @@
     }
 
     /**
-     * ✅ Vérifier si un DPE est en favoris
+     *  Vérifier si un DPE est en favoris
      */
     function isDpeFavori(numeroDpe) {
         return dpeFavoris.some(fav => 
@@ -265,14 +265,14 @@
     }
 
     /**
-     * ✅ Obtenir tous les favoris DPE
+     *  Obtenir tous les favoris DPE
      */
     function getDpeFavoris() {
         return [...dpeFavoris];
     }
 
     /**
-     * ✅ Supprimer un favori DPE
+     *  Supprimer un favori DPE
      */
     function removeDpeFavori(numeroDpe) {
         const index = dpeFavoris.findIndex(fav => 
@@ -289,7 +289,7 @@
     }
 
     /**
-     * ✅ Vider tous les favoris DPE
+     *  Vider tous les favoris DPE
      */
     function clearDpeFavoris() {
         dpeFavoris = [];
@@ -297,13 +297,13 @@
     }
 
     /**
-     * ✅ Fonction de rafraîchissement après changement de page
+     *  Fonction de rafraîchissement après changement de page
      */
     function refreshDpeFavorisAfterPageChange() {
         updateDpeFavButtons();
     }
 
-    // ✅ Exposer les fonctions globalement pour compatibilité
+    //  Exposer les fonctions globalement pour compatibilité
     window.dpeFavoris = {
         init: initDpeFavoris,
         toggle: toggleDpeFavori,
@@ -315,19 +315,19 @@
         refreshAfterPageChange: refreshDpeFavorisAfterPageChange
     };
 
-    // ✅ Fonctions de compatibilité avec l'ancien système
+    //  Fonctions de compatibilité avec l'ancien système
     window.updateDpeFavButtons = updateDpeFavButtons;
     window.attachDpeFavorisListeners = attachDpeFavorisListeners;
     window.refreshDpeFavorisAfterPageChange = refreshDpeFavorisAfterPageChange;
 
-    // ✅ Initialisation automatique quand le DOM est prêt
+    //  Initialisation automatique quand le DOM est prêt
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initDpeFavoris);
     } else {
         initDpeFavoris();
     }
 
-    // ✅ Initialisation différée pour les cas où le script est chargé après le DOM
+    //  Initialisation différée pour les cas où le script est chargé après le DOM
     setTimeout(initDpeFavoris, 100);
 
     // Module de favoris DPE chargé et prêt
