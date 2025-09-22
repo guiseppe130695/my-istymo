@@ -240,34 +240,28 @@
                         data-code-postal="${escapeHtml(result.code_postal)}"
                         aria-label="Ajouter aux favoris">☆</button>
             </td>
-            <td>${escapeHtml(result.denomination)}</td>
-            <td>${escapeHtml(result.dirigeant)}</td>
-            <td>${escapeHtml(result.siren)}</td>
-            <td>${escapeHtml(result.adresse)}</td>
-            <td>${escapeHtml(result.ville)}</td>
-            <td style="display: none;">
-                <span class="contact-status" data-siren="${escapeHtml(result.siren)}" style="display: none;">
-                    <span class="contact-status-icon"></span>
-                    <span class="contact-status-text"></span>
-                </span>
-            </td>
             <td>
+                <div style="font-weight: 600; font-size: 14px; color: #333; margin-bottom: 2px;">${escapeHtml(result.denomination)}</div>
+                <div style="font-size: 11px; color: #666; font-style: italic;">ID: ${escapeHtml(result.siren)}</div>
+            </td>
+            <td>${escapeHtml(result.dirigeant)}</td>
+            <td>${escapeHtml(result.adresse)} ${escapeHtml(result.ville)}</td>
+            <td style="color: #0064A6 !important; text-align: center !important;">
                 <a href="${mapsUrl}" 
                    target="_blank" 
                    class="maps-link"
-                   title="Localiser ${escapeHtml(result.denomination)} sur Google Maps">
-                    Localiser SCI
+                   title="Localiser ${escapeHtml(result.denomination)} sur Google Maps" style="font-size: 14px !important;">
+                    <i class="fas fa-map-marker-alt"></i> Localiser
                 </a>
             </td>
-            <td>
-                <input type="checkbox" class="send-letter-checkbox"
-                    data-denomination="${escapeHtml(result.denomination)}"
-                    data-dirigeant="${escapeHtml(result.dirigeant)}"
-                    data-siren="${escapeHtml(result.siren)}"
-                    data-adresse="${escapeHtml(result.adresse)}"
-                    data-ville="${escapeHtml(result.ville)}"
-                    data-code-postal="${escapeHtml(result.code_postal)}"
-                />
+            <td style="text-align: center !important;">
+                <input type="checkbox" class="select-sci-checkbox" data-siren="${escapeHtml(result.siren)}" data-denomination="${escapeHtml(result.denomination)}">
+            </td>
+            <td style="text-align: center !important;">
+                <span class="contact-status" data-siren="${escapeHtml(result.siren)}">
+                    <span class="contact-status-icon"></span>
+                    <span class="contact-status-text"></span>
+                </span>
             </td>
         `;
         

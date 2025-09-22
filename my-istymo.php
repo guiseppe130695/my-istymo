@@ -289,6 +289,38 @@ function sci_ajouter_menu() {
 
 // --- Affichage du panneau d'administration SCI ---
 function sci_afficher_panel() {
+    // Charger Font Awesome
+    wp_enqueue_style(
+        'font-awesome',
+        'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+        array(),
+        '6.4.0'
+    );
+    
+    // Charger le CSS de protection contre les thèmes en premier
+    wp_enqueue_style(
+        'theme-protection-style',
+        plugin_dir_url(__FILE__) . 'assets/css/theme-protection.css',
+        array('font-awesome'),
+        '1.0.4'
+    );
+    
+    // Charger le CSS des composants génériques
+    wp_enqueue_style(
+        'components-style',
+        plugin_dir_url(__FILE__) . 'assets/css/components.css',
+        array('theme-protection-style'),
+        '1.0.4'
+    );
+    
+    // Charger le CSS SCI pour l'admin
+    wp_enqueue_style(
+        'sci-admin-style',
+        plugin_dir_url(__FILE__) . 'assets/css/sci-style.css',
+        array('components-style'),
+        '1.0.4'
+    );
+
     // ✅ MODIFIÉ : Utiliser la fonction utilitaire pour récupérer les codes postaux
     $codesPostauxArray = sci_get_user_postal_codes();
 
@@ -1814,7 +1846,7 @@ function dpe_afficher_panel() {
         'theme-protection-style',
         plugin_dir_url(__FILE__) . 'assets/css/theme-protection.css',
         array('font-awesome'),
-        '1.0.0'
+        '1.0.4'
     );
     
     // Charger le CSS des composants génériques
@@ -1822,7 +1854,7 @@ function dpe_afficher_panel() {
         'components-style',
         plugin_dir_url(__FILE__) . 'assets/css/components.css',
         array('theme-protection-style'),
-        '1.0.0'
+        '1.0.4'
     );
     
     // Charger le CSS DPE pour l'admin
@@ -1830,7 +1862,7 @@ function dpe_afficher_panel() {
         'dpe-admin-style',
         plugin_dir_url(__FILE__) . 'assets/css/dpe-style.css',
         array('components-style'),
-        '1.0.2'
+        '1.0.4'
     );
     
     // Récupérer les codes postaux de l'utilisateur
@@ -1864,7 +1896,7 @@ function dpe_favoris_page() {
         'theme-protection-style',
         plugin_dir_url(__FILE__) . 'assets/css/theme-protection.css',
         array('font-awesome'),
-        '1.0.0'
+        '1.0.4'
     );
     
     // Charger le CSS des composants génériques
@@ -1872,7 +1904,7 @@ function dpe_favoris_page() {
         'components-style',
         plugin_dir_url(__FILE__) . 'assets/css/components.css',
         array('theme-protection-style'),
-        '1.0.0'
+        '1.0.4'
     );
     
     // Charger le CSS DPE pour l'admin
@@ -1880,7 +1912,7 @@ function dpe_favoris_page() {
         'dpe-admin-style',
         plugin_dir_url(__FILE__) . 'assets/css/dpe-style.css',
         array('components-style'),
-        '1.0.2'
+        '1.0.4'
     );
     
     $user_id = get_current_user_id();

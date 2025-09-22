@@ -1,5 +1,6 @@
 /* ========================================
    PROTECTION CONTRE LES THÈMES WORDPRESS
+   Version: 1.0.4 - Protection des popups de campagne ajoutée
    ======================================== */
 
 /* 
@@ -87,6 +88,13 @@ section.my-istymo .data-table {
     min-width: 970px !important;
 }
 
+/* Largeur minimale spécifique pour les tableaux SCI */
+body .my-istymo .sci-panel .data-table,
+div.my-istymo .sci-panel .data-table,
+section.my-istymo .sci-panel .data-table {
+    min-width: 1150px !important;
+}
+
 /* En-têtes de tableau */
 body .my-istymo .data-table th,
 div.my-istymo .data-table th,
@@ -94,7 +102,6 @@ section.my-istymo .data-table th {
     background: #efeded8a !important;
     color: #000 !important;
     padding: 12px 8px !important;
-    text-align: left !important;
     font-weight: 600 !important;
     font-size: 14px !important;
     border: none !important;
@@ -343,168 +350,24 @@ section.my-istymo th i.fas.fa-heart {
     margin-left: 10px !important;
 }
 
-/* Colonne étiquette DPE - centrage de l'icône */
-body .my-istymo .data-table th:nth-child(7),
-div.my-istymo .data-table th:nth-child(7),
-section.my-istymo .data-table th:nth-child(7) {
+/* Colonne étiquette DPE - centrage de l'icône - Spécifique DPE uniquement */
+body .my-istymo .dpe-panel .data-table th:nth-child(7),
+div.my-istymo .dpe-panel .data-table th:nth-child(7),
+section.my-istymo .dpe-panel .data-table th:nth-child(7) {
     text-align: center !important;
     width: 60px !important;
     min-width: 60px !important;
 }
 
-body .my-istymo th i.fas.fa-certificate,
-div.my-istymo th i.fas.fa-certificate,
-section.my-istymo th i.fas.fa-certificate {
+body .my-istymo .dpe-panel th i.fas.fa-certificate,
+div.my-istymo .dpe-panel th i.fas.fa-certificate,
+section.my-istymo .dpe-panel th i.fas.fa-certificate {
     margin-left: -12px !important;
 }
 
-/* Largeurs fixes pour les colonnes du tableau DPE */
-body .my-istymo .data-table th:nth-child(1),
-div.my-istymo .data-table th:nth-child(1),
-section.my-istymo .data-table th:nth-child(1) {
-    width: 60px !important;
-    min-width: 60px !important;
-    max-width: 60px !important;
-}
+/* Règles génériques supprimées - Utiliser les règles spécifiques DPE/SCI ci-dessous */
 
-body .my-istymo .data-table th:nth-child(2),
-div.my-istymo .data-table th:nth-child(2),
-section.my-istymo .data-table th:nth-child(2) {
-    width: 100px !important;
-    min-width: 100px !important;
-    max-width: 100px !important;
-}
-
-body .my-istymo .data-table th:nth-child(3),
-div.my-istymo .data-table th:nth-child(3),
-section.my-istymo .data-table th:nth-child(3) {
-    width: 80px !important;
-    min-width: 80px !important;
-    max-width: 80px !important;
-}
-
-body .my-istymo .data-table th:nth-child(4),
-div.my-istymo .data-table th:nth-child(4),
-section.my-istymo .data-table th:nth-child(4) {
-    width: 200px !important;
-    min-width: 200px !important;
-    max-width: 200px !important;
-}
-
-body .my-istymo .data-table th:nth-child(5),
-div.my-istymo .data-table th:nth-child(5),
-section.my-istymo .data-table th:nth-child(5) {
-    width: 120px !important;
-    min-width: 120px !important;
-    max-width: 120px !important;
-}
-
-body .my-istymo .data-table th:nth-child(6),
-div.my-istymo .data-table th:nth-child(6),
-section.my-istymo .data-table th:nth-child(6) {
-    width: 80px !important;
-    min-width: 80px !important;
-    max-width: 80px !important;
-}
-
-body .my-istymo .data-table th:nth-child(7),
-div.my-istymo .data-table th:nth-child(7),
-section.my-istymo .data-table th:nth-child(7) {
-    width: 60px !important;
-    min-width: 60px !important;
-    max-width: 60px !important;
-}
-
-body .my-istymo .data-table th:nth-child(8),
-div.my-istymo .data-table th:nth-child(8),
-section.my-istymo .data-table th:nth-child(8) {
-    width: 150px !important;
-    min-width: 150px !important;
-    max-width: 150px !important;
-}
-
-body .my-istymo .data-table th:nth-child(9),
-div.my-istymo .data-table th:nth-child(9),
-section.my-istymo .data-table th:nth-child(9) {
-    width: 120px !important;
-    min-width: 120px !important;
-    max-width: 120px !important;
-}
-
-/* Largeurs fixes pour les cellules du tableau DPE */
-body .my-istymo .data-table td:nth-child(1),
-div.my-istymo .data-table td:nth-child(1),
-section.my-istymo .data-table td:nth-child(1) {
-    width: 60px !important;
-    min-width: 60px !important;
-    max-width: 60px !important;
-}
-
-body .my-istymo .data-table td:nth-child(2),
-div.my-istymo .data-table td:nth-child(2),
-section.my-istymo .data-table td:nth-child(2) {
-    width: 100px !important;
-    min-width: 100px !important;
-    max-width: 100px !important;
-}
-
-body .my-istymo .data-table td:nth-child(3),
-div.my-istymo .data-table td:nth-child(3),
-section.my-istymo .data-table td:nth-child(3) {
-    width: 80px !important;
-    min-width: 80px !important;
-    max-width: 80px !important;
-}
-
-body .my-istymo .data-table td:nth-child(4),
-div.my-istymo .data-table td:nth-child(4),
-section.my-istymo .data-table td:nth-child(4) {
-    width: 200px !important;
-    min-width: 200px !important;
-    max-width: 200px !important;
-    word-wrap: break-word !important;
-    overflow-wrap: break-word !important;
-}
-
-body .my-istymo .data-table td:nth-child(5),
-div.my-istymo .data-table td:nth-child(5),
-section.my-istymo .data-table td:nth-child(5) {
-    width: 120px !important;
-    min-width: 120px !important;
-    max-width: 120px !important;
-}
-
-body .my-istymo .data-table td:nth-child(6),
-div.my-istymo .data-table td:nth-child(6),
-section.my-istymo .data-table td:nth-child(6) {
-    width: 80px !important;
-    min-width: 80px !important;
-    max-width: 80px !important;
-}
-
-body .my-istymo .data-table td:nth-child(7),
-div.my-istymo .data-table td:nth-child(7),
-section.my-istymo .data-table td:nth-child(7) {
-    width: 60px !important;
-    min-width: 60px !important;
-    max-width: 60px !important;
-}
-
-body .my-istymo .data-table td:nth-child(8),
-div.my-istymo .data-table td:nth-child(8),
-section.my-istymo .data-table td:nth-child(8) {
-    width: 150px !important;
-    min-width: 150px !important;
-    max-width: 150px !important;
-}
-
-body .my-istymo .data-table td:nth-child(9),
-div.my-istymo .data-table td:nth-child(9),
-section.my-istymo .data-table td:nth-child(9) {
-    width: 120px !important;
-    min-width: 120px !important;
-    max-width: 120px !important;
-}
+/* Règles génériques pour les cellules supprimées - Utiliser les règles spécifiques DPE/SCI ci-dessous */
 
 /* Correction des boutons favoris */
 body .my-istymo .favorite-btn,
@@ -540,6 +403,540 @@ div.my-istymo .favorite-btn:hover,
 section.my-istymo .favorite-btn:hover {
     color: #ffd700 !important;
     background: #f0f0f0 !important;
+}
+
+/* ========================================
+   STYLES SPÉCIFIQUES PAR SYSTÈME
+   ======================================== */
+
+/* ========================================
+   STYLES SPÉCIFIQUES DPE
+   ======================================== */
+
+/* Largeurs fixes pour les colonnes DPE - Plus spécifique */
+body .my-istymo .dpe-panel .data-table th:nth-child(1),
+div.my-istymo .dpe-panel .data-table th:nth-child(1),
+section.my-istymo .dpe-panel .data-table th:nth-child(1) {
+    width: 60px !important;
+    min-width: 60px !important;
+    max-width: 60px !important;
+    text-align: left !important;
+}
+
+body .my-istymo .dpe-panel .data-table th:nth-child(2),
+div.my-istymo .dpe-panel .data-table th:nth-child(2),
+section.my-istymo .dpe-panel .data-table th:nth-child(2) {
+    width: 100px !important;
+    min-width: 100px !important;
+    max-width: 100px !important;
+}
+
+body .my-istymo .dpe-panel .data-table th:nth-child(3),
+div.my-istymo .dpe-panel .data-table th:nth-child(3),
+section.my-istymo .dpe-panel .data-table th:nth-child(3) {
+    width: 80px !important;
+    min-width: 80px !important;
+    max-width: 80px !important;
+}
+
+body .my-istymo .dpe-panel .data-table th:nth-child(4),
+div.my-istymo .dpe-panel .data-table th:nth-child(4),
+section.my-istymo .dpe-panel .data-table th:nth-child(4) {
+    width: 200px !important;
+    min-width: 200px !important;
+    max-width: 200px !important;
+}
+
+body .my-istymo .dpe-panel .data-table th:nth-child(5),
+div.my-istymo .dpe-panel .data-table th:nth-child(5),
+section.my-istymo .dpe-panel .data-table th:nth-child(5) {
+    width: 120px !important;
+    min-width: 120px !important;
+    max-width: 120px !important;
+}
+
+body .my-istymo .dpe-panel .data-table th:nth-child(6),
+div.my-istymo .dpe-panel .data-table th:nth-child(6),
+section.my-istymo .dpe-panel .data-table th:nth-child(6) {
+    width: 80px !important;
+    min-width: 80px !important;
+    max-width: 80px !important;
+}
+
+body .my-istymo .dpe-panel .data-table th:nth-child(7),
+div.my-istymo .dpe-panel .data-table th:nth-child(7),
+section.my-istymo .dpe-panel .data-table th:nth-child(7) {
+    width: 60px !important;
+    min-width: 60px !important;
+    max-width: 60px !important;
+}
+
+body .my-istymo .dpe-panel .data-table th:nth-child(8),
+div.my-istymo .dpe-panel .data-table th:nth-child(8),
+section.my-istymo .dpe-panel .data-table th:nth-child(8) {
+    width: 150px !important;
+    min-width: 150px !important;
+    max-width: 150px !important;
+}
+
+body .my-istymo .dpe-panel .data-table th:nth-child(9),
+div.my-istymo .dpe-panel .data-table th:nth-child(9),
+section.my-istymo .dpe-panel .data-table th:nth-child(9) {
+    width: 120px !important;
+    min-width: 120px !important;
+    max-width: 120px !important;
+}
+
+/* Cellules DPE */
+body .my-istymo .dpe-panel .data-table td:nth-child(1),
+div.my-istymo .dpe-panel .data-table td:nth-child(1),
+section.my-istymo .dpe-panel .data-table td:nth-child(1) {
+    width: 60px !important;
+    min-width: 60px !important;
+    max-width: 60px !important;
+}
+
+body .my-istymo .dpe-panel .data-table td:nth-child(2),
+div.my-istymo .dpe-panel .data-table td:nth-child(2),
+section.my-istymo .dpe-panel .data-table td:nth-child(2) {
+    width: 100px !important;
+    min-width: 100px !important;
+    max-width: 100px !important;
+}
+
+body .my-istymo .dpe-panel .data-table td:nth-child(3),
+div.my-istymo .dpe-panel .data-table td:nth-child(3),
+section.my-istymo .dpe-panel .data-table td:nth-child(3) {
+    width: 80px !important;
+    min-width: 80px !important;
+    max-width: 80px !important;
+}
+
+body .my-istymo .dpe-panel .data-table td:nth-child(4),
+div.my-istymo .dpe-panel .data-table td:nth-child(4),
+section.my-istymo .dpe-panel .data-table td:nth-child(4) {
+    width: 200px !important;
+    min-width: 200px !important;
+    max-width: 200px !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+}
+
+body .my-istymo .dpe-panel .data-table td:nth-child(5),
+div.my-istymo .dpe-panel .data-table td:nth-child(5),
+section.my-istymo .dpe-panel .data-table td:nth-child(5) {
+    width: 120px !important;
+    min-width: 120px !important;
+    max-width: 120px !important;
+}
+
+body .my-istymo .dpe-panel .data-table td:nth-child(6),
+div.my-istymo .dpe-panel .data-table td:nth-child(6),
+section.my-istymo .dpe-panel .data-table td:nth-child(6) {
+    width: 80px !important;
+    min-width: 80px !important;
+    max-width: 80px !important;
+}
+
+body .my-istymo .dpe-panel .data-table td:nth-child(7),
+div.my-istymo .dpe-panel .data-table td:nth-child(7),
+section.my-istymo .dpe-panel .data-table td:nth-child(7) {
+    width: 60px !important;
+    min-width: 60px !important;
+    max-width: 60px !important;
+}
+
+body .my-istymo .dpe-panel .data-table td:nth-child(8),
+div.my-istymo .dpe-panel .data-table td:nth-child(8),
+section.my-istymo .dpe-panel .data-table td:nth-child(8) {
+    width: 150px !important;
+    min-width: 150px !important;
+    max-width: 150px !important;
+}
+
+body .my-istymo .dpe-panel .data-table td:nth-child(9),
+div.my-istymo .dpe-panel .data-table td:nth-child(9),
+section.my-istymo .dpe-panel .data-table td:nth-child(9) {
+    width: 120px !important;
+    min-width: 120px !important;
+    max-width: 120px !important;
+}
+
+/* ========================================
+   STYLES SPÉCIFIQUES SCI
+   ======================================== */
+
+/* Largeurs fixes pour les colonnes SCI - Plus spécifique */
+body .my-istymo .sci-panel .data-table th:nth-child(1),
+div.my-istymo .sci-panel .data-table th:nth-child(1),
+section.my-istymo .sci-panel .data-table th:nth-child(1) {
+    width: 60px !important;
+    min-width: 60px !important;
+    max-width: 60px !important;
+    text-align: left !important;
+}
+
+body .my-istymo .sci-panel .data-table th:nth-child(2),
+div.my-istymo .sci-panel .data-table th:nth-child(2),
+section.my-istymo .sci-panel .data-table th:nth-child(2) {
+    width: 180px !important;
+    min-width: 180px !important;
+    max-width: 180px !important;
+    text-align: left !important;
+}
+
+th.col-entreprise, th.col-dirigeant, th.col-adresse {
+    text-align: left !important;
+}
+
+body .my-istymo .sci-panel .data-table th:nth-child(3),
+div.my-istymo .sci-panel .data-table th:nth-child(3),
+section.my-istymo .sci-panel .data-table th:nth-child(3) {
+    width: 160px !important;
+    min-width: 160px !important;
+    max-width: 160px !important;
+}
+
+body .my-istymo .sci-panel .data-table th:nth-child(4),
+div.my-istymo .sci-panel .data-table th:nth-child(4),
+section.my-istymo .sci-panel .data-table th:nth-child(4) {
+    width: 120px !important;
+    min-width: 120px !important;
+    max-width: 120px !important;
+}
+
+body .my-istymo .sci-panel .data-table th:nth-child(5),
+div.my-istymo .sci-panel .data-table th:nth-child(5),
+section.my-istymo .sci-panel .data-table th:nth-child(5) {
+    width: 80px !important;
+    min-width: 80px !important;
+    max-width: 80px !important;
+    text-align: center !important;
+}
+
+body .my-istymo .sci-panel .data-table th:nth-child(6),
+div.my-istymo .sci-panel .data-table th:nth-child(6),
+section.my-istymo .sci-panel .data-table th:nth-child(6) {
+    width: 130px !important;
+    min-width: 130px !important;
+    max-width: 130px !important;
+    text-align: center !important;
+}
+
+body .my-istymo .sci-panel .data-table th:nth-child(7),
+div.my-istymo .sci-panel .data-table th:nth-child(7),
+section.my-istymo .sci-panel .data-table th:nth-child(7) {
+    width: 120px !important;
+    min-width: 120px !important;
+    max-width: 120px !important;
+    text-align: center !important;
+}
+
+/* Cellules SCI */
+body .my-istymo .sci-panel .data-table td:nth-child(1),
+div.my-istymo .sci-panel .data-table td:nth-child(1),
+section.my-istymo .sci-panel .data-table td:nth-child(1) {
+    width: 60px !important;
+    min-width: 60px !important;
+    max-width: 60px !important;
+}
+
+body .my-istymo .sci-panel .data-table td:nth-child(2),
+div.my-istymo .sci-panel .data-table td:nth-child(2),
+section.my-istymo .sci-panel .data-table td:nth-child(2) {
+    width: 180px !important;
+    min-width: 180px !important;
+    max-width: 180px !important;
+}
+
+body .my-istymo .sci-panel .data-table td:nth-child(3),
+div.my-istymo .sci-panel .data-table td:nth-child(3),
+section.my-istymo .sci-panel .data-table td:nth-child(3) {
+    width: 160px !important;
+    min-width: 160px !important;
+    max-width: 160px !important;
+}
+
+body .my-istymo .sci-panel .data-table td:nth-child(4),
+div.my-istymo .sci-panel .data-table td:nth-child(4),
+section.my-istymo .sci-panel .data-table td:nth-child(4) {
+    width: 120px !important;
+    min-width: 120px !important;
+    max-width: 120px !important;
+}
+
+body .my-istymo .sci-panel .data-table td:nth-child(5),
+div.my-istymo .sci-panel .data-table td:nth-child(5),
+section.my-istymo .sci-panel .data-table td:nth-child(5) {
+    width: 80px !important;
+    min-width: 80px !important;
+    max-width: 80px !important;
+    text-align: center !important;
+}
+
+body .my-istymo .sci-panel .data-table td:nth-child(6),
+div.my-istymo .sci-panel .data-table td:nth-child(6),
+section.my-istymo .sci-panel .data-table td:nth-child(6) {
+    width: 130px !important;
+    min-width: 130px !important;
+    max-width: 130px !important;
+    text-align: center !important;
+}
+
+body .my-istymo .sci-panel .data-table td:nth-child(7),
+div.my-istymo .sci-panel .data-table td:nth-child(7),
+section.my-istymo .sci-panel .data-table td:nth-child(7) {
+    width: 120px !important;
+    min-width: 120px !important;
+    max-width: 120px !important;
+    text-align: center !important;
+}
+
+
+/* ========================================
+   CLASSES SPÉCIFIQUES DES COLONNES
+   ======================================== */
+
+/* Classes pour les colonnes SCI */
+body .my-istymo .sci-panel .col-favoris,
+div.my-istymo .sci-panel .col-favoris,
+section.my-istymo .sci-panel .col-favoris {
+    width: 60px !important;
+    min-width: 60px !important;
+    max-width: 60px !important;
+    text-align: center !important;
+}
+
+body .my-istymo .sci-panel .col-entreprise,
+div.my-istymo .sci-panel .col-entreprise,
+section.my-istymo .sci-panel .col-entreprise {
+    width: 180px !important;
+    min-width: 180px !important;
+    max-width: 180px !important;
+    text-align: left !important;
+}
+
+body .my-istymo .sci-panel .col-dirigeant,
+div.my-istymo .sci-panel .col-dirigeant,
+section.my-istymo .sci-panel .col-dirigeant {
+    width: 160px !important;
+    min-width: 160px !important;
+    max-width: 160px !important;
+    text-align: left !important;
+}
+
+body .my-istymo .sci-panel .col-adresse,
+div.my-istymo .sci-panel .col-adresse,
+section.my-istymo .sci-panel .col-adresse {
+    width: 200px !important;
+    min-width: 200px !important;
+    max-width: 200px !important;
+    text-align: left !important;
+}
+
+body .my-istymo .sci-panel .col-geolocalisation,
+div.my-istymo .sci-panel .col-geolocalisation,
+section.my-istymo .sci-panel .col-geolocalisation {
+    width: 80px !important;
+    min-width: 80px !important;
+    max-width: 80px !important;
+    text-align: center !important;
+}
+
+body .my-istymo .sci-panel .col-envoi-courrier,
+div.my-istymo .sci-panel .col-envoi-courrier,
+section.my-istymo .sci-panel .col-envoi-courrier {
+    width: 130px !important;
+    min-width: 130px !important;
+    max-width: 130px !important;
+    text-align: center !important;
+}
+
+body .my-istymo .sci-panel .col-deja-contacte,
+div.my-istymo .sci-panel .col-deja-contacte,
+section.my-istymo .sci-panel .col-deja-contacte {
+    width: 120px !important;
+    min-width: 120px !important;
+    max-width: 120px !important;
+    text-align: center !important;
+}
+
+/* Classes pour les colonnes DPE */
+body .my-istymo .dpe-panel .col-favoris,
+div.my-istymo .dpe-panel .col-favoris,
+section.my-istymo .dpe-panel .col-favoris {
+    width: 60px !important;
+    min-width: 60px !important;
+    max-width: 60px !important;
+    text-align: center !important;
+}
+
+body .my-istymo .dpe-panel .col-type,
+div.my-istymo .dpe-panel .col-type,
+section.my-istymo .dpe-panel .col-type {
+    width: 100px !important;
+    min-width: 100px !important;
+    max-width: 100px !important;
+    text-align: left !important;
+}
+
+body .my-istymo .dpe-panel .col-date,
+div.my-istymo .dpe-panel .col-date,
+section.my-istymo .dpe-panel .col-date {
+    width: 80px !important;
+    min-width: 80px !important;
+    max-width: 80px !important;
+    text-align: left !important;
+}
+
+body .my-istymo .dpe-panel .col-adresse,
+div.my-istymo .dpe-panel .col-adresse,
+section.my-istymo .dpe-panel .col-adresse {
+    width: 200px !important;
+    min-width: 200px !important;
+    max-width: 200px !important;
+    text-align: left !important;
+}
+
+body .my-istymo .dpe-panel .col-ville,
+div.my-istymo .dpe-panel .col-ville,
+section.my-istymo .dpe-panel .col-ville {
+    width: 120px !important;
+    min-width: 120px !important;
+    max-width: 120px !important;
+    text-align: left !important;
+}
+
+body .my-istymo .dpe-panel .col-surface,
+div.my-istymo .dpe-panel .col-surface,
+section.my-istymo .dpe-panel .col-surface {
+    width: 80px !important;
+    min-width: 80px !important;
+    max-width: 80px !important;
+    text-align: left !important;
+}
+
+body .my-istymo .dpe-panel .col-etiquette,
+div.my-istymo .dpe-panel .col-etiquette,
+section.my-istymo .dpe-panel .col-etiquette {
+    width: 60px !important;
+    min-width: 60px !important;
+    max-width: 60px !important;
+    text-align: center !important;
+}
+
+body .my-istymo .dpe-panel .col-complement,
+div.my-istymo .dpe-panel .col-complement,
+section.my-istymo .dpe-panel .col-complement {
+    width: 150px !important;
+    min-width: 150px !important;
+    max-width: 150px !important;
+    text-align: left !important;
+}
+
+body .my-istymo .dpe-panel .col-geolocalisation,
+div.my-istymo .dpe-panel .col-geolocalisation,
+section.my-istymo .dpe-panel .col-geolocalisation {
+    width: 120px !important;
+    min-width: 120px !important;
+    max-width: 120px !important;
+    text-align: center !important;
+}
+
+/* ========================================
+   PROTECTION DES POPUPS DE CAMPAGNE
+   ======================================== */
+
+/* Protection des popups contre les règles génériques */
+body .popup-overlay-campaign,
+div.popup-overlay-campaign,
+section.popup-overlay-campaign {
+    display: none !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: rgba(0,0,0,0.6) !important;
+    z-index: 10000 !important;
+    opacity: 0 !important;
+    transition: opacity 0.25s !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+body .popup-overlay-campaign.active,
+div.popup-overlay-campaign.active,
+section.popup-overlay-campaign.active {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    opacity: 1 !important;
+}
+
+body .popup-campaign-container,
+div.popup-campaign-container,
+section.popup-campaign-container {
+    background: #fff !important;
+    border-radius: 14px !important;
+    padding: 32px 28px !important;
+    max-width: 700px !important;
+    width: 95vw !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.10) !important;
+    position: relative !important;
+    animation: popup-fadein 0.25s !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    border: none !important;
+    font-family: inherit !important;
+    line-height: 1.4 !important;
+    color: #333 !important;
+}
+
+/* Protection des autres popups */
+body .letter-popup-overlay,
+div.letter-popup-overlay,
+section.letter-popup-overlay {
+    display: none !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background-color: rgba(0, 0, 0, 0.6) !important;
+    z-index: 9999 !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+body .letter-popup-container,
+div.letter-popup-container,
+section.letter-popup-container {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    background-color: #ffffff !important;
+    border-radius: 12px !important;
+    max-width: 700px !important;
+    width: 95% !important;
+    max-height: 85vh !important;
+    overflow: hidden !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid #e9ecef !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    font-family: inherit !important;
+    line-height: 1.4 !important;
+    color: #333 !important;
 }
 
 /* ========================================

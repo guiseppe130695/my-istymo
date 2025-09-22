@@ -99,7 +99,7 @@ class DPE_Shortcodes {
             'theme-protection-style',
             plugin_dir_url(dirname(__FILE__)) . 'assets/css/theme-protection.css',
             array('font-awesome'),
-            '1.0.0'
+            '1.0.4'
         );
         
         // Charger le CSS des composants génériques
@@ -172,7 +172,7 @@ class DPE_Shortcodes {
         
         ob_start();
         ?>
-        <div class="my-istymo">
+        <div class="my-istymo dpe-panel">
             <div class="frontend-wrapper">
             <?php if (!empty($atts['title'])): ?>
                 <h1><i class="fas fa-search"></i> <?php echo esc_html($atts['title']); ?></h1>
@@ -230,8 +230,7 @@ class DPE_Shortcodes {
             </form>
 
             <!-- ✅ ZONE DE CHARGEMENT -->
-            <div id="search-loading" class="d-none">
-                <div class="loading-spinner"></div>
+            <div id="search-loading" class="d-none text-center" style="padding: 40px 20px; font-size: 16px; color: #666;">
                 <span><i class="fas fa-spinner fa-spin"></i> Recherche en cours...</span>
             </div>
 
@@ -252,18 +251,18 @@ class DPE_Shortcodes {
                 </div>
                 
                 <!-- ✅ TABLEAU DES RÉSULTATS - STRUCTURE STABLE -->
-                <table class="data-table" id="results-table">
+                <table class="data-table dpe-results-table" id="results-table">
                     <thead>
                         <tr>
-                            <th><i class="fas fa-heart" title="Favoris - Enregistrez les DPE pour les traiter dans la gestion des leads"></i></th>
-                            <th><i class="fas fa-building"></i> Type</th>
-                            <th><i class="fas fa-calendar"></i> Date</th>
-                            <th><i class="fas fa-map-marker-alt"></i> Adresse</th>
-                            <th><i class="fas fa-city"></i> Ville</th>
-                            <th><i class="fas fa-expand-arrows-alt"></i> Surface</th>
-                            <th><i class="fas fa-certificate" title="Étiquette DPE - Classe énergétique du bien (A à G)"></i></th>
-                            <th><i class="fas fa-plus"></i> Complément adresse</th>
-                            <th><i class="fas fa-map"></i> Géolocalisation</th>
+                            <th class="col-favoris"><i class="fas fa-heart" title="Favoris - Enregistrez les DPE pour les traiter dans la gestion des leads"></i></th>
+                            <th class="col-type"><i class="fas fa-building"></i> Type</th>
+                            <th class="col-date"><i class="fas fa-calendar"></i> Date</th>
+                            <th class="col-adresse"><i class="fas fa-map-marker-alt"></i> Adresse</th>
+                            <th class="col-ville"><i class="fas fa-city"></i> Ville</th>
+                            <th class="col-surface"><i class="fas fa-expand-arrows-alt"></i> Surface</th>
+                            <th class="col-etiquette"><i class="fas fa-certificate" title="Étiquette DPE - Classe énergétique du bien (A à G)"></i></th>
+                            <th class="col-complement"><i class="fas fa-plus"></i> Complément adresse</th>
+                            <th class="col-geolocalisation"><i class="fas fa-map"></i> Géolocalisation</th>
                         </tr>
                     </thead>
                     <tbody id="results-tbody">

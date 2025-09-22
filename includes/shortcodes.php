@@ -158,13 +158,36 @@ class SCI_Shortcodes {
      * Force le chargement des assets
      */
     private function force_enqueue_assets($codesPostauxArray = []) {
+        // Charger Font Awesome
+        wp_enqueue_style(
+            'font-awesome',
+            'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+            array(),
+            '6.4.0'
+        );
+        
+        // Charger le CSS de protection contre les thèmes en premier
+        wp_enqueue_style(
+            'theme-protection-style',
+            plugin_dir_url(dirname(__FILE__)) . 'assets/css/theme-protection.css',
+            array('font-awesome'),
+            '1.0.4'
+        );
+        
+        // Charger le CSS des composants génériques
+        wp_enqueue_style(
+            'components-style',
+            plugin_dir_url(dirname(__FILE__)) . 'assets/css/components.css',
+            array('theme-protection-style'),
+            '1.0.0'
+        );
 
         if (!wp_style_is('sci-frontend-style', 'enqueued')) {
             wp_enqueue_style(
                 'sci-frontend-style',
-                plugin_dir_url(dirname(__FILE__)) . 'assets/css/style.css',
-                array(),
-                '1.0.3' // Version incrémentée pour forcer le rechargement
+                plugin_dir_url(dirname(__FILE__)) . 'assets/css/sci-style.css',
+                array('components-style'),
+                '1.0.4' // Version incrémentée pour forcer le rechargement
             );
         }
 
@@ -278,16 +301,17 @@ class SCI_Shortcodes {
         
         ob_start();
         ?>
-        <div class="sci-frontend-wrapper">
-            <h1><?php echo esc_html($atts['title']); ?></h1>
-            
-            <!-- Information pour les utilisateurs -->
-            <div class="sci-info" style="background: #e7f3ff!important; border: 1px solid #bee5eb!important; border-radius: 8px!important; padding: 15px!important; margin-bottom: 20px!important; color: #004085!important;">
-                <p style="margin: 0; font-size: 14px; line-height: 1.5;">
-                    <strong>Prospectez directement les SCI</strong><br><br>
-                    Vous avez également la possibilité de proposer vos services en envoyant un courrier.
-                </p>
-            </div>
+        <div class="my-istymo sci-panel">
+            <div class="frontend-wrapper">
+                <h1><i class="fas fa-building"></i> <?php echo esc_html($atts['title']); ?></h1>
+                
+                <!-- Information pour les utilisateurs -->
+                <div class="info-message">
+                    <p>
+                        <i class="fas fa-info-circle"></i> <strong>Prospection SCI</strong><br><br>
+                        Prospectez directement les SCI. Vous avez également la possibilité de proposer vos services en envoyant un courrier.
+                    </p>
+                </div>
             
             <!-- Affichage des avertissements de configuration -->
             <?php if ($atts['show_config_warnings'] === 'true'): ?>
@@ -295,7 +319,7 @@ class SCI_Shortcodes {
                 // Vérifier si la configuration API est complète
                 $config_manager = sci_config_manager();
                 if (!$config_manager->is_configured()) {
-                    echo '<div class="sci-error"><strong>Configuration manquante :</strong> Veuillez configurer vos tokens API dans l\'administration.</div>';
+                    echo '<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> <strong>Configuration manquante :</strong> Veuillez configurer vos tokens API dans l\'administration.</div>';
                 }
 
                 // Vérifier la configuration INPI
@@ -304,13 +328,13 @@ class SCI_Shortcodes {
                 $password = get_option('sci_inpi_password');
                 
                 if (!$username || !$password) {
-                    echo '<div class="sci-warning"><strong>Identifiants INPI manquants :</strong> Veuillez configurer vos identifiants INPI pour la génération automatique de tokens.</div>';
+                    echo '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle"></i> <strong>Identifiants INPI manquants :</strong> Veuillez configurer vos identifiants INPI pour la génération automatique de tokens.</div>';
                 }
 
                 // Vérifier WooCommerce
                 $woocommerce_integration = sci_woocommerce();
                 if (!$woocommerce_integration->is_woocommerce_ready()) {
-                    echo '<div class="sci-warning"><strong>WooCommerce requis :</strong> Veuillez installer et configurer WooCommerce pour utiliser le système de paiement.</div>';
+                    echo '<div class="alert alert-warning"><i class="fas fa-shopping-cart"></i> <strong>WooCommerce requis :</strong> Veuillez installer et configurer WooCommerce pour utiliser le système de paiement.</div>';
                 }
 
                 // Vérifier la configuration des données expéditeur
@@ -319,8 +343,8 @@ class SCI_Shortcodes {
                 $validation_errors = $campaign_manager->validate_expedition_data($expedition_data);
                 
                 if (!empty($validation_errors)) {
-                    echo '<div class="sci-warning">';
-                    echo '<strong>Configuration expéditeur incomplète :</strong>';
+                    echo '<div class="alert alert-warning">';
+                    echo '<i class="fas fa-exclamation-triangle"></i> <strong>Configuration expéditeur incomplète :</strong>';
                     echo '<ul>';
                     foreach ($validation_errors as $error) {
                         echo '<li>' . esc_html($error) . '</li>';
@@ -331,63 +355,56 @@ class SCI_Shortcodes {
                 ?>
             <?php endif; ?>
 
-            <!-- FORMULAIRE DE RECHERCHE AJAX -->
-            <form id="sci-search-form" class="sci-form">
-                <div class="form-group-left">
-                    <div class="form-group">
-                        <label style="font-size:12px!important;" for="codePostal">Sélectionnez votre code postal :</label>
-                        <select style="font-size:12px!important;" name="codePostal" id="codePostal" required>
-                            <option style="font-size:12px!important;" value="">— Choisir un code postal —</option>
-                                                    <?php foreach ($codesPostauxArray as $index => $value): ?>
-                            <option value="<?php echo esc_attr($value); ?>" <?php echo ($index === 0) ? 'selected' : ''; ?>>
-                                <?php echo esc_html($value); ?>
-                            </option>
-                        <?php endforeach; ?>
+            <!-- ✅ FORMULAIRE DE RECHERCHE AJAX -->
+            <form id="sci-search-form" class="search-form">
+                <div class="form-row">
+                    <div class="form-field">
+                        <label for="codePostal"><i class="fas fa-map-marker-alt"></i> Votre code postal :</label>
+                        <select name="codePostal" id="codePostal" required>
+                            <option value="">— Choisir un code postal —</option>
+                            <?php foreach ($codesPostauxArray as $index => $value): ?>
+                                <option value="<?php echo esc_attr($value); ?>" <?php echo ($index === 0) ? 'selected' : ''; ?>>
+                                    <?php echo esc_html($value); ?>
+                                </option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
-                    <button type="submit" id="search-btn" class="sci-button" style="background: #000064 !important;">
-                        Rechercher les SCI
+                    <button type="submit" id="search-btn" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Rechercher les SCI
                     </button>
                 </div>
 
-                
-                <button id="send-letters-btn" type="button" class="sci-button secondary" disabled
-                        data-tooltip="Prospectez directement les SCI. Vous avez également la possibilité de proposer vos services en envoyant un courrier"
-                        style="font-size:12px!important; background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important; color: white !important; border: none !important;">
-                    Créez une campagne d'envoi de courriers (<span id="selected-count">0</span>)
-                </button>
-                
-
-                
-
+                <div class="form-row">
+                    <button id="send-letters-btn" type="button" class="btn btn-success" disabled
+                            data-tooltip="Prospectez directement les SCI. Vous avez également la possibilité de proposer vos services en envoyant un courrier">
+                        <i class="fas fa-envelope"></i> Créez une campagne d'envoi de courriers (<span id="selected-count">0</span>)
+                    </button>
+                </div>
             </form>
 
-            <!-- ZONE DE CHARGEMENT -->
-            <div id="search-loading" style="display: none;">
-                <div class="loading-spinner"></div>
-                <span>Recherche en cours...</span>
+            <!-- ✅ ZONE DE CHARGEMENT -->
+            <div id="search-loading" class="d-none text-center" style="padding: 40px 20px; font-size: 16px; color: #666;">
+                <span><i class="fas fa-spinner fa-spin"></i> Recherche en cours...</span>
             </div>
 
-                        <!-- ZONE DES RÉSULTATS - STRUCTURE STABLE -->
-            <div id="search-results" style="display: none;">
+            <!-- ✅ ZONE DES RÉSULTATS - STRUCTURE STABLE -->
+            <div id="search-results" class="search-results">
                 <div id="results-header">
-                    <h2 id="results-title">Résultats de recherche</h2>
-                    <div id="pagination-info" style="display: none;"></div>
+                    <h2 id="results-title"><i class="fas fa-list"></i> Résultats de recherche</h2>
+                    <div id="pagination-info" class="d-none"></div>
                 </div>
 
-                <!-- TABLEAU DES RÉSULTATS - STRUCTURE STABLE -->
-                <table class="sci-table" id="results-table">
+                <!-- ✅ TABLEAU DES RÉSULTATS - STRUCTURE STABLE -->
+                <table class="data-table sci-results-table" id="results-table">
                     <thead>
                         <tr>
-                            <th style="text-align: center !important;">Favoris</th>
-                            <th>Dénomination</th>
-                            <th>Dirigeant</th>
-                            <th style="display: none;">SIREN</th>
-                            <th>Adresse</th>
-                            <th>Ville</th>
-                            <th>Géolocalisation</th>
-                            <th style="text-align: center !important;">Envoi courrier</th>
-                            <th style="text-align: center !important;">Déjà contacté ?</th>
+                            <th class="col-favoris"><i class="fas fa-heart" title="Favoris - Enregistrez les SCI pour les traiter dans la gestion des leads"></i></th>
+                            <th class="col-entreprise"><i class="fas fa-building"></i> Entreprise</th>
+                            <th class="col-dirigeant"><i class="fas fa-user-tie"></i> Dirigeant</th>
+                            <th class="col-adresse"><i class="fas fa-map-marker-alt"></i> Adresse</th>
+                            <th class="col-geolocalisation"><i class="fas fa-map"></i> Géolocalisation</th>
+                            <th class="col-envoi-courrier"><i class="fas fa-envelope"></i> Envoi courrier</th>
+                            <th class="col-deja-contacte"><i class="fas fa-phone"></i> Déjà contacté ?</th>
                         </tr>
                     </thead>
                     <tbody id="results-tbody">
@@ -396,27 +413,28 @@ class SCI_Shortcodes {
                 </table>
             </div>
             
-            <!-- CONTRÔLES DE PAGINATION - HORS DE LA ZONE DES RÉSULTATS -->
-            <div id="pagination-controls" style="display: none; margin-top: 20px; text-align: center; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
-                <div class="pagination-main" style="display: flex; align-items: center; justify-content: center; gap: 15px;">
-                    <button id="prev-page" disabled style="padding: 10px 20px; font-size: 10px!important; font-weight: 500; border-radius: 5px; background: #fff!important; color: #000064!important; cursor: pointer; transition: all 0.2s ease;">Page précédente</button>
-                    <span id="page-info" style="background: #0073aa; color: white; padding: 8px 15px; border-radius: 4px; font-size: 14px; font-weight: 500;">1/1</span>
-                    <button id="next-page" disabled style="padding: 10px 20px; font-size: 10px!important; font-weight: 500; border-radius: 5px; background: #fff!important; color: #000064!important; cursor: pointer; transition: all 0.2s ease;">Page suivante</button>
+            <!-- ✅ CONTRÔLES DE PAGINATION - HORS DE LA ZONE DES RÉSULTATS -->
+            <div id="pagination-controls" class="pagination-controls d-none">
+                <div class="pagination-main">
+                    <button id="prev-page" class="pagination-btn" disabled><i class="fas fa-chevron-left"></i> Page précédente</button>
+                    <span id="page-info" class="page-info">1/1</span>
+                    <button id="next-page" class="pagination-btn" disabled>Page suivante <i class="fas fa-chevron-right"></i></button>
                 </div>
             </div>
             
-            <!-- CACHE DES DONNÉES - ÉVITE LES RECHARGEMENTS -->
-            <div id="data-cache" style="display: none;">
+            <!-- ✅ CACHE DES DONNÉES - ÉVITE LES RECHARGEMENTS -->
+            <div id="data-cache" class="d-none">
                 <span id="cached-title"></span>
                 <span id="cached-page"></span>
                 <span id="cached-total"></span>
             </div>
 
-            <!-- ZONE D'ERREUR -->
-            <div id="search-error" style="display: none;" class="sci-error">
-                <p id="error-message"></p>
+            <!-- ✅ ZONE D'ERREUR -->
+            <div id="search-error" class="alert alert-danger d-none">
+                <p id="error-message"><i class="fas fa-exclamation-circle"></i> <span id="error-text"></span></p>
             </div>
         </div>
+    </div>
         
         <!-- POPUP LETTRE -->
         <div id="letters-popup" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.6); z-index:10000; justify-content:center; align-items:center;">
@@ -882,7 +900,7 @@ class SCI_Shortcodes {
                 const mapsQuery = encodeURIComponent(`${result.adresse} ${result.code_postal} ${result.ville}`);
                 const mapsUrl = `https://www.google.com/maps/place/${mapsQuery}`;
                 row.innerHTML = `
-                    <td style="text-align: center !important;">
+                    <td>
                         <button class="fav-btn" 
                                 data-siren="${escapeHtml(result.siren)}"
                                 data-denomination="${escapeHtml(result.denomination)}"
@@ -890,34 +908,27 @@ class SCI_Shortcodes {
                                 data-adresse="${escapeHtml(result.adresse)}"
                                 data-ville="${escapeHtml(result.ville)}"
                                 data-code-postal="${escapeHtml(result.code_postal)}"
-                                aria-label="Ajouter aux favoris"
-                                style="font-size: 1.5rem; background: none; border: none; cursor: pointer; color: #ccc; transition: color 0.3s;">☆</button>
+                                aria-label="Ajouter aux favoris">☆</button>
                     </td>
-                    <td>${escapeHtml(result.denomination)}</td>
+                    <td>
+                        <div style="font-weight: 600; font-size: 14px; color: #333; margin-bottom: 2px;">${escapeHtml(result.denomination)}</div>
+                        <div style="font-size: 11px; color: #666; font-style: italic;">ID: ${escapeHtml(result.siren)}</div>
+                    </td>
                     <td>${escapeHtml(result.dirigeant)}</td>
-                    <td style="display: none;">${escapeHtml(result.siren)}</td>
-                    <td>${escapeHtml(result.adresse)}</td>
-                    <td>${escapeHtml(result.ville)}</td>
+                    <td>${escapeHtml(result.adresse)} ${escapeHtml(result.ville)}</td>
                     <td style="color: #0064A6 !important; text-align: center !important;">
                         <a href="${mapsUrl}" 
                            target="_blank" 
                            class="maps-link"
                            title="Localiser ${escapeHtml(result.denomination)} sur Google Maps" style="font-size: 14px !important;">
-                            Localiser
+                            <i class="fas fa-map-marker-alt"></i> Localiser
                         </a>
                     </td>
                     <td style="text-align: center !important;">
-                        <input type="checkbox" class="send-letter-checkbox"
-                            data-denomination="${escapeHtml(result.denomination)}"
-                            data-dirigeant="${escapeHtml(result.dirigeant)}"
-                            data-siren="${escapeHtml(result.siren)}"
-                            data-adresse="${escapeHtml(result.adresse)}"
-                            data-ville="${escapeHtml(result.ville)}"
-                            data-code-postal="${escapeHtml(result.code_postal)}"
-                        />
+                        <input type="checkbox" class="select-sci-checkbox" data-siren="${escapeHtml(result.siren)}" data-denomination="${escapeHtml(result.denomination)}">
                     </td>
                     <td style="text-align: center !important;">
-                        <span class="contact-status" data-siren="${escapeHtml(result.siren)}" style="display: none;">
+                        <span class="contact-status" data-siren="${escapeHtml(result.siren)}">
                             <span class="contact-status-icon"></span>
                             <span class="contact-status-text"></span>
                         </span>
