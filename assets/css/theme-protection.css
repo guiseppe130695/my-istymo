@@ -589,6 +589,10 @@ th.col-entreprise, th.col-dirigeant, th.col-adresse {
     text-align: left !important;
 }
 
+th.col-geolocalisation, th.col-envoi-courrier, th.col-deja-contacte {
+    text-align: center!important;
+}
+
 body .my-istymo .sci-panel .data-table th:nth-child(3),
 div.my-istymo .sci-panel .data-table th:nth-child(3),
 section.my-istymo .sci-panel .data-table th:nth-child(3) {
