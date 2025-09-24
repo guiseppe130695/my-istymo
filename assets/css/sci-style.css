@@ -40,7 +40,6 @@ form#sci-search-form {
     font-weight: 500 !important;
     color: #495057 !important;
     margin: 0 !important;
-    font-size: 0.95rem !important;
     white-space: nowrap !important;
     background: none !important;
     border: none !important;
@@ -55,7 +54,6 @@ form#sci-search-form {
     border: 2px solid #e9ecef !important;
     border-radius: 8px !important;
     margin: 0 !important;
-    font-size: 0.95rem !important;
     background: white !important;
     transition: all 0.2s ease !important;
 }
@@ -127,7 +125,6 @@ button#search-btn {
     font-weight: 500 !important;
     color: #495057 !important;
     margin: 0 !important;
-    font-size: 0.95rem !important;
     white-space: nowrap !important;
     background: none !important;
     border: none !important;
@@ -141,7 +138,6 @@ button#search-btn {
     border: 2px solid #e9ecef !important;
     border-radius: 8px !important;
     margin: 0 !important;
-    font-size: 0.95rem !important;
     background: white !important;
     transition: all 0.2s ease !important;
 }
@@ -168,7 +164,6 @@ button#search-btn {
     font-weight: 500 !important;
     color: #495057 !important;
     margin: 0 !important;
-    font-size: 0.65rem !important;
     white-space: nowrap !important;
     background: none !important;
     border: none !important;
@@ -183,7 +178,6 @@ button#search-btn {
     border: 2px solid #e9ecef !important;
     border-radius: 8px !important;
     margin: 0 !important;
-    font-size: 0.95rem !important;
     background: white !important;
     transition: all 0.2s ease !important;
 }
@@ -232,7 +226,6 @@ button.button-secondary,
     padding: 0.75rem 1.5rem !important;
     border-radius: 8px !important;
     cursor: pointer !important;
-    font-size: 0.95rem !important;
     font-weight: 500 !important;
     transition: all 0.2s ease !important;
     text-decoration: none !important;
@@ -308,7 +301,6 @@ button.fav-btn,
 .fav-btn {
     background: none !important;
     border: none !important;
-    font-size: 1.2rem !important;
     cursor: pointer !important;
     padding: 0.25rem !important;
     transition: all 0.2s ease !important;
@@ -330,7 +322,6 @@ button.fav-btn:hover,
     display: inline-block;
     padding: 0.25rem 0.5rem;
     border-radius: 4px;
-    font-size: 0.75rem;
     font-weight: 500;
     text-transform: uppercase;
 }
