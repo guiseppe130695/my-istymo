@@ -14,7 +14,7 @@ function unified_leads_admin_page($context = array()) {
     
     // Valeurs par défaut pour le contexte
     $default_context = array(
-        'title' => '📋 Gestion des Leads',
+        'title' => '',
         'show_filters' => true,
         'show_actions' => true,
         'per_page' => 20,
@@ -277,13 +277,33 @@ function unified_leads_admin_page($context = array()) {
                                                 $status_class = 'progress';
                                                 $status_text = 'En cours';
                                                 break;
+                                            case 'qualifie':
+                                                $status_class = 'completed';
+                                                $status_text = 'Qualifié';
+                                                break;
+                                            case 'proposition':
+                                                $status_class = 'warning';
+                                                $status_text = 'Proposition';
+                                                break;
+                                            case 'negociation':
+                                                $status_class = 'info';
+                                                $status_text = 'Négociation';
+                                                break;
+                                            case 'gagne':
+                                                $status_class = 'success';
+                                                $status_text = 'Gagné';
+                                                break;
+                                            case 'perdu':
+                                                $status_class = 'danger';
+                                                $status_text = 'Perdu';
+                                                break;
                                             case 'termine':
                                                 $status_class = 'completed';
                                                 $status_text = 'Terminé';
                                                 break;
                                             default:
                                                 $status_class = 'pending';
-                                                $status_text = 'Nouveau';
+                                                $status_text = ucfirst($lead->status);
                                         }
                                         ?>
                                         <span class="my-istymo-status-badge my-istymo-status-<?php echo $status_class; ?>">
@@ -292,18 +312,13 @@ function unified_leads_admin_page($context = array()) {
                                             </span>
                                     </td>
                                     <td class="my-istymo-td-actions">
-                                        <div class="my-istymo-actions-menu">
-                                            <button class="my-istymo-menu-trigger" data-lead-id="<?php echo $lead->id; ?>">
-                                                <span class="dashicons dashicons-ellipsis"></span>
+                                        <div class="my-istymo-actions-buttons">
+                                            <button class="my-istymo-action-btn view-lead" data-lead-id="<?php echo $lead->id; ?>" onclick="openLeadDetailModal(<?php echo $lead->id; ?>); return false;" title="Voir les détails">
+                                                <span class="dashicons dashicons-visibility"></span> Voir
                                             </button>
-                                            <div class="my-istymo-dropdown-menu">
-                                                <a href="#" class="view-lead" data-lead-id="<?php echo $lead->id; ?>" onclick="openLeadDetailModal(<?php echo $lead->id; ?>); return false;">
-                                                    <span class="dashicons dashicons-visibility"></span> Voir
-                                                </a>
-                                                <a href="#" class="delete-lead" data-lead-id="<?php echo $lead->id; ?>" onclick="if(confirm('Êtes-vous sûr de vouloir supprimer ce lead ?')) { deleteLead(<?php echo $lead->id; ?>); } return false;">
-                                                    <span class="dashicons dashicons-trash"></span> Supprimer
-                                                </a>
-                                            </div>
+                                            <button class="my-istymo-action-btn delete-lead" data-lead-id="<?php echo $lead->id; ?>" onclick="if(confirm('Êtes-vous sûr de vouloir supprimer ce lead ?')) { deleteLead(<?php echo $lead->id; ?>); } return false;" title="Supprimer">
+                                                <span class="dashicons dashicons-trash"></span> Supprimer
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -589,129 +604,10 @@ function unified_leads_admin_page($context = array()) {
             });
         }
         
-        // Gestion du survol pour ouvrir le menu
-        $('.my-istymo-actions-menu').on('mouseenter', function() {
-            clearTimeout(menuTimeout);
-            const menuContainer = $(this);
-            const menu = menuContainer.find('.my-istymo-dropdown-menu');
-            $('.my-istymo-dropdown-menu').not(menu).removeClass('show');
-            
-            // Prévention immédiate des scrollbars AVANT d'ouvrir le menu
-            preventScrollbars();
-            
-            // Positionner le menu intelligemment
-            positionMenu(menuContainer);
-            menu.addClass('show');
-            
-            // Double prévention après ouverture
-            setTimeout(function() {
-                preventScrollbars();
-            }, 10);
-        });
         
-        // Fonction pour restaurer les styles originaux des conteneurs
-        function restoreContainerStyles() {
-            // Restaurer les styles overflow originaux
-            $('.my-istymo [data-original-overflow-saved]').each(function() {
-                const $el = $(this);
-                $el.css({
-                    'overflow': $el.data('original-overflow'),
-                    'overflow-y': $el.data('original-overflow-y'),
-                    'overflow-x': $el.data('original-overflow-x')
-                });
-            });
-            
-            // Nettoyer les styles de position fixed des menus
-            $('.my-istymo-dropdown-menu').css({
-                position: '',
-                top: '',
-                left: '',
-                right: '',
-                bottom: '',
-                'z-index': ''
-            }).removeClass('menu-fixed');
-        }
         
-        // Gestion du survol pour fermer le menu
-        $('.my-istymo-actions-menu').on('mouseleave', function() {
-            const menu = $(this).find('.my-istymo-dropdown-menu');
-            menuTimeout = setTimeout(function() {
-                menu.removeClass('show');
-                // Restaurer les styles après un délai pour éviter les clignotements
-                setTimeout(restoreContainerStyles, 100);
-            }, 200); // Délai de 200ms pour éviter la fermeture trop rapide
-        });
         
-        // Gestion du clic pour ouvrir/fermer le menu
-        $('.my-istymo-menu-trigger').on('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const menuContainer = $(this).closest('.my-istymo-actions-menu');
-            const menu = $(this).siblings('.my-istymo-dropdown-menu');
-            const isVisible = menu.hasClass('show');
-            
-            // Fermer tous les autres menus
-            $('.my-istymo-dropdown-menu').removeClass('show');
-            
-            // Basculer l'état du menu actuel
-            if (!isVisible) {
-                // Prévention immédiate des scrollbars
-                preventScrollbars();
-                
-                // Positionner le menu intelligemment
-                positionMenu(menuContainer);
-                menu.addClass('show');
-                
-                // Double prévention après ouverture
-                setTimeout(function() {
-                    preventScrollbars();
-                }, 10);
-            }
-        });
         
-        // Fermer les menus en cliquant ailleurs
-        $(document).on('click', function(e) {
-            if (!$(e.target).closest('.my-istymo-actions-menu').length) {
-                $('.my-istymo-dropdown-menu').removeClass('show');
-                restoreContainerStyles();
-            }
-        });
-        
-        // Empêcher la fermeture du menu en cliquant dessus
-        $('.my-istymo-dropdown-menu').on('click', function(e) {
-            e.stopPropagation();
-        });
-        
-        // Fermer le menu après avoir cliqué sur une action
-        $('.my-istymo-dropdown-menu a').on('click', function() {
-            $(this).closest('.my-istymo-dropdown-menu').removeClass('show');
-            restoreContainerStyles();
-        });
-        
-        // Fermer les menus lors du scroll pour éviter les problèmes de positionnement
-        $(window).on('scroll resize', function() {
-            $('.my-istymo-dropdown-menu').removeClass('show');
-            restoreContainerStyles();
-        });
-        
-        // Observateur pour prévenir les scrollbars en temps réel
-        let scrollbarObserver = setInterval(function() {
-            if ($('.my-istymo-dropdown-menu.show').length > 0) {
-                // Un menu est ouvert, vérifier et corriger les scrollbars
-                $('.my-istymo *').each(function() {
-                    const el = this;
-                    if (el.scrollHeight > el.clientHeight && $(el).css('overflow-y') !== 'visible') {
-                        $(el).css('overflow-y', 'visible');
-                    }
-                });
-            }
-        }, 50); // Vérification toutes les 50ms quand un menu est ouvert
-        
-        // Initialisation : prévenir les scrollbars au chargement
-        $(document).ready(function() {
-            preventScrollbars();
-        });
         
         // Gestion de la sélection multiple
         $('.my-istymo-select-all').on('change', function() {
@@ -731,107 +627,9 @@ function unified_leads_admin_page($context = array()) {
         console.log('Modal element found:', jQuery('#lead-detail-modal').length > 0);
         console.log('Modal functions available:', typeof openLeadDetailModal === 'function');
         
-        // Gestion spécifique pour mobile
-        if (window.innerWidth <= 768) {
-            // Sur mobile, utiliser seulement le clic
-            $('.my-istymo-actions-menu').off('mouseenter mouseleave');
-            
-            $('.my-istymo-menu-trigger').on('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                const menu = $(this).siblings('.my-istymo-dropdown-menu');
-                const isVisible = menu.hasClass('show');
-                
-                // Fermer tous les autres menus
-                $('.my-istymo-dropdown-menu').removeClass('show');
-                
-                // Basculer l'état du menu actuel
-                if (!isVisible) {
-                    menu.addClass('show');
-                    
-                    // Positionner le menu correctement sur mobile
-                    const buttonRect = this.getBoundingClientRect();
-                    const menuElement = menu[0];
-                    
-                    // Calculer la position optimale
-                    let top = buttonRect.bottom + 5;
-                    let left = Math.max(10, buttonRect.left - 150 + buttonRect.width);
-                    
-                    // Vérifier si le menu dépasse en bas
-                    if (top + menuElement.offsetHeight > window.innerHeight - 20) {
-                        top = buttonRect.top - menuElement.offsetHeight - 5;
-                    }
-                    
-                    // Vérifier si le menu dépasse à gauche
-                    if (left < 10) {
-                        left = 10;
-                    }
-                    
-                    menu.css({
-                        position: 'fixed',
-                        top: top + 'px',
-                        left: left + 'px',
-                        right: 'auto'
-                    });
-                }
-            });
-        }
     });
     
-    // Fonction pour ouvrir le modal de détail d'un lead
-    function openLeadDetailModal(leadId) {
-        console.log('Opening modal for lead ID:', leadId); // Debug
-        
-        // Afficher le modal
-        const modal = jQuery('#lead-detail-modal');
-        console.log('Modal element exists:', modal.length);
-        
-        modal.removeClass('my-istymo-hidden').addClass('my-istymo-show');
-        modal.show();
-        console.log('Modal display set to block');
-        
-        // Charger les détails via AJAX
-        jQuery.ajax({
-            url: unifiedLeadsAjax.ajaxurl,
-            type: 'POST',
-            data: {
-                action: 'my_istymo_get_lead_details',
-                lead_id: leadId,
-                nonce: unifiedLeadsAjax.nonce
-            },
-            beforeSend: function() {
-                jQuery('#lead-detail-content').html('<div style="text-align: center; padding: 20px;"><p><span class="dashicons dashicons-update" style="animation: spin 1s linear infinite; margin-right: 8px;"></span>Chargement des détails...</p></div>');
-            },
-            success: function(response) {
-                console.log('AJAX Response:', response); // Debug
-                if (response && response.success) {
-                    // Mettre à jour le titre du modal
-                    jQuery('#lead-modal-title').text('Lead #' + leadId + ' - ' + (response.data.lead_type || 'Détails').toUpperCase());
-                    
-                    // Générer le contenu HTML moderne
-                    var leadData = response.data;
-                    console.log('Lead Data:', leadData); // Debug des données
-                    var htmlContent = generateModernLeadDetailHTML(leadData);
-                    
-                    // Charger le contenu
-                    jQuery('#lead-detail-content').html(htmlContent);
-                    
-                    // Afficher le bouton modifier
-                    jQuery('#edit-lead-btn').show();
-                    
-                    // Initialiser le formulaire d'édition après le chargement
-                    initLeadEditForm();
-                } else {
-                    jQuery('#lead-detail-content').html('<div class="my-istymo-error-state"><p>❌ Erreur: ' + (response && response.data ? response.data : 'Impossible de charger les détails') + '</p></div>');
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('AJAX Error:', xhr, status, error);
-                jQuery('#lead-detail-content').html('<div style="color: red; padding: 20px;"><p>❌ Erreur de communication avec le serveur: ' + error + '</p></div>');
-            }
-        });
-    }
+    // Fonction openLeadDetailModal maintenant définie dans unified-leads-admin.js
     
     // Fonction pour fermer le modal de détail
     function closeLeadDetailModal() {

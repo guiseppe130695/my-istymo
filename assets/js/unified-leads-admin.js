@@ -7,6 +7,671 @@ jQuery(document).ready(function($) {
     // Variables globales
     let selectedLeads = [];
     
+    // ===== DÉFINITION DES FONCTIONS GLOBALES =====
+    
+    /**
+     * Fonction globale pour ouvrir le modal de détail d'un lead
+     * Cette fonction est appelée depuis les boutons HTML
+     */
+    function openLeadDetailModal(leadId) {
+        console.log('=== OUVERTURE MODAL LEAD ===');
+        console.log('Lead ID:', leadId);
+        console.log('Type de leadId:', typeof leadId);
+        
+        // Vérifications préliminaires
+        console.log('jQuery disponible:', typeof $ !== 'undefined');
+        console.log('unifiedLeadsAjax disponible:', typeof unifiedLeadsAjax !== 'undefined');
+        
+        if (typeof unifiedLeadsAjax !== 'undefined') {
+            console.log('AJAX URL:', unifiedLeadsAjax.ajaxurl);
+            console.log('Nonce:', unifiedLeadsAjax.nonce);
+        } else {
+            console.error('unifiedLeadsAjax non défini!');
+            console.log('Variables globales disponibles:', Object.keys(window).filter(k => k.includes('Ajax') || k.includes('ajax')));
+            alert('Erreur: Variables AJAX non disponibles. Vérifiez que le script est bien chargé.');
+            return;
+        }
+        
+        // Vérifier le modal
+        const modal = $('#lead-detail-modal');
+        console.log('Modal trouvé:', modal.length > 0);
+        
+        if (modal.length === 0) {
+            console.error('Modal #lead-detail-modal non trouvé dans le DOM');
+            console.log('Modals disponibles:', $('[id*="modal"]').map(function() { return this.id; }).get());
+            alert('Erreur: Modal non trouvé. Le template modal n\'est peut-être pas chargé.');
+            return;
+        }
+        
+        // Afficher le modal
+        modal.removeClass('my-istymo-hidden').addClass('my-istymo-show');
+        modal.show();
+        console.log('Modal affiché');
+        
+        // Test AJAX simple d'abord
+        console.log('=== DÉBUT REQUÊTE AJAX ===');
+        
+        $.ajax({
+            url: unifiedLeadsAjax.ajaxurl,
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                action: 'my_istymo_get_lead_details',
+                lead_id: leadId,
+                nonce: unifiedLeadsAjax.nonce
+            },
+            beforeSend: function(xhr) {
+                console.log('Envoi de la requête...');
+                console.log('URL:', unifiedLeadsAjax.ajaxurl);
+                console.log('Data:', {
+                    action: 'my_istymo_get_lead_details',
+                    lead_id: leadId,
+                    nonce: unifiedLeadsAjax.nonce
+                });
+                
+                $('#lead-detail-content').html('<div style="text-align: center; padding: 20px;"><p><span class="dashicons dashicons-update" style="animation: spin 1s linear infinite; margin-right: 8px;"></span>Chargement des détails...</p></div>');
+            },
+            success: function(response, textStatus, xhr) {
+                console.log('=== RÉPONSE AJAX REÇUE ===');
+                console.log('Status:', textStatus);
+                console.log('Response:', response);
+                console.log('Type de response:', typeof response);
+                
+                if (response && response.success) {
+                    console.log('✅ Succès - Données reçues:', response.data);
+                    
+                    // Mettre à jour le titre du modal
+                    var leadType = response.data.lead_type || 'lead';
+                    var typeIcon = leadType === 'sci' ? '<i class="fas fa-building"></i>' : '<i class="fas fa-home"></i>';
+                    $('#lead-modal-title').html(typeIcon + ' Lead #' + leadId + ' - ' + leadType.toUpperCase());
+                    
+                    // Mettre à jour la date de création dans l'en-tête
+                    var creationDate = response.data.date_creation || response.data.created_at || response.data.date_ajout || response.data.timestamp;
+                    if (creationDate) {
+                        $('#lead-creation-date').text('Créé le ' + formatDate(creationDate));
+                    } else {
+                        $('#lead-creation-date').text('Date de création non disponible');
+                    }
+                    
+                    // Générer le contenu HTML moderne
+                    var htmlContent = generateModernLeadHTML(response.data);
+                    
+                    // Charger le contenu
+                    $('#lead-detail-content').html(htmlContent);
+                    
+                } else {
+                    console.log('❌ Échec - Message:', response ? response.data : 'Pas de réponse');
+                    $('#lead-detail-content').html('<div style="color: red; padding: 20px;"><p>❌ Erreur: ' + (response && response.data ? response.data : 'Impossible de charger les détails') + '</p></div>');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.log('=== ERREUR AJAX ===');
+                console.error('Status:', status);
+                console.error('Error:', error);
+                console.error('XHR Status:', xhr.status);
+                console.error('XHR StatusText:', xhr.statusText);
+                console.error('Response Text:', xhr.responseText);
+                console.error('Content-Type:', xhr.getResponseHeader('Content-Type'));
+                
+                var errorMsg = '<div style="color: red; padding: 20px; font-family: monospace;">';
+                errorMsg += '<h4>❌ Erreur de communication avec le serveur</h4>';
+                errorMsg += '<p><strong>Status HTTP:</strong> ' + xhr.status + ' ' + xhr.statusText + '</p>';
+                errorMsg += '<p><strong>Status AJAX:</strong> ' + status + '</p>';
+                errorMsg += '<p><strong>Error:</strong> ' + error + '</p>';
+                errorMsg += '<p><strong>URL:</strong> ' + unifiedLeadsAjax.ajaxurl + '</p>';
+                
+                if (xhr.responseText) {
+                    errorMsg += '<details style="margin-top: 10px;"><summary>Réponse serveur complète</summary>';
+                    errorMsg += '<pre style="background: #f0f0f0; padding: 10px; white-space: pre-wrap; max-height: 300px; overflow: auto;">' + xhr.responseText + '</pre>';
+                    errorMsg += '</details>';
+                }
+                
+                errorMsg += '</div>';
+                
+                $('#lead-detail-content').html(errorMsg);
+            }
+        });
+    }
+    
+    /**
+     * Fonction globale pour fermer le modal de détail
+     */
+    function closeLeadDetailModal() {
+        console.log('Fermeture du modal');
+        const modal = $('#lead-detail-modal');
+        modal.removeClass('my-istymo-show').addClass('my-istymo-hidden');
+        modal.hide();
+    }
+    
+    /**
+     * Fonction globale pour supprimer un lead
+     */
+    function deleteLead(leadId) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer ce lead ?')) {
+            console.log('Deleting lead ID:', leadId);
+            
+            // Vérifier que les variables AJAX sont disponibles
+            if (typeof unifiedLeadsAjax === 'undefined') {
+                console.error('unifiedLeadsAjax not defined');
+                alert('Erreur: Variables AJAX non disponibles');
+                return;
+            }
+            
+            $.ajax({
+                url: unifiedLeadsAjax.ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'delete_unified_lead',
+                    lead_id: leadId,
+                    nonce: unifiedLeadsAjax.nonce
+                },
+                beforeSend: function() {
+                    // Désactiver le bouton pendant la suppression
+                    $('.delete-lead[data-lead-id="' + leadId + '"]').prop('disabled', true);
+                },
+                success: function(response) {
+                    console.log('Delete Response:', response);
+                    if (response && response.success) {
+                        // Supprimer la ligne du tableau
+                        $('tr[data-lead-id="' + leadId + '"]').fadeOut(300, function() {
+                            $(this).remove();
+                        });
+                        
+                        // Afficher un message de succès
+                        showNotification('Lead supprimé avec succès', 'success');
+                    } else {
+                        alert('Erreur lors de la suppression: ' + (response && response.data ? response.data : 'Erreur inconnue'));
+                        $('.delete-lead[data-lead-id="' + leadId + '"]').prop('disabled', false);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Delete Error:', xhr, status, error);
+                    alert('Erreur de communication avec le serveur: ' + error);
+                    $('.delete-lead[data-lead-id="' + leadId + '"]').prop('disabled', false);
+                }
+            });
+        }
+    }
+    
+    /**
+     * Fonction de test de connexion AJAX
+     */
+    function testAjaxConnection() {
+        console.log('=== TEST CONNEXION AJAX ===');
+        
+        if (typeof unifiedLeadsAjax === 'undefined') {
+            console.error('unifiedLeadsAjax non disponible');
+            alert('Variables AJAX non disponibles');
+            return;
+        }
+        
+        $.ajax({
+            url: unifiedLeadsAjax.ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'my_istymo_test_ajax',
+                nonce: unifiedLeadsAjax.nonce
+            },
+            success: function(response) {
+                console.log('✅ Test AJAX réussi:', response);
+                alert('Test AJAX réussi! Vérifiez la console pour les détails.');
+            },
+            error: function(xhr, status, error) {
+                console.error('❌ Test AJAX échoué:', status, error);
+                console.error('Response:', xhr.responseText);
+                alert('Test AJAX échoué. Vérifiez la console pour les détails.');
+            }
+        });
+    }
+    
+    /**
+     * Génère le HTML moderne pour l'affichage des détails d'un lead
+     */
+    function generateModernLeadHTML(leadData) {
+        
+        var html = '';
+        
+        // En-tête avec informations principales
+        html += '<div class="my-istymo-lead-header">';
+        html += '<div class="my-istymo-lead-status-row">';
+        
+        // Statut avec édition inline
+        html += '<div class="my-istymo-status-item">';
+        html += '<label>Statut</label>';
+        html += '<select class="my-istymo-status-select" data-field="status" data-lead-id="' + leadData.id + '">';
+        var statuses = ['nouveau', 'en_cours', 'qualifie', 'proposition', 'negociation', 'gagne', 'perdu'];
+        var statusLabels = {
+            'nouveau': '<i class="fas fa-plus-circle"></i> Nouveau',
+            'en_cours': '<i class="fas fa-spinner"></i> En cours',
+            'qualifie': '<i class="fas fa-check-circle"></i> Qualifié',
+            'proposition': '<i class="fas fa-file-alt"></i> Proposition',
+            'negociation': '<i class="fas fa-handshake"></i> Négociation',
+            'gagne': '<i class="fas fa-trophy"></i> Gagné',
+            'perdu': '<i class="fas fa-times-circle"></i> Perdu'
+        };
+        statuses.forEach(function(status) {
+            html += '<option value="' + status + '"' + (leadData.status === status ? ' selected' : '') + '>';
+            html += statusLabels[status] || status;
+            html += '</option>';
+        });
+        html += '</select>';
+        html += '</div>';
+        
+        // Priorité avec édition inline
+        html += '<div class="my-istymo-status-item">';
+        html += '<label>Priorité</label>';
+        html += '<select class="my-istymo-priority-select" data-field="priorite" data-lead-id="' + leadData.id + '">';
+        var priorities = ['basse', 'normale', 'haute'];
+        var priorityLabels = {
+            'basse': '<i class="fas fa-arrow-down text-info"></i> Basse',
+            'normale': '<i class="fas fa-minus text-warning"></i> Normale',
+            'haute': '<i class="fas fa-arrow-up text-danger"></i> Haute'
+        };
+        priorities.forEach(function(priority) {
+            html += '<option value="' + priority + '"' + (leadData.priorite === priority ? ' selected' : '') + '>';
+            html += priorityLabels[priority] || priority;
+            html += '</option>';
+        });
+        html += '</select>';
+        html += '</div>';
+        
+        
+        html += '</div>'; // Fin status-row
+        html += '</div>'; // Fin header
+        
+        // Corps principal avec deux colonnes alignées
+        html += '<div class="my-istymo-lead-body">';
+        
+        // Colonne gauche - Informations du lead
+        html += '<div class="my-istymo-lead-left">';
+        html += '<div class="my-istymo-info-card">';
+        html += '<h4 class="my-istymo-card-title">';
+        html += '<i class="fas fa-info-circle"></i> ';
+        html += 'Informations ' + (leadData.lead_type === 'sci' ? 'SCI' : 'DPE');
+        html += '</h4>';
+        
+        // Afficher les données originales selon le type
+        if (leadData.data_originale) {
+            var originalData = typeof leadData.data_originale === 'string' ? 
+                JSON.parse(leadData.data_originale) : leadData.data_originale;
+            
+            if (leadData.lead_type === 'sci') {
+                html += generateSCIInfo(originalData);
+            } else {
+                html += generateDPEInfo(originalData);
+            }
+        }
+        
+        html += '</div>'; // Fin info-card
+        html += '</div>'; // Fin colonne gauche
+        
+        // Colonne droite - Notes et actions
+        html += '<div class="my-istymo-lead-right">';
+        
+        // Notes éditables
+        html += '<div class="my-istymo-notes-card">';
+        html += '<h4 class="my-istymo-card-title">';
+        html += '<i class="fas fa-sticky-note"></i> Notes';
+        html += '</h4>';
+        html += '<textarea class="my-istymo-notes-textarea" data-lead-id="' + leadData.id + '" ';
+        html += 'placeholder="Ajouter des notes sur ce lead..." rows="8">';
+        html += (leadData.notes || '');
+        html += '</textarea>';
+        html += '</div>';
+        
+        html += '</div>'; // Fin colonne droite
+        html += '</div>'; // Fin corps
+        
+        
+        return html;
+    }
+    
+    /**
+     * Génère les informations SCI
+     */
+    function generateSCIInfo(data) {
+        var html = '<div class="my-istymo-sci-info">';
+        
+        // Dénomination
+        if (data.denomination || data.nom_entreprise) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-building"></i> Dénomination</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data.denomination || data.nom_entreprise) + '</span>';
+            html += '</div>';
+        }
+        
+        // SIREN
+        if (data.siren) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-hashtag"></i> SIREN</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data.siren) + '</span>';
+            html += '</div>';
+        }
+        
+        // Dirigeant
+        if (data.dirigeant || data.representant) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-user-tie"></i> Dirigeant</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data.dirigeant || data.representant) + '</span>';
+            html += '</div>';
+        }
+        
+        // Adresse complète
+        if (data.adresse || data.adresse_complete) {
+            var adresse = data.adresse || data.adresse_complete;
+            var ville = '';
+            if (data.ville) {
+                ville = ', ' + data.ville;
+            }
+            if (data.code_postal) {
+                ville += ' ' + data.code_postal;
+            }
+            
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-map-marker-alt"></i> Adresse</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(adresse + ville) + '</span>';
+            html += '</div>';
+        }
+        
+        // Statut juridique
+        if (data.forme_juridique || data.statut) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-gavel"></i> Statut Juridique</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data.forme_juridique || data.statut) + '</span>';
+            html += '</div>';
+        }
+        
+        // Capital social
+        if (data.capital_social) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-euro-sign"></i> Capital Social</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data.capital_social) + ' €</span>';
+            html += '</div>';
+        }
+        
+        // Date de création
+        if (data.date_creation_entreprise || data.date_immatriculation) {
+            var dateCreation = data.date_creation_entreprise || data.date_immatriculation;
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-calendar-alt"></i> Date de Création</span>';
+            html += '<span class="my-istymo-info-value">' + formatDate(dateCreation) + '</span>';
+            html += '</div>';
+        }
+        
+        // Activité principale
+        if (data.activite_principale || data.secteur_activite) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-briefcase"></i> Activité</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data.activite_principale || data.secteur_activite) + '</span>';
+            html += '</div>';
+        }
+        
+        html += '</div>';
+        return html;
+    }
+    
+    /**
+     * Génère les informations DPE
+     */
+    function generateDPEInfo(data) {
+        var html = '<div class="my-istymo-dpe-info">';
+        
+        // DPE ID
+        if (data.dpe_id || data.numero_dpe || data.id_dpe) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-hashtag"></i> DPE ID</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data.dpe_id || data.numero_dpe || data.id_dpe) + '</span>';
+            html += '</div>';
+        }
+        
+        // Adresse
+        if (data.adresse_ban || data.adresse) {
+            var adresse = data.adresse_ban || data.adresse;
+            var ville = '';
+            if (data.nom_commune_ban || data.ville) {
+                ville = ', ' + (data.nom_commune_ban || data.ville);
+            }
+            if (data.code_postal_ban || data.code_postal) {
+                ville += ' ' + (data.code_postal_ban || data.code_postal);
+            }
+            
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-map-marker-alt"></i> Adresse</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(adresse + ville) + '</span>';
+            html += '</div>';
+        }
+        
+        // Surface
+        if (data.surface_habitable_logement) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-ruler-combined"></i> Surface</span>';
+            html += '<span class="my-istymo-info-value">' + data.surface_habitable_logement + ' m²</span>';
+            html += '</div>';
+        }
+        
+        // Type Bâtiment
+        if (data.type_batiment) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-building"></i> Type Bâtiment</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data.type_batiment) + '</span>';
+            html += '</div>';
+        }
+        
+        // Étiquette DPE
+        if (data.etiquette_dpe) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-bolt"></i> Étiquette DPE</span>';
+            html += '<span class="my-istymo-dpe-badge dpe-' + data.etiquette_dpe.toLowerCase() + '">';
+            html += escapeHtml(data.etiquette_dpe);
+            html += '</span>';
+            html += '</div>';
+        }
+        
+        // Date DPE
+        if (data.date_etablissement_dpe || data.date_dpe) {
+            var dateDpe = data.date_etablissement_dpe || data.date_dpe;
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-calendar-alt"></i> Date DPE</span>';
+            html += '<span class="my-istymo-info-value">' + formatDate(dateDpe) + '</span>';
+            html += '</div>';
+        }
+        
+        // Année de construction
+        if (data.annee_construction && data.annee_construction !== '0') {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-calendar-alt"></i> Année Construction</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data.annee_construction) + '</span>';
+            html += '</div>';
+        }
+        
+        // Consommation énergétique
+        if (data.conso_energie_primaire_logement) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-fire"></i> Consommation</span>';
+            html += '<span class="my-istymo-info-value">' + data.conso_energie_primaire_logement + ' kWh/m²/an</span>';
+            html += '</div>';
+        }
+        
+        // Émissions GES
+        if (data.emission_ges_logement) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-leaf"></i> Émissions GES</span>';
+            html += '<span class="my-istymo-info-value">' + data.emission_ges_logement + ' kg CO2/m²/an</span>';
+            html += '</div>';
+        }
+        
+        // Bouton pour voir les détails du DPE
+        html += '<div class="my-istymo-info-row my-istymo-dpe-action">';
+        html += '<button type="button" class="my-istymo-btn-dpe-details" onclick="viewDPEDetails(\'' + (data.dpe_id || data.numero_dpe || data.id_dpe || '') + '\')">';
+        html += '<i class="fas fa-eye"></i> Voir les détails du DPE';
+        html += '</button>';
+        html += '</div>';
+        
+        html += '</div>';
+        return html;
+    }
+    
+    /**
+     * Fonctions utilitaires
+     */
+    function formatDate(dateString) {
+        if (!dateString) return 'N/A';
+        try {
+            var date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch (e) {
+            return dateString;
+        }
+    }
+    
+    function escapeHtml(text) {
+        if (!text) return '';
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    /**
+     * Sauvegarde les modifications depuis l'en-tête
+     */
+    window.saveLeadChangesFromHeader = function() {
+        // Récupérer l'ID du lead depuis le titre du modal ou depuis les selects
+        var modalTitle = $('#lead-modal-title').text();
+        var leadIdFromTitle = modalTitle.match(/Lead #(\d+)/);
+        
+        var leadId = null;
+        if (leadIdFromTitle && leadIdFromTitle[1]) {
+            leadId = leadIdFromTitle[1];
+        } else {
+            // Fallback : récupérer depuis les data-lead-id des selects
+            var statusSelect = $('.my-istymo-status-select[data-lead-id]');
+            if (statusSelect.length > 0) {
+                leadId = statusSelect.attr('data-lead-id');
+            }
+        }
+        
+        if (leadId) {
+            saveLeadChanges(leadId);
+        } else {
+            showNotification('Impossible de déterminer l\'ID du lead', 'error');
+        }
+    };
+    
+    /**
+     * Sauvegarde les modifications du lead
+     */
+    window.saveLeadChanges = function(leadId) {
+        var status = $('.my-istymo-status-select[data-lead-id="' + leadId + '"]').val();
+        var priorite = $('.my-istymo-priority-select[data-lead-id="' + leadId + '"]').val();
+        var notes = $('.my-istymo-notes-textarea[data-lead-id="' + leadId + '"]').val();
+        
+        
+        var ajaxData = {
+            action: 'my_istymo_update_lead_from_modal',
+            lead_id: leadId,
+            status: status,
+            priorite: priorite,
+            notes: notes,
+            nonce: unifiedLeadsAjax.nonce
+        };
+        
+        
+        $.ajax({
+            url: unifiedLeadsAjax.ajaxurl,
+            type: 'POST',
+            data: ajaxData,
+            beforeSend: function() {
+                // Désactiver le bouton de sauvegarde dans l'en-tête
+                $('#save-lead-header-btn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Sauvegarde...');
+            },
+            success: function(response) {
+                if (response && response.success) {
+                    // Fermer le modal
+                    closeLeadDetailModal();
+                    
+                    // Une seule notification combinée
+                    showNotification('Modifications sauvegardées avec succès !', 'success');
+                    
+                    // Recharger immédiatement avec un paramètre pour éviter le cache
+                    setTimeout(function() {
+                        // Ajouter un paramètre timestamp pour éviter le cache
+                        var currentUrl = window.location.href;
+                        var separator = currentUrl.includes('?') ? '&' : '?';
+                        var newUrl = currentUrl + separator + 'refresh=' + Date.now();
+                        window.location.href = newUrl;
+                    }, 1000);
+                } else {
+                    showNotification('Erreur lors de la sauvegarde: ' + (response.data || 'Erreur inconnue'), 'error');
+                }
+            },
+            error: function(xhr, status, error) {
+                showNotification('Erreur de communication avec le serveur', 'error');
+            },
+            complete: function() {
+                // Réactiver le bouton de sauvegarde dans l'en-tête
+                $('#save-lead-header-btn').prop('disabled', false).html('<i class="fas fa-save"></i> Sauvegarder');
+            }
+        });
+    };
+    
+    /**
+     * Affiche les détails du DPE dans un nouvel onglet
+     */
+    window.viewDPEDetails = function(dpeId) {
+        if (!dpeId || dpeId === 'null' || dpeId === '') {
+            showNotification('ID DPE non disponible', 'error');
+            return;
+        }
+        
+        
+        // URL vers l'observatoire DPE ou autre service
+        var dpeUrl = 'https://www.observatoire-dpe.fr/dpe/' + encodeURIComponent(dpeId);
+        
+        // Ouvrir dans un nouvel onglet
+        window.open(dpeUrl, '_blank');
+        
+        showNotification('Ouverture des détails DPE dans un nouvel onglet', 'info');
+    };
+    
+    /**
+     * Met à jour le lead dans le tableau après sauvegarde
+     */
+    function updateLeadInTable(leadId, status, priorite, notes) {
+        // Fonction désactivée - le rechargement automatique gère la mise à jour
+        return;
+    }
+    
+    /**
+     * Affiche une notification ultra simple
+     */
+    function showNotification(message, type) {
+        // Supprimer les notifications existantes
+        $('.my-istymo-notification').remove();
+        
+        // Créer et afficher la notification
+        var notification = $('<div class="my-istymo-notification ' + type + '">' + message + '</div>');
+        $('body').append(notification);
+        notification.show();
+        
+        // Supprimer après 2 secondes
+        setTimeout(function() {
+            notification.remove();
+        }, 2000);
+    }
+    
+    
+    // Assigner les fonctions aux variables globales
+    window.openLeadDetailModal = openLeadDetailModal;
+    window.closeLeadDetailModal = closeLeadDetailModal;
+    window.deleteLead = deleteLead;
+    window.testAjaxConnection = testAjaxConnection;
+    
     // Initialisation
     initLeadManagement();
     
@@ -188,11 +853,11 @@ jQuery(document).ready(function($) {
             editLead(leadId);
         });
         
-        // Voir un lead
+        // Voir un lead - utiliser directement openLeadDetailModal
         $(document).on('click', '.view-lead', function(e) {
             e.preventDefault();
             const leadId = $(this).data('lead-id');
-            viewLead(leadId);
+            openLeadDetailModal(leadId);
         });
         
         // Supprimer un lead
@@ -269,61 +934,7 @@ jQuery(document).ready(function($) {
         });
     }
     
-    /**
-     * Affiche les détails d'un lead
-     */
-    function viewLead(leadId) {
-        console.log(' Affichage des détails du lead:', leadId);
-        
-        // Utiliser le nouveau système de modal si disponible
-        if (window.leadActionsManager && typeof window.leadActionsManager.getLeadDetails === 'function') {
-            window.leadActionsManager.getLeadDetails(leadId);
-            return;
-        }
-        
-        // Fallback vers l'ancien système si le nouveau n'est pas disponible
-        $.ajax({
-            url: unifiedLeadsAjax.ajaxurl,
-            type: 'POST',
-            data: {
-                action: 'dummy_action',
-                lead_id: leadId,
-                nonce: unifiedLeadsAjax.nonce
-            },
-            success: function(response) {
-                console.log('Réponse des détails:', response);
-                
-                if (response.success) {
-                    // Créer un modal temporaire pour afficher les détails
-                    const modalHtml = `
-                        <!-- Modal supprimé -->
-                            <div class="my-istymo-modal-content" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
-                                <div class="my-istymo-modal-header">
-                                    <h3>Détails du Lead #${leadId}</h3>
-                                    <button type="button" class="my-istymo-modal-close" onclick="closeLeadDetailModal()">
-                                        <span class="dashicons dashicons-no-alt"></span>
-                                    </button>
-                                </div>
-                                <div class="my-istymo-modal-body">
-                                    ${response.data}
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    
-                    // Ajouter le modal au body
-                    $('body').append(modalHtml);
-                } else {
-                    console.error(' Erreur lors du chargement des détails:', response.data);
-                    alert('Erreur lors du chargement des détails : ' + (response.data || 'Erreur inconnue'));
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error(' Erreur AJAX:', {xhr: xhr, status: status, error: error});
-                alert('Erreur lors de la communication avec le serveur');
-            }
-        });
-    }
+    // Ancienne fonction viewLead supprimée - remplacée par openLeadDetailModal
     
     /**
      *  PHASE 3 : Ajoute une action à un lead
@@ -773,5 +1384,38 @@ jQuery(document).ready(function($) {
     }
     
     initLazyLoading();
+    
+    /**
+     * Fonction de test de connexion AJAX
+     */
+    function testAjaxConnection() {
+        console.log('=== TEST CONNEXION AJAX ===');
+        
+        if (typeof unifiedLeadsAjax === 'undefined') {
+            console.error('unifiedLeadsAjax non disponible');
+            alert('Variables AJAX non disponibles');
+            return;
+        }
+        
+        $.ajax({
+            url: unifiedLeadsAjax.ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'my_istymo_test_ajax',
+                nonce: unifiedLeadsAjax.nonce
+            },
+            success: function(response) {
+                console.log('✅ Test AJAX réussi:', response);
+                alert('Test AJAX réussi! Vérifiez la console pour les détails.');
+            },
+            error: function(xhr, status, error) {
+                console.error('❌ Test AJAX échoué:', status, error);
+                console.error('Response:', xhr.responseText);
+                alert('Test AJAX échoué. Vérifiez la console pour les détails.');
+            }
+        });
+    }
+    
+    // Fonctions supprimées - déjà définies plus haut
     
 });

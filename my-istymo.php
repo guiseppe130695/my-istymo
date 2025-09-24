@@ -1186,6 +1186,16 @@ add_action('wp_ajax_my_istymo_delete_lead_action', 'my_istymo_ajax_delete_lead_a
 add_action('wp_ajax_my_istymo_get_lead_action', 'my_istymo_ajax_get_lead_action');
 add_action('wp_ajax_my_istymo_change_lead_status', 'my_istymo_ajax_change_lead_status');
 add_action('wp_ajax_my_istymo_get_lead_details', 'my_istymo_ajax_get_lead_details');
+add_action('wp_ajax_nopriv_my_istymo_get_lead_details', 'my_istymo_ajax_get_lead_details');
+
+// Action de test pour vérifier la connectivité AJAX
+add_action('wp_ajax_my_istymo_test_ajax', 'my_istymo_ajax_test');
+add_action('wp_ajax_nopriv_my_istymo_test_ajax', 'my_istymo_ajax_test');
+
+function my_istymo_ajax_test() {
+    error_log('=== TEST AJAX APPELÉ ===');
+    wp_send_json_success(['message' => 'Test AJAX réussi!', 'timestamp' => current_time('mysql')]);
+}
 // Hooks AJAX supprimés - fonctionnalité simplifiée
 add_action('wp_ajax_my_istymo_validate_workflow_transition', 'my_istymo_ajax_validate_workflow_transition');
 add_action('wp_ajax_my_istymo_get_workflow_transitions', 'my_istymo_ajax_get_workflow_transitions');
@@ -1195,6 +1205,7 @@ add_action('wp_ajax_my_istymo_get_workflow_step_info', 'my_istymo_ajax_get_workf
 // ✅ NOUVEAU : Handlers AJAX pour l'édition des leads
 add_action('wp_ajax_my_istymo_update_lead', 'my_istymo_ajax_update_lead');
 add_action('wp_ajax_my_istymo_update_lead_from_modal', 'my_istymo_ajax_update_lead_from_modal');
+add_action('wp_ajax_nopriv_my_istymo_update_lead_from_modal', 'my_istymo_ajax_update_lead_from_modal');
 
 // ✅ Fonction de mise à jour de lead
 function my_istymo_ajax_update_lead() {
@@ -1261,6 +1272,13 @@ function my_istymo_ajax_update_lead_from_modal() {
     if (is_wp_error($result)) {
         wp_send_json_error($result->get_error_message());
     } else {
+        // Invalider les caches WordPress pour forcer le rechargement des données
+        wp_cache_flush();
+        
+        // Invalider les caches d'objets spécifiques
+        wp_cache_delete('leads_user_' . get_current_user_id(), 'unified_leads');
+        wp_cache_delete('lead_' . $lead_id, 'unified_leads');
+        
         wp_send_json_success('Modifications sauvegardées avec succès');
     }
 }
@@ -1413,28 +1431,38 @@ function my_istymo_ajax_get_lead_details() {
     
     $lead_id = intval($_POST['lead_id']);
     
-    $leads_manager = Unified_Leads_Manager::get_instance();
-    $lead = $leads_manager->get_lead($lead_id);
-    
-    if (!$lead) {
-        wp_send_json_error('Lead introuvable');
+    if (!$lead_id) {
+        wp_send_json_error('ID du lead invalide');
+        return;
     }
     
-    // Préparer les données pour l'affichage (données brutes pour JavaScript)
-    $data = array(
-        'id' => $lead->id,
-        'lead_type' => $lead->lead_type,
-        'original_id' => $lead->original_id,
-        'status' => $lead->status,
-        'priorite' => $lead->priorite,
-        'notes' => $lead->notes,
-        'date_creation' => $lead->date_creation,
-        'date_modification' => $lead->date_modification,
-        'data_originale' => $lead->data_originale
-    );
-    
-    // Retourner les données brutes pour que JavaScript puisse générer le HTML moderne
-    wp_send_json_success($data);
+    try {
+        $leads_manager = Unified_Leads_Manager::get_instance();
+        $lead = $leads_manager->get_lead($lead_id);
+        
+        if (!$lead) {
+            wp_send_json_error('Lead introuvable');
+            return;
+        }
+        
+        // Préparer les données pour l'affichage
+        $data = array(
+            'id' => $lead->id,
+            'lead_type' => $lead->lead_type,
+            'original_id' => $lead->original_id,
+            'status' => $lead->status,
+            'priorite' => $lead->priorite,
+            'notes' => $lead->notes,
+            'date_creation' => $lead->date_creation,
+            'date_modification' => $lead->date_modification,
+            'data_originale' => $lead->data_originale
+        );
+        
+        wp_send_json_success($data);
+        
+    } catch (Exception $e) {
+        wp_send_json_error('Erreur serveur: ' . $e->getMessage());
+    }
 }
 
 // Fonction AJAX supprimée - fonctionnalité simplifiée
@@ -1949,7 +1977,7 @@ function my_istymo_leads_shortcode($atts) {
     }
     
     $atts = shortcode_atts(array(
-        'title' => '📋 Gestion des Leads',
+        'title' => '',
         'show_filters' => 'true',
         'show_actions' => 'true',
         'per_page' => 20

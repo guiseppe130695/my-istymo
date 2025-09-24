@@ -157,17 +157,12 @@ function unified_table_component($config = array(), $data = array(), $context = 
                                     
                                     <?php if ($config['show_actions']): ?>
                                     <td class="my-istymo-td-actions">
-                                        <div class="my-istymo-actions-menu">
-                                            <button class="my-istymo-menu-trigger" data-item-id="<?php echo esc_attr($item->id ?? $item['id'] ?? ''); ?>">
-                                                <span class="dashicons dashicons-ellipsis"></span>
+                                        <div class="my-istymo-actions-buttons">
+                                            <?php foreach ($config['actions'] as $action_key => $action_config): ?>
+                                            <button class="my-istymo-action-btn <?php echo esc_attr($action_key); ?>" data-item-id="<?php echo esc_attr($item->id ?? $item['id'] ?? ''); ?>" onclick="<?php echo esc_attr($action_config['onclick'] ?? ''); ?> return false;" title="<?php echo esc_attr($action_config['label']); ?>">
+                                                <span class="dashicons dashicons-<?php echo esc_attr($action_config['icon'] ?? 'admin-generic'); ?>"></span> <?php echo esc_html($action_config['label']); ?>
                                             </button>
-                                            <div class="my-istymo-dropdown-menu">
-                                                <?php foreach ($config['actions'] as $action_key => $action_config): ?>
-                                                <a href="#" class="<?php echo esc_attr($action_key); ?>" data-item-id="<?php echo esc_attr($item->id ?? $item['id'] ?? ''); ?>" onclick="<?php echo esc_attr($action_config['onclick'] ?? ''); ?> return false;">
-                                                    <span class="dashicons dashicons-<?php echo esc_attr($action_config['icon'] ?? 'admin-generic'); ?>"></span> <?php echo esc_html($action_config['label']); ?>
-                                                </a>
-                                                <?php endforeach; ?>
-                                            </div>
+                                            <?php endforeach; ?>
                                         </div>
                                     </td>
                                     <?php endif; ?>
@@ -332,65 +327,8 @@ function unified_table_component($config = array(), $data = array(), $context = 
             });
         }
         
-        // Gestion du survol pour ouvrir le menu
-        $('.my-istymo-actions-menu').on('mouseenter', function() {
-            clearTimeout(menuTimeout);
-            const menuContainer = $(this);
-            const menu = menuContainer.find('.my-istymo-dropdown-menu');
-            $('.my-istymo-dropdown-menu').not(menu).removeClass('show');
-            
-            positionMenu(menuContainer);
-            menu.addClass('show');
-        });
         
-        // Gestion du survol pour fermer le menu
-        $('.my-istymo-actions-menu').on('mouseleave', function() {
-            const menu = $(this).find('.my-istymo-dropdown-menu');
-            menuTimeout = setTimeout(function() {
-                menu.removeClass('show');
-            }, 200);
-        });
         
-        // Gestion du clic pour ouvrir/fermer le menu
-        $('.my-istymo-menu-trigger').on('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const menuContainer = $(this).closest('.my-istymo-actions-menu');
-            const menu = $(this).siblings('.my-istymo-dropdown-menu');
-            const isVisible = menu.hasClass('show');
-            
-            // Fermer tous les autres menus
-            $('.my-istymo-dropdown-menu').removeClass('show');
-            
-            // Basculer l'état du menu actuel
-            if (!isVisible) {
-                positionMenu(menuContainer);
-                menu.addClass('show');
-            }
-        });
-        
-        // Fermer les menus en cliquant ailleurs
-        $(document).on('click', function(e) {
-            if (!$(e.target).closest('.my-istymo-actions-menu').length) {
-                $('.my-istymo-dropdown-menu').removeClass('show');
-            }
-        });
-        
-        // Empêcher la fermeture du menu en cliquant dessus
-        $('.my-istymo-dropdown-menu').on('click', function(e) {
-            e.stopPropagation();
-        });
-        
-        // Fermer le menu après avoir cliqué sur une action
-        $('.my-istymo-dropdown-menu a').on('click', function() {
-            $(this).closest('.my-istymo-dropdown-menu').removeClass('show');
-        });
-        
-        // Fermer les menus lors du scroll
-        $(window).on('scroll resize', function() {
-            $('.my-istymo-dropdown-menu').removeClass('show');
-        });
         
         // Gestion de la sélection multiple
         $('.my-istymo-select-all').on('change', function() {

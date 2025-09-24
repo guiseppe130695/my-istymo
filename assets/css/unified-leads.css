@@ -231,7 +231,7 @@
 
 .my-istymo-leads-table th:nth-child(7),
 .my-istymo-leads-table td:nth-child(7) {
-    width: 8%; /* Actions */
+    width: 10%; /* Actions */
     min-width: 80px;
 }
 
@@ -588,102 +588,557 @@
    ======================================== */
 
 /* Menu d'actions */
-.my-istymo-actions-menu {
-    position: relative;
+.my-istymo-td-actions {
+    text-align: center;
+    vertical-align: middle;
+    padding: 8px !important;
 }
 
-.my-istymo-menu-trigger {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 8px;
+.my-istymo-actions-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+}
+
+.my-istymo-action-btn {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
     border-radius: 4px;
+    padding: 6px 12px;
+    cursor: pointer;
+    color: #495057;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     transition: all 0.2s ease;
-    position: relative;
-    z-index: 10;
+    text-decoration: none;
 }
 
-.my-istymo-menu-trigger:hover {
-    background: #f0f0f0;
+.my-istymo-action-btn:hover {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+    color: #212529;
+    text-decoration: none;
 }
 
-.my-istymo-menu-trigger .dashicons {
-    font-size: 18px;
-    color: #666;
-    transition: all 0.2s ease;
+.my-istymo-action-btn .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
 }
 
-.my-istymo-actions-menu:hover .my-istymo-menu-trigger .dashicons {
-    color: #0073aa;
+.my-istymo-action-btn.view-lead {
+    background: #e3f2fd;
+    border-color: #2196f3;
+    color: #1976d2;
 }
 
-.my-istymo-dropdown-menu {
-    position: absolute;
-    right: 0;
-    background: #fff;
-    border: 1px solid #e5e5e5;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    z-index: 1000;
-    min-width: 150px;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.2s ease;
-    transform-origin: top right;
+.my-istymo-action-btn.view-lead:hover {
+    background: #bbdefb;
+    border-color: #1976d2;
 }
 
-/* Positionnement vers le bas (par défaut) */
-.my-istymo-dropdown-menu.menu-down {
-    top: 100%;
-    transform: translateY(-10px);
+.my-istymo-action-btn.delete-lead {
+    background: #ffebee;
+    border-color: #f44336;
+    color: #d32f2f;
 }
 
-/* Positionnement vers le haut */
-.my-istymo-dropdown-menu.menu-up {
-    bottom: 100%;
-    transform: translateY(10px);
+.my-istymo-action-btn.delete-lead:hover {
+    background: #ffcdd2;
+    border-color: #d32f2f;
 }
 
-/* États visibles */
-.my-istymo-dropdown-menu.show.menu-down {
-    transform: translateY(0);
+/* Notifications ultra simples */
+.my-istymo-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-weight: 400;
+    z-index: 10000;
+    display: none;
+    font-size: 14px;
+    color: white;
 }
 
-.my-istymo-dropdown-menu.show.menu-up {
-    transform: translateY(0);
+.my-istymo-notification.success {
+    background-color: #28a745;
 }
 
-/* Menu en position fixed pour éviter les débordements */
-.my-istymo-dropdown-menu.menu-fixed {
-    position: fixed !important;
-    z-index: 10000 !important;
+.my-istymo-notification.error {
+    background-color: #dc3545;
 }
 
-.my-istymo-dropdown-menu.show {
-    opacity: 1;
-    visibility: visible;
+.my-istymo-notification.warning {
+    background-color: #ffc107;
+    color: #212529;
 }
 
-.my-istymo-dropdown-menu a {
+.my-istymo-notification.info {
+    background-color: #17a2b8;
+}
+
+
+/* ========================================
+   DESIGN MODERNE DU MODAL LEAD
+   ======================================== */
+
+/* En-tête du modal lead - Version minimaliste */
+
+.my-istymo-lead-status-row {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.my-istymo-status-item {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 12px 16px;
-    color: #1d2327;
-    text-decoration: none;
-    transition: all 0.2s ease;
 }
 
-.my-istymo-dropdown-menu a:hover {
+.my-istymo-status-item label {
+    font-weight: 500;
+    color: #495057;
+    font-size: 12px;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.my-istymo-status-select,
+.my-istymo-priority-select {
+    padding: 6px 10px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background: white;
+    font-size: 13px;
+    font-weight: 400;
+    transition: border-color 0.2s ease;
+    cursor: pointer;
+    min-width: 120px;
+}
+
+.my-istymo-status-select:focus,
+.my-istymo-priority-select:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 2px rgba(0, 115, 170, 0.1);
+}
+
+.my-istymo-date-value {
+    padding: 10px 15px;
     background: #f8f9fa;
+    border-radius: 6px;
+    color: #6c757d;
+    font-size: 13px;
+    border: 2px solid transparent;
+}
+
+/* Corps du modal - Layout 2 colonnes alignées */
+.my-istymo-lead-body {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 30px;
+    padding: 15px 0px;
+    min-height: 400px;
+    align-items: start;
+}
+
+/* Colonne gauche - Informations */
+.my-istymo-lead-left {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Colonne droite - Notes */
+.my-istymo-lead-right {
+    display: flex;
+    flex-direction: column;
+}
+
+.my-istymo-info-card {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    overflow: hidden;
+}
+
+.my-istymo-card-title {
+    background: #f8f9fa;
+    padding: 15px 20px;
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.my-istymo-card-title i {
+    font-size: 16px;
     color: #0073aa;
 }
 
-.my-istymo-dropdown-menu a .dashicons {
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
+.my-istymo-creation-date {
+    padding: 8px 20px 0;
+    font-size: 10px;
+    color: #6c757d;
+    font-style: italic;
+    border-bottom: 1px solid #e9ecef;
+    margin-bottom: 0;
 }
+
+.my-istymo-creation-date-header {
+    font-size: 10px !important;
+    color: #6c757d;
+    font-style: italic;
+    margin: 5px 0 0 0;
+    font-weight: normal;
+}
+
+/* Actions dans l'en-tête du modal */
+.my-istymo-modal-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.my-istymo-btn-header {
+    padding: 8px 16px;
+    font-size: 13px;
+    border-radius: 5px;
+    font-weight: 500;
+}
+
+.my-istymo-btn-header i {
+    font-size: 12px;
+}
+
+/* Effet de mise à jour du tableau */
+.lead-updated {
+    background-color: #d4edda !important;
+    transition: background-color 0.3s ease;
+}
+
+/* Styles pour les statuts dans le tableau */
+.status-nouveau { color: #17a2b8; font-weight: 500; }
+.status-en_cours { color: #ffc107; font-weight: 500; }
+.status-qualifie { color: #28a745; font-weight: 500; }
+.status-proposition { color: #6f42c1; font-weight: 500; }
+.status-negociation { color: #fd7e14; font-weight: 500; }
+.status-gagne { color: #28a745; font-weight: 600; }
+.status-perdu { color: #dc3545; font-weight: 500; }
+
+/* Styles pour les badges de statut */
+.my-istymo-status-pending { 
+    background-color: #e3f2fd; 
+    color: #1976d2; 
+    border: 1px solid #bbdefb;
+}
+
+.my-istymo-status-progress { 
+    background-color: #fff3e0; 
+    color: #f57c00; 
+    border: 1px solid #ffcc02;
+}
+
+.my-istymo-status-completed { 
+    background-color: #e8f5e8; 
+    color: #2e7d32; 
+    border: 1px solid #a5d6a7;
+}
+
+.my-istymo-status-warning { 
+    background-color: #f3e5f5; 
+    color: #7b1fa2; 
+    border: 1px solid #ce93d8;
+}
+
+.my-istymo-status-info { 
+    background-color: #fff3e0; 
+    color: #e65100; 
+    border: 1px solid #ffb74d;
+}
+
+.my-istymo-status-success { 
+    background-color: #e8f5e8; 
+    color: #1b5e20; 
+    border: 1px solid #81c784;
+}
+
+.my-istymo-status-danger { 
+    background-color: #ffebee; 
+    color: #c62828; 
+    border: 1px solid #ef9a9a;
+}
+
+/* Styles pour les priorités dans le tableau */
+.priority-basse { color: #6c757d; }
+.priority-normale { color: #ffc107; }
+.priority-haute { color: #dc3545; font-weight: 500; }
+
+/* Lignes d'informations - Regroupement complet */
+.my-istymo-info-row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 15px;
+    padding: 15px;
+    border-bottom: 1px solid #f1f3f4;
+    align-items: center;
+}
+
+.my-istymo-info-row:last-child {
+    border-bottom: none;
+}
+
+/* Action DPE spécifique */
+.my-istymo-info-row.my-istymo-dpe-action {
+    padding: 15px 20px !important;
+    border-top: 1px solid #e9ecef;
+    background: #f8f9fa;
+    grid-template-columns: 1fr;
+}
+
+/* Responsive pour les lignes d'informations */
+@media (max-width: 768px) {
+    .my-istymo-info-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+}
+
+.my-istymo-info-label {
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.my-istymo-info-label i {
+    color: #0073aa;
+    font-size: 14px;
+    width: 16px;
+    text-align: center;
+}
+
+/* Classes de couleur pour les priorités */
+.text-info {
+    color: #17a2b8 !important;
+}
+
+.text-warning {
+    color: #ffc107 !important;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}
+
+.my-istymo-info-value {
+    color: #212529;
+    font-weight: 500;
+    word-break: break-word;
+    font-size: 14px;
+}
+
+/* Badges DPE */
+.my-istymo-dpe-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.my-istymo-dpe-badge.dpe-a { background: #00c851; color: white; }
+.my-istymo-dpe-badge.dpe-b { background: #2e7d32; color: white; }
+.my-istymo-dpe-badge.dpe-c { background: #689f38; color: white; }
+.my-istymo-dpe-badge.dpe-d { background: #f57c00; color: white; }
+.my-istymo-dpe-badge.dpe-e { background: #ff6f00; color: white; }
+.my-istymo-dpe-badge.dpe-f { background: #e65100; color: white; }
+.my-istymo-dpe-badge.dpe-g { background: #d32f2f; color: white; }
+
+/* Cartes notes */
+.my-istymo-notes-card {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    overflow: hidden;
+    height: fit-content;
+}
+
+.my-istymo-notes-textarea {
+    width: 100%;
+    padding: 20px;
+    border: none;
+    resize: vertical;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #495057;
+    background: white;
+    min-height: 200px;
+}
+
+.my-istymo-notes-textarea:focus {
+    outline: none;
+    background: #fafbfc;
+}
+
+.my-istymo-notes-textarea::placeholder {
+    color: #adb5bd;
+    font-style: italic;
+}
+
+/* Footer avec boutons */
+.my-istymo-lead-footer {
+    background: #f8f9fa;
+    padding: 20px 30px;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.my-istymo-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 14px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    line-height: 1;
+}
+
+.my-istymo-btn-primary {
+    background: #0073aa;
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 115, 170, 0.2);
+}
+
+.my-istymo-btn-primary:hover {
+    background: #005a87;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 115, 170, 0.3);
+}
+
+.my-istymo-btn-secondary {
+    background: white;
+    color: #6c757d;
+    border: 1px solid #dee2e6;
+}
+
+.my-istymo-btn-secondary:hover {
+    background: #f8f9fa;
+    color: #495057;
+    border-color: #adb5bd;
+}
+
+.my-istymo-btn i {
+    font-size: 14px;
+    width: 16px;
+    text-align: center;
+}
+
+
+.my-istymo-btn-dpe-details {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.my-istymo-btn-dpe-details:hover {
+    background: #5a6268;
+    transform: translateY(-1px);
+}
+
+.my-istymo-btn-dpe-details i {
+    font-size: 12px;
+}
+
+/* Responsive pour le modal */
+@media (max-width: 1200px) {
+    .my-istymo-lead-body {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .my-istymo-lead-right {
+        order: -1;
+    }
+}
+
+@media (max-width: 768px) {
+    .my-istymo-lead-header {
+        padding: 10px 15px;
+    }
+    
+    .my-istymo-lead-status-row {
+        flex-direction: column;
+        gap: 8px;
+        align-items: stretch;
+    }
+    
+    .my-istymo-status-item {
+        justify-content: space-between;
+    }
+    
+    .my-istymo-status-select,
+    .my-istymo-priority-select {
+        min-width: auto;
+        flex: 1;
+        margin-left: 10px;
+    }
+    
+    .my-istymo-lead-body {
+        padding: 20px;
+    }
+    
+    .my-istymo-lead-footer {
+        padding: 15px 20px;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .my-istymo-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .my-istymo-info-label {
+        font-size: 12px;
+    }
+}
+
 
 /* ========================================
    ÉTATS VIDES ET PAGINATION
@@ -955,7 +1410,7 @@
 }
 
 .my-istymo-modal-body {
-    padding: 32px;
+    padding: 15px;
     flex: 1;
     overflow-y: auto;
     background: #ffffff;
@@ -1714,7 +2169,6 @@
     display: flex;
     flex-wrap: wrap;
     gap: 16px;
-    margin-bottom: 12px;
     align-items: center;
 }
 
@@ -1911,8 +2365,14 @@
         max-width: calc(100vw - 20px);
     }
     
-    .my-istymo-actions-menu {
-        position: static;
+    .my-istymo-actions-buttons {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .my-istymo-action-btn {
+        padding: 8px 12px;
+        font-size: 11px;
     }
     
     .my-istymo-info-container {

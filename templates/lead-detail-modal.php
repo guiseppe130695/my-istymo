@@ -25,11 +25,17 @@ if (!defined('ABSPATH')) {
                 <div class="my-istymo-lead-header-info">
                     <h3 id="lead-modal-title">Détails du Lead</h3>
                     <p class="my-istymo-lead-subtitle">Informations complètes et actions</p>
+                    <p id="lead-creation-date" class="my-istymo-creation-date-header">Créé le --</p>
                 </div>
             </div>
-            <button type="button" class="my-istymo-modal-close" onclick="closeLeadDetailModal()">
-                <span class="dashicons dashicons-no-alt"></span>
-            </button>
+            <div class="my-istymo-modal-header-actions">
+                <button type="button" id="save-lead-header-btn" class="my-istymo-btn my-istymo-btn-primary my-istymo-btn-header" onclick="saveLeadChangesFromHeader()">
+                    <i class="fas fa-save"></i> Sauvegarder
+                </button>
+                <button type="button" class="my-istymo-modal-close" onclick="closeLeadDetailModal()">
+                    <span class="dashicons dashicons-no-alt"></span>
+                </button>
+            </div>
         </div>
         
         <!-- Contenu principal -->

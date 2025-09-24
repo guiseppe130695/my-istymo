@@ -54,73 +54,8 @@ jQuery(document).ready(function($) {
      * Configuration des menus dropdown
      */
     function setupDropdownMenus() {
-        // Gestion du survol pour ouvrir le menu
-        $(document).on('mouseenter', '.my-istymo-actions-menu', function() {
-            clearTimeout(menuTimeout);
-            const menuContainer = $(this);
-            const menu = menuContainer.find('.my-istymo-dropdown-menu');
-            
-            // Fermer tous les autres menus
-            closeAllMenus();
-            
-            // Positionner et afficher le menu
-            positionMenu(menuContainer);
-            menu.addClass('show');
-            activeMenus.add(menu[0]);
-        });
-        
-        // Gestion du survol pour fermer le menu
-        $(document).on('mouseleave', '.my-istymo-actions-menu', function() {
-            const menu = $(this).find('.my-istymo-dropdown-menu');
-            menuTimeout = setTimeout(function() {
-                menu.removeClass('show');
-                activeMenus.delete(menu[0]);
-            }, TABLE_CONFIG.menuTimeout);
-        });
-        
-        // Gestion du clic pour ouvrir/fermer le menu
-        $(document).on('click', '.my-istymo-menu-trigger', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const menuContainer = $(this).closest('.my-istymo-actions-menu');
-            const menu = $(this).siblings('.my-istymo-dropdown-menu');
-            const isVisible = menu.hasClass('show');
-            
-            // Fermer tous les autres menus
-            closeAllMenus();
-            
-            // Basculer l'état du menu actuel
-            if (!isVisible) {
-                positionMenu(menuContainer);
-                menu.addClass('show');
-                activeMenus.add(menu[0]);
-            }
-        });
-        
-        // Fermer les menus en cliquant ailleurs
-        $(document).on('click', function(e) {
-            if (!$(e.target).closest('.my-istymo-actions-menu').length) {
-                closeAllMenus();
-            }
-        });
-        
-        // Empêcher la fermeture du menu en cliquant dessus
-        $(document).on('click', '.my-istymo-dropdown-menu', function(e) {
-            e.stopPropagation();
-        });
-        
-        // Fermer le menu après avoir cliqué sur une action
-        $(document).on('click', '.my-istymo-dropdown-menu a', function() {
-            const menu = $(this).closest('.my-istymo-dropdown-menu');
-            menu.removeClass('show');
-            activeMenus.delete(menu[0]);
-        });
-        
-        // Fermer les menus lors du scroll ou redimensionnement
-        $(window).on('scroll resize', function() {
-            closeAllMenus();
-        });
+        // Plus de gestion de menus déroulants - remplacé par des boutons directs
+        console.log('Actions menu setup: Using direct buttons instead of dropdown menus');
     }
     
     /**
@@ -439,10 +374,7 @@ jQuery(document).ready(function($) {
      * Configuration pour mobile
      */
     function setupMobileBehavior() {
-        // Sur mobile, utiliser seulement le clic pour les menus
-        $('.my-istymo-actions-menu').off('mouseenter mouseleave');
-        
-        // Adapter l'affichage du tableau
+        // Adapter l'affichage du tableau pour mobile
         $('.my-istymo-unified-table').addClass('mobile-view');
     }
     
