@@ -570,6 +570,9 @@ function sci_format_inpi_results(array $data): array {
 add_action('admin_enqueue_scripts', 'sci_enqueue_admin_scripts');
 
 function sci_enqueue_admin_scripts() {
+    // ✅ S'assurer que les Dashicons sont toujours chargés
+    wp_enqueue_style('dashicons');
+    
     // ✅ AMÉLIORÉ : Charger les scripts sur toutes les pages SCI
     $current_screen = get_current_screen();
     $is_sci_page = false;
