@@ -93,7 +93,7 @@ function unified_table_component($config = array(), $data = array(), $context = 
                         <!-- Boutons d'action des filtres -->
                         <div class="my-istymo-filter-actions">
                             <button type="submit" class="my-istymo-btn my-istymo-btn-primary">
-                                <span class="dashicons dashicons-filter"></span> Filtrer
+                                <i class="fas fa-filter"></i> Filtrer
                             </button>
                             <?php 
                             $has_filters = false;
@@ -106,7 +106,7 @@ function unified_table_component($config = array(), $data = array(), $context = 
                             if ($has_filters): 
                             ?>
                             <a href="<?php echo esc_url(remove_query_arg(array_keys($config['filters']))); ?>" class="my-istymo-filter-reset-btn">
-                                <span class="dashicons dashicons-dismiss"></span> Réinitialiser
+                                <i class="fas fa-times"></i> Réinitialiser
                             </a>
                             <?php endif; ?>
                         </div>
@@ -129,7 +129,7 @@ function unified_table_component($config = array(), $data = array(), $context = 
                                 <?php foreach ($config['columns'] as $column_key => $column_config): ?>
                                 <th class="my-istymo-th-<?php echo esc_attr($column_key); ?>" <?php echo isset($column_config['width']) ? 'style="width: ' . esc_attr($column_config['width']) . ';"' : ''; ?>>
                                     <?php if (!empty($column_config['icon'])): ?>
-                                    <span class="dashicons dashicons-<?php echo esc_attr($column_config['icon']); ?>"></span>
+                                    <i class="fas fa-<?php echo esc_attr($column_config['fa_icon'] ?? ($column_config['icon'] === 'admin-home' ? 'building' : ($column_config['icon'] === 'category' ? 'tags' : ($column_config['icon'] === 'flag' ? 'flag' : ($column_config['icon'] === 'location' ? 'map-marker-alt' : ($column_config['icon'] === 'info' ? 'info-circle' : 'cog')))))); ?>"></i>
                                     <?php endif; ?>
                                     <?php echo esc_html($column_config['label']); ?>
                                 </th>
@@ -160,7 +160,7 @@ function unified_table_component($config = array(), $data = array(), $context = 
                                         <div class="my-istymo-actions-buttons">
                                             <?php foreach ($config['actions'] as $action_key => $action_config): ?>
                                             <button class="my-istymo-action-btn <?php echo esc_attr($action_key); ?>" data-item-id="<?php echo esc_attr($item->id ?? $item['id'] ?? ''); ?>" onclick="<?php echo esc_attr($action_config['onclick'] ?? ''); ?> return false;" title="<?php echo esc_attr($action_config['label']); ?>">
-                                                <span class="dashicons dashicons-<?php echo esc_attr($action_config['icon'] ?? 'admin-generic'); ?>"></span> <?php echo esc_html($action_config['label']); ?>
+                                                <i class="fas fa-<?php echo esc_attr($action_config['fa_icon'] ?? ($action_config['icon'] === 'visibility' ? 'eye' : ($action_config['icon'] === 'trash' ? 'trash' : 'cog'))); ?>"></i> <?php echo esc_html($action_config['label']); ?>
                                             </button>
                                             <?php endforeach; ?>
                                         </div>

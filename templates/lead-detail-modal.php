@@ -20,7 +20,7 @@ if (!defined('ABSPATH')) {
         <div class="my-istymo-modal-header">
             <div class="my-istymo-modal-header-left">
                 <div class="my-istymo-lead-icon">
-                    <span class="dashicons dashicons-admin-users"></span>
+                    <i class="fas fa-users"></i>
                 </div>
                 <div class="my-istymo-lead-header-info">
                     <h3 id="lead-modal-title">Détails du Lead</h3>
@@ -33,7 +33,7 @@ if (!defined('ABSPATH')) {
                     <i class="fas fa-save"></i> Sauvegarder
                 </button>
                 <button type="button" class="my-istymo-modal-close" onclick="closeLeadDetailModal()">
-                    <span class="dashicons dashicons-no-alt"></span>
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
         </div>

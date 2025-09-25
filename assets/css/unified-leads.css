@@ -177,6 +177,12 @@
     background: #f9fafb;
 }
 
+.my-istymo-leads-table thead th .fas {
+    margin-right: 6px;
+    font-size: 14px;
+    color: #9ca3af;
+}
+
 .my-istymo-leads-table thead th .dashicons {
     margin-right: 6px;
     font-size: 14px;
@@ -213,25 +219,25 @@
 
 .my-istymo-leads-table th:nth-child(4),
 .my-istymo-leads-table td:nth-child(4) {
-    width: 10%; /* Priorité */
+    width: 8%; /* Priorité */
     min-width: 80px;
 }
 
 .my-istymo-leads-table th:nth-child(5),
 .my-istymo-leads-table td:nth-child(5) {
-    width: 15%; /* Localisation */
+    width: 10%; /* Localisation */
     min-width: 120px;
 }
 
 .my-istymo-leads-table th:nth-child(6),
 .my-istymo-leads-table td:nth-child(6) {
-    width: 12%; /* Statut */
+    width: 8%; /* Statut */
     min-width: 100px;
 }
 
 .my-istymo-leads-table th:nth-child(7),
 .my-istymo-leads-table td:nth-child(7) {
-    width: 10%; /* Actions */
+    width: 12%; /* Actions */
     min-width: 80px;
 }
 
@@ -622,6 +628,12 @@
     border-color: #adb5bd;
     color: #212529;
     text-decoration: none;
+}
+
+.my-istymo-action-btn .fas {
+    font-size: 14px;
+    width: 14px;
+    margin-right: 4px;
 }
 
 .my-istymo-action-btn .dashicons {

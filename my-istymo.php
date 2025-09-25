@@ -569,8 +569,62 @@ function sci_format_inpi_results(array $data): array {
 
 add_action('admin_enqueue_scripts', 'sci_enqueue_admin_scripts');
 
+// ✅ Charger les Dashicons et Font Awesome partout (frontend + admin)
+function sci_enqueue_global_styles() {
+    // Toujours charger Dashicons
+    wp_enqueue_style('dashicons');
+    
+    // Toujours charger Font Awesome
+    wp_enqueue_style(
+        'my-istymo-font-awesome',
+        'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+        array(),
+        '6.4.0'
+    );
+}
+add_action('wp_enqueue_scripts', 'sci_enqueue_global_styles');
+add_action('admin_enqueue_scripts', 'sci_enqueue_global_styles');
+
+// ✅ Fallback : Ajouter Font Awesome directement dans le head 
+function sci_add_fontawesome_fallback() {
+    // Essayer plusieurs CDN pour garantir le chargement
+    echo '<!-- Font Awesome pour My-Istymo -->' . "\n";
+    echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />' . "\n";
+    echo '<link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.4.0/css/all.css" crossorigin="anonymous" />' . "\n";
+    echo '<!-- Fin Font Awesome -->' . "\n";
+}
+add_action('wp_head', 'sci_add_fontawesome_fallback', 1);
+add_action('admin_head', 'sci_add_fontawesome_fallback', 1);
+
+// ✅ Debug : Ajouter un script de test Font Awesome
+function sci_add_fontawesome_test() {
+    if (current_user_can('manage_options')) {
+        echo '<script>
+        window.addEventListener("load", function() {
+            var testElement = document.createElement("i");
+            testElement.className = "fas fa-eye";
+            testElement.style.display = "none";
+            document.body.appendChild(testElement);
+            
+            var style = window.getComputedStyle(testElement, "::before");
+            var content = style.getPropertyValue("content");
+            
+            if (content && content !== "none" && content !== "") {
+                console.log("✅ My-Istymo: Font Awesome chargé avec succès!");
+            } else {
+                console.warn("❌ My-Istymo: Font Awesome ne s\'est pas chargé correctement");
+            }
+            
+            document.body.removeChild(testElement);
+        });
+        </script>' . "\n";
+    }
+}
+add_action('wp_footer', 'sci_add_fontawesome_test');
+add_action('admin_footer', 'sci_add_fontawesome_test');
+
 function sci_enqueue_admin_scripts() {
-    // ✅ S'assurer que les Dashicons sont toujours chargés
+    // ✅ S'assurer que les Dashicons sont toujours chargés (admin et frontend)
     wp_enqueue_style('dashicons');
     
     // ✅ AMÉLIORÉ : Charger les scripts sur toutes les pages SCI
@@ -1983,9 +2037,17 @@ function my_istymo_leads_shortcode($atts) {
         'per_page' => 20
     ), $atts);
     
+    // Charger Font Awesome pour les icônes
+    wp_enqueue_style(
+        'font-awesome',
+        'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+        array(),
+        '6.4.0'
+    );
+    
     // Charger les styles et scripts de manière persistante
-    wp_enqueue_style('unified-leads-css', plugin_dir_url(__FILE__) . 'assets/css/unified-leads.css', array(), '1.0.0');
-    wp_enqueue_style('lead-edit-modal-css', plugin_dir_url(__FILE__) . 'assets/css/lead-edit-modal.css', array(), '1.0.0');
+    wp_enqueue_style('unified-leads-css', plugin_dir_url(__FILE__) . 'assets/css/unified-leads.css', array('font-awesome'), '1.0.0');
+    wp_enqueue_style('lead-edit-modal-css', plugin_dir_url(__FILE__) . 'assets/css/lead-edit-modal.css', array('font-awesome'), '1.0.0');
     wp_enqueue_script('unified-leads-admin', plugin_dir_url(__FILE__) . 'assets/js/unified-leads-admin.js', array('jquery'), '1.0.0', true);
     wp_enqueue_script('lead-actions', plugin_dir_url(__FILE__) . 'assets/js/lead-actions.js', array('jquery', 'jquery-ui-tooltip'), '1.0.0', true);
     wp_enqueue_script('lead-workflow', plugin_dir_url(__FILE__) . 'assets/js/lead-workflow.js', array('jquery'), '1.0.0', true);
@@ -2079,9 +2141,17 @@ function my_istymo_enqueue_shortcode_styles() {
     global $post;
     
     if (is_a($post, 'WP_Post') && (has_shortcode($post->post_content, 'my_istymo_leads') || has_shortcode($post->post_content, 'unified_leads_admin'))) {
+        // Charger Font Awesome pour les icônes
+        wp_enqueue_style(
+            'font-awesome',
+            'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+            array(),
+            '6.4.0'
+        );
+        
         // Charger les styles de manière globale
-        wp_enqueue_style('unified-leads-css', plugin_dir_url(__FILE__) . 'assets/css/unified-leads.css', array(), '1.0.0');
-        wp_enqueue_style('lead-edit-modal-css', plugin_dir_url(__FILE__) . 'assets/css/lead-edit-modal.css', array(), '1.0.0');
+        wp_enqueue_style('unified-leads-css', plugin_dir_url(__FILE__) . 'assets/css/unified-leads.css', array('font-awesome'), '1.0.0');
+        wp_enqueue_style('lead-edit-modal-css', plugin_dir_url(__FILE__) . 'assets/css/lead-edit-modal.css', array('font-awesome'), '1.0.0');
         
         // Charger les scripts
         wp_enqueue_script('unified-leads-admin', plugin_dir_url(__FILE__) . 'assets/js/unified-leads-admin.js', array('jquery'), '1.0.0', true);

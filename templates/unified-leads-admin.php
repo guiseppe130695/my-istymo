@@ -12,6 +12,14 @@ function unified_leads_admin_page($context = array()) {
         wp_die(__('Vous n\'avez pas les permissions nécessaires pour accéder à cette page.'));
     }
     
+    // Charger Font Awesome pour les icônes
+    wp_enqueue_style(
+        'font-awesome',
+        'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+        array(),
+        '6.4.0'
+    );
+    
     // Valeurs par défaut pour le contexte
     $default_context = array(
         'title' => '',
@@ -137,16 +145,16 @@ function unified_leads_admin_page($context = array()) {
                         <!-- Boutons d'action des filtres -->
                         <div class="my-istymo-filter-actions">
                             <button type="submit" class="my-istymo-btn my-istymo-btn-primary">
-                                <span class="dashicons dashicons-filter"></span> Filtrer
+                                <i class="fas fa-filter"></i> Filtrer
                             </button>
                             <?php if (!empty($_GET['lead_type']) || !empty($_GET['status']) || !empty($_GET['priorite']) || !empty($_GET['date_from']) || !empty($_GET['date_to']) || !empty($filters['lead_type']) || !empty($filters['status']) || !empty($filters['priorite'])): ?>
                             <?php if ($context['is_shortcode']): ?>
                             <a href="<?php echo remove_query_arg(array('lead_type', 'status', 'priorite', 'date_from', 'date_to', 'paged')); ?>" class="my-istymo-filter-reset-btn">
-                                <span class="dashicons dashicons-dismiss"></span> Réinitialiser
+                                <i class="fas fa-times"></i> Réinitialiser
                             </a>
                             <?php else: ?>
                             <a href="?page=unified-leads" class="my-istymo-filter-reset-btn">
-                                <span class="dashicons dashicons-dismiss"></span> Réinitialiser
+                                <i class="fas fa-times"></i> Réinitialiser
                             </a>
                             <?php endif; ?>
                             <?php endif; ?>
@@ -167,19 +175,19 @@ function unified_leads_admin_page($context = array()) {
                                     <input type="checkbox" class="my-istymo-select-all">
                                 </th>
                                 <th class="my-istymo-th-company">
-                                    <span class="dashicons dashicons-admin-home"></span> Entreprise
+                                    <i class="fas fa-building"></i> Entreprise
                                 </th>
                                 <th class="my-istymo-th-category">
-                                    <span class="dashicons dashicons-category"></span> Catégorie
+                                    <i class="fas fa-tags"></i> Catégorie
                                 </th>
                                 <th class="my-istymo-th-priority">
-                                    <span class="dashicons dashicons-flag"></span> Priorité
+                                    <i class="fas fa-flag"></i> Priorité
                                 </th>
                                 <th class="my-istymo-th-location">
-                                    <span class="dashicons dashicons-location"></span> Localisation
+                                    <i class="fas fa-map-marker-alt"></i> Localisation
                                 </th>
                                 <th class="my-istymo-th-status">
-                                    <span class="dashicons dashicons-info"></span> Statut
+                                    <i class="fas fa-info-circle"></i> Statut
                                 </th>
                                 <th class="my-istymo-th-actions"></th>
                             </tr>
@@ -314,10 +322,10 @@ function unified_leads_admin_page($context = array()) {
                                     <td class="my-istymo-td-actions">
                                         <div class="my-istymo-actions-buttons">
                                             <button class="my-istymo-action-btn view-lead" data-lead-id="<?php echo $lead->id; ?>" onclick="openLeadDetailModal(<?php echo $lead->id; ?>); return false;" title="Voir les détails">
-                                                <span class="dashicons dashicons-visibility"></span> Voir
+                                                <i class="fas fa-eye"></i> Voir
                                             </button>
                                             <button class="my-istymo-action-btn delete-lead" data-lead-id="<?php echo $lead->id; ?>" onclick="if(confirm('Êtes-vous sûr de vouloir supprimer ce lead ?')) { deleteLead(<?php echo $lead->id; ?>); } return false;" title="Supprimer">
-                                                <span class="dashicons dashicons-trash"></span> Supprimer
+                                                <i class="fas fa-trash"></i> Supprimer
                                             </button>
                                         </div>
                                     </td>
