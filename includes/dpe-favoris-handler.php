@@ -238,23 +238,7 @@ class DPE_Favoris_Handler {
                 'original_id' => sanitize_text_field($dpe_data['_id']),
                 'status' => 'nouveau',
                 'priorite' => 'normale',
-                'notes' => sprintf(
-                    "Favori DPE automatiquement créé\n" .
-                    "Adresse: %s\n" .
-                    "Code postal: %s\n" .
-                    "Commune: %s\n" .
-                    "Étiquette DPE: %s\n" .
-                    "Complément adresse: %s\n" .
-                    "Surface: %s m²\n" .
-                    "Type bâtiment: %s",
-                    $dpe_data['adresse_ban'] ?? '',
-                    $dpe_data['code_postal_ban'] ?? '',
-                    $dpe_data['nom_commune_ban'] ?? '',
-                    $dpe_data['etiquette_dpe'] ?? '',
-                    $dpe_data['complement_adresse_logement'] ?? '',
-                    $dpe_data['surface_habitable_logement'] ?? '',
-                    $dpe_data['type_batiment'] ?? ''
-                ),
+                'notes' => '',
                 'data_originale' => $dpe_data, // ✅ AJOUT : Inclure les données originales complètes
                 'date_creation' => current_time('mysql'),
                 'date_modification' => current_time('mysql')

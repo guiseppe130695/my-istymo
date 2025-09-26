@@ -220,7 +220,7 @@
     padding: 16px 20px;
     text-align: left;
     font-weight: 600;
-    font-size: 12px;
+    font-size: 14px!important;
     color: #6b7280;
     letter-spacing: 0.5px;
     border-bottom: 1px solid #e5e7eb;
@@ -783,6 +783,7 @@
     transition: border-color 0.2s ease;
     cursor: pointer;
     min-width: 120px;
+    color: #00000069 !important;
 }
 
 .my-istymo-status-select:focus,

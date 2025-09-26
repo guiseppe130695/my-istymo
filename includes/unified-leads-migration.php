@@ -90,7 +90,7 @@ class Unified_Leads_Migration {
                 'original_id' => 'TEST_SCI_001',
                 'status' => 'nouveau',
                 'priorite' => 'haute',
-                'notes' => 'Lead de test SCI - haute priorité',
+                'notes' => '',
                 'data_originale' => array(
                     'siren' => 'TEST_SCI_001',
                     'denomination' => 'Entreprise Test SCI',
@@ -105,7 +105,7 @@ class Unified_Leads_Migration {
                 'original_id' => 'TEST_DPE_001',
                 'status' => 'en_cours',
                 'priorite' => 'normale',
-                'notes' => 'Lead de test DPE - en cours',
+                'notes' => '',
                 'data_originale' => array(
                     'dpe_id' => 'TEST_DPE_001',
                     'adresse_ban' => '456 Avenue Test',
@@ -123,7 +123,7 @@ class Unified_Leads_Migration {
                 'original_id' => 'TEST_SCI_002',
                 'status' => 'qualifie',
                 'priorite' => 'urgente',
-                'notes' => 'Lead de test SCI - qualifié urgent',
+                'notes' => '',
                 'data_originale' => array(
                     'siren' => 'TEST_SCI_002',
                     'denomination' => 'Autre Entreprise Test',

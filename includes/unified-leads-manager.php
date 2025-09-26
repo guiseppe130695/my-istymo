@@ -563,7 +563,7 @@ class Unified_Leads_Manager {
                 'original_id' => $favorite->siren,
                 'status' => 'nouveau',
                 'priorite' => 'normale',
-                'notes' => 'Migré depuis les favoris SCI',
+                'notes' => '',
                 'data_originale' => array(
                     'siren' => $favorite->siren,
                     'denomination' => $favorite->denomination,
@@ -608,7 +608,7 @@ class Unified_Leads_Manager {
                 'original_id' => $favorite->dpe_id,
                 'status' => 'nouveau',
                 'priorite' => 'normale',
-                'notes' => 'Migré depuis les favoris DPE',
+                'notes' => '',
                 'data_originale' => array(
                     'dpe_id' => $favorite->dpe_id,
                     'adresse_ban' => $favorite->adresse_ban,
