@@ -90,7 +90,7 @@
             <div class="form-row">
                 <button id="send-letters-btn" type="button" class="btn btn-success" disabled
                         data-tooltip="Prospectez directement les SCI. Vous avez également la possibilité de proposer vos services en envoyant un courrier">
-                    <i class="fas fa-envelope"></i> Créez une campagne d'envoi de courriers (<span id="selected-count">0</span>)
+                    <i class="fas fa-envelope"></i> Créez une campagne d'envoi de courrier (<span id="selected-count">0</span>)
                 </button>
             </div>
         </form>
