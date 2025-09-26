@@ -71,6 +71,26 @@ class Lead_Status_Manager {
     }
     
     /**
+     * Récupère les informations d'un statut spécifique
+     */
+    public function get_status_info($status) {
+        $statuses = $this->get_available_statuses();
+        
+        if (isset($statuses[$status])) {
+            return $statuses[$status];
+        }
+        
+        // Statut par défaut si non trouvé
+        return array(
+            'label' => ucfirst($status),
+            'color' => '#999999',
+            'icon' => 'dashicons-info',
+            'description' => 'Statut personnalisé',
+            'can_transition_to' => array()
+        );
+    }
+    
+    /**
      * Récupère toutes les priorités disponibles avec leurs propriétés
      */
     public function get_available_priorities() {

@@ -145,6 +145,12 @@ function unified_leads_admin_page($context = array()) {
                             <button type="submit" class="my-istymo-btn my-istymo-btn-primary">
                                 <i class="fas fa-filter"></i> Filtrer
                             </button>
+                            <button type="button" class="my-istymo-btn my-istymo-btn-secondary" onclick="testAjaxConnection()">
+                                <i class="fas fa-wrench"></i> Test AJAX
+                            </button>
+                            <button type="button" class="my-istymo-btn my-istymo-btn-secondary" onclick="debugAjaxActions()">
+                                <i class="fas fa-bug"></i> Debug
+                            </button>
                             <?php if (!empty($_GET['lead_type']) || !empty($_GET['status']) || !empty($_GET['priorite']) || !empty($_GET['date_from']) || !empty($_GET['date_to']) || !empty($filters['lead_type']) || !empty($filters['status']) || !empty($filters['priorite'])): ?>
                             <?php if ($context['is_shortcode']): ?>
                             <a href="<?php echo remove_query_arg(array('lead_type', 'status', 'priorite', 'date_from', 'date_to', 'paged')); ?>" class="my-istymo-filter-reset-btn">
@@ -483,45 +489,220 @@ function unified_leads_admin_page($context = array()) {
         ));
     }
     
-    // Script spécifique pour les filtres en mode shortcode
-    if ($context['is_shortcode']) {
-        ?>
-        <script>
-        jQuery(document).ready(function($) {
-            // Gestion des filtres en mode shortcode
-            $('#<?php echo 'shortcode-filters-' . $context['shortcode_id']; ?>').on('submit', function(e) {
-                e.preventDefault();
-                
-                var formData = $(this).serialize();
-                var currentUrl = window.location.href.split('?')[0];
-                var newUrl = currentUrl + '?' + formData;
-                
-                // Mettre à jour l'URL sans recharger la page
-                window.history.pushState({}, '', newUrl);
-                
-                // Recharger le contenu via AJAX ou recharger la page
-                window.location.reload();
+    // Script pour les filtres AJAX (admin et shortcode)
+    ?>
+    <script>
+    jQuery(document).ready(function($) {
+        // Variables AJAX - utiliser les variables globales si disponibles, sinon fallback
+        var ajaxUrl = (typeof unifiedLeadsAjax !== 'undefined' && unifiedLeadsAjax.ajaxurl) ? unifiedLeadsAjax.ajaxurl : '<?php echo admin_url('admin-ajax.php'); ?>';
+        var nonce = (typeof unifiedLeadsAjax !== 'undefined' && unifiedLeadsAjax.nonce) ? unifiedLeadsAjax.nonce : '<?php echo wp_create_nonce('my_istymo_nonce'); ?>';
+        var isShortcode = <?php echo $context['is_shortcode'] ? 'true' : 'false'; ?>;
+        var currentPage = <?php echo max(1, intval($_GET['paged'] ?? 1)); ?>;
+        
+        console.log('=== CONFIGURATION AJAX FILTRES ===');
+        console.log('AJAX URL:', ajaxUrl);
+        console.log('Nonce:', nonce);
+        console.log('unifiedLeadsAjax disponible:', typeof unifiedLeadsAjax !== 'undefined');
+        
+        // Fonction pour filtrer les leads via AJAX
+        function filterLeads(page = 1) {
+            console.log('=== FILTRAGE LEADS ===');
+            console.log('Page:', page);
+            console.log('AJAX URL:', ajaxUrl);
+            console.log('Nonce:', nonce);
+            
+            var formData = {
+                action: 'filter_unified_leads',
+                nonce: nonce,
+                paged: page
+            };
+            
+            // Récupérer les valeurs des filtres
+            var leadType = $('select[name="lead_type"]').val();
+            var status = $('select[name="status"]').val();
+            var priorite = $('select[name="priorite"]').val();
+            var dateFrom = $('input[name="date_from"]').val();
+            var dateTo = $('input[name="date_to"]').val();
+            
+            console.log('Filtres:', {leadType, status, priorite, dateFrom, dateTo});
+            
+            if (leadType) formData.lead_type = leadType;
+            if (status) formData.status = status;
+            if (priorite) formData.priorite = priorite;
+            if (dateFrom) formData.date_from = dateFrom;
+            if (dateTo) formData.date_to = dateTo;
+            
+            // Afficher un indicateur de chargement
+            $('.my-istymo-modern-table').html('<div class="my-istymo-loading"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>');
+            
+            $.ajax({
+                url: ajaxUrl,
+                type: 'POST',
+                data: formData,
+                timeout: 10000, // Timeout de 10 secondes
+                success: function(response) {
+                    console.log('Réponse AJAX reçue:', response);
+                    if (response.success) {
+                        // Mettre à jour le tableau
+                        $('.my-istymo-modern-table').html(response.data.html);
+                        
+                        // Ne pas mettre à jour l'URL pour garder une URL propre
+                        // Les filtres sont gérés uniquement en mémoire via AJAX
+                        
+                        // Réinitialiser les gestionnaires d'événements
+                        initTableEventHandlers();
+                        
+                        console.log('✅ Filtres appliqués avec succès');
+                    } else {
+                        console.error('❌ Erreur lors du filtrage:', response.data);
+                        $('.my-istymo-modern-table').html('<div class="my-istymo-error"><i class="fas fa-exclamation-triangle"></i> Erreur lors du filtrage des leads: ' + (response.data || 'Erreur inconnue') + '</div>');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('❌ Erreur AJAX:', {xhr: xhr, status: status, error: error});
+                    console.error('Response Text:', xhr.responseText);
+                    console.error('Status Code:', xhr.status);
+                    
+                    var errorMessage = 'Erreur de connexion';
+                    if (xhr.status === 0) {
+                        errorMessage = 'Erreur de connexion - Vérifiez votre connexion internet';
+                    } else if (xhr.status === 404) {
+                        errorMessage = 'Action AJAX non trouvée - Vérifiez la configuration';
+                    } else if (xhr.status === 500) {
+                        errorMessage = 'Erreur serveur - Vérifiez les logs';
+                    } else if (status === 'timeout') {
+                        errorMessage = 'Timeout - La requête a pris trop de temps';
+                    }
+                    
+                    $('.my-istymo-modern-table').html('<div class="my-istymo-error"><i class="fas fa-exclamation-triangle"></i> ' + errorMessage + '</div>');
+                }
             });
+        }
+        
+        // Fonction de test de connexion AJAX
+        function testAjaxConnection() {
+            console.log('=== TEST CONNEXION AJAX ===');
+            console.log('URL:', ajaxUrl);
+            console.log('Nonce:', nonce);
             
-            // Préserver les valeurs des filtres après rechargement
-            var urlParams = new URLSearchParams(window.location.search);
-            var leadType = urlParams.get('lead_type');
-            var status = urlParams.get('status');
-            var priorite = urlParams.get('priorite');
+            $.ajax({
+                url: ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'my_istymo_test_ajax',
+                    nonce: nonce
+                },
+                timeout: 5000,
+                success: function(response) {
+                    console.log('✅ Test AJAX réussi:', response);
+                    alert('Test AJAX réussi! Vérifiez la console pour les détails.');
+                },
+                error: function(xhr, status, error) {
+                    console.error('❌ Test AJAX échoué:', {xhr: xhr, status: status, error: error});
+                    console.error('Response:', xhr.responseText);
+                    alert('Test AJAX échoué. Vérifiez la console pour les détails.');
+                }
+            });
+        }
+        
+        // Fonction de debug des actions AJAX
+        function debugAjaxActions() {
+            console.log('=== DEBUG ACTIONS AJAX ===');
             
-            if (leadType) {
-                $('select[name="lead_type"]').val(leadType);
-            }
-            if (status) {
-                $('select[name="status"]').val(status);
-            }
-            if (priorite) {
-                $('select[name="priorite"]').val(priorite);
+            $.ajax({
+                url: ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'debug_ajax_actions',
+                    nonce: nonce
+                },
+                success: function(response) {
+                    console.log('✅ Actions AJAX:', response);
+                    alert('Actions AJAX: ' + JSON.stringify(response.data.actions, null, 2));
+                },
+                error: function(xhr, status, error) {
+                    console.error('❌ Debug AJAX échoué:', {xhr: xhr, status: status, error: error});
+                    alert('Debug AJAX échoué. Vérifiez la console.');
+                }
+            });
+        }
+        
+        // Exposer les fonctions globalement
+        window.testAjaxConnection = testAjaxConnection;
+        window.debugAjaxActions = debugAjaxActions;
+        
+        // Gestionnaire pour la soumission du formulaire de filtres
+        $('.my-istymo-inline-filters').on('submit', function(e) {
+            e.preventDefault();
+            currentPage = 1;
+            filterLeads(currentPage);
+        });
+        
+        // Gestionnaire pour la pagination
+        $(document).on('click', '.my-istymo-pagination-link', function(e) {
+            e.preventDefault();
+            var page = parseInt($(this).data('page'));
+            if (page && page > 0) {
+                currentPage = page;
+                filterLeads(page);
             }
         });
-        </script>
-        <?php
-    }
+        
+        // Gestionnaire pour le bouton de réinitialisation
+        $('.my-istymo-filter-reset-btn').on('click', function(e) {
+            e.preventDefault();
+            
+            // Réinitialiser les filtres
+            $('select[name="lead_type"]').val('');
+            $('select[name="status"]').val('');
+            $('select[name="priorite"]').val('');
+            $('input[name="date_from"]').val('');
+            $('input[name="date_to"]').val('');
+            
+            // Filtrer avec les filtres vides
+            currentPage = 1;
+            filterLeads(currentPage);
+        });
+        
+        // Fonction pour initialiser les gestionnaires d'événements du tableau
+        function initTableEventHandlers() {
+            // Gestionnaire pour les boutons d'action des leads
+            $('.view-lead-details').off('click').on('click', function(e) {
+                e.preventDefault();
+                var leadId = $(this).data('lead-id');
+                if (typeof openLeadDetailModal === 'function') {
+                    openLeadDetailModal(leadId);
+                }
+            });
+            
+            $('.edit-lead').off('click').on('click', function(e) {
+                e.preventDefault();
+                var leadId = $(this).data('lead-id');
+                if (typeof openEditLeadModal === 'function') {
+                    openEditLeadModal(leadId);
+                }
+            });
+            
+            $('.delete-lead').off('click').on('click', function(e) {
+                e.preventDefault();
+                var leadId = $(this).data('lead-id');
+                if (confirm('Êtes-vous sûr de vouloir supprimer ce lead ?')) {
+                    // Appeler la fonction de suppression existante
+                    if (typeof deleteLead === 'function') {
+                        deleteLead(leadId);
+                    }
+                }
+            });
+        }
+        
+        // Initialiser les gestionnaires d'événements au chargement
+        initTableEventHandlers();
+        
+        // Les filtres sont maintenant gérés uniquement en mémoire
+        // Pas de préservation depuis l'URL pour garder une URL propre
+    });
+    </script>
+    <?php
     ?>
     
 

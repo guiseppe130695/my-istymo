@@ -31,9 +31,13 @@ class Unified_Leads_Manager {
         add_action('wp_ajax_remove_unified_lead', array($this, 'ajax_remove_lead'));
         add_action('wp_ajax_delete_unified_lead', array($this, 'ajax_remove_lead')); // Alias pour compatibilité
         add_action('wp_ajax_get_unified_leads', array($this, 'ajax_get_leads'));
+        add_action('wp_ajax_filter_unified_leads', array($this, 'ajax_filter_leads'));
         add_action('wp_ajax_update_lead_status', array($this, 'ajax_update_status'));
         add_action('wp_ajax_update_lead_priority', array($this, 'ajax_update_priority'));
         add_action('wp_ajax_add_lead_note', array($this, 'ajax_add_note'));
+        
+        // Debug: Vérifier que les actions sont bien enregistrées
+        add_action('wp_ajax_debug_ajax_actions', array($this, 'debug_ajax_actions'));
     }
     
     /**
@@ -184,7 +188,7 @@ class Unified_Leads_Manager {
     /**
      * Récupère les leads d'un utilisateur
      */
-    public function get_leads($user_id = null, $filters = array()) {
+    public function get_leads($user_id = null, $filters = array(), $per_page = null, $page = 1) {
         global $wpdb;
         
         if (!$user_id) {
@@ -226,10 +230,17 @@ class Unified_Leads_Manager {
         
         $where_clause = implode(' AND ', $where_conditions);
         
-        $sql = $wpdb->prepare(
-            "SELECT * FROM {$this->leads_table} WHERE {$where_clause} ORDER BY date_creation DESC",
-            $where_values
-        );
+        $sql = "SELECT * FROM {$this->leads_table} WHERE {$where_clause} ORDER BY date_creation DESC";
+        
+        // Ajouter la pagination si spécifiée
+        if ($per_page && $per_page > 0) {
+            $offset = ($page - 1) * $per_page;
+            $sql .= " LIMIT %d OFFSET %d";
+            $where_values[] = $per_page;
+            $where_values[] = $offset;
+        }
+        
+        $sql = $wpdb->prepare($sql, $where_values);
         
         $leads = $wpdb->get_results($sql);
         
@@ -239,6 +250,56 @@ class Unified_Leads_Manager {
         }
         
         return $leads;
+    }
+    
+    /**
+     * Compte le nombre de leads avec filtres
+     */
+    public function get_leads_count($filters = array()) {
+        global $wpdb;
+        
+        $user_id = get_current_user_id();
+        if (!$user_id) {
+            return 0;
+        }
+        
+        $where_conditions = array('user_id = %d');
+        $where_values = array($user_id);
+        
+        // Appliquer les filtres
+        if (!empty($filters['lead_type'])) {
+            $where_conditions[] = 'lead_type = %s';
+            $where_values[] = $filters['lead_type'];
+        }
+        
+        if (!empty($filters['status'])) {
+            $where_conditions[] = 'status = %s';
+            $where_values[] = $filters['status'];
+        }
+        
+        if (!empty($filters['priorite'])) {
+            $where_conditions[] = 'priorite = %s';
+            $where_values[] = $filters['priorite'];
+        }
+        
+        if (!empty($filters['date_from'])) {
+            $where_conditions[] = 'date_creation >= %s';
+            $where_values[] = $filters['date_from'];
+        }
+        
+        if (!empty($filters['date_to'])) {
+            $where_conditions[] = 'date_creation <= %s';
+            $where_values[] = $filters['date_to'];
+        }
+        
+        $where_clause = implode(' AND ', $where_conditions);
+        
+        $sql = $wpdb->prepare(
+            "SELECT COUNT(*) FROM {$this->leads_table} WHERE {$where_clause}",
+            $where_values
+        );
+        
+        return (int) $wpdb->get_var($sql);
     }
     
     /**
@@ -654,8 +715,260 @@ class Unified_Leads_Manager {
             $filters['priorite'] = sanitize_text_field($_POST['priorite']);
         }
         
-        $leads = $this->get_leads(null, $filters);
+        $leads = $this->get_leads(null, $filters, null, 1);
         wp_send_json_success($leads);
+    }
+    
+    /**
+     * AJAX: Filtrer les leads et retourner le HTML du tableau
+     */
+    public function ajax_filter_leads() {
+        if (!wp_verify_nonce($_POST['nonce'] ?? '', 'my_istymo_nonce')) {
+            wp_send_json_error('Nonce invalide');
+            return;
+        }
+        
+        // Récupérer les filtres
+        $filters = array();
+        if (!empty($_POST['lead_type'])) {
+            $filters['lead_type'] = sanitize_text_field($_POST['lead_type']);
+        }
+        if (!empty($_POST['status'])) {
+            $filters['status'] = sanitize_text_field($_POST['status']);
+        }
+        if (!empty($_POST['priorite'])) {
+            $filters['priorite'] = sanitize_text_field($_POST['priorite']);
+        }
+        if (!empty($_POST['date_from'])) {
+            $filters['date_from'] = sanitize_text_field($_POST['date_from']);
+        }
+        if (!empty($_POST['date_to'])) {
+            $filters['date_to'] = sanitize_text_field($_POST['date_to']);
+        }
+        
+        // Récupérer la page
+        $page = max(1, intval($_POST['paged'] ?? 1));
+        $per_page = 20;
+        
+        // Récupérer les leads avec pagination
+        $leads = $this->get_leads(null, $filters, $per_page, $page);
+        $total_leads = $this->get_leads_count($filters);
+        $total_pages = ceil($total_leads / $per_page);
+        
+        // Générer le HTML du tableau
+        ob_start();
+        if (!empty($leads)) {
+            echo '<div class="my-istymo-modern-table">';
+            echo '<table class="my-istymo-leads-table">';
+            echo '<thead>';
+            echo '<tr>';
+            echo '<th class="my-istymo-th-checkbox"><input type="checkbox" class="my-istymo-select-all"></th>';
+            echo '<th class="my-istymo-th-company"><i class="fas fa-building"></i> Entreprise</th>';
+            echo '<th class="my-istymo-th-category"><i class="fas fa-tags"></i> Catégorie</th>';
+            echo '<th class="my-istymo-th-status"><i class="fas fa-info-circle"></i> Statut</th>';
+            echo '<th class="my-istymo-th-priority"><i class="fas fa-exclamation-triangle"></i> Priorité</th>';
+            echo '<th class="my-istymo-th-date"><i class="fas fa-calendar"></i> Date</th>';
+            echo '<th class="my-istymo-th-actions"><i class="fas fa-cog"></i> Actions</th>';
+            echo '</tr>';
+            echo '</thead>';
+            echo '<tbody>';
+            
+            foreach ($leads as $lead) {
+                $this->render_lead_row($lead);
+            }
+            
+            echo '</tbody>';
+            echo '</table>';
+            echo '</div>';
+            
+            // Pagination
+            if ($total_pages > 1) {
+                echo '<div class="my-istymo-pagination">';
+                echo '<div class="my-istymo-pagination-info">';
+                echo sprintf('Affichage de %d à %d sur %d résultats', 
+                    (($page - 1) * $per_page) + 1, 
+                    min($page * $per_page, $total_leads), 
+                    $total_leads
+                );
+                echo '</div>';
+                echo '<div class="my-istymo-pagination-links">';
+                
+                if ($page > 1) {
+                    echo '<a href="#" class="my-istymo-pagination-link" data-page="' . ($page - 1) . '">« Précédent</a>';
+                }
+                
+                for ($i = max(1, $page - 2); $i <= min($total_pages, $page + 2); $i++) {
+                    $active_class = ($i == $page) ? ' active' : '';
+                    echo '<a href="#" class="my-istymo-pagination-link' . $active_class . '" data-page="' . $i . '">' . $i . '</a>';
+                }
+                
+                if ($page < $total_pages) {
+                    echo '<a href="#" class="my-istymo-pagination-link" data-page="' . ($page + 1) . '">Suivant »</a>';
+                }
+                
+                echo '</div>';
+                echo '</div>';
+            }
+        } else {
+            echo '<div class="my-istymo-no-results">';
+            echo '<i class="fas fa-search"></i>';
+            echo '<h3>Aucun lead trouvé</h3>';
+            echo '<p>Aucun lead ne correspond aux critères de recherche.</p>';
+            echo '</div>';
+        }
+        
+        $html = ob_get_clean();
+        
+        wp_send_json_success(array(
+            'html' => $html,
+            'total' => $total_leads,
+            'page' => $page,
+            'total_pages' => $total_pages
+        ));
+    }
+    
+    /**
+     * Rendre une ligne de lead pour le tableau
+     */
+    private function render_lead_row($lead) {
+        $status_manager = Lead_Status_Manager::get_instance();
+        $status_info = $status_manager->get_status_info($lead->status);
+        
+        echo '<tr class="my-istymo-lead-row" data-lead-id="' . esc_attr($lead->id) . '">';
+        
+        // Checkbox
+        echo '<td class="my-istymo-td-checkbox">';
+        echo '<input type="checkbox" class="my-istymo-lead-checkbox" value="' . esc_attr($lead->id) . '">';
+        echo '</td>';
+        
+        // Entreprise
+        echo '<td class="my-istymo-td-company">';
+        echo '<div class="my-istymo-company-info">';
+        
+        // Extraire les informations de l'entreprise depuis data_originale
+        $company_name = '';
+        $siren = '';
+        
+        if (!empty($lead->data_originale)) {
+            if (is_string($lead->data_originale)) {
+                $data = json_decode($lead->data_originale, true);
+            } else {
+                $data = $lead->data_originale;
+            }
+            
+            // Pour SCI
+            if ($lead->lead_type === 'sci' && !empty($data['denomination'])) {
+                $company_name = $data['denomination'];
+                $siren = !empty($data['siren']) ? $data['siren'] : '';
+            }
+            // Pour DPE
+            elseif ($lead->lead_type === 'dpe' && !empty($data['nom_etablissement'])) {
+                $company_name = $data['nom_etablissement'];
+                $siren = !empty($data['siren']) ? $data['siren'] : '';
+            }
+        }
+        
+        if ($company_name) {
+            echo '<strong>' . esc_html($company_name) . '</strong>';
+        } else {
+            echo '<strong>Lead #' . esc_html($lead->id) . '</strong>';
+        }
+        
+        if ($siren) {
+            echo '<br><small class="my-istymo-siren">SIREN: ' . esc_html($siren) . '</small>';
+        }
+        
+        echo '</div>';
+        echo '</td>';
+        
+        // Catégorie
+        echo '<td class="my-istymo-td-category">';
+        $category_icon = ($lead->lead_type === 'sci') ? 'fas fa-building' : 'fas fa-home';
+        $category_label = ($lead->lead_type === 'sci') ? 'SCI' : 'DPE';
+        echo '<span class="my-istymo-category-badge my-istymo-category-' . esc_attr($lead->lead_type) . '">';
+        echo '<i class="' . $category_icon . '"></i> ' . $category_label;
+        echo '</span>';
+        echo '</td>';
+        
+        // Statut
+        echo '<td class="my-istymo-td-status">';
+        echo '<span class="my-istymo-status-badge my-istymo-status-' . esc_attr($lead->status) . '" style="background-color: ' . esc_attr($status_info['color']) . '">';
+        echo esc_html($status_info['label']);
+        echo '</span>';
+        echo '</td>';
+        
+        // Priorité
+        echo '<td class="my-istymo-td-priority">';
+        $priority_colors = array(
+            'basse' => '#28a745',
+            'normale' => '#ffc107',
+            'haute' => '#dc3545'
+        );
+        $priority_icons = array(
+            'basse' => 'fas fa-arrow-down',
+            'normale' => 'fas fa-minus',
+            'haute' => 'fas fa-arrow-up'
+        );
+        $priority_labels = array(
+            'basse' => 'Basse',
+            'normale' => 'Normale',
+            'haute' => 'Haute'
+        );
+        echo '<span class="my-istymo-priority-badge" style="background-color: ' . esc_attr($priority_colors[$lead->priority] ?? '#6c757d') . '">';
+        echo '<i class="' . esc_attr($priority_icons[$lead->priority] ?? 'fas fa-minus') . '"></i> ';
+        echo esc_html($priority_labels[$lead->priority] ?? ucfirst($lead->priority));
+        echo '</span>';
+        echo '</td>';
+        
+        // Date
+        echo '<td class="my-istymo-td-date">';
+        echo '<div class="my-istymo-date-info">';
+        echo '<div class="my-istymo-date-main">' . date('d/m/Y', strtotime($lead->created_at)) . '</div>';
+        echo '<div class="my-istymo-date-time">' . date('H:i', strtotime($lead->created_at)) . '</div>';
+        echo '</div>';
+        echo '</td>';
+        
+        // Actions
+        echo '<td class="my-istymo-td-actions">';
+        echo '<div class="my-istymo-action-buttons">';
+        echo '<button class="my-istymo-btn my-istymo-btn-sm my-istymo-btn-primary view-lead-details" data-lead-id="' . esc_attr($lead->id) . '">';
+        echo '<i class="fas fa-eye"></i>';
+        echo '</button>';
+        echo '<button class="my-istymo-btn my-istymo-btn-sm my-istymo-btn-secondary edit-lead" data-lead-id="' . esc_attr($lead->id) . '">';
+        echo '<i class="fas fa-edit"></i>';
+        echo '</button>';
+        echo '<button class="my-istymo-btn my-istymo-btn-sm my-istymo-btn-danger delete-lead" data-lead-id="' . esc_attr($lead->id) . '">';
+        echo '<i class="fas fa-trash"></i>';
+        echo '</button>';
+        echo '</div>';
+        echo '</td>';
+        
+        echo '</tr>';
+    }
+    
+    /**
+     * Debug: Vérifier les actions AJAX enregistrées
+     */
+    public function debug_ajax_actions() {
+        global $wp_filter;
+        
+        $ajax_actions = array();
+        if (isset($wp_filter['wp_ajax_filter_unified_leads'])) {
+            $ajax_actions['filter_unified_leads'] = 'Enregistrée';
+        } else {
+            $ajax_actions['filter_unified_leads'] = 'NON ENREGISTRÉE';
+        }
+        
+        if (isset($wp_filter['wp_ajax_my_istymo_test_ajax'])) {
+            $ajax_actions['my_istymo_test_ajax'] = 'Enregistrée';
+        } else {
+            $ajax_actions['my_istymo_test_ajax'] = 'NON ENREGISTRÉE';
+        }
+        
+        wp_send_json_success(array(
+            'actions' => $ajax_actions,
+            'message' => 'Debug des actions AJAX'
+        ));
     }
     
     /**

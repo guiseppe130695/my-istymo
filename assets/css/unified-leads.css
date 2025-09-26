@@ -6,6 +6,57 @@
  */
 
 /* ========================================
+   STYLES POUR LES INDICATEURS DE CHARGEMENT ET D'ERREUR
+   ======================================== */
+
+/* Indicateur de chargement */
+.my-istymo-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+    color: #666;
+    font-size: 16px;
+}
+
+.my-istymo-loading i {
+    margin-right: 10px;
+    font-size: 20px;
+    color: #0073aa;
+}
+
+/* Message d'erreur */
+.my-istymo-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+    color: #dc3545;
+    font-size: 16px;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.my-istymo-error i {
+    margin-right: 10px;
+    font-size: 20px;
+}
+
+/* Animation de rotation pour le spinner */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.fa-spin {
+    animation: spin 1s linear infinite;
+}
+
+/* ========================================
    STYLES DE BASE ET INFRASTRUCTURE
    ======================================== */
 
