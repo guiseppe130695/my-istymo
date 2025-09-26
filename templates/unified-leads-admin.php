@@ -65,8 +65,6 @@ function unified_leads_admin_page($context = array()) {
     
     ?>
     <div class="wrap unified-leads-container my-istymo">
-        <h1><?php echo esc_html($context['title']); ?></h1>
-        
         <?php if (!$context['is_shortcode']): ?>
         <div class="notice notice-info">
             <p><strong>Interface de Gestion</strong> - Gérez vos leads avec filtres, actions en lot et suivi des statuts.</p>
