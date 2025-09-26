@@ -14,7 +14,18 @@ jQuery(document).ready(function($) {
      * Fonction globale pour ouvrir le modal de détail d'un lead
      * Cette fonction est appelée depuis les boutons HTML
      */
+    // Variable pour éviter les appels multiples du modal
+    let modalOpening = false;
+    
     function openLeadDetailModal(leadId) {
+        // Protection contre les appels multiples
+        if (modalOpening) {
+            console.log('Modal déjà en cours d\'ouverture, ignoré:', leadId);
+            return;
+        }
+        
+        modalOpening = true;
+        
         console.log('=== OUVERTURE MODAL LEAD ===');
         console.log('Lead ID:', leadId);
         console.log('Type de leadId:', typeof leadId);
@@ -131,6 +142,9 @@ jQuery(document).ready(function($) {
                     console.log('❌ Échec - Message:', response ? response.data : 'Pas de réponse');
                     $('#lead-detail-content').html('<div style="color: red; padding: 20px;"><p>❌ Erreur: ' + (response && response.data ? response.data : 'Impossible de charger les détails') + '</p></div>');
                 }
+                
+                // Réinitialiser le flag
+                modalOpening = false;
             },
             error: function(xhr, status, error) {
                 console.log('=== ERREUR AJAX ===');
@@ -138,6 +152,9 @@ jQuery(document).ready(function($) {
                 console.error('Error:', error);
                 console.error('XHR Status:', xhr.status);
                 console.error('XHR StatusText:', xhr.statusText);
+                
+                // Réinitialiser le flag
+                modalOpening = false;
                 console.error('Response Text:', xhr.responseText);
                 console.error('Content-Type:', xhr.getResponseHeader('Content-Type'));
                 
@@ -177,17 +194,8 @@ jQuery(document).ready(function($) {
     // Variable pour éviter les appels multiples
     let deletingLeads = new Set();
     let deleteInProgress = false;
-    let lastDeleteTime = 0;
     
     function deleteLead(leadId) {
-        const now = Date.now();
-        
-        // Protection temporelle : empêcher les appels trop rapprochés
-        if (now - lastDeleteTime < 1000) {
-            console.log('Suppression trop rapide, ignoré:', leadId);
-            return;
-        }
-        
         // Protection globale contre les suppressions multiples
         if (deleteInProgress) {
             console.log('Suppression déjà en cours, ignoré:', leadId);
@@ -205,9 +213,6 @@ jQuery(document).ready(function($) {
             console.log('Requête AJAX déjà en cours, ignoré:', leadId);
             return;
         }
-        
-        // Mettre à jour le timestamp
-        lastDeleteTime = now;
         
         // Vérifier si le bouton est déjà désactivé (protection supplémentaire)
         const deleteButton = $('.delete-lead[data-lead-id="' + leadId + '"]');
@@ -227,16 +232,16 @@ jQuery(document).ready(function($) {
         deleteInProgress = true;
         deletingLeads.add(leadId);
         
-        console.log('Deleting lead ID:', leadId);
+            console.log('Deleting lead ID:', leadId);
             
-        // Vérifier que les variables AJAX sont disponibles
-        if (typeof unifiedLeadsAjax === 'undefined') {
-            console.error('unifiedLeadsAjax not defined');
-            alert('Erreur: Variables AJAX non disponibles');
+            // Vérifier que les variables AJAX sont disponibles
+            if (typeof unifiedLeadsAjax === 'undefined') {
+                console.error('unifiedLeadsAjax not defined');
+                alert('Erreur: Variables AJAX non disponibles');
             deletingLeads.delete(leadId);
             deleteInProgress = false;
-            return;
-        }
+                return;
+            }
             
             $.ajax({
                 url: unifiedLeadsAjax.ajaxurl,
@@ -267,10 +272,10 @@ jQuery(document).ready(function($) {
                             $('tr[data-lead-id="' + leadId + '"]').fadeOut(300, function() {
                                 $(this).remove();
                             });
-                        } else {
-                            alert('Erreur lors de la suppression: ' + (response && response.data ? response.data : 'Erreur inconnue'));
-                            $('.delete-lead[data-lead-id="' + leadId + '"]').prop('disabled', false);
-                        }
+                    } else {
+                        alert('Erreur lors de la suppression: ' + (response && response.data ? response.data : 'Erreur inconnue'));
+                        $('.delete-lead[data-lead-id="' + leadId + '"]').prop('disabled', false);
+                    }
                     }
                     
                     // Retirer le lead de la liste des suppressions en cours
@@ -841,7 +846,7 @@ jQuery(document).ready(function($) {
                 showModal('#bulk-note-modal');
             } else if (action === 'delete') {
                 // Supprimer les leads sélectionnés
-                submitBulkAction();
+                    submitBulkAction();
             } else {
                 hideAllModals();
             }
@@ -935,10 +940,19 @@ jQuery(document).ready(function($) {
         form.submit();
     }
     
+    // Variable pour s'assurer que les gestionnaires ne sont attachés qu'une fois
+    let eventHandlersInitialized = false;
+    
     /**
      * Initialise les actions sur les lignes
      */
     function initRowActions() {
+        // S'assurer que les gestionnaires ne sont attachés qu'une seule fois
+        if (eventHandlersInitialized) {
+            console.log('Gestionnaires d\'événements déjà initialisés, ignoré');
+            return;
+        }
+        
         // Supprimer TOUS les gestionnaires existants pour éviter les doublons
         $(document).off('click', '.edit-lead');
         $(document).off('click', '.view-lead');
@@ -946,9 +960,10 @@ jQuery(document).ready(function($) {
         $(document).off('click', '.my-istymo-add-action');
         $(document).off('click', '.my-istymo-change-status');
         $(document).off('click', '.my-istymo-action-btn');
+        $(document).off('click', '.view-lead-details');
         
         // Utiliser une approche différente : gestionnaire unique avec délégation
-        $(document).on('click', '.my-istymo-action-btn', function(e) {
+        $(document).on('click', '.my-istymo-action-btn, .view-lead-details', function(e) {
             e.preventDefault();
             e.stopImmediatePropagation();
             
@@ -960,12 +975,15 @@ jQuery(document).ready(function($) {
             
             if (action === 'delete-lead' || $btn.hasClass('delete-lead')) {
                 deleteLead(leadId);
-            } else if (action === 'view-lead' || $btn.hasClass('view-lead')) {
+            } else if (action === 'view-lead' || $btn.hasClass('view-lead') || $btn.hasClass('view-lead-details')) {
                 openLeadDetailModal(leadId);
             } else if (action === 'edit-lead' || $btn.hasClass('edit-lead')) {
                 editLead(leadId);
             }
         });
+        
+        // Marquer comme initialisé
+        eventHandlersInitialized = true;
         
         // PHASE 3 : Ajouter une action - Utiliser le système de lead-actions.js
         $(document).on('click', '.my-istymo-add-action', function(e) {
