@@ -158,7 +158,7 @@ class SCI_Shortcodes {
      * Force le chargement des assets
      */
     private function force_enqueue_assets($codesPostauxArray = []) {
-        // Charger Font Awesome
+        // Charger Font Awesome avec le même nom que DPE (qui fonctionne)
         wp_enqueue_style(
             'font-awesome',
             'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
@@ -198,6 +198,9 @@ class SCI_Shortcodes {
             array('sci-frontend-style'),
             '1.0.1'
         );
+
+        // Charger le CSS spécifique aux favoris SCI seulement si nécessaire
+        // (sera chargé spécifiquement dans sci_favoris_shortcode)
 
         if (!wp_script_is('sci-frontend-favoris', 'enqueued')) {
             wp_enqueue_script(
@@ -1119,8 +1122,66 @@ class SCI_Shortcodes {
             return '<div class="sci-frontend-wrapper"><div class="sci-error">Vous devez être connecté pour voir vos favoris.</div></div>';
         }
         
-        // Charger les assets nécessaires
+        // Charger les assets nécessaires (inclut FontAwesome)
         $this->force_enqueue_assets([]);
+        
+        // Charger le CSS spécifique aux favoris SCI
+        wp_enqueue_style(
+            'sci-favoris-style',
+            plugin_dir_url(dirname(__FILE__)) . 'assets/css/sci-favoris.css',
+            array('sci-frontend-style'),
+            '1.0.2' // Version incrémentée pour forcer le rechargement
+        );
+        
+        // Debug : Vérifier que le CSS est chargé
+        add_action('wp_head', function() {
+            echo '<!-- SCI Favoris CSS chargé -->';
+        }, 1);
+        
+        // Ajouter des styles inline pour forcer l'application
+        add_action('wp_head', function() {
+            echo '<style>
+            .sci-frontend-wrapper #table-favoris {
+                width: 100% !important;
+                max-width: 1200px !important;
+                border-collapse: collapse !important;
+                background: white !important;
+                border-radius: 8px !important;
+                overflow: hidden !important;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+                margin: 0 auto !important;
+            }
+            .sci-frontend-wrapper #table-favoris th {
+                background: #f8f9fa !important;
+                color: #333 !important;
+                font-weight: 600 !important;
+                padding: 12px 12px !important;
+                text-align: left !important;
+                font-size: 14px !important;
+                text-transform: none !important;
+                letter-spacing: normal !important;
+                border-bottom: 2px solid #dee2e6 !important;
+                border: none !important;
+            }
+            .sci-frontend-wrapper #table-favoris td {
+                padding: 12px 12px !important;
+                border-bottom: 1px solid #eee !important;
+                font-size: 13px !important;
+                color: #333 !important;
+                vertical-align: middle !important;
+                border-left: none !important;
+                border-right: none !important;
+                border-top: none !important;
+            }
+            .sci-frontend-wrapper #table-favoris tr:hover {
+                background-color: #f8f9fa !important;
+                transition: background-color 0.2s ease !important;
+            }
+            .sci-frontend-wrapper #table-favoris tr:last-child td {
+                border-bottom: none !important;
+            }
+            </style>';
+        }, 999);
         
         $atts = shortcode_atts(array(
             'title' => 'Mes SCI Favoris',

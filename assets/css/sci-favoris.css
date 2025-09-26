@@ -1,0 +1,303 @@
+/* ========================================
+   STYLES POUR LES FAVORIS SCI - DESIGN DPE EXACT
+   ======================================== */
+
+/* Tableau des favoris - design DPE simple et épuré */
+.sci-frontend-wrapper #table-favoris {
+    width: 100% !important;
+    max-width: 1200px !important;
+    border-collapse: collapse !important;
+    background: white !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+    margin: 0 auto !important;
+}
+
+.sci-frontend-wrapper #table-favoris th {
+    background: #f8f9fa !important;
+    color: #333 !important;
+    font-weight: 600 !important;
+    padding: 12px 12px !important;
+    text-align: left !important;
+    font-size: 14px !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    border-bottom: 2px solid #dee2e6 !important;
+    border: none !important;
+}
+
+.sci-frontend-wrapper #table-favoris td {
+    padding: 12px 12px !important;
+    border-bottom: 1px solid #eee !important;
+    font-size: 13px !important;
+    color: #333 !important;
+    vertical-align: middle !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-top: none !important;
+}
+
+.sci-frontend-wrapper #table-favoris tr:hover {
+    background-color: #f8f9fa !important;
+    transition: background-color 0.2s ease !important;
+}
+
+.sci-frontend-wrapper #table-favoris tr:last-child td {
+    border-bottom: none !important;
+}
+
+/* Colonnes spécifiques des favoris */
+.sci-frontend-wrapper #table-favoris .col-entreprise {
+    width: 200px !important;
+    min-width: 200px !important;
+}
+
+.sci-frontend-wrapper #table-favoris .col-dirigeant {
+    width: 150px !important;
+    min-width: 150px !important;
+}
+
+.sci-frontend-wrapper #table-favoris .col-siren {
+    width: 120px !important;
+    min-width: 120px !important;
+    text-align: center !important;
+}
+
+.sci-frontend-wrapper #table-favoris .col-adresse {
+    width: 200px !important;
+    min-width: 200px !important;
+}
+
+.sci-frontend-wrapper #table-favoris .col-ville {
+    width: 100px !important;
+    min-width: 100px !important;
+}
+
+.sci-frontend-wrapper #table-favoris .col-code-postal {
+    width: 100px !important;
+    min-width: 100px !important;
+    text-align: center !important;
+}
+
+.sci-frontend-wrapper #table-favoris .col-geolocalisation {
+    width: 120px !important;
+    min-width: 120px !important;
+    text-align: center !important;
+}
+
+.sci-frontend-wrapper #table-favoris .col-actions {
+    width: 120px !important;
+    min-width: 120px !important;
+    text-align: center !important;
+}
+
+/* Liens de géolocalisation - style DPE simple */
+.geolocalisation-link {
+    color: #0073aa !important;
+    text-decoration: none !important;
+    font-size: 13px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    transition: color 0.2s ease !important;
+    font-weight: normal !important;
+}
+
+.geolocalisation-link:hover {
+    color: #005a87 !important;
+    text-decoration: underline !important;
+}
+
+/* Bouton de suppression - style DPE simple */
+.delete-favori-btn {
+    background: #dc3545 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 4px !important;
+    padding: 6px 12px !important;
+    font-weight: 500 !important;
+    font-size: 12px !important;
+    cursor: pointer !important;
+    transition: background-color 0.2s ease !important;
+    text-decoration: none !important;
+    display: inline-block !important;
+    outline: none !important;
+    vertical-align: middle !important;
+}
+
+.delete-favori-btn:hover {
+    background: #c82333 !important;
+}
+
+.delete-favori-btn:active {
+    background: #a71e2a !important;
+}
+
+/* Message vide amélioré */
+.sci-frontend-wrapper #table-favoris tr td[colspan] {
+    text-align: center !important;
+    padding: 40px !important;
+    color: #6c757d !important;
+    font-style: italic !important;
+}
+
+.sci-frontend-wrapper #table-favoris tr td[colspan] i {
+    display: block !important;
+    margin-bottom: 10px !important;
+}
+
+/* ========================================
+   STYLES POUR LES ICÔNES FONTAWESOME FAVORIS SCI
+   ======================================== */
+
+/* Styles pour les en-têtes avec icônes FontAwesome */
+.sci-frontend-wrapper #table-favoris th {
+    font-size: 14px !important;
+    letter-spacing: 0.5px !important;
+    white-space: nowrap !important;
+}
+
+/* S'assurer que les icônes FontAwesome s'affichent - style DPE simple */
+.sci-frontend-wrapper #table-favoris th i {
+    display: inline-block !important;
+    margin-right: 6px !important;
+    font-size: 14px !important;
+    color: #333 !important;
+    vertical-align: middle !important;
+    width: 16px !important;
+    text-align: center !important;
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+    font-style: normal !important;
+    text-rendering: auto !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+}
+
+/* Forcer les icônes FontAwesome avec des pseudo-éléments */
+.sci-frontend-wrapper #table-favoris th i.fa-building:before {
+    content: "\f1ad" !important;
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+}
+
+.sci-frontend-wrapper #table-favoris th i.fa-user-tie:before {
+    content: "\f508" !important;
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+}
+
+.sci-frontend-wrapper #table-favoris th i.fa-hashtag:before {
+    content: "\f292" !important;
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+}
+
+.sci-frontend-wrapper #table-favoris th i.fa-map-marker-alt:before {
+    content: "\f3c5" !important;
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+}
+
+.sci-frontend-wrapper #table-favoris th i.fa-city:before {
+    content: "\f64f" !important;
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+}
+
+.sci-frontend-wrapper #table-favoris th i.fa-mail-bulk:before {
+    content: "\f674" !important;
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+}
+
+.sci-frontend-wrapper #table-favoris th i.fa-map:before {
+    content: "\f279" !important;
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+}
+
+.sci-frontend-wrapper #table-favoris th i.fa-cogs:before {
+    content: "\f085" !important;
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+}
+
+/* Icônes dans le contenu */
+.sci-frontend-wrapper #table-favoris .geolocalisation-link i {
+    display: inline-block !important;
+    margin-right: 6px !important;
+    font-size: 12px !important;
+    color: #4285f4 !important;
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+}
+
+.sci-frontend-wrapper #table-favoris .geolocalisation-link i.fa-map-marker-alt:before {
+    content: "\f3c5" !important;
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+}
+
+.sci-frontend-wrapper #table-favoris .delete-favori-btn i {
+    display: inline-block !important;
+    margin-right: 6px !important;
+    font-size: 11px !important;
+    color: white !important;
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+}
+
+.sci-frontend-wrapper #table-favoris .delete-favori-btn i.fa-trash-alt:before {
+    content: "\f2ed" !important;
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+}
+
+/* ========================================
+   RESPONSIVE POUR LES FAVORIS SCI - STYLE DPE SIMPLE
+   ======================================== */
+
+@media (max-width: 768px) {
+    .sci-frontend-wrapper #table-favoris {
+        font-size: 12px !important;
+        margin: 0 !important;
+    }
+    
+    .sci-frontend-wrapper #table-favoris th,
+    .sci-frontend-wrapper #table-favoris td {
+        padding: 8px 6px !important;
+        font-size: 11px !important;
+    }
+    
+    .sci-frontend-wrapper #table-favoris th {
+        font-size: 11px !important;
+        padding: 10px 6px !important;
+    }
+    
+    .sci-frontend-wrapper #table-favoris .col-entreprise,
+    .sci-frontend-wrapper #table-favoris .col-dirigeant,
+    .sci-frontend-wrapper #table-favoris .col-adresse {
+        width: auto !important;
+        min-width: 120px !important;
+    }
+    
+    .sci-frontend-wrapper #table-favoris .col-siren,
+    .sci-frontend-wrapper #table-favoris .col-ville,
+    .sci-frontend-wrapper #table-favoris .col-code-postal,
+    .sci-frontend-wrapper #table-favoris .col-geolocalisation,
+    .sci-frontend-wrapper #table-favoris .col-actions {
+        width: auto !important;
+        min-width: 80px !important;
+    }
+    
+    .delete-favori-btn {
+        padding: 4px 8px !important;
+        font-size: 10px !important;
+    }
+    
+    .geolocalisation-link {
+        font-size: 10px !important;
+    }
+}

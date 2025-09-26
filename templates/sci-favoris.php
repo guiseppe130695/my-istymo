@@ -9,25 +9,28 @@
 ?>
 
 <div class="sci-frontend-wrapper">
+    <!-- Fallback FontAwesome pour garantir le chargement -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-    <table id="table-favoris" class="sci-table">
+    <table id="table-favoris" class="data-table sci-results-table">
         <thead>
             <tr>
-                <th>Dénomination</th>
-                <th>Dirigeant</th>
-                <th>SIREN</th>
-                <th>Adresse</th>
-                <th>Ville</th>
-                <th>Code Postal</th>
-                <th>Géolocalisation</th>
-                <th></th>
+                <th class="col-entreprise"><i class="fas fa-building"></i> Dénomination</th>
+                <th class="col-dirigeant"><i class="fas fa-user-tie"></i> Dirigeant</th>
+                <th class="col-siren"><i class="fas fa-hashtag"></i> SIREN</th>
+                <th class="col-adresse"><i class="fas fa-map-marker-alt"></i> Adresse</th>
+                <th class="col-ville"><i class="fas fa-city"></i> Ville</th>
+                <th class="col-code-postal"><i class="fas fa-mail-bulk"></i> Code Postal</th>
+                <th class="col-geolocalisation"><i class="fas fa-map"></i> Géolocalisation</th>
+                <th class="col-actions"><i class="fas fa-cogs"></i> Actions</th>
             </tr>
         </thead>
         <tbody>
             <?php if (empty($favoris)): ?>
                 <tr>
-                    <td colspan="8" style="text-align:center;">
+                    <td colspan="8" style="text-align:center; padding: 40px; color: #6c757d;">
                         <?php if ($show_empty_message ?? true): ?>
+                            <i class="fas fa-heart" style="font-size: 2em; color: #dee2e6; margin-bottom: 10px; display: block;"></i>
                             Aucun favori pour le moment.
                         <?php endif; ?>
                     </td>
@@ -35,29 +38,45 @@
             <?php else: ?>
                 <?php foreach ($favoris as $fav): ?>
                     <tr>
-                        <td><?php echo esc_html($fav['denomination']); ?></td>
-                        <td><?php echo esc_html($fav['dirigeant']); ?></td>
-                        <td><?php echo esc_html($fav['siren']); ?></td>
-                        <td><?php echo esc_html($fav['adresse']); ?></td>
-                        <td><?php echo esc_html($fav['ville']); ?></td>
-                        <td><?php echo esc_html($fav['code_postal']); ?></td>
-                        <td>
-                            <!-- LIEN GOOGLE MAPS -->
+                        <td class="col-entreprise">
+                            <strong><?php echo esc_html($fav['denomination']); ?></strong>
+                        </td>
+                        <td class="col-dirigeant">
+                            <?php echo esc_html($fav['dirigeant']); ?>
+                        </td>
+                        <td class="col-siren">
+                            <code style="background: #f8f9fa; padding: 2px 6px; border-radius: 3px; font-size: 11px;">
+                                <?php echo esc_html($fav['siren']); ?>
+                            </code>
+                        </td>
+                        <td class="col-adresse">
+                            <?php echo esc_html($fav['adresse']); ?>
+                        </td>
+                        <td class="col-ville">
+                            <?php echo esc_html($fav['ville']); ?>
+                        </td>
+                        <td class="col-code-postal">
+                            <span style="background: #e3f2fd; color: #1976d2; padding: 2px 6px; border-radius: 3px; font-size: 11px; font-weight: 600;">
+                                <?php echo esc_html($fav['code_postal']); ?>
+                            </span>
+                        </td>
+                        <td class="col-geolocalisation">
                             <?php 
                             $maps_query = urlencode($fav['adresse'] . ' ' . $fav['code_postal'] . ' ' . $fav['ville']);
                             $maps_url = 'https://www.google.com/maps/place/' . $maps_query;
                             ?>
                             <a href="<?php echo esc_url($maps_url); ?>" 
                                target="_blank" 
-                               style="color: #4285f4; text-decoration: none; font-size: 12px;"
+                               class="geolocalisation-link"
                                title="Localiser <?php echo esc_attr($fav['denomination']); ?> sur Google Maps">
-                                Localiser SCI
+                                <i class="fas fa-map-marker-alt"></i> Localiser SCI
                             </a>
                         </td>
-                        <td>
-                            <button data-siren="<?php echo esc_attr($fav['siren']); ?>"
-                                    style="background: none!important; border: none!important; outline: none!important; box-shadow: none !important; color: #dc3545; font-size: 18px; cursor: pointer; padding: 0;">
-                                Supprimer
+                        <td class="col-actions">
+                            <button class="delete-favori-btn" 
+                                    data-siren="<?php echo esc_attr($fav['siren']); ?>"
+                                    title="Supprimer des favoris">
+                                <i class="fas fa-trash-alt"></i> Supprimer
                             </button>
                         </td>
                     </tr>
