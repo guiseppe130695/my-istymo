@@ -303,7 +303,6 @@ class SCI_Shortcodes {
         ?>
         <div class="my-istymo sci-panel">
             <div class="frontend-wrapper">
-                <h1><i class="fas fa-building"></i> <?php echo esc_html($atts['title']); ?></h1>
                 
                 <!-- Information pour les utilisateurs -->
                 <div class="info-message">
