@@ -10,7 +10,6 @@
 .sci-frontend-wrapper table,
 .wrap table {
     width: 100% !important;
-    max-width: 1200px !important;
     border-collapse: collapse !important;
     background: white !important;
     border-radius: 8px !important;
