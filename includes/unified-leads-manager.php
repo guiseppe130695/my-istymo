@@ -955,7 +955,7 @@ class Unified_Leads_Manager {
         echo '<button class="my-istymo-action-btn view-lead" data-lead-id="' . esc_attr($lead->id) . '" onclick="openLeadDetailModal(' . esc_attr($lead->id) . '); return false;" title="Voir les détails">';
         echo '<i class="fas fa-eye"></i> Voir';
         echo '</button>';
-        echo '<button class="my-istymo-action-btn delete-lead" data-lead-id="' . esc_attr($lead->id) . '" onclick="if(confirm(\'Êtes-vous sûr de vouloir supprimer ce lead ?\')) { deleteLead(' . esc_attr($lead->id) . '); } return false;" title="Supprimer">';
+        echo '<button class="my-istymo-action-btn delete-lead" data-lead-id="' . esc_attr($lead->id) . '" onclick="deleteLead(' . esc_attr($lead->id) . '); return false;" title="Supprimer">';
         echo '<i class="fas fa-trash"></i> Supprimer';
         echo '</button>';
         echo '</div>';

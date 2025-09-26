@@ -322,7 +322,7 @@ function unified_leads_admin_page($context = array()) {
                                             <button class="my-istymo-action-btn view-lead" data-lead-id="<?php echo $lead->id; ?>" onclick="openLeadDetailModal(<?php echo $lead->id; ?>); return false;" title="Voir les détails">
                                                 <i class="fas fa-eye"></i> Voir
                                             </button>
-                                            <button class="my-istymo-action-btn delete-lead" data-lead-id="<?php echo $lead->id; ?>" onclick="if(confirm('Êtes-vous sûr de vouloir supprimer ce lead ?')) { deleteLead(<?php echo $lead->id; ?>); } return false;" title="Supprimer">
+                                            <button class="my-istymo-action-btn delete-lead" data-lead-id="<?php echo $lead->id; ?>" onclick="deleteLead(<?php echo $lead->id; ?>); return false;" title="Supprimer">
                                                 <i class="fas fa-trash"></i> Supprimer
                                             </button>
                                         </div>
@@ -484,9 +484,9 @@ function unified_leads_admin_page($context = array()) {
     }
     
     // Script pour les filtres AJAX (admin et shortcode)
-    ?>
-    <script>
-    jQuery(document).ready(function($) {
+        ?>
+        <script>
+        jQuery(document).ready(function($) {
         // Variables AJAX - utiliser les variables globales si disponibles, sinon fallback
         var ajaxUrl = (typeof unifiedLeadsAjax !== 'undefined' && unifiedLeadsAjax.ajaxurl) ? unifiedLeadsAjax.ajaxurl : '<?php echo admin_url('admin-ajax.php'); ?>';
         var nonce = (typeof unifiedLeadsAjax !== 'undefined' && unifiedLeadsAjax.nonce) ? unifiedLeadsAjax.nonce : '<?php echo wp_create_nonce('my_istymo_nonce'); ?>';
@@ -576,7 +576,7 @@ function unified_leads_admin_page($context = array()) {
         
         // Gestionnaire pour la soumission du formulaire de filtres
         $('.my-istymo-inline-filters').on('submit', function(e) {
-            e.preventDefault();
+                e.preventDefault();
             currentPage = 1;
             filterLeads(currentPage);
         });
@@ -629,11 +629,9 @@ function unified_leads_admin_page($context = array()) {
             $('.delete-lead').off('click').on('click', function(e) {
                 e.preventDefault();
                 var leadId = $(this).data('lead-id');
-                if (confirm('Êtes-vous sûr de vouloir supprimer ce lead ?')) {
-                    // Appeler la fonction de suppression existante
-                    if (typeof deleteLead === 'function') {
-                        deleteLead(leadId);
-                    }
+                // Appeler la fonction de suppression existante
+                if (typeof deleteLead === 'function') {
+                    deleteLead(leadId);
                 }
             });
         }
@@ -643,9 +641,9 @@ function unified_leads_admin_page($context = array()) {
         
         // Les filtres sont maintenant gérés uniquement en mémoire
         // Pas de préservation depuis l'URL pour garder une URL propre
-    });
-    </script>
-    <?php
+        });
+        </script>
+        <?php
     ?>
     
 

@@ -175,8 +175,7 @@ jQuery(document).ready(function($) {
      * Fonction globale pour supprimer un lead
      */
     function deleteLead(leadId) {
-        if (confirm('Êtes-vous sûr de vouloir supprimer ce lead ?')) {
-            console.log('Deleting lead ID:', leadId);
+        console.log('Deleting lead ID:', leadId);
             
             // Vérifier que les variables AJAX sont disponibles
             if (typeof unifiedLeadsAjax === 'undefined') {
@@ -218,7 +217,6 @@ jQuery(document).ready(function($) {
                     $('.delete-lead[data-lead-id="' + leadId + '"]').prop('disabled', false);
                 }
             });
-        }
     }
     
     /**
@@ -772,11 +770,8 @@ jQuery(document).ready(function($) {
             } else if (action === 'add_note') {
                 showModal('#bulk-note-modal');
             } else if (action === 'delete') {
-                if (confirm('Êtes-vous sûr de vouloir supprimer les leads sélectionnés ?')) {
-                    submitBulkAction();
-                } else {
-                    $(this).val('');
-                }
+                // Supprimer les leads sélectionnés
+                submitBulkAction();
             } else {
                 hideAllModals();
             }
@@ -995,7 +990,7 @@ jQuery(document).ready(function($) {
      * Supprime un lead
      */
     function deleteLead(leadId) {
-        if (confirm('Êtes-vous sûr de vouloir supprimer ce lead ?')) {
+        // Supprimer le lead
             console.log(' Suppression du lead:', leadId);
             
             $.ajax({
@@ -1035,7 +1030,6 @@ jQuery(document).ready(function($) {
                     }
                 }
             });
-        }
     }
     
     /**
