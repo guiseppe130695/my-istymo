@@ -367,61 +367,63 @@ button.favorite-btn.favori,
 }
 
 /* ========================================
-   POPUP LETTRE SCI - CORRECTION DU DÉCALAGE
+   POPUP LETTRE SCI - STYLES COMPLETS (copiés de Gestion des leads)
    ======================================== */
 
-/* Styles pour le popup de contact des SCI */
-#letters-popup {
-    display: none !important;
+/* Modal d'édition des leads - Styles complets */
+.my-istymo-modal {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    background: rgba(0,0,0,0.6) !important;
-    z-index: 10000 !important;
-    justify-content: center !important;
-    align-items: center !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    box-sizing: border-box !important;
-    opacity: 0 !important;
-    transition: opacity 0.3s ease !important;
-}
-
-#letters-popup.active {
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 100000 !important;
     display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transition: all 0.3s ease !important;
+}
+
+.my-istymo-modal-overlay {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: rgba(0, 0, 0, 0.6) !important;
+    backdrop-filter: blur(4px) !important;
+}
+
+.my-istymo-modal.my-istymo-show {
     opacity: 1 !important;
+    visibility: visible !important;
 }
 
-#letters-popup > div {
-    background: #fff !important;
-    padding: 25px !important;
-    width: 700px !important;
-    max-width: 95vw !important;
-    max-height: 95vh !important;
-    overflow-y: auto !important;
+.my-istymo-modal.my-istymo-hidden {
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+.my-istymo-modal-content {
+    background: #ffffff !important;
     border-radius: 12px !important;
-    box-shadow: 0 4px 32px rgba(0,0,0,0.15) !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
+    max-width: 700px !important;
+    width: 95% !important;
+    max-height: 90vh !important;
+    overflow: hidden !important;
+    transform: scale(0.95) translateY(20px) !important;
+    transition: all 0.3s ease !important;
     position: relative !important;
-    margin: 0 !important;
-    box-sizing: border-box !important;
-    transform: scale(0.9) translateY(20px) !important;
-    transition: transform 0.3s ease !important;
+    z-index: 1 !important;
+    border: 1px solid #e5e7eb !important;
+    padding: 25px !important;
 }
 
-#letters-popup.active > div {
+.my-istymo-modal.my-istymo-show .my-istymo-modal-content {
     transform: scale(1) translateY(0) !important;
-}
-
-/* Responsive pour le popup */
-@media (max-width: 768px) {
-    #letters-popup > div {
-        width: 95vw !important;
-        max-width: 95vw !important;
-        padding: 20px !important;
-        margin: 10px !important;
-    }
 }
 
 /* ========================================

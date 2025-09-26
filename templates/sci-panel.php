@@ -150,8 +150,9 @@
 </div>
 
 <!-- POPUP LETTRE -->
-<div id="letters-popup">
-    <div>
+<div id="letters-popup" class="my-istymo-modal my-istymo-hidden">
+    <div class="my-istymo-modal-overlay"></div>
+    <div class="my-istymo-modal-content">
         <!-- Étape 1 : Liste des SCI sélectionnées -->
         <div class="step" id="step-1">
             <h2><i class="fas fa-list-check"></i> SCI sélectionnées</h2>

@@ -213,6 +213,12 @@ Dans l’attente de votre retour, je vous remercie de l’attention portée à m
             return;
         }
         
+        // Vérifier que le popup existe
+        if (!lettersPopup) {
+            console.error('Popup letters-popup non trouvé dans le DOM');
+            return;
+        }
+        
         // Remplir la liste des SCI sélectionnées
         selectedSciList.innerHTML = '';
         selectedSCIs.forEach(sci => {
@@ -229,8 +235,9 @@ Dans l’attente de votre retour, je vous remercie de l’attention portée à m
         // Mettre à jour selectedEntries pour compatibilité avec payment.js
         selectedEntries = selectedSCIs;
         
-        // Afficher le popup avec la classe active pour un meilleur centrage
-        lettersPopup.classList.add('active');
+        // Afficher le popup avec le système unifié (comme Gestion de Leads)
+        lettersPopup.classList.remove('my-istymo-hidden');
+        lettersPopup.classList.add('my-istymo-show');
         step1.style.display = 'block';
         step2.style.display = 'none';
     });
@@ -244,18 +251,21 @@ Dans l’attente de votre retour, je vous remercie de l’attention portée à m
     // Fermer le popup
     closePopupBtns.forEach(btn => {
         btn.addEventListener('click', function() {
-            lettersPopup.classList.remove('active');
+            lettersPopup.classList.remove('my-istymo-show');
+            lettersPopup.classList.add('my-istymo-hidden');
             resetPopup();
         });
     });
 
-    // Fermer le popup en cliquant sur l'arrière-plan
-    lettersPopup.addEventListener('click', function(e) {
-        if (e.target === lettersPopup) {
-            lettersPopup.classList.remove('active');
+    // Fermer le popup en cliquant sur l'overlay
+    const overlay = lettersPopup.querySelector('.my-istymo-modal-overlay');
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            lettersPopup.classList.remove('my-istymo-show');
+            lettersPopup.classList.add('my-istymo-hidden');
             resetPopup();
-        }
-    });
+        });
+    }
 
     function resetPopup() {
         // Réinitialiser les champs
