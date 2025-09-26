@@ -200,10 +200,11 @@
         elements.searchError.style.display = 'none';
         
         // Mettre à jour le titre et les infos
-        elements.resultsTitle.textContent = ` Résultats de recherche (${pagination.total_count} SCI trouvées)`;
+        elements.resultsTitle.innerHTML = `Résultats de recherche`;
         if (elements.paginationInfo) {
-            elements.paginationInfo.textContent = `Page ${pagination.current_page} sur ${pagination.total_pages} - ${results.length} résultats affichés`;
+            elements.paginationInfo.innerHTML = `${pagination.total_count} SCI trouvées`;
             elements.paginationInfo.style.display = 'block';
+            elements.paginationInfo.classList.remove('d-none');
         }
         
         // Vider le tableau

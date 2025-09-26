@@ -875,7 +875,14 @@ class SCI_Shortcodes {
                 elements.searchError.style.display = 'none';
                 
                 if (titleChanged) {
-                    elements.resultsTitle.textContent = newTitle;
+                    elements.resultsTitle.innerHTML = 'Résultats de recherche';
+                }
+                
+                // Mettre à jour les informations de pagination
+                if (elements.paginationInfo) {
+                    elements.paginationInfo.innerHTML = `${pagination.total_count} SCI trouvées`;
+                    elements.paginationInfo.style.display = 'block';
+                    elements.paginationInfo.classList.remove('d-none');
                 }
                 
                 // NOUVEAU : Afficher les contrôles de pagination seulement si nécessaire
