@@ -57,7 +57,7 @@ form#sci-search-form {
     margin: 0 !important;
     background: white !important;
     transition: all 0.2s ease !important;
-    color: #00000069 !important
+    color: #333 !important;
 }
 
 #sci-search-form select:focus {
