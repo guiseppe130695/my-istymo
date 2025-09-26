@@ -18,7 +18,7 @@
         <div class="info-message">
             <p>
                 <i class="fas fa-info-circle"></i> <strong>Prospection SCI</strong><br><br>
-                Prospectez directement les SCI. Vous avez également la possibilité de proposer vos services en envoyant un courrier.
+                Prospectez directement les SCI. Vous avez également la possibilité de proposer vos services en réalisant des campagnes d'envoi de courrier.
             </p>
         </div>
         
@@ -150,8 +150,8 @@
 </div>
 
 <!-- POPUP LETTRE -->
-<div id="letters-popup" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.6); z-index:10000; justify-content:center; align-items:center;">
-    <div style="background:#fff; padding:25px; width:700px; max-width:95vw; max-height:95vh; overflow-y:auto; border-radius:12px;">
+<div id="letters-popup">
+    <div>
         <!-- Étape 1 : Liste des SCI sélectionnées -->
         <div class="step" id="step-1">
             <h2><i class="fas fa-list-check"></i> SCI sélectionnées</h2>

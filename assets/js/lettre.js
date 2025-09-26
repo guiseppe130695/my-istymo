@@ -173,6 +173,7 @@ Dans l’attente de votre retour, je vous remercie de l’attention portée à m
             // Activer/désactiver le bouton campagne
             if (sendLettersBtn) {
                 sendLettersBtn.disabled = count === 0;
+                console.log('Bouton campagne:', count > 0 ? 'activé' : 'désactivé', '(count:', count, ')');
             }
 
 
@@ -228,8 +229,8 @@ Dans l’attente de votre retour, je vous remercie de l’attention portée à m
         // Mettre à jour selectedEntries pour compatibilité avec payment.js
         selectedEntries = selectedSCIs;
         
-        // Afficher le popup
-        lettersPopup.style.display = 'flex';
+        // Afficher le popup avec la classe active pour un meilleur centrage
+        lettersPopup.classList.add('active');
         step1.style.display = 'block';
         step2.style.display = 'none';
     });
@@ -243,7 +244,7 @@ Dans l’attente de votre retour, je vous remercie de l’attention portée à m
     // Fermer le popup
     closePopupBtns.forEach(btn => {
         btn.addEventListener('click', function() {
-            lettersPopup.style.display = 'none';
+            lettersPopup.classList.remove('active');
             resetPopup();
         });
     });
@@ -251,7 +252,7 @@ Dans l’attente de votre retour, je vous remercie de l’attention portée à m
     // Fermer le popup en cliquant sur l'arrière-plan
     lettersPopup.addEventListener('click', function(e) {
         if (e.target === lettersPopup) {
-            lettersPopup.style.display = 'none';
+            lettersPopup.classList.remove('active');
             resetPopup();
         }
     });

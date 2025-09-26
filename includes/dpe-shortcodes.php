@@ -258,7 +258,6 @@ class DPE_Shortcodes {
                             <th class="col-type"><i class="fas fa-building"></i> Type</th>
                             <th class="col-date"><i class="fas fa-calendar"></i> Date</th>
                             <th class="col-adresse"><i class="fas fa-map-marker-alt"></i> Adresse</th>
-                            <th class="col-ville"><i class="fas fa-city"></i> Ville</th>
                             <th class="col-surface"><i class="fas fa-expand-arrows-alt"></i> Surface</th>
                             <th class="col-etiquette"><i class="fas fa-certificate" title="Étiquette DPE - Classe énergétique du bien (A à G)"></i></th>
                             <th class="col-complement"><i class="fas fa-plus"></i> Complément adresse</th>
@@ -458,11 +457,31 @@ class DPE_Shortcodes {
                     // Date DPE
                     row.appendChild(createCell(formatDate(result.date_etablissement_dpe || result.date_reception_dpe)));
                     
-                    // Adresse (nettoyée)
-                    row.appendChild(createCell(cleanAddress(result.adresse_ban || result.adresse_brut)));
+                    // Adresse complète (adresse + ville)
+                    var adresseBase = result.adresse_ban || result.adresse_brut || '';
+                    var commune = result.nom_commune_ban || result.nom_commune_brut || '';
+                    var codePostal = result.code_postal_ban || result.code_postal_brut || '';
                     
-                    // Commune
-                    row.appendChild(createCell(result.nom_commune_ban || result.nom_commune_brut || 'Non spécifié'));
+                    // Nettoyer l'adresse de base (enlever code postal et commune s'ils sont déjà présents)
+                    var adresseClean = adresseBase;
+                    if (codePostal && commune) {
+                        var pattern = new RegExp('\\s*' + codePostal + '\\s*' + commune + '\\s*$', 'i');
+                        adresseClean = adresseClean.replace(pattern, '').trim();
+                    }
+                    
+                    // Construire l'adresse complète
+                    var adresseComplete = adresseClean;
+                    if (commune) {
+                        if (codePostal) {
+                            adresseComplete += ', ' + codePostal + ' ' + commune;
+                        } else {
+                            adresseComplete += ', ' + commune;
+                        }
+                    } else if (codePostal) {
+                        adresseComplete += ', ' + codePostal;
+                    }
+                    
+                    row.appendChild(createCell(adresseComplete || 'Non spécifié'));
                     
                     // Surface
                     row.appendChild(createCell(result.surface_habitable_logement ? result.surface_habitable_logement + ' m²' : 'Non spécifié'));

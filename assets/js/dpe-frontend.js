@@ -37,9 +37,6 @@ function buildApiUrl(page = 1) {
         baseUrl += '&q=' + encodeURIComponent(keyword);
     }
 
-    // Afficher l'URL dans la console pour debug
-    console.log('URL de recherche DPE:', baseUrl);
-    console.log('Paramètres de recherche:', currentSearchParams);
 
     return baseUrl;
 }
@@ -108,11 +105,31 @@ function displayResults(data) {
             // Date DPE
             row.appendChild(createCell(formatDate(result.date_etablissement_dpe || result.date_reception_dpe)));
             
-            // Adresse (nettoyée)
-            row.appendChild(createCell(cleanAddress(result.adresse_ban || result.adresse_brut)));
+            // Adresse complète (adresse + ville)
+            var adresseBase = result.adresse_ban || result.adresse_brut || '';
+            var commune = result.nom_commune_ban || result.nom_commune_brut || '';
+            var codePostal = result.code_postal_ban || result.code_postal_brut || '';
             
-            // Commune
-            row.appendChild(createCell(result.nom_commune_ban || result.nom_commune_brut || 'Non spécifié'));
+            // Nettoyer l'adresse de base (enlever code postal et commune s'ils sont déjà présents)
+            var adresseClean = adresseBase;
+            if (codePostal && commune) {
+                var pattern = new RegExp('\\s*' + codePostal + '\\s*' + commune + '\\s*$', 'i');
+                adresseClean = adresseClean.replace(pattern, '').trim();
+            }
+            
+            // Construire l'adresse complète
+            var adresseComplete = adresseClean;
+            if (commune) {
+                if (codePostal) {
+                    adresseComplete += ', ' + codePostal + ' ' + commune;
+                } else {
+                    adresseComplete += ', ' + commune;
+                }
+            } else if (codePostal) {
+                adresseComplete += ', ' + codePostal;
+            }
+            
+            row.appendChild(createCell(adresseComplete || 'Non spécifié'));
             
             // Surface
             row.appendChild(createCell(result.surface_habitable_logement ? result.surface_habitable_logement + ' m²' : 'Non spécifié'));
@@ -175,7 +192,7 @@ function cleanAddress(address) {
     if (!address) return 'Non spécifié';
     
     // Supprimer le code postal (5 chiffres) et la commune qui suivent
-    var cleaned = address.replace(/\s+\d{5}\s+[A-Za-zÀ-ÿ\s-]+$/, '');
+    var cleaned = address.replace(/\s+\d{5}\s+[A-Za-z\u00C0-\u017F\s-]+$/, '');
     
     // Si l'adresse est vide après nettoyage, retourner l'original
     return cleaned.trim() || address.trim();

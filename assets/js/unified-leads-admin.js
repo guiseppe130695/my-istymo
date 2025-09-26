@@ -630,8 +630,8 @@ jQuery(document).ready(function($) {
         }
         
         
-        // URL vers l'observatoire DPE ou autre service
-        var dpeUrl = 'https://www.observatoire-dpe.fr/dpe/' + encodeURIComponent(dpeId);
+        // URL vers l'observatoire DPE ADEME
+        var dpeUrl = 'https://observatoire-dpe-audit.ademe.fr/afficher-dpe/' + encodeURIComponent(dpeId);
         
         // Ouvrir dans un nouvel onglet
         window.open(dpeUrl, '_blank');

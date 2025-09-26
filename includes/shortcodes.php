@@ -309,7 +309,7 @@ class SCI_Shortcodes {
                 <div class="info-message">
                     <p>
                         <i class="fas fa-info-circle"></i> <strong>Prospection SCI</strong><br><br>
-                        Prospectez directement les SCI. Vous avez également la possibilité de proposer vos services en envoyant un courrier.
+                        Prospectez directement les SCI. Vous avez également la possibilité de proposer vos services en réalisant des campagnes d'envoi de courrier.
                     </p>
                 </div>
             
@@ -437,8 +437,8 @@ class SCI_Shortcodes {
     </div>
         
         <!-- POPUP LETTRE -->
-        <div id="letters-popup" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.6); z-index:10000; justify-content:center; align-items:center;">
-            <div style="background:#fff; padding:25px; width:700px; max-width:95vw; max-height:95vh; overflow-y:auto; border-radius:12px;">
+        <div id="letters-popup">
+            <div>
                 <!-- Étape 1 : Liste des SCI sélectionnées -->
                 <div class="step" id="step-1">
                     <h2>SCI sélectionnées</h2>
@@ -901,14 +901,16 @@ class SCI_Shortcodes {
                 const mapsUrl = `https://www.google.com/maps/place/${mapsQuery}`;
                 row.innerHTML = `
                     <td>
-                        <button class="fav-btn" 
+                        <button class="favorite-btn" 
                                 data-siren="${escapeHtml(result.siren)}"
                                 data-denomination="${escapeHtml(result.denomination)}"
                                 data-dirigeant="${escapeHtml(result.dirigeant)}"
                                 data-adresse="${escapeHtml(result.adresse)}"
                                 data-ville="${escapeHtml(result.ville)}"
                                 data-code-postal="${escapeHtml(result.code_postal)}"
-                                aria-label="Ajouter aux favoris">☆</button>
+                                aria-label="Ajouter aux favoris">
+                            <i class="far fa-heart"></i>
+                        </button>
                     </td>
                     <td>
                         <div style="font-weight: 600; font-size: 14px; color: #333; margin-bottom: 2px;">${escapeHtml(result.denomination)}</div>
@@ -925,7 +927,7 @@ class SCI_Shortcodes {
                         </a>
                     </td>
                     <td style="text-align: center !important;">
-                        <input type="checkbox" class="select-sci-checkbox" data-siren="${escapeHtml(result.siren)}" data-denomination="${escapeHtml(result.denomination)}">
+                        <input type="checkbox" class="send-letter-checkbox" data-siren="${escapeHtml(result.siren)}" data-denomination="${escapeHtml(result.denomination)}" data-dirigeant="${escapeHtml(result.dirigeant)}" data-adresse="${escapeHtml(result.adresse)}" data-ville="${escapeHtml(result.ville)}" data-code-postal="${escapeHtml(result.code_postal)}">
                     </td>
                     <td style="text-align: center !important;">
                         <span class="contact-status" data-siren="${escapeHtml(result.siren)}">

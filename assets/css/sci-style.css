@@ -298,19 +298,49 @@ button.button-secondary:disabled::after,
 .sci-frontend-wrapper button.fav-btn,
 button.fav-btn,
 .sci-frontend-wrapper .fav-btn,
-.fav-btn {
+.fav-btn,
+.sci-frontend-wrapper button.favorite-btn,
+button.favorite-btn,
+.sci-frontend-wrapper .favorite-btn,
+.favorite-btn {
     background: none !important;
     border: none !important;
     cursor: pointer !important;
     padding: 0.25rem !important;
     transition: all 0.2s ease !important;
+    font-size: 18px !important;
+    color: #ccc !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    box-sizing: border-box !important;
 }
 
 .sci-frontend-wrapper button.fav-btn:hover,
 button.fav-btn:hover,
 .sci-frontend-wrapper .fav-btn:hover,
-.fav-btn:hover {
+.fav-btn:hover,
+.sci-frontend-wrapper button.favorite-btn:hover,
+button.favorite-btn:hover,
+.sci-frontend-wrapper .favorite-btn:hover,
+.favorite-btn:hover {
     transform: scale(1.1) !important;
+    color: #ffd700 !important;
+    background: #f0f0f0 !important;
+}
+
+/* État actif des favoris */
+.sci-frontend-wrapper button.favorite-btn.active,
+button.favorite-btn.active,
+.sci-frontend-wrapper .favorite-btn.active,
+.favorite-btn.active,
+.sci-frontend-wrapper button.favorite-btn.favori,
+button.favorite-btn.favori,
+.sci-frontend-wrapper .favorite-btn.favori,
+.favorite-btn.favori {
+    color: #ffd700 !important;
 }
 
 /* ========================================
@@ -334,6 +364,64 @@ button.fav-btn:hover,
 .contact-status.not-contacted {
     background-color: #f8d7da;
     color: #721c24;
+}
+
+/* ========================================
+   POPUP LETTRE SCI - CORRECTION DU DÉCALAGE
+   ======================================== */
+
+/* Styles pour le popup de contact des SCI */
+#letters-popup {
+    display: none !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: rgba(0,0,0,0.6) !important;
+    z-index: 10000 !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    opacity: 0 !important;
+    transition: opacity 0.3s ease !important;
+}
+
+#letters-popup.active {
+    display: flex !important;
+    opacity: 1 !important;
+}
+
+#letters-popup > div {
+    background: #fff !important;
+    padding: 25px !important;
+    width: 700px !important;
+    max-width: 95vw !important;
+    max-height: 95vh !important;
+    overflow-y: auto !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.15) !important;
+    position: relative !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    transform: scale(0.9) translateY(20px) !important;
+    transition: transform 0.3s ease !important;
+}
+
+#letters-popup.active > div {
+    transform: scale(1) translateY(0) !important;
+}
+
+/* Responsive pour le popup */
+@media (max-width: 768px) {
+    #letters-popup > div {
+        width: 95vw !important;
+        max-width: 95vw !important;
+        padding: 20px !important;
+        margin: 10px !important;
+    }
 }
 
 /* ========================================
