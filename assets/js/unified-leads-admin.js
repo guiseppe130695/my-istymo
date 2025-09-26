@@ -191,6 +191,13 @@ jQuery(document).ready(function($) {
             return;
         }
         
+        // Vérifier si la ligne existe encore dans le tableau
+        const tableRow = $('tr[data-lead-id="' + leadId + '"]');
+        if (tableRow.length === 0) {
+            console.log('Ligne du tableau non trouvée pour le lead:', leadId);
+            return;
+        }
+        
         // Ajouter le lead à la liste des suppressions en cours
         deletingLeads.add(leadId);
         
@@ -903,33 +910,39 @@ jQuery(document).ready(function($) {
      * Initialise les actions sur les lignes
      */
     function initRowActions() {
-        // Supprimer les gestionnaires existants pour éviter les doublons
+        // Supprimer TOUS les gestionnaires existants pour éviter les doublons
         $(document).off('click', '.edit-lead');
         $(document).off('click', '.view-lead');
         $(document).off('click', '.delete-lead');
         $(document).off('click', '.my-istymo-add-action');
         $(document).off('click', '.my-istymo-change-status');
         
-        // Modifier un lead
-        $(document).on('click', '.edit-lead', function(e) {
-            e.preventDefault();
-            const leadId = $(this).data('lead-id');
-            editLead(leadId);
-        });
-        
-        // Voir un lead - utiliser directement openLeadDetailModal
-        $(document).on('click', '.view-lead', function(e) {
-            e.preventDefault();
-            const leadId = $(this).data('lead-id');
-            openLeadDetailModal(leadId);
-        });
-        
-        // Supprimer un lead
-        $(document).on('click', '.delete-lead', function(e) {
-            e.preventDefault();
-            const leadId = $(this).data('lead-id');
-            deleteLead(leadId);
-        });
+        // Attendre un peu pour s'assurer que les gestionnaires sont supprimés
+        setTimeout(function() {
+            // Modifier un lead
+            $(document).on('click', '.edit-lead', function(e) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                const leadId = $(this).data('lead-id');
+                editLead(leadId);
+            });
+            
+            // Voir un lead - utiliser directement openLeadDetailModal
+            $(document).on('click', '.view-lead', function(e) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                const leadId = $(this).data('lead-id');
+                openLeadDetailModal(leadId);
+            });
+            
+            // Supprimer un lead
+            $(document).on('click', '.delete-lead', function(e) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                const leadId = $(this).data('lead-id');
+                deleteLead(leadId);
+            });
+        }, 100);
         
         // PHASE 3 : Ajouter une action - Utiliser le système de lead-actions.js
         $(document).on('click', '.my-istymo-add-action', function(e) {
