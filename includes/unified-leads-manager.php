@@ -434,7 +434,12 @@ class Unified_Leads_Manager {
         // ✅ AUTOMATISATION : Supprimer automatiquement le favori correspondant (sauf si skip_favori_removal = true)
         if (!$skip_favori_removal) {
             error_log("🔄 Suppression automatique du favori original...");
-            $this->remove_original_favori($lead->lead_type, $lead->original_id, $user_id);
+            try {
+                $this->remove_original_favori($lead->lead_type, $lead->original_id, $user_id);
+            } catch (Exception $e) {
+                // Ignorer les erreurs de suppression du favori - le lead principal est déjà supprimé
+                error_log("⚠️ Erreur lors de la suppression du favori original (ignorée): " . $e->getMessage());
+            }
         } else {
             error_log("⏭️ Suppression du favori original ignorée (skip_favori_removal = true)");
         }
@@ -486,6 +491,10 @@ class Unified_Leads_Manager {
             }
         } catch (Exception $e) {
             error_log("Exception lors de la suppression automatique du favori original: " . $e->getMessage());
+            // Ne pas relancer l'exception - juste logger l'erreur
+        } catch (Error $e) {
+            error_log("Error lors de la suppression automatique du favori original: " . $e->getMessage());
+            // Ne pas relancer l'erreur - juste logger l'erreur
         }
     }
     
@@ -674,6 +683,13 @@ class Unified_Leads_Manager {
             
             if (!$lead_id) {
                 wp_send_json_error('ID du lead manquant');
+                return;
+            }
+            
+            // Vérifier que le lead existe avant de tenter de le supprimer
+            $existing_lead = $this->get_lead($lead_id);
+            if (!$existing_lead) {
+                wp_send_json_error('Lead non trouvé');
                 return;
             }
             
