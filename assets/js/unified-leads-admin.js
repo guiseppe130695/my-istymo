@@ -177,8 +177,17 @@ jQuery(document).ready(function($) {
     // Variable pour éviter les appels multiples
     let deletingLeads = new Set();
     let deleteInProgress = false;
+    let lastDeleteTime = 0;
     
     function deleteLead(leadId) {
+        const now = Date.now();
+        
+        // Protection temporelle : empêcher les appels trop rapprochés
+        if (now - lastDeleteTime < 1000) {
+            console.log('Suppression trop rapide, ignoré:', leadId);
+            return;
+        }
+        
         // Protection globale contre les suppressions multiples
         if (deleteInProgress) {
             console.log('Suppression déjà en cours, ignoré:', leadId);
@@ -196,6 +205,9 @@ jQuery(document).ready(function($) {
             console.log('Requête AJAX déjà en cours, ignoré:', leadId);
             return;
         }
+        
+        // Mettre à jour le timestamp
+        lastDeleteTime = now;
         
         // Vérifier si le bouton est déjà désactivé (protection supplémentaire)
         const deleteButton = $('.delete-lead[data-lead-id="' + leadId + '"]');
@@ -933,9 +945,10 @@ jQuery(document).ready(function($) {
         $(document).off('click', '.delete-lead');
         $(document).off('click', '.my-istymo-add-action');
         $(document).off('click', '.my-istymo-change-status');
+        $(document).off('click', '.my-istymo-action-btn');
         
         // Utiliser une approche différente : gestionnaire unique avec délégation
-        $(document).off('click', '.my-istymo-action-btn').on('click', '.my-istymo-action-btn', function(e) {
+        $(document).on('click', '.my-istymo-action-btn', function(e) {
             e.preventDefault();
             e.stopImmediatePropagation();
             
