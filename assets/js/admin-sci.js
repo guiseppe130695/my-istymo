@@ -125,7 +125,7 @@
             paginationControls.style.display = 'block';
         }
         elements.searchBtn.disabled = true;
-        elements.searchBtn.textContent = 'Recherche...';
+        elements.searchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recherche...';
         const formData = new FormData();
         formData.append('action', 'sci_inpi_search_ajax');
         formData.append('code_postal', codePostal);
@@ -153,7 +153,7 @@
             cache.isSearching = false;
             elements.searchLoading.style.display = 'none';
             elements.searchBtn.disabled = false;
-            elements.searchBtn.textContent = 'Rechercher les SCI';
+            elements.searchBtn.innerHTML = '<i class="fas fa-search"></i> Rechercher les SCI';
             if (data.success) {
                 displayResults(data.data);
             } else {
@@ -165,7 +165,7 @@
             cache.isSearching = false;
             elements.searchLoading.style.display = 'none';
             elements.searchBtn.disabled = false;
-            elements.searchBtn.textContent = 'Rechercher les SCI';
+            elements.searchBtn.innerHTML = '<i class="fas fa-search"></i> Rechercher les SCI';
             displayError('Erreur réseau lors de la recherche: ' + error.message);
         });
     }
@@ -238,7 +238,9 @@
                         data-adresse="${escapeHtml(result.adresse)}"
                         data-ville="${escapeHtml(result.ville)}"
                         data-code-postal="${escapeHtml(result.code_postal)}"
-                        aria-label="Ajouter aux favoris">☆</button>
+                        aria-label="Ajouter aux favoris">
+                    <i class="fas fa-heart"></i>
+                </button>
             </td>
             <td>
                 <div style="font-weight: 600; font-size: 14px; color: #333; margin-bottom: 2px;">${escapeHtml(result.denomination)}</div>
@@ -356,7 +358,7 @@
         if (!elements) return;
         elements.searchResults.style.display = 'none';
         elements.searchError.style.display = 'block';
-        elements.searchError.querySelector('#error-message').textContent = message;
+        elements.searchError.querySelector('#error-message').innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + message;
     }
     
     function escapeHtml(text) {

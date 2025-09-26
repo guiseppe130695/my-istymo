@@ -788,7 +788,7 @@ class SCI_Shortcodes {
                     paginationControls.style.display = 'block';
                 }
                 elements.searchBtn.disabled = true;
-                elements.searchBtn.textContent = 'Recherche...';
+                elements.searchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recherche...';
                 const formData = new FormData();
                 formData.append('action', 'sci_inpi_search_ajax');
                 formData.append('code_postal', codePostal);
@@ -816,7 +816,7 @@ class SCI_Shortcodes {
                     cache.isSearching = false;
                     elements.searchLoading.style.display = 'none';
                     elements.searchBtn.disabled = false;
-                    elements.searchBtn.textContent = 'Rechercher les SCI';
+                    elements.searchBtn.innerHTML = '<i class="fas fa-search"></i> Rechercher les SCI';
                     if (data.success) {
                         displayResults(data.data);
                     } else {
@@ -828,7 +828,7 @@ class SCI_Shortcodes {
                     cache.isSearching = false;
                     elements.searchLoading.style.display = 'none';
                     elements.searchBtn.disabled = false;
-                    elements.searchBtn.textContent = 'Rechercher les SCI';
+                    elements.searchBtn.innerHTML = '<i class="fas fa-search"></i> Rechercher les SCI';
                     displayError('Erreur réseau lors de la recherche: ' + error.message);
                 });
             }
@@ -1004,7 +1004,7 @@ class SCI_Shortcodes {
                 if (!elements) return;
                 elements.searchResults.style.display = 'none';
                 elements.searchError.style.display = 'block';
-                elements.searchError.querySelector('#error-message').textContent = message;
+                elements.searchError.querySelector('#error-message').innerHTML = '<i class="fas fa-exclamation-triangle"></i> <span id="error-text">' + message + '</span>';
             }
             function escapeHtml(text) {
                 const div = document.createElement('div');
