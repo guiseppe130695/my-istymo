@@ -176,11 +176,24 @@ jQuery(document).ready(function($) {
      */
     // Variable pour éviter les appels multiples
     let deletingLeads = new Set();
+    let deleteInProgress = false;
     
     function deleteLead(leadId) {
+        // Protection globale contre les suppressions multiples
+        if (deleteInProgress) {
+            console.log('Suppression déjà en cours, ignoré:', leadId);
+            return;
+        }
+        
         // Vérifier si ce lead est déjà en cours de suppression
         if (deletingLeads.has(leadId)) {
             console.log('Lead déjà en cours de suppression:', leadId);
+            return;
+        }
+        
+        // Protection supplémentaire : vérifier si une requête AJAX est déjà en cours
+        if ($.active && $.active > 0) {
+            console.log('Requête AJAX déjà en cours, ignoré:', leadId);
             return;
         }
         
@@ -198,7 +211,8 @@ jQuery(document).ready(function($) {
             return;
         }
         
-        // Ajouter le lead à la liste des suppressions en cours
+        // Marquer la suppression comme en cours
+        deleteInProgress = true;
         deletingLeads.add(leadId);
         
         console.log('Deleting lead ID:', leadId);
@@ -208,6 +222,7 @@ jQuery(document).ready(function($) {
             console.error('unifiedLeadsAjax not defined');
             alert('Erreur: Variables AJAX non disponibles');
             deletingLeads.delete(leadId);
+            deleteInProgress = false;
             return;
         }
             
@@ -248,6 +263,7 @@ jQuery(document).ready(function($) {
                     
                     // Retirer le lead de la liste des suppressions en cours
                     deletingLeads.delete(leadId);
+                    deleteInProgress = false;
                 },
                 error: function(xhr, status, error) {
                     console.error('Delete Error:', xhr, status, error);
@@ -256,6 +272,7 @@ jQuery(document).ready(function($) {
                     
                     // Retirer le lead de la liste des suppressions en cours
                     deletingLeads.delete(leadId);
+                    deleteInProgress = false;
                 }
             });
     }
@@ -917,32 +934,25 @@ jQuery(document).ready(function($) {
         $(document).off('click', '.my-istymo-add-action');
         $(document).off('click', '.my-istymo-change-status');
         
-        // Attendre un peu pour s'assurer que les gestionnaires sont supprimés
-        setTimeout(function() {
-            // Modifier un lead
-            $(document).on('click', '.edit-lead', function(e) {
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                const leadId = $(this).data('lead-id');
-                editLead(leadId);
-            });
+        // Utiliser une approche différente : gestionnaire unique avec délégation
+        $(document).off('click', '.my-istymo-action-btn').on('click', '.my-istymo-action-btn', function(e) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
             
-            // Voir un lead - utiliser directement openLeadDetailModal
-            $(document).on('click', '.view-lead', function(e) {
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                const leadId = $(this).data('lead-id');
-                openLeadDetailModal(leadId);
-            });
+            const $btn = $(this);
+            const leadId = $btn.data('lead-id');
+            const action = $btn.data('action') || $btn.attr('class').split(' ').find(cls => cls.includes('lead'));
             
-            // Supprimer un lead
-            $(document).on('click', '.delete-lead', function(e) {
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                const leadId = $(this).data('lead-id');
+            console.log('Action clicked:', action, 'Lead ID:', leadId);
+            
+            if (action === 'delete-lead' || $btn.hasClass('delete-lead')) {
                 deleteLead(leadId);
-            });
-        }, 100);
+            } else if (action === 'view-lead' || $btn.hasClass('view-lead')) {
+                openLeadDetailModal(leadId);
+            } else if (action === 'edit-lead' || $btn.hasClass('edit-lead')) {
+                editLead(leadId);
+            }
+        });
         
         // PHASE 3 : Ajouter une action - Utiliser le système de lead-actions.js
         $(document).on('click', '.my-istymo-add-action', function(e) {
