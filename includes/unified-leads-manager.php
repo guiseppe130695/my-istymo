@@ -765,10 +765,10 @@ class Unified_Leads_Manager {
             echo '<th class="my-istymo-th-checkbox"><input type="checkbox" class="my-istymo-select-all"></th>';
             echo '<th class="my-istymo-th-company"><i class="fas fa-building"></i> Entreprise</th>';
             echo '<th class="my-istymo-th-category"><i class="fas fa-tags"></i> Catégorie</th>';
+            echo '<th class="my-istymo-th-priority"><i class="fas fa-flag"></i> Priorité</th>';
+            echo '<th class="my-istymo-th-location"><i class="fas fa-map-marker-alt"></i> Localisation</th>';
             echo '<th class="my-istymo-th-status"><i class="fas fa-info-circle"></i> Statut</th>';
-            echo '<th class="my-istymo-th-priority"><i class="fas fa-exclamation-triangle"></i> Priorité</th>';
-            echo '<th class="my-istymo-th-date"><i class="fas fa-calendar"></i> Date</th>';
-            echo '<th class="my-istymo-th-actions"><i class="fas fa-cog"></i> Actions</th>';
+            echo '<th class="my-istymo-th-actions"></th>';
             echo '</tr>';
             echo '</thead>';
             echo '<tbody>';
@@ -831,118 +831,137 @@ class Unified_Leads_Manager {
      * Rendre une ligne de lead pour le tableau
      */
     private function render_lead_row($lead) {
-        $status_manager = Lead_Status_Manager::get_instance();
-        $status_info = $status_manager->get_status_info($lead->status);
+        // Extraire les données selon le type de lead (même logique que la page principale)
+        $company_name = '';
+        $location = '';
+        $category = '';
         
-        echo '<tr class="my-istymo-lead-row" data-lead-id="' . esc_attr($lead->id) . '">';
+        if (!empty($lead->data_originale)) {
+            if ($lead->lead_type === 'dpe') {
+                $company_name = $lead->data_originale['adresse_ban'] ?? 'Bien immobilier';
+                $ville = $lead->data_originale['nom_commune_ban'] ?? '';
+                $code_postal = $lead->data_originale['code_postal_ban'] ?? '';
+                $location = $ville . ($code_postal ? ' (' . $code_postal . ')' : '');
+                $category = 'Lead DPE';
+            } elseif ($lead->lead_type === 'sci') {
+                $company_name = $lead->data_originale['denomination'] ?? $lead->data_originale['raisonSociale'] ?? 'SCI';
+                $ville = $lead->data_originale['ville'] ?? '';
+                $code_postal = $lead->data_originale['code_postal'] ?? '';
+                $location = $ville . ($code_postal ? ' (' . $code_postal . ')' : '');
+                $category = 'Lead SCI';
+            }
+        }
         
-        // Checkbox
+        // Copier exactement la même structure HTML que la page principale
+        echo '<tr class="my-istymo-table-row">';
         echo '<td class="my-istymo-td-checkbox">';
         echo '<input type="checkbox" class="my-istymo-lead-checkbox" value="' . esc_attr($lead->id) . '">';
         echo '</td>';
-        
-        // Entreprise
         echo '<td class="my-istymo-td-company">';
-        echo '<div class="my-istymo-company-info">';
-        
-        // Extraire les informations de l'entreprise depuis data_originale
-        $company_name = '';
-        $siren = '';
-        
-        if (!empty($lead->data_originale)) {
-            if (is_string($lead->data_originale)) {
-                $data = json_decode($lead->data_originale, true);
-            } else {
-                $data = $lead->data_originale;
-            }
-            
-            // Pour SCI
-            if ($lead->lead_type === 'sci' && !empty($data['denomination'])) {
-                $company_name = $data['denomination'];
-                $siren = !empty($data['siren']) ? $data['siren'] : '';
-            }
-            // Pour DPE
-            elseif ($lead->lead_type === 'dpe' && !empty($data['nom_etablissement'])) {
-                $company_name = $data['nom_etablissement'];
-                $siren = !empty($data['siren']) ? $data['siren'] : '';
-            }
-        }
-        
-        if ($company_name) {
-            echo '<strong>' . esc_html($company_name) . '</strong>';
+        echo '<div class="my-istymo-company-cell">';
+        echo '<div class="my-istymo-company-icon">';
+        if ($lead->lead_type === 'dpe') {
+            echo '<span class="my-istymo-icon my-istymo-icon-house">🏠</span>';
         } else {
-            echo '<strong>Lead #' . esc_html($lead->id) . '</strong>';
+            echo '<span class="my-istymo-icon my-istymo-icon-building">🏢</span>';
         }
-        
-        if ($siren) {
-            echo '<br><small class="my-istymo-siren">SIREN: ' . esc_html($siren) . '</small>';
-        }
-        
+        echo '</div>';
+        echo '<div class="my-istymo-company-info">';
+        echo '<div class="my-istymo-company-name">' . esc_html($company_name ?: 'Lead #' . $lead->id) . '</div>';
+        echo '<div class="my-istymo-company-id">ID: ' . esc_html($lead->original_id) . '</div>';
+        echo '</div>';
         echo '</div>';
         echo '</td>';
-        
-        // Catégorie
         echo '<td class="my-istymo-td-category">';
-        $category_icon = ($lead->lead_type === 'sci') ? 'fas fa-building' : 'fas fa-home';
-        $category_label = ($lead->lead_type === 'sci') ? 'SCI' : 'DPE';
-        echo '<span class="my-istymo-category-badge my-istymo-category-' . esc_attr($lead->lead_type) . '">';
-        echo '<i class="' . $category_icon . '"></i> ' . $category_label;
-        echo '</span>';
+        echo '<div class="my-istymo-category">' . esc_html($category) . '</div>';
         echo '</td>';
-        
-        // Statut
-        echo '<td class="my-istymo-td-status">';
-        echo '<span class="my-istymo-status-badge my-istymo-status-' . esc_attr($lead->status) . '" style="background-color: ' . esc_attr($status_info['color']) . '">';
-        echo esc_html($status_info['label']);
-        echo '</span>';
-        echo '</td>';
-        
-        // Priorité
         echo '<td class="my-istymo-td-priority">';
-        $priority_colors = array(
-            'basse' => '#28a745',
-            'normale' => '#ffc107',
-            'haute' => '#dc3545'
-        );
-        $priority_icons = array(
-            'basse' => 'fas fa-arrow-down',
-            'normale' => 'fas fa-minus',
-            'haute' => 'fas fa-arrow-up'
-        );
-        $priority_labels = array(
-            'basse' => 'Basse',
-            'normale' => 'Normale',
-            'haute' => 'Haute'
-        );
-        echo '<span class="my-istymo-priority-badge" style="background-color: ' . esc_attr($priority_colors[$lead->priority] ?? '#6c757d') . '">';
-        echo '<i class="' . esc_attr($priority_icons[$lead->priority] ?? 'fas fa-minus') . '"></i> ';
-        echo esc_html($priority_labels[$lead->priority] ?? ucfirst($lead->priority));
+        
+        // Convertir les priorités en badges modernes (même logique que la page principale)
+        $priority_class = '';
+        $priority_text = '';
+        switch($lead->priorite) {
+            case 'haute':
+                $priority_class = 'high';
+                $priority_text = 'Haute';
+                break;
+            case 'normale':
+                $priority_class = 'normal';
+                $priority_text = 'Normale';
+                break;
+            case 'basse':
+                $priority_class = 'low';
+                $priority_text = 'Basse';
+                break;
+            default:
+                $priority_class = 'normal';
+                $priority_text = 'Normale';
+        }
+        echo '<span class="my-istymo-priority-badge my-istymo-priority-' . $priority_class . '">';
+        echo '<span class="my-istymo-priority-dot"></span>';
+        echo $priority_text;
         echo '</span>';
         echo '</td>';
-        
-        // Date
-        echo '<td class="my-istymo-td-date">';
-        echo '<div class="my-istymo-date-info">';
-        echo '<div class="my-istymo-date-main">' . date('d/m/Y', strtotime($lead->created_at)) . '</div>';
-        echo '<div class="my-istymo-date-time">' . date('H:i', strtotime($lead->created_at)) . '</div>';
-        echo '</div>';
+        echo '<td class="my-istymo-td-location">';
+        echo '<div class="my-istymo-location">' . esc_html($location ?: '—') . '</div>';
         echo '</td>';
+        echo '<td class="my-istymo-td-status">';
         
-        // Actions
+        // Convertir les statuts en badges modernes (même logique que la page principale)
+        $status_class = '';
+        $status_text = '';
+        switch($lead->status) {
+            case 'nouveau':
+                $status_class = 'pending';
+                $status_text = 'Nouveau';
+                break;
+            case 'en_cours':
+                $status_class = 'progress';
+                $status_text = 'En cours';
+                break;
+            case 'qualifie':
+                $status_class = 'completed';
+                $status_text = 'Qualifié';
+                break;
+            case 'proposition':
+                $status_class = 'warning';
+                $status_text = 'Proposition';
+                break;
+            case 'negociation':
+                $status_class = 'info';
+                $status_text = 'Négociation';
+                break;
+            case 'gagne':
+                $status_class = 'success';
+                $status_text = 'Gagné';
+                break;
+            case 'perdu':
+                $status_class = 'danger';
+                $status_text = 'Perdu';
+                break;
+            case 'termine':
+                $status_class = 'completed';
+                $status_text = 'Terminé';
+                break;
+            default:
+                $status_class = 'pending';
+                $status_text = ucfirst($lead->status);
+        }
+        echo '<span class="my-istymo-status-badge my-istymo-status-' . $status_class . '">';
+        echo '<span class="my-istymo-status-dot"></span>';
+        echo $status_text;
+        echo '</span>';
+        echo '</td>';
         echo '<td class="my-istymo-td-actions">';
-        echo '<div class="my-istymo-action-buttons">';
-        echo '<button class="my-istymo-btn my-istymo-btn-sm my-istymo-btn-primary view-lead-details" data-lead-id="' . esc_attr($lead->id) . '">';
-        echo '<i class="fas fa-eye"></i>';
+        echo '<div class="my-istymo-actions-buttons">';
+        echo '<button class="my-istymo-action-btn view-lead" data-lead-id="' . esc_attr($lead->id) . '" onclick="openLeadDetailModal(' . esc_attr($lead->id) . '); return false;" title="Voir les détails">';
+        echo '<i class="fas fa-eye"></i> Voir';
         echo '</button>';
-        echo '<button class="my-istymo-btn my-istymo-btn-sm my-istymo-btn-secondary edit-lead" data-lead-id="' . esc_attr($lead->id) . '">';
-        echo '<i class="fas fa-edit"></i>';
-        echo '</button>';
-        echo '<button class="my-istymo-btn my-istymo-btn-sm my-istymo-btn-danger delete-lead" data-lead-id="' . esc_attr($lead->id) . '">';
-        echo '<i class="fas fa-trash"></i>';
+        echo '<button class="my-istymo-action-btn delete-lead" data-lead-id="' . esc_attr($lead->id) . '" onclick="if(confirm(\'Êtes-vous sûr de vouloir supprimer ce lead ?\')) { deleteLead(' . esc_attr($lead->id) . '); } return false;" title="Supprimer">';
+        echo '<i class="fas fa-trash"></i> Supprimer';
         echo '</button>';
         echo '</div>';
         echo '</td>';
-        
         echo '</tr>';
     }
     

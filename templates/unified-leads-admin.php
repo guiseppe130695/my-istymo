@@ -211,14 +211,14 @@ function unified_leads_admin_page($context = array()) {
                                         $ville = $lead->data_originale['nom_commune_ban'] ?? '';
                                         $code_postal = $lead->data_originale['code_postal_ban'] ?? '';
                                         $location = $ville . ($code_postal ? ' (' . $code_postal . ')' : '');
-                                        $category = 'Immobilier';
+                                        $category = 'Lead DPE';
                                             } elseif ($lead->lead_type === 'sci') {
                                         $company_name = $lead->data_originale['denomination'] ?? $lead->data_originale['raisonSociale'] ?? 'SCI';
                                         $domain = 'entreprise.com';
                                         $ville = $lead->data_originale['ville'] ?? '';
                                         $code_postal = $lead->data_originale['code_postal'] ?? '';
                                         $location = $ville . ($code_postal ? ' (' . $code_postal . ')' : '');
-                                        $category = 'Société Civile';
+                                        $category = 'Lead SCI';
                                     }
                                 }
                             ?>
