@@ -427,6 +427,205 @@ button.favorite-btn.favori,
 }
 
 /* ========================================
+   STYLES POUR LE RÉCAPITULATIF DE CAMPAGNE
+   ======================================== */
+
+/* Récapitulatif de campagne */
+.campaign-recap {
+    max-height: 500px !important;
+    overflow-y: auto !important;
+    margin-bottom: 20px !important;
+}
+
+.recap-section {
+    background: #f8f9fa !important;
+    border: 1px solid #e9ecef !important;
+    border-radius: 8px !important;
+    padding: 20px !important;
+    margin-bottom: 15px !important;
+}
+
+.recap-section h3 {
+    margin-top: 0 !important;
+    margin-bottom: 15px !important;
+    color: #495057 !important;
+    font-size: 1.1em !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.recap-item {
+    margin-bottom: 12px !important;
+    padding: 8px 0 !important;
+    border-bottom: 1px solid #e9ecef !important;
+}
+
+.recap-item:last-child {
+    border-bottom: none !important;
+}
+
+.pricing-table {
+    background: white !important;
+    border-radius: 6px !important;
+    padding: 15px !important;
+}
+
+.pricing-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 8px 0 !important;
+    border-bottom: 1px solid #f0f0f0 !important;
+}
+
+.pricing-row:last-child {
+    border-bottom: none !important;
+}
+
+.total-row {
+    background: #e7f3ff !important;
+    margin: 10px -15px -15px -15px !important;
+    padding: 15px !important;
+    border-radius: 0 0 6px 6px !important;
+    font-size: 1.1em !important;
+}
+
+.services-list {
+    background: white !important;
+    border-radius: 4px !important;
+    padding: 15px !important;
+}
+
+.service-item {
+    padding: 6px 0 !important;
+    color: #28a745 !important;
+    font-weight: 500 !important;
+}
+
+.recap-buttons {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+    justify-content: center !important;
+    margin-top: 20px !important;
+}
+
+/* ========================================
+   STYLES POUR LE PROCESSUS DE PAIEMENT
+   ======================================== */
+
+/* En-tête de paiement */
+.payment-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+    border: 1px solid #dee2e6 !important;
+    border-radius: 8px !important;
+    padding: 20px !important;
+    margin-bottom: 20px !important;
+}
+
+.payment-summary-compact {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    gap: 15px !important;
+    align-items: center !important;
+}
+
+.summary-item {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 8px 0 !important;
+    border-bottom: 1px solid #e9ecef !important;
+}
+
+.summary-item:last-child {
+    border-bottom: none !important;
+}
+
+/* Container de traitement */
+.processing-container {
+    text-align: center !important;
+    padding: 40px 20px !important;
+}
+
+.processing-icon {
+    font-size: 1.2em !important;
+    font-weight: 600 !important;
+    color: #0073aa !important;
+    margin-bottom: 15px !important;
+}
+
+.processing-text {
+    font-size: 1.1em !important;
+    color: #495057 !important;
+    margin-bottom: 20px !important;
+}
+
+.processing-subtext {
+    font-size: 0.9em !important;
+    color: #6c757d !important;
+    margin-top: 10px !important;
+}
+
+/* Barre de progression */
+.progress-bar {
+    width: 100% !important;
+    height: 6px !important;
+    background: #e9ecef !important;
+    border-radius: 3px !important;
+    overflow: hidden !important;
+    margin: 20px 0 !important;
+}
+
+.progress-bar-fill {
+    height: 100% !important;
+    background: linear-gradient(90deg, #0073aa 0%, #28a745 100%) !important;
+    border-radius: 3px !important;
+    transition: width 0.3s ease !important;
+    width: 0% !important;
+}
+
+/* Container de checkout */
+#checkout-container {
+    margin-top: 20px !important;
+}
+
+#embedded-checkout {
+    background: white !important;
+    border: 1px solid #e9ecef !important;
+    border-radius: 8px !important;
+    padding: 20px !important;
+}
+
+/* Succès de paiement */
+.success-container {
+    text-align: center !important;
+    padding: 40px 20px !important;
+}
+
+.success-icon {
+    font-size: 2em !important;
+    color: #28a745 !important;
+    margin-bottom: 20px !important;
+}
+
+.success-container h3 {
+    color: #28a745 !important;
+    margin-bottom: 15px !important;
+}
+
+.success-actions {
+    margin-top: 30px !important;
+}
+
+#sending-status {
+    color: #6c757d !important;
+    font-size: 0.9em !important;
+    margin-top: 10px !important;
+}
+
+/* ========================================
    RESPONSIVE GÉNÉRAL
    ======================================== */
 
