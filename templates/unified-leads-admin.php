@@ -145,12 +145,6 @@ function unified_leads_admin_page($context = array()) {
                             <button type="submit" class="my-istymo-btn my-istymo-btn-primary">
                                 <i class="fas fa-filter"></i> Filtrer
                             </button>
-                            <button type="button" class="my-istymo-btn my-istymo-btn-secondary" onclick="testAjaxConnection()">
-                                <i class="fas fa-wrench"></i> Test AJAX
-                            </button>
-                            <button type="button" class="my-istymo-btn my-istymo-btn-secondary" onclick="debugAjaxActions()">
-                                <i class="fas fa-bug"></i> Debug
-                            </button>
                             <?php if (!empty($_GET['lead_type']) || !empty($_GET['status']) || !empty($_GET['priorite']) || !empty($_GET['date_from']) || !empty($_GET['date_to']) || !empty($filters['lead_type']) || !empty($filters['status']) || !empty($filters['priorite'])): ?>
                             <?php if ($context['is_shortcode']): ?>
                             <a href="<?php echo remove_query_arg(array('lead_type', 'status', 'priorite', 'date_from', 'date_to', 'paged')); ?>" class="my-istymo-filter-reset-btn">
@@ -179,7 +173,7 @@ function unified_leads_admin_page($context = array()) {
                                     <input type="checkbox" class="my-istymo-select-all">
                                 </th>
                                 <th class="my-istymo-th-company">
-                                    <i class="fas fa-building"></i> Entreprise
+                                    <i class="fas fa-building"></i> Lead
                                 </th>
                                 <th class="my-istymo-th-category">
                                     <i class="fas fa-tags"></i> Catégorie
@@ -579,57 +573,6 @@ function unified_leads_admin_page($context = array()) {
             });
         }
         
-        // Fonction de test de connexion AJAX
-        function testAjaxConnection() {
-            console.log('=== TEST CONNEXION AJAX ===');
-            console.log('URL:', ajaxUrl);
-            console.log('Nonce:', nonce);
-            
-            $.ajax({
-                url: ajaxUrl,
-                type: 'POST',
-                data: {
-                    action: 'my_istymo_test_ajax',
-                    nonce: nonce
-                },
-                timeout: 5000,
-                success: function(response) {
-                    console.log('✅ Test AJAX réussi:', response);
-                    alert('Test AJAX réussi! Vérifiez la console pour les détails.');
-                },
-                error: function(xhr, status, error) {
-                    console.error('❌ Test AJAX échoué:', {xhr: xhr, status: status, error: error});
-                    console.error('Response:', xhr.responseText);
-                    alert('Test AJAX échoué. Vérifiez la console pour les détails.');
-                }
-            });
-        }
-        
-        // Fonction de debug des actions AJAX
-        function debugAjaxActions() {
-            console.log('=== DEBUG ACTIONS AJAX ===');
-            
-            $.ajax({
-                url: ajaxUrl,
-                type: 'POST',
-                data: {
-                    action: 'debug_ajax_actions',
-                    nonce: nonce
-                },
-                success: function(response) {
-                    console.log('✅ Actions AJAX:', response);
-                    alert('Actions AJAX: ' + JSON.stringify(response.data.actions, null, 2));
-                },
-                error: function(xhr, status, error) {
-                    console.error('❌ Debug AJAX échoué:', {xhr: xhr, status: status, error: error});
-                    alert('Debug AJAX échoué. Vérifiez la console.');
-                }
-            });
-        }
-        
-        // Exposer les fonctions globalement
-        window.testAjaxConnection = testAjaxConnection;
-        window.debugAjaxActions = debugAjaxActions;
         
         // Gestionnaire pour la soumission du formulaire de filtres
         $('.my-istymo-inline-filters').on('submit', function(e) {

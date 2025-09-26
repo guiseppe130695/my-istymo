@@ -36,8 +36,6 @@ class Unified_Leads_Manager {
         add_action('wp_ajax_update_lead_priority', array($this, 'ajax_update_priority'));
         add_action('wp_ajax_add_lead_note', array($this, 'ajax_add_note'));
         
-        // Debug: Vérifier que les actions sont bien enregistrées
-        add_action('wp_ajax_debug_ajax_actions', array($this, 'debug_ajax_actions'));
     }
     
     /**
@@ -965,30 +963,6 @@ class Unified_Leads_Manager {
         echo '</tr>';
     }
     
-    /**
-     * Debug: Vérifier les actions AJAX enregistrées
-     */
-    public function debug_ajax_actions() {
-        global $wp_filter;
-        
-        $ajax_actions = array();
-        if (isset($wp_filter['wp_ajax_filter_unified_leads'])) {
-            $ajax_actions['filter_unified_leads'] = 'Enregistrée';
-        } else {
-            $ajax_actions['filter_unified_leads'] = 'NON ENREGISTRÉE';
-        }
-        
-        if (isset($wp_filter['wp_ajax_my_istymo_test_ajax'])) {
-            $ajax_actions['my_istymo_test_ajax'] = 'Enregistrée';
-        } else {
-            $ajax_actions['my_istymo_test_ajax'] = 'NON ENREGISTRÉE';
-        }
-        
-        wp_send_json_success(array(
-            'actions' => $ajax_actions,
-            'message' => 'Debug des actions AJAX'
-        ));
-    }
     
     /**
      * AJAX: Mettre à jour le statut
