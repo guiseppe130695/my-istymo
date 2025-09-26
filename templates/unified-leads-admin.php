@@ -626,14 +626,8 @@ function unified_leads_admin_page($context = array()) {
                 }
             });
             
-            $('.delete-lead').off('click').on('click', function(e) {
-                e.preventDefault();
-                var leadId = $(this).data('lead-id');
-                // Appeler la fonction de suppression existante
-                if (typeof deleteLead === 'function') {
-                    deleteLead(leadId);
-                }
-            });
+            // Les gestionnaires de suppression sont gérés par unified-leads-admin.js
+            // Pas besoin de les redéfinir ici pour éviter les conflits
         }
         
         // Initialiser les gestionnaires d'événements au chargement
@@ -816,51 +810,8 @@ function unified_leads_admin_page($context = array()) {
         });
     }
     
-    // Fonction pour supprimer un lead
-    function deleteLead(leadId) {
-        // Vérifier si la fonction existante est disponible
-        if (typeof deleteUnifiedLead === 'function') {
-            deleteUnifiedLead(leadId);
-            return;
-        }
-        
-        // Sinon utiliser AJAX direct
-        jQuery.ajax({
-            url: unifiedLeadsAjax.ajaxurl,
-            type: 'POST',
-            data: {
-                action: 'delete_unified_lead',
-                lead_id: leadId,
-                nonce: unifiedLeadsAjax.nonce
-            },
-            beforeSend: function() {
-                // Désactiver le bouton pour éviter les doubles clics
-                jQuery('[data-lead-id="' + leadId + '"]').prop('disabled', true);
-            },
-            success: function(response) {
-                console.log('Response:', response); // Debug
-                if (response && response.success) {
-                    // Supprimer la ligne du tableau
-                    jQuery('[data-lead-id="' + leadId + '"]').closest('tr').fadeOut(400, function() {
-                        jQuery(this).remove();
-                        updateLeadCount();
-                        // Recharger la page si c'était le dernier lead
-                        if (jQuery('.my-istymo-table-row').length === 0) {
-                            location.reload();
-                        }
-                    });
-                } else {
-                    alert('Erreur lors de la suppression du lead: ' + (response && response.data ? response.data : 'Erreur inconnue'));
-                    jQuery('[data-lead-id="' + leadId + '"]').prop('disabled', false);
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('AJAX Error:', xhr, status, error); // Debug
-                alert('Erreur de communication avec le serveur: ' + error);
-                jQuery('[data-lead-id="' + leadId + '"]').prop('disabled', false);
-            }
-        });
-    }
+    // La fonction deleteLead est définie dans unified-leads-admin.js
+    // Pas besoin de la redéfinir ici pour éviter les conflits
     
     // Fonction pour mettre à jour le compteur de leads
     function updateLeadCount() {

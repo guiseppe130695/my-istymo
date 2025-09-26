@@ -174,15 +174,28 @@ jQuery(document).ready(function($) {
     /**
      * Fonction globale pour supprimer un lead
      */
+    // Variable pour éviter les appels multiples
+    let deletingLeads = new Set();
+    
     function deleteLead(leadId) {
+        // Vérifier si ce lead est déjà en cours de suppression
+        if (deletingLeads.has(leadId)) {
+            console.log('Lead déjà en cours de suppression:', leadId);
+            return;
+        }
+        
+        // Ajouter le lead à la liste des suppressions en cours
+        deletingLeads.add(leadId);
+        
         console.log('Deleting lead ID:', leadId);
             
-            // Vérifier que les variables AJAX sont disponibles
-            if (typeof unifiedLeadsAjax === 'undefined') {
-                console.error('unifiedLeadsAjax not defined');
-                alert('Erreur: Variables AJAX non disponibles');
-                return;
-            }
+        // Vérifier que les variables AJAX sont disponibles
+        if (typeof unifiedLeadsAjax === 'undefined') {
+            console.error('unifiedLeadsAjax not defined');
+            alert('Erreur: Variables AJAX non disponibles');
+            deletingLeads.delete(leadId);
+            return;
+        }
             
             $.ajax({
                 url: unifiedLeadsAjax.ajaxurl,
@@ -210,11 +223,17 @@ jQuery(document).ready(function($) {
                         alert('Erreur lors de la suppression: ' + (response && response.data ? response.data : 'Erreur inconnue'));
                         $('.delete-lead[data-lead-id="' + leadId + '"]').prop('disabled', false);
                     }
+                    
+                    // Retirer le lead de la liste des suppressions en cours
+                    deletingLeads.delete(leadId);
                 },
                 error: function(xhr, status, error) {
                     console.error('Delete Error:', xhr, status, error);
                     alert('Erreur de communication avec le serveur: ' + error);
                     $('.delete-lead[data-lead-id="' + leadId + '"]').prop('disabled', false);
+                    
+                    // Retirer le lead de la liste des suppressions en cours
+                    deletingLeads.delete(leadId);
                 }
             });
     }
