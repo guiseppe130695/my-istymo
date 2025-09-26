@@ -310,7 +310,7 @@ class SCI_Shortcodes {
                 <!-- Information pour les utilisateurs -->
                 <div class="info-message">
                     <p>
-                        <i class="fas fa-info-circle"></i> <strong>Prospection SCI</strong><br><br>
+                        <i class="fas fa-info-circle"></i> <strong>Prospection SCI</strong>
                         Prospectez directement les SCI. Vous avez également la possibilité de proposer vos services en réalisant des campagnes d'envoi de courrier.
                     </p>
                 </div>

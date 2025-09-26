@@ -948,6 +948,7 @@ section.my-istymo .form-field input[type="number"] {
     margin: 0 !important;
     font-family: inherit !important;
     line-height: 1.4 !important;
+    color: #333 !important
 }
 
 /* Focus des champs de formulaire */
