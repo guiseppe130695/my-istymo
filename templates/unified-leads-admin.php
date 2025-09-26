@@ -7,9 +7,21 @@ if (!defined('ABSPATH')) exit;
  * Peut être utilisée en mode admin ou en mode shortcode
  */
 function unified_leads_admin_page($context = array()) {
-    // Vérifier les permissions
+    // Vérifier les permissions - plus permissif pour les shortcodes
+    if (!is_user_logged_in()) {
+        if (isset($context['is_shortcode']) && $context['is_shortcode']) {
+            return '<div class="my-istymo-error">Vous devez être connecté pour accéder à la gestion des leads.</div>';
+        } else {
+            wp_die(__('Vous devez être connecté pour accéder à cette page.'));
+        }
+    }
+    
+    // Pour les shortcodes, permettre l'accès aux utilisateurs connectés
+    // Pour l'admin, garder la restriction aux administrateurs
+    if (!isset($context['is_shortcode']) || !$context['is_shortcode']) {
     if (!current_user_can('manage_options')) {
         wp_die(__('Vous n\'avez pas les permissions nécessaires pour accéder à cette page.'));
+        }
     }
     
     // Charger Font Awesome pour les icônes

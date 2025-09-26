@@ -1354,6 +1354,11 @@ ease !important;
     transition: all 0.3s ease;
 }
 
+/* S'assurer que le modal est complètement caché au chargement initial */
+.my-istymo-modal:not(.my-istymo-show) {
+    display: none !important;
+}
+
 .my-istymo-modal-overlay {
     position: absolute;
     top: 0;

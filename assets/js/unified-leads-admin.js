@@ -8,6 +8,9 @@ jQuery(document).ready(function($) {
     let selectedLeads = [];
     let modalClosing = false; // Protection contre les fermetures multiples
     
+    // S'assurer que le modal est caché au chargement initial
+    $('#lead-detail-modal').addClass('my-istymo-hidden').removeClass('my-istymo-show').hide();
+    
     // ===== DÉFINITION DES FONCTIONS GLOBALES =====
     
     /**
