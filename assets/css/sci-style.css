@@ -17,7 +17,6 @@ form#sci-search-form {
 #sci-search-form {
     display: flex !important;
     flex-direction: row !important;
-    align-items: center !important;
     gap: 1rem !important;
     flex-wrap: wrap !important;
     background: #f8f9fa !important;

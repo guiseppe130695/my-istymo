@@ -181,7 +181,7 @@ class DPE_Shortcodes {
             <!-- Information pour les utilisateurs -->
             <div class="info-message">
                 <p>
-                    <i class="fas fa-info-circle"></i> <strong>Aide à la prospection Lead DPE</strong>
+                    <i class="fas fa-info-circle"></i> <strong>Aide à la prospection Lead DPE : </strong> 
                     L'obligation du Diagnostic de Performance Énergétique concerne toute personne désirant mettre en vente un bien immobilier. Facilitez votre prospection et anticipez les ventes à venir en consultant la liste des DPE réalisés sur vos secteurs d'activité.
                 </p>
             </div>
