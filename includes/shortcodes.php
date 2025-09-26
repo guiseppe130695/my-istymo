@@ -196,7 +196,7 @@ class SCI_Shortcodes {
             'sci-campaigns-style',
             plugin_dir_url(dirname(__FILE__)) . 'assets/css/campaigns.css',
             array('sci-frontend-style'),
-            '1.0.1'
+            '1.0.2' // Version incrémentée pour forcer le rechargement
         );
 
         // Charger le CSS spécifique aux favoris SCI seulement si nécessaire
@@ -1216,6 +1216,121 @@ class SCI_Shortcodes {
         
         // Charger les assets nécessaires
         $this->force_enqueue_assets([]);
+        
+        // Ajouter des styles inline pour forcer l'application du CSS des campagnes
+        add_action('wp_head', function() {
+            echo '<style>
+            .sci-frontend-wrapper table,
+            .wrap table {
+                width: 100% !important;
+                max-width: 1200px !important;
+                border-collapse: collapse !important;
+                background: white !important;
+                border-radius: 8px !important;
+                overflow: hidden !important;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+                margin: 0 auto 20px auto !important;
+            }
+            .sci-frontend-wrapper table th,
+            .wrap table th {
+                background: #f8f9fa !important;
+                color: #333 !important;
+                font-weight: 600 !important;
+                padding: 12px 12px !important;
+                text-align: left !important;
+                font-size: 14px !important;
+                text-transform: none !important;
+                letter-spacing: normal !important;
+                border-bottom: 2px solid #dee2e6 !important;
+                border: none !important;
+            }
+            .sci-frontend-wrapper table td,
+            .wrap table td {
+                padding: 12px 12px !important;
+                border-bottom: 1px solid #eee !important;
+                font-size: 13px !important;
+                color: #333 !important;
+                vertical-align: middle !important;
+                border-left: none !important;
+                border-right: none !important;
+                border-top: none !important;
+            }
+            .sci-frontend-wrapper table tr:hover,
+            .wrap table tr:hover {
+                background-color: #f8f9fa !important;
+                transition: background-color 0.2s ease !important;
+            }
+            .sci-frontend-wrapper table tr:last-child td,
+            .wrap table tr:last-child td {
+                border-bottom: none !important;
+            }
+            .sci-frontend-wrapper .button,
+            .wrap .button,
+            .sci-frontend-wrapper .btn,
+            .wrap .btn {
+                display: inline-flex !important;
+                align-items: center !important;
+                gap: 8px !important;
+                padding: 12px 20px !important;
+                border: none !important;
+                border-radius: 6px !important;
+                font-size: 14px !important;
+                font-weight: 600 !important;
+                text-decoration: none !important;
+                cursor: pointer !important;
+                transition: all 0.3s ease !important;
+                white-space: nowrap !important;
+                min-height: 44px !important;
+                background: linear-gradient(135deg, #0073aa 0%, #005a87 100%) !important;
+                color: white !important;
+            }
+            .sci-frontend-wrapper .button:hover:not(:disabled),
+            .wrap .button:hover:not(:disabled),
+            .sci-frontend-wrapper .btn:hover:not(:disabled),
+            .wrap .btn:hover:not(:disabled) {
+                background: linear-gradient(135deg, #005a87 0%, #004466 100%) !important;
+                transform: translateY(-1px) !important;
+                box-shadow: 0 4px 12px rgba(0, 115, 170, 0.3) !important;
+            }
+            .sci-frontend-wrapper .button:active:not(:disabled),
+            .wrap .button:active:not(:disabled),
+            .sci-frontend-wrapper .btn:active:not(:disabled),
+            .wrap .btn:active:not(:disabled) {
+                transform: translateY(0) !important;
+                box-shadow: 0 2px 8px rgba(0, 115, 170, 0.3) !important;
+            }
+            .sci-frontend-wrapper .button:disabled,
+            .wrap .button:disabled,
+            .sci-frontend-wrapper .btn:disabled,
+            .wrap .btn:disabled {
+                opacity: 0.6 !important;
+                cursor: not-allowed !important;
+                transform: none !important;
+            }
+            .sci-frontend-wrapper .btn-sm,
+            .wrap .btn-sm {
+                padding: 8px 16px !important;
+                font-size: 12px !important;
+                min-height: 36px !important;
+            }
+            .sci-frontend-wrapper table th i,
+            .wrap table th i {
+                display: inline-block !important;
+                margin-right: 6px !important;
+                font-size: 14px !important;
+                color: #333 !important;
+                vertical-align: middle !important;
+                width: 16px !important;
+                text-align: center !important;
+                font-family: "Font Awesome 6 Free" !important;
+                font-weight: 900 !important;
+                font-style: normal !important;
+                text-rendering: auto !important;
+                -webkit-font-smoothing: antialiased !important;
+                -moz-osx-font-smoothing: grayscale !important;
+            }
+            </style>';
+        }, 999);
         
         $atts = shortcode_atts(array(
             'title' => 'Mes Campagnes de Lettres',

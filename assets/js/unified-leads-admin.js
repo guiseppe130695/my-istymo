@@ -6,6 +6,7 @@ jQuery(document).ready(function($) {
     
     // Variables globales
     let selectedLeads = [];
+    let modalClosing = false; // Protection contre les fermetures multiples
     
     // ===== DÉFINITION DES FONCTIONS GLOBALES =====
     
@@ -46,6 +47,33 @@ jQuery(document).ready(function($) {
         // Afficher le modal
         modal.removeClass('my-istymo-hidden').addClass('my-istymo-show');
         modal.show();
+        
+        // Ajouter un gestionnaire d'événement pour l'overlay (une seule fois)
+        modal.off('click.lead-detail').on('click.lead-detail', '.my-istymo-modal-overlay', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Clic sur overlay - fermeture du modal');
+            if (!modalClosing) {
+                closeLeadDetailModal();
+            }
+        });
+        
+        // Empêcher la fermeture du modal quand on clique sur le contenu
+        modal.off('click.lead-content').on('click.lead-content', '.my-istymo-modal-content', function(e) {
+            e.stopPropagation();
+        });
+        
+        // Gestionnaire d'événements clavier pour fermer avec Escape
+        $(document).off('keydown.lead-detail').on('keydown.lead-detail', function(e) {
+            if (e.key === 'Escape' && modal.hasClass('my-istymo-show')) {
+                e.preventDefault();
+                console.log('Touche Escape - fermeture du modal');
+                if (!modalClosing) {
+                    closeLeadDetailModal();
+                }
+            }
+        });
+        
         console.log('Modal affiché');
         
         // Test AJAX simple d'abord
@@ -1307,13 +1335,38 @@ jQuery(document).ready(function($) {
      * Fermer le modal de détails du lead
      */
     window.closeLeadDetailModal = function() {
+        console.log('=== FERMETURE MODAL LEAD ===');
+        
+        // Protection contre les fermetures multiples
+        if (modalClosing) {
+            console.log('Modal déjà en cours de fermeture, ignoré');
+            return;
+        }
+        
+        modalClosing = true;
+        
         // Utiliser le nouveau système si disponible
         if (window.leadActionsManager && typeof window.leadActionsManager.closeLeadDetailModal === 'function') {
             window.leadActionsManager.closeLeadDetailModal();
         } else {
             // Fallback vers l'ancien système
-            // Modal supprimé
+            const modal = $('#lead-detail-modal');
+            if (modal.length > 0) {
+                modal.removeClass('my-istymo-show').addClass('my-istymo-hidden');
+                modal.hide();
+                console.log('Modal fermé avec fallback');
+            }
         }
+        
+        // Nettoyer les événements
+        $(document).off('keydown.lead-detail');
+        const modal = $('#lead-detail-modal');
+        modal.off('click.lead-detail click.lead-content');
+        
+        // Réinitialiser le flag après un délai
+        setTimeout(() => {
+            modalClosing = false;
+        }, 500);
     };
     
     /**

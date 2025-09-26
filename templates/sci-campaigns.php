@@ -18,72 +18,6 @@
     <!-- Mode vue détaillée d'une campagne -->
     <!-- DEBUG: CSS Campaigns chargé -->
     <div class="sci-frontend-wrapper">
-        <style>
-.campaign-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 22px;
-    margin-bottom: 32px;
-    margin-top: 10px;
-}
-
-.campaign-stat-card {
-    background: #fff;
-    border-radius: 14px;
-    /* box-shadow: 0 2px 12px rgba(0,0,0,0.07); */
-    padding: 22px 18px 18px 18px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    border: none;
-    position: relative;
-    min-width: 0;
-    transition: box-shadow 0.2s;
-}
-.campaign-stat-card.status    { border-left: 4px solid #0073aa; }
-.campaign-stat-card.total     { border-left: 4px solid #28a745; }
-.campaign-stat-card.sent      { border-left: 4px solid #1e7e34; }
-.campaign-stat-card.errors    { border-left: 4px solid #dc3545; }
-
-.campaign-stat-label {
-    font-size: 13px;
-    color: #6c757d;
-    font-weight: 500;
-    margin-bottom: 7px;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-}
-
-.campaign-stat-value {
-    font-size: 2.1em;
-    font-weight: 700;
-    color: #222;
-    margin: 0;
-    line-height: 1.1;
-    letter-spacing: -1px;
-}
-
-@media (max-width: 700px) {
-    .campaign-stats-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-    }
-    .campaign-stat-card {
-        padding: 14px 10px 12px 10px;
-    }
-}
-@media (max-width: 480px) {
-    .campaign-stats-grid {
-        grid-template-columns: 1fr;
-    }
-    .campaign-stat-card {
-        padding: 12px 6vw 10px 6vw;
-    }
-    .campaign-stat-value {
-        font-size: 1.4em;
-    }
-}
-</style>
         <!-- En-tête avec navigation -->
         <div class="campaign-page-header">
             <h1 class="campaign-page-title"><?php echo esc_html($campaign_details['title']); ?></h1>
@@ -133,8 +67,8 @@
         <div class="campaign-letter-section">
             <div class="campaign-letter-header">
                 <h3 class="campaign-letter-title">Contenu de la lettre</h3>
-                <button id="show-letter-popup" class="letter-popup-trigger">
-                    Voir le contenu
+                <button id="show-letter-popup" class="btn btn-primary btn-sm">
+                    <i class="fas fa-eye"></i> Voir le contenu
                 </button>
             </div>
             <p class="campaign-letter-date">
@@ -150,8 +84,8 @@
                     <?php echo esc_html($campaign_details['content']); ?>
                 </div>
                 <div style="text-align:center; margin-top:auto;">
-                    <button id="close-letter-content-modal" style="background:linear-gradient(135deg, #28a745 0%, #1e7e34 100%); color:white; border:none; padding:12px 24px; border-radius:6px; cursor:pointer; font-size:14px; font-weight:600; transition:all 0.2s;">
-                        Fermer
+                    <button id="close-letter-content-modal" class="btn btn-primary">
+                        <i class="fas fa-times"></i> Fermer
                     </button>
                 </div>
             </div>
@@ -261,13 +195,13 @@
             <table class="sci-table">
                 <thead>
                     <tr>
-                        <th>Titre</th>
-                        <th>Statut</th>
-                        <th>Total</th>
-                        <th>Envoyées</th>
-                        <th>Erreurs</th>
-                        <th>Date création</th>
-                        <th>Actions</th>
+                        <th><i class="fas fa-heading"></i> Titre</th>
+                        <th><i class="fas fa-info-circle"></i> Statut</th>
+                        <th><i class="fas fa-list"></i> Total</th>
+                        <th><i class="fas fa-paper-plane"></i> Envoyées</th>
+                        <th><i class="fas fa-exclamation-triangle"></i> Erreurs</th>
+                        <th><i class="fas fa-calendar"></i> Date création</th>
+                        <th><i class="fas fa-cog"></i> Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -291,9 +225,8 @@
                             <td><?php echo date('d/m/Y H:i', strtotime($campaign['created_at'])); ?></td>
                             <td>
                                 <a href="<?php echo esc_url(add_query_arg('view', intval($campaign['id']))); ?>" 
-                                   class="sci-button"
-                                   style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important; color: white !important; border: none !important; text-decoration: none !important; display: inline-block !important; padding: 8px 16px !important; border-radius: 6px !important;">
-                                    Voir détails
+                                   class="btn btn-primary btn-sm">
+                                    <i class="fas fa-eye"></i> Voir détails
                                 </a>
                             </td>
                         </tr>

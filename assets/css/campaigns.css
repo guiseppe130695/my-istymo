@@ -3,6 +3,374 @@
    ======================================== */
 
 /* ========================================
+   TABLEAU DES CAMPAGNES - DESIGN DPE/SCI
+   ======================================== */
+
+/* Tableau des campagnes - même design que DPE et SCI */
+.sci-frontend-wrapper table,
+.wrap table {
+    width: 100% !important;
+    max-width: 1200px !important;
+    border-collapse: collapse !important;
+    background: white !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+    margin: 0 auto 20px auto !important;
+}
+
+.sci-frontend-wrapper table th,
+.wrap table th {
+    background: #f8f9fa !important;
+    color: #333 !important;
+    font-weight: 600 !important;
+    padding: 12px 12px !important;
+    text-align: left !important;
+    font-size: 14px !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    border-bottom: 2px solid #dee2e6 !important;
+    border: none !important;
+}
+
+.sci-frontend-wrapper table td,
+.wrap table td {
+    padding: 12px 12px !important;
+    border-bottom: 1px solid #eee !important;
+    font-size: 13px !important;
+    color: #333 !important;
+    vertical-align: middle !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-top: none !important;
+}
+
+.sci-frontend-wrapper table tr:hover,
+.wrap table tr:hover {
+    background-color: #f8f9fa !important;
+    transition: background-color 0.2s ease !important;
+}
+
+.sci-frontend-wrapper table tr:last-child td,
+.wrap table tr:last-child td {
+    border-bottom: none !important;
+}
+
+/* Boutons dans le tableau - style components */
+.sci-frontend-wrapper .button,
+.wrap .button,
+.sci-frontend-wrapper .btn,
+.wrap .btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 12px 20px !important;
+    border: none !important;
+    border-radius: 6px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    white-space: nowrap !important;
+    min-height: 44px !important;
+    background: linear-gradient(135deg, #0073aa 0%, #005a87 100%) !important;
+    color: white !important;
+}
+
+.sci-frontend-wrapper .button:hover:not(:disabled),
+.wrap .button:hover:not(:disabled),
+.sci-frontend-wrapper .btn:hover:not(:disabled),
+.wrap .btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #005a87 0%, #004466 100%) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(0, 115, 170, 0.3) !important;
+}
+
+.sci-frontend-wrapper .button:active:not(:disabled),
+.wrap .button:active:not(:disabled),
+.sci-frontend-wrapper .btn:active:not(:disabled),
+.wrap .btn:active:not(:disabled) {
+    transform: translateY(0) !important;
+    box-shadow: 0 2px 8px rgba(0, 115, 170, 0.3) !important;
+}
+
+.sci-frontend-wrapper .button:disabled,
+.wrap .button:disabled,
+.sci-frontend-wrapper .btn:disabled,
+.wrap .btn:disabled {
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+}
+
+/* Boutons de taille small */
+.sci-frontend-wrapper .btn-sm,
+.wrap .btn-sm {
+    padding: 8px 16px !important;
+    font-size: 12px !important;
+    min-height: 36px !important;
+}
+
+/* Statuts des campagnes */
+.campaign-status {
+    display: inline-block !important;
+    padding: 4px 8px !important;
+    border-radius: 4px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+.campaign-status.terminée {
+    background: #d4edda !important;
+    color: #155724 !important;
+}
+
+.campaign-status.en-cours {
+    background: #d1ecf1 !important;
+    color: #0c5460 !important;
+}
+
+.campaign-status.erreur {
+    background: #f8d7da !important;
+    color: #721c24 !important;
+}
+
+/* Icônes FontAwesome dans les en-têtes du tableau */
+.sci-frontend-wrapper table th i,
+.wrap table th i {
+    display: inline-block !important;
+    margin-right: 6px !important;
+    font-size: 14px !important;
+    color: #333 !important;
+    vertical-align: middle !important;
+    width: 16px !important;
+    text-align: center !important;
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+    font-style: normal !important;
+    text-rendering: auto !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+}
+
+/* Forcer les icônes FontAwesome avec des pseudo-éléments */
+.sci-frontend-wrapper table th i.fa-heading:before,
+.wrap table th i.fa-heading:before {
+    content: "\f1dc" !important;
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+}
+
+.sci-frontend-wrapper table th i.fa-info-circle:before,
+.wrap table th i.fa-info-circle:before {
+    content: "\f05a" !important;
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+}
+
+.sci-frontend-wrapper table th i.fa-list:before,
+.wrap table th i.fa-list:before {
+    content: "\f03a" !important;
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+}
+
+.sci-frontend-wrapper table th i.fa-paper-plane:before,
+.wrap table th i.fa-paper-plane:before {
+    content: "\f1d8" !important;
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+}
+
+.sci-frontend-wrapper table th i.fa-exclamation-triangle:before,
+.wrap table th i.fa-exclamation-triangle:before {
+    content: "\f071" !important;
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+}
+
+.sci-frontend-wrapper table th i.fa-calendar:before,
+.wrap table th i.fa-calendar:before {
+    content: "\f133" !important;
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+}
+
+.sci-frontend-wrapper table th i.fa-cog:before,
+.wrap table th i.fa-cog:before {
+    content: "\f013" !important;
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+}
+
+/* ========================================
+   PAGE DE DÉTAIL DES CAMPAGNES
+   ======================================== */
+
+/* En-tête de la page de détail */
+.campaign-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.campaign-page-title {
+    margin: 0;
+    color: #1e1e1e;
+    font-size: 1.6em;
+    font-weight: 600;
+}
+
+.campaign-back-link {
+    color: #6c757d;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 8px 16px;
+    border: 1px solid #6c757d;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.campaign-back-link:hover {
+    background-color: #6c757d;
+    color: white;
+}
+
+/* Grille des statistiques */
+.campaign-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 22px;
+    margin-bottom: 32px;
+    margin-top: 10px;
+}
+
+.campaign-stat-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 22px 18px 18px 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    border: none;
+    position: relative;
+    min-width: 0;
+    transition: box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.campaign-stat-card.status { border-left: 4px solid #0073aa; }
+.campaign-stat-card.total { border-left: 4px solid #28a745; }
+.campaign-stat-card.sent { border-left: 4px solid #1e7e34; }
+.campaign-stat-card.errors { border-left: 4px solid #dc3545; }
+
+.campaign-stat-label {
+    font-size: 13px;
+    color: #6c757d;
+    font-weight: 500;
+    margin-bottom: 7px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.campaign-stat-value {
+    font-size: 2.1em;
+    font-weight: 700;
+    color: #222;
+    margin: 0;
+    line-height: 1.1;
+    letter-spacing: -1px;
+}
+
+/* Section contenu de lettre */
+.campaign-letter-section {
+    background: #fff;
+    padding: 20px;
+    margin-bottom: 25px;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.campaign-letter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.campaign-letter-title {
+    color: #1e1e1e;
+    font-size: 1.2em;
+    margin: 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.campaign-letter-date {
+    margin: 0;
+    font-size: 12px;
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* Section détails des envois */
+.campaign-details-section {
+    background: #fff;
+    padding: 20px;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.campaign-details-title {
+    color: #1e1e1e;
+    font-size: 1.2em;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+/* Responsive pour la page de détail */
+@media (max-width: 700px) {
+    .campaign-stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+    .campaign-stat-card {
+        padding: 14px 10px 12px 10px;
+    }
+    .campaign-page-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 480px) {
+    .campaign-stats-grid {
+        grid-template-columns: 1fr;
+    }
+    .campaign-stat-card {
+        padding: 12px 6vw 10px 6vw;
+    }
+    .campaign-stat-value {
+        font-size: 1.4em;
+    }
+    .campaign-letter-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+}
+
+/* ========================================
    POPUP DU CONTENU DE LETTRE
    ======================================== */
 
@@ -118,6 +486,36 @@
     background-color: #5a6268;
 }
 
+/* Boutons dans le popup - style composants */
+.letter-popup-container .btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 12px 20px !important;
+    border: none !important;
+    border-radius: 6px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    white-space: nowrap !important;
+    min-height: 44px !important;
+    background: linear-gradient(135deg, #0073aa 0%, #005a87 100%) !important;
+    color: white !important;
+}
+
+.letter-popup-container .btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #005a87 0%, #004466 100%) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(0, 115, 170, 0.3) !important;
+}
+
+.letter-popup-container .btn:active:not(:disabled) {
+    transform: translateY(0) !important;
+    box-shadow: 0 2px 8px rgba(0, 115, 170, 0.3) !important;
+}
+
 /* ========================================
    BOUTON D'OUVERTURE DU POPUP
    ======================================== */
@@ -135,6 +533,36 @@
 
 .letter-popup-trigger:hover {
     background-color: #005a87;
+}
+
+/* Bouton d'ouverture du popup - style composants */
+.campaign-letter-section .btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 8px 16px !important;
+    border: none !important;
+    border-radius: 6px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    white-space: nowrap !important;
+    min-height: 36px !important;
+    background: linear-gradient(135deg, #0073aa 0%, #005a87 100%) !important;
+    color: white !important;
+}
+
+.campaign-letter-section .btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #005a87 0%, #004466 100%) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(0, 115, 170, 0.3) !important;
+}
+
+.campaign-letter-section .btn:active:not(:disabled) {
+    transform: translateY(0) !important;
+    box-shadow: 0 2px 8px rgba(0, 115, 170, 0.3) !important;
 }
 
 /* ========================================
@@ -278,6 +706,47 @@
    ======================================== */
 
 @media (max-width: 768px) {
+    /* Tableau responsive */
+    .sci-frontend-wrapper table,
+    .wrap table {
+        font-size: 12px !important;
+        margin: 0 auto 15px auto !important;
+    }
+    
+    .sci-frontend-wrapper table th,
+    .wrap table th,
+    .sci-frontend-wrapper table td,
+    .wrap table td {
+        padding: 8px 6px !important;
+        font-size: 11px !important;
+    }
+    
+    .sci-frontend-wrapper table th,
+    .wrap table th {
+        font-size: 11px !important;
+        padding: 10px 6px !important;
+    }
+    
+    .sci-frontend-wrapper .button,
+    .wrap .button {
+        padding: 8px 16px !important;
+        font-size: 12px !important;
+        min-height: 36px !important;
+    }
+    
+    .campaign-status {
+        padding: 2px 6px !important;
+        font-size: 9px !important;
+    }
+    
+    .sci-frontend-wrapper table th i,
+    .wrap table th i {
+        font-size: 12px !important;
+        margin-right: 4px !important;
+        width: 14px !important;
+    }
+    
+    /* Popup responsive */
     .letter-popup-container {
         width: 98%;
         max-height: 90vh;
