@@ -247,7 +247,7 @@ class DPE_Shortcodes {
             <div id="search-results" class="search-results">
                 <div id="results-header">
                     <h2 id="results-title"> Résultats de recherche</h2>
-                    <div id="pagination-info" class="d-none"></div>
+                    <div id="pagination-info" class=""></div>
                 </div>
                 
                 <!-- ✅ TABLEAU DES RÉSULTATS - STRUCTURE STABLE -->
