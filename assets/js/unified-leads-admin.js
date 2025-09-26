@@ -184,6 +184,13 @@ jQuery(document).ready(function($) {
             return;
         }
         
+        // Vérifier si le bouton est déjà désactivé (protection supplémentaire)
+        const deleteButton = $('.delete-lead[data-lead-id="' + leadId + '"]');
+        if (deleteButton.prop('disabled')) {
+            console.log('Bouton de suppression déjà désactivé pour le lead:', leadId);
+            return;
+        }
+        
         // Ajouter le lead à la liste des suppressions en cours
         deletingLeads.add(leadId);
         
@@ -220,8 +227,16 @@ jQuery(document).ready(function($) {
                         // Afficher un message de succès
                         showNotification('Lead supprimé avec succès', 'success');
                     } else {
-                        alert('Erreur lors de la suppression: ' + (response && response.data ? response.data : 'Erreur inconnue'));
-                        $('.delete-lead[data-lead-id="' + leadId + '"]').prop('disabled', false);
+                        // Ne pas afficher d'erreur si le lead a déjà été supprimé
+                        if (response && response.data && response.data.includes('Lead non trouvé')) {
+                            console.log('Lead déjà supprimé, suppression de la ligne du tableau');
+                            $('tr[data-lead-id="' + leadId + '"]').fadeOut(300, function() {
+                                $(this).remove();
+                            });
+                        } else {
+                            alert('Erreur lors de la suppression: ' + (response && response.data ? response.data : 'Erreur inconnue'));
+                            $('.delete-lead[data-lead-id="' + leadId + '"]').prop('disabled', false);
+                        }
                     }
                     
                     // Retirer le lead de la liste des suppressions en cours
@@ -888,6 +903,13 @@ jQuery(document).ready(function($) {
      * Initialise les actions sur les lignes
      */
     function initRowActions() {
+        // Supprimer les gestionnaires existants pour éviter les doublons
+        $(document).off('click', '.edit-lead');
+        $(document).off('click', '.view-lead');
+        $(document).off('click', '.delete-lead');
+        $(document).off('click', '.my-istymo-add-action');
+        $(document).off('click', '.my-istymo-change-status');
+        
         // Modifier un lead
         $(document).on('click', '.edit-lead', function(e) {
             e.preventDefault();
