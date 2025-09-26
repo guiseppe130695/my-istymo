@@ -99,17 +99,7 @@ class SCI_Favoris_Handler {
                 'original_id' => sanitize_text_field($sci_data['siren']),
                 'status' => 'nouveau',
                 'priorite' => 'normale',
-                'notes' => sprintf(
-                    "Favori SCI automatiquement créé\n" .
-                    "Dénomination: %s\n" .
-                    "Dirigeant: %s\n" .
-                    "Adresse: %s, %s %s",
-                    $sci_data['denomination'] ?? '',
-                    $sci_data['dirigeant'] ?? '',
-                    $sci_data['adresse'] ?? '',
-                    $sci_data['code_postal'] ?? '',
-                    $sci_data['ville'] ?? ''
-                ),
+                'notes' => '', // Notes vides par défaut
                 'data_originale' => $sci_data, // ✅ AJOUT : Inclure les données originales complètes
                 'date_creation' => current_time('mysql'),
                 'date_modification' => current_time('mysql')
