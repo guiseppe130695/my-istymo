@@ -465,14 +465,14 @@
     text-align: center !important;
 }
 
-/* ✅ NOUVEAU : Largeurs proportionnelles pour occuper 100% de l'écran */
-.lead-vendeur-table th:nth-child(1) { width: 5% !important; } /* Favori */
-.lead-vendeur-table th:nth-child(2) { width: 10% !important; } /* Ville */
-.lead-vendeur-table th:nth-child(3) { width: 25% !important; } /* Colonne 1 */
-.lead-vendeur-table th:nth-child(4) { width: 20% !important; } /* Colonne 2 */
-.lead-vendeur-table th:nth-child(5) { width: 20% !important; } /* Colonne 3 */
-.lead-vendeur-table th:nth-child(6) { width: 10% !important; } /* Date */
-.lead-vendeur-table th:nth-child(7) { width: 15% !important; } /* Actions */
+/* ✅ NOUVEAU : Largeurs équilibrées pour tous les éléments */
+.lead-vendeur-table th:nth-child(1) { width: 4% !important; min-width: 50px !important; } /* Favori */
+.lead-vendeur-table th:nth-child(2) { width: 8% !important; min-width: 80px !important; } /* Ville */
+.lead-vendeur-table th:nth-child(3) { width: 12% !important; min-width: 120px !important; } /* Type */
+.lead-vendeur-table th:nth-child(4) { width: 12% !important; min-width: 120px !important; } /* Téléphone */
+.lead-vendeur-table th:nth-child(5) { width: 12% !important; min-width: 120px !important; } /* Date */
+.lead-vendeur-table th:nth-child(6) { width: 12% !important; min-width: 120px !important; } /* Colonne dynamique */
+.lead-vendeur-table th:nth-child(7) { width: 40% !important; min-width: 300px !important; } /* Actions - LA PLUS GRANDE */
 
 /* Ajustements pour les colonnes avec du texte long */
 .lead-vendeur-table th[data-column="adresse"],
@@ -507,17 +507,17 @@
     }
     
     .lead-vendeur-table {
-        min-width: 100%;
+        min-width: 1600px; /* Augmenté pour accommoder la colonne Actions plus large */
     }
     
     /* Ajuster les largeurs des colonnes sur petits écrans */
-    .lead-vendeur-table th:nth-child(1) { width: 5% !important; } /* Favori */
-    .lead-vendeur-table th:nth-child(2) { width: 10% !important; } /* Ville */
-    .lead-vendeur-table th:nth-child(3) { width: 30% !important; } /* Colonne 1 */
-    .lead-vendeur-table th:nth-child(4) { width: 25% !important; } /* Colonne 2 */
-    .lead-vendeur-table th:nth-child(5) { width: 25% !important; } /* Colonne 3 */
-    .lead-vendeur-table th:nth-child(6) { width: 10% !important; } /* Date */
-    .lead-vendeur-table th:nth-child(7) { width: 15% !important; } /* Actions */
+    .lead-vendeur-table th:nth-child(1) { width: 4% !important; } /* Favori */
+    .lead-vendeur-table th:nth-child(2) { width: 8% !important; } /* Ville */
+    .lead-vendeur-table th:nth-child(3) { width: 12% !important; } /* Type */
+    .lead-vendeur-table th:nth-child(4) { width: 12% !important; } /* Téléphone */
+    .lead-vendeur-table th:nth-child(5) { width: 12% !important; } /* Date */
+    .lead-vendeur-table th:nth-child(6) { width: 12% !important; } /* Colonne dynamique */
+    .lead-vendeur-table th:nth-child(7) { width: 40% !important; } /* Actions - LA PLUS GRANDE */
 }
 
 /* Forcer l'affichage horizontal des en-têtes */
@@ -862,19 +862,139 @@
 
 /* ✅ NOUVEAU : Style pour la colonne Actions */
 .lead-vendeur-table td:last-child {
-    text-align: left !important;
+    text-align: center !important;
     white-space: nowrap !important;
+    min-width: 300px !important;
+    max-width: 400px !important;
+    padding: 8px !important;
+    vertical-align: top !important;
 }
 
 .lead-vendeur-table td:last-child .button {
     margin: 2px !important;
-    vertical-align: middle !important;
+    vertical-align: top !important;
+    width: auto !important;
+    max-width: 120px !important;
+    display: inline-block !important;
 }
 
 /* ✅ NOUVEAU : Style pour l'icône du bouton "Voir détails" */
 .view-lead-details i {
     margin-right: 5px !important;
     font-size: 11px !important;
+}
+
+/* ✅ NOUVEAU : Styles pour le bouton Analyser le bien */
+.analyser-bien-btn,
+.lead-vendeur-table .analyser-bien-btn {
+    background-color: #BA55D3 !important; /* Violet */
+    color: white !important;
+    border: none !important;
+    padding: 6px 8px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    font-size: 11px !important;
+    margin: 2px !important;
+    display: inline-block !important;
+    width: auto !important;
+    max-width: 100px !important;
+    text-decoration: none !important;
+    transition: background-color 0.3s ease !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+}
+
+.lead-vendeur-table .analyser-bien-btn:hover:not(:disabled) {
+    background-color: #9B4DB8 !important; /* Violet plus foncé */
+}
+
+.lead-vendeur-table .analyser-bien-btn:disabled {
+    background-color: #6c757d !important;
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
+}
+
+.localiser-bien-btn,
+.lead-vendeur-table .localiser-bien-btn {
+    background-color: #4285f4 !important; /* Couleur Google Maps */
+    color: white !important;
+    border: none !important;
+    padding: 6px 8px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    font-size: 11px !important;
+    margin: 2px !important;
+    display: inline-block !important;
+    width: auto !important;
+    max-width: 100px !important;
+    text-decoration: none !important;
+    transition: background-color 0.3s ease !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+}
+
+.lead-vendeur-table .localiser-bien-btn:hover:not(:disabled) {
+    background-color: #3367d6 !important; /* Couleur Google Maps plus foncée */
+}
+
+.lead-vendeur-table .localiser-bien-btn:disabled {
+    background-color: #6c757d !important;
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
+}
+
+.view-lead-details,
+.lead-vendeur-table .view-lead-details {
+    background-color: #007cba !important;
+    color: white !important;
+    border: none !important;
+    padding: 6px 8px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    font-size: 11px !important;
+    margin: 2px !important;
+    display: inline-block !important;
+    width: auto !important;
+    max-width: 100px !important;
+    text-decoration: none !important;
+    transition: background-color 0.3s ease !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.lead-vendeur-table .view-lead-details:hover {
+    background-color: #005a87 !important;
+}
+
+/* ✅ NOUVEAU : Styles généraux pour tous les boutons d'actions */
+.actions-column button,
+.lead-vendeur-table .actions-column button {
+    margin: 2px !important;
+    padding: 6px 8px !important;
+    border-radius: 4px !important;
+    font-size: 11px !important;
+    display: inline-block !important;
+    width: auto !important;
+    max-width: 100px !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    transition: all 0.3s ease !important;
+}
+
+.actions-column button:hover:not(:disabled),
+.lead-vendeur-table .actions-column button:hover:not(:disabled) {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+}
+
+.actions-column button:disabled,
+.lead-vendeur-table .actions-column button:disabled {
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    box-shadow: none !important;
 }
 
 /* ✅ NOUVEAU : Style pour le bouton "Analyser" désactivé */

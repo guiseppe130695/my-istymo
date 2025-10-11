@@ -473,12 +473,12 @@ function sci_ajouter_menu() {
            echo '<h1>🏢 Lead Vendeur</h1>';
            echo '<div class="my-istymo-container">';
            
-           // Affichage du tableau des leads
+           // ✅ NOUVEAU : Tableau principal avec style DPE/SCI et système de favoris
            if (!empty($entries)) {
                echo '<div class="my-istymo-card">';
                echo '<h2>📋 Leads Vendeur (' . $total_entries . ' au total)</h2>';
                
-               // ✅ NOUVEAU : Informations de pagination (style DPE/SCI)
+               // Informations de pagination (style DPE/SCI)
                if ($total_pages > 1) {
                    $start_entry = (($current_page - 1) * $per_page) + 1;
                    $end_entry = min($current_page * $per_page, $total_entries);
@@ -488,128 +488,125 @@ function sci_ajouter_menu() {
                    echo '</div>';
                }
                
+               // Tableau principal avec style DPE/SCI
                echo '<div class="lead-vendeur-table-container">';
                echo '<table class="wp-list-table widefat fixed striped lead-vendeur-table">';
                echo '<thead>';
                echo '<tr>';
                echo '<th class="favori-column">⭐</th>';
                
-               // ✅ NOUVEAU : Ajouter la colonne Ville juste après Favoris
+               // Colonne Ville
                if (!empty($entries)) {
                    $first_entry = reset($entries);
-                   $city_field_found = false;
-                   
-                   // Chercher le champ ville (4.3) dans les données
                    foreach ($first_entry as $field_id => $value) {
                        if ($field_id === '4.3' && !empty($value)) {
                            echo '<th>Ville</th>';
-                           $city_field_found = true;
                            break;
                        }
                    }
                }
                
-               // En-têtes des colonnes configurées
+               // En-têtes fixes pour les colonnes principales
+               echo '<th>Type</th>';
+               echo '<th>Téléphone</th>';
+               echo '<th>Date</th>';
+               
+               // En-têtes des colonnes configurées (sauf Site Web qui sera en dernier)
                if (!empty($config['display_fields'])) {
-                   $form_fields = $config_manager->get_form_fields(isset($config['gravity_form_id']) ? $config['gravity_form_id'] : 0);
                    foreach ($config['display_fields'] as $field_id) {
                        if (isset($form_fields[$field_id])) {
                            $field_label = $form_fields[$field_id]['label'];
                            
-                           // ✅ NOUVEAU : Filtrer les champs d'analyse du bien
+                           // ✅ NOUVEAU : Filtrer seulement les champs de lien d'analyse spécifiques
                            if (strpos(strtolower($field_label), 'lien analyse') !== false || 
-                               strpos(strtolower($field_label), 'analyse du bien') !== false ||
-                               strpos(strtolower($field_label), 'analyse') !== false) {
-                               continue; // Ne pas afficher ces champs
+                               strpos(strtolower($field_label), 'analyse du bien') !== false) {
+                               continue;
                            }
                            
-                           echo '<th>' . esc_html($field_label) . '</th>';
-                       }
-                   }
-               }
-               
-               // ✅ NOUVEAU : Ajouter automatiquement les autres colonnes détectées (sauf ville déjà ajoutée)
-               if (!empty($entries)) {
-                   $first_entry = reset($entries);
-                   $additional_columns = array();
-                   
-                   // Chercher les autres champs d'adresse et ville dans les données
-                   foreach ($first_entry as $field_id => $value) {
-                       if (!empty($value) && !in_array($field_id, $config['display_fields'] ?? array()) && $field_id !== '4.3') {
-                           if (is_address_field($field_id, $value) || is_city_field($field_id, $value)) {
-                               $additional_columns[] = $field_id;
+                           // ✅ NOUVEAU : Ne pas afficher Site Web ici, il sera en dernier
+                           if (strpos(strtolower($field_label), 'site') !== false ||
+                               strpos(strtolower($field_label), 'web') !== false ||
+                               strpos(strtolower($field_label), 'url') !== false) {
+                               continue;
                            }
+                           
+                           // ✅ NOUVEAU : Titres plus explicites
+                           $display_label = $field_label;
+                           if (strpos(strtolower($field_label), 'nom') !== false || 
+                               strpos(strtolower($field_label), 'name') !== false) {
+                               $display_label = 'Nom';
+                           } elseif (strpos(strtolower($field_label), 'telephone') !== false || 
+                                     strpos(strtolower($field_label), 'phone') !== false) {
+                               $display_label = 'Téléphone';
+                           } elseif (strpos(strtolower($field_label), 'email') !== false || 
+                                     strpos(strtolower($field_label), 'mail') !== false) {
+                               $display_label = 'Email';
+                           } elseif (strpos(strtolower($field_label), 'adresse') !== false || 
+                                     strpos(strtolower($field_label), 'address') !== false) {
+                               $display_label = 'Adresse';
+                           }
+                           
+                           echo '<th>' . esc_html($display_label) . '</th>';
                        }
-                   }
-                   
-                   // Afficher les en-têtes des colonnes supplémentaires
-                   foreach ($additional_columns as $field_id) {
-                       // ✅ NOUVEAU : Renommer et filtrer les colonnes
-                       if ($field_id === 'user_agent' || $field_id === '4.1') {
-                           continue; // Supprimer ces champs
-                       }
-                       
-                       $field_label = 'Champ ' . $field_id;
-                       echo '<th>' . esc_html($field_label) . '</th>';
                    }
                }
                
-               echo '<th>Date</th>';
                echo '<th>Actions</th>';
                echo '</tr>';
                echo '</thead>';
                echo '<tbody id="lead-vendeur-table-body">';
                
-               // ✅ NOUVEAU : Charger les données initiales via AJAX
+               // ✅ NOUVEAU : Laisser la pagination AJAX gérer l'affichage des données
                echo '<tr><td colspan="100%" style="text-align: center; padding: 20px;"><div class="loading-spinner"></div><p>Chargement des données...</p></td></tr>';
-               
-               // ✅ NOUVEAU : Les données seront chargées via AJAX
-               // Mais on peut afficher les colonnes supplémentaires ici pour le débogage
-               if (!empty($entries)) {
-                   $first_entry = reset($entries);
-                   $additional_columns = array();
-                   
-                   // Chercher les champs d'adresse et ville dans les données
-                   foreach ($first_entry as $field_id => $value) {
-                       if (!empty($value) && !in_array($field_id, $config['display_fields'] ?? array())) {
-                           if (is_address_field($field_id, $value) || is_city_field($field_id, $value)) {
-                               $additional_columns[] = $field_id;
-                           }
-                       }
-                   }
-                   
-                   // Afficher les données des colonnes supplémentaires pour le débogage
-                   if (!empty($additional_columns)) {
-                       echo '<tr><td colspan="100%" style="text-align: center; padding: 20px; background: #f8f9fa; border: 1px solid #dee2e6;">';
-                       echo '<strong>🔍 Colonnes supplémentaires détectées :</strong><br>';
-                       
-                       // ✅ NOUVEAU : Afficher d'abord la colonne Ville
-                       if (isset($first_entry['4.3']) && !empty($first_entry['4.3'])) {
-                           echo 'Ville: "' . esc_html($first_entry['4.3']) . '"<br>';
-                       }
-                       
-                       foreach ($additional_columns as $field_id) {
-                           // ✅ NOUVEAU : Filtrer les champs à exclure dans le débogage
-                           if ($field_id === 'user_agent' || $field_id === '4.1' || $field_id === '4.3') {
-                               continue; // Supprimer ces champs
-                           }
-                           
-                           $value = $first_entry[$field_id] ?? '';
-                           $field_label = 'Champ ' . $field_id;
-                           echo $field_label . ': "' . esc_html($value) . '"<br>';
-                       }
-                       echo '</td></tr>';
-                   }
-               }
                
                echo '</tbody>';
                echo '</table>';
                echo '</div>';
                
-               // ✅ NOUVEAU : Conteneur pour la pagination AJAX
-               echo '<div id="lead-vendeur-pagination-container">';
-               // La pagination sera chargée via AJAX
-               echo '</div>';
+               // Pagination (style DPE/SCI)
+               if ($total_pages > 1) {
+                   echo '<div class="lead-vendeur-pagination">';
+                   echo '<div class="pagination-controls">';
+                   
+                   // Bouton précédent
+                   if ($current_page > 1) {
+                       echo '<button class="pagination-btn" data-page="' . ($current_page - 1) . '">← Précédent</button>';
+                   }
+                   
+                   // Numéros de page
+                   echo '<div class="pagination-numbers">';
+                   $start_page = max(1, $current_page - 2);
+                   $end_page = min($total_pages, $current_page + 2);
+                   
+                   if ($start_page > 1) {
+                       echo '<span class="pagination-number" data-page="1">1</span>';
+                       if ($start_page > 2) {
+                           echo '<span class="pagination-ellipsis">...</span>';
+                       }
+                   }
+                   
+                   for ($i = $start_page; $i <= $end_page; $i++) {
+                       $active_class = ($i == $current_page) ? 'current' : '';
+                       echo '<span class="pagination-number ' . $active_class . '" data-page="' . $i . '">' . $i . '</span>';
+                   }
+                   
+                   if ($end_page < $total_pages) {
+                       if ($end_page < $total_pages - 1) {
+                           echo '<span class="pagination-ellipsis">...</span>';
+                       }
+                       echo '<span class="pagination-number" data-page="' . $total_pages . '">' . $total_pages . '</span>';
+                   }
+                   
+                   echo '</div>';
+                   
+                   // Bouton suivant
+                   if ($current_page < $total_pages) {
+                       echo '<button class="pagination-btn" data-page="' . ($current_page + 1) . '">Suivant →</button>';
+                   }
+                   
+                   echo '</div>';
+                   echo '</div>';
+               }
                
                echo '</div>';
            } else {
@@ -687,13 +684,104 @@ function sci_ajouter_menu() {
                echo '</div>';
                }
                
-               // Afficher les entrées brutes
+               // ✅ NOUVEAU : Afficher les entrées brutes dans un tableau formaté (champs sélectionnés)
                if (!empty($entries)) {
                    echo '<div style="margin-bottom: 20px;">';
-                   echo '<h4>📋 Entrées brutes du formulaire (' . count($entries) . ' entrées)</h4>';
-                   echo '<pre style="background: #fff; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 12px; max-height: 400px; overflow-y: auto;">';
-                   echo esc_html(print_r($entries, true));
-                   echo '</pre>';
+                   echo '<h4>📋 Données brutes - Champs sélectionnés (' . count($entries) . ' entrées)</h4>';
+                   
+                   // Tableau des données brutes
+                   echo '<div style="overflow-x: auto; border: 1px solid #dee2e6; border-radius: 5px;">';
+                   echo '<table style="width: 100%; border-collapse: collapse; font-size: 12px;">';
+                   echo '<thead style="background: #f8f9fa;">';
+                   echo '<tr>';
+                   echo '<th style="padding: 8px; border: 1px solid #dee2e6; text-align: left;">ID</th>';
+                   echo '<th style="padding: 8px; border: 1px solid #dee2e6; text-align: left;">Date</th>';
+                   
+                   // En-têtes des champs sélectionnés uniquement
+                   if (!empty($config['display_fields']) && !empty($form_fields)) {
+                       foreach ($config['display_fields'] as $field_id) {
+                           if (isset($form_fields[$field_id])) {
+                               echo '<th style="padding: 8px; border: 1px solid #dee2e6; text-align: left;">';
+                               echo esc_html($form_fields[$field_id]['label']) . ' (ID: ' . $field_id . ')';
+                               echo '</th>';
+                           }
+                       }
+                   }
+                   echo '</tr>';
+                   echo '</thead>';
+                   echo '<tbody>';
+                   
+                   // Données des entrées
+                   foreach ($entries as $entry) {
+                       echo '<tr>';
+                       echo '<td style="padding: 8px; border: 1px solid #dee2e6;">' . esc_html($entry['id']) . '</td>';
+                       echo '<td style="padding: 8px; border: 1px solid #dee2e6;">' . esc_html($entry['date_created']) . '</td>';
+                       
+                       // Valeurs des champs sélectionnés uniquement
+                       if (!empty($config['display_fields'])) {
+                           foreach ($config['display_fields'] as $field_id) {
+                               $value = isset($entry[$field_id]) ? $entry[$field_id] : '';
+                               echo '<td style="padding: 8px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word;">';
+                               echo esc_html($value);
+                               echo '</td>';
+                           }
+                       }
+                       echo '</tr>';
+                   }
+                   echo '</tbody>';
+                   echo '</table>';
+                   echo '</div>';
+               echo '</div>';
+               }
+               
+               // ✅ NOUVEAU : Afficher TOUTES les données brutes (tous les champs disponibles)
+               if (!empty($entries)) {
+                   echo '<div style="margin-bottom: 20px;">';
+                   echo '<h4>🗂️ Données brutes complètes - Tous les champs disponibles (' . count($entries) . ' entrées)</h4>';
+                   
+                   // Tableau de toutes les données brutes
+                   echo '<div style="overflow-x: auto; border: 1px solid #dee2e6; border-radius: 5px; max-height: 500px; overflow-y: auto;">';
+                   echo '<table style="width: 100%; border-collapse: collapse; font-size: 11px;">';
+                   echo '<thead style="background: #f8f9fa; position: sticky; top: 0;">';
+                   echo '<tr>';
+                   echo '<th style="padding: 6px; border: 1px solid #dee2e6; text-align: left; min-width: 50px;">ID</th>';
+                   echo '<th style="padding: 6px; border: 1px solid #dee2e6; text-align: left; min-width: 120px;">Date</th>';
+                   
+                   // En-têtes de TOUS les champs disponibles
+                   if (!empty($entries)) {
+                       $first_entry = reset($entries);
+                       foreach ($first_entry as $field_id => $value) {
+                           if ($field_id !== 'id' && $field_id !== 'date_created') {
+                               $field_label = isset($form_fields[$field_id]) ? $form_fields[$field_id]['label'] : 'Champ ' . $field_id;
+                               echo '<th style="padding: 6px; border: 1px solid #dee2e6; text-align: left; min-width: 100px;">';
+                               echo esc_html($field_label) . ' (ID: ' . $field_id . ')';
+                               echo '</th>';
+                           }
+                       }
+                   }
+                   echo '</tr>';
+                   echo '</thead>';
+                   echo '<tbody>';
+                   
+                   // Données de toutes les entrées
+                   foreach ($entries as $entry) {
+                       echo '<tr>';
+                       echo '<td style="padding: 6px; border: 1px solid #dee2e6;">' . esc_html($entry['id']) . '</td>';
+                       echo '<td style="padding: 6px; border: 1px solid #dee2e6;">' . esc_html($entry['date_created']) . '</td>';
+                       
+                       // Valeurs de TOUS les champs
+                       foreach ($entry as $field_id => $value) {
+                           if ($field_id !== 'id' && $field_id !== 'date_created') {
+                               echo '<td style="padding: 6px; border: 1px solid #dee2e6; max-width: 150px; word-wrap: break-word; font-size: 10px;">';
+                               echo esc_html($value);
+                               echo '</td>';
+                           }
+                       }
+                       echo '</tr>';
+                   }
+                   echo '</tbody>';
+                   echo '</table>';
+                   echo '</div>';
                echo '</div>';
                }
                
@@ -705,8 +793,8 @@ function sci_ajouter_menu() {
                    echo esc_html(print_r($favori_ids, true));
                    echo '</pre>';
                echo '</div>';
-           }
-           
+               }
+               
                // Informations système
                echo '<div style="margin-bottom: 20px;">';
                echo '<h4>🖥️ Informations système</h4>';
@@ -723,6 +811,44 @@ function sci_ajouter_menu() {
                echo '</div>'; // Fin my-istymo-card
            }
            
+           // ✅ NOUVEAU : Script pour l'intégration avec le système unifié
+           echo '<script>
+           jQuery(document).ready(function($) {
+               // Gestion des favoris Lead Vendeur
+               $(document).on("click", ".favori-toggle", function(e) {
+                   e.preventDefault();
+                   var $this = $(this);
+                   var entryId = $this.data("entry-id");
+                   var isActive = $this.hasClass("favori-active");
+                   
+                   $.ajax({
+                       url: leadVendeurAjax.ajax_url,
+                       type: "POST",
+                       data: {
+                           action: "toggle_lead_vendeur_favori",
+                           nonce: leadVendeurAjax.nonce,
+                           entry_id: entryId,
+                           is_favori: isActive ? 0 : 1
+                       },
+                       success: function(response) {
+                           if (response.success) {
+                               if (isActive) {
+                                   $this.removeClass("favori-active");
+                                   $this.closest("tr").removeClass("favori-row");
+                               } else {
+                                   $this.addClass("favori-active");
+                                   $this.closest("tr").addClass("favori-row");
+                               }
+                           }
+                       }
+                   });
+               });
+               
+               // ✅ NOUVEAU : Détails désactivés - focus sur les données brutes
+               console.log("Mode données brutes activé - détails désactivés");
+           });
+           </script>';
+            
            echo '</div>';
            echo '</div>';
        }
@@ -2828,130 +2954,39 @@ function lead_vendeur_ajax_pagination() {
             }
             // ✅ NOUVEAU : Ne pas générer de cellule vide si la ville n'existe pas
             
-            // Colonnes configurées + colonnes supplémentaires détectées
-            $all_display_fields = $config['display_fields'] ?? array();
-            
-            // ✅ NOUVEAU : Filtrer les champs d'analyse du bien des colonnes configurées
-            $filtered_display_fields = array();
-            $form_fields = $config_manager->get_form_fields(isset($config['gravity_form_id']) ? $config['gravity_form_id'] : 0);
-            foreach ($all_display_fields as $field_id) {
-                if (isset($form_fields[$field_id])) {
-                    $field_label = $form_fields[$field_id]['label'];
-                    
-                    // ✅ NOUVEAU : Filtrer les champs d'analyse du bien
-                    if (strpos(strtolower($field_label), 'lien analyse') !== false || 
-                        strpos(strtolower($field_label), 'analyse du bien') !== false ||
-                        strpos(strtolower($field_label), 'analyse') !== false) {
-                        continue; // Ne pas afficher ces champs
-                    }
-                    
-                    $filtered_display_fields[] = $field_id;
-                }
-            }
-            $all_display_fields = $filtered_display_fields;
-            
-            // ✅ NOUVEAU : Ajouter automatiquement les autres colonnes détectées (sauf ville déjà ajoutée)
-            $additional_columns = array();
-            foreach ($entry as $field_id => $value) {
-                if (!empty($value) && !in_array($field_id, $all_display_fields) && $field_id !== '4.3') {
-                    // ✅ NOUVEAU : Filtrer les champs à exclure
-                    if ($field_id === 'user_agent' || $field_id === '4.1') {
-                        continue; // Supprimer ces champs
-                    }
-                    
-                    if (is_address_field($field_id, $value) || is_city_field($field_id, $value)) {
-                        $additional_columns[] = $field_id;
-                    }
-                }
-            }
-            $all_display_fields = array_merge($all_display_fields, $additional_columns);
-            
-            if (!empty($all_display_fields)) {
-                // Préparer les données pour la combinaison adresse/ville
-                $address_data = array();
-                $city_data = array();
-                
-                // Première passe : identifier les champs d'adresse et ville
-                foreach ($all_display_fields as $field_id) {
-                    $value = isset($entry[$field_id]) ? $entry[$field_id] : '';
-                    $field_label = isset($form_fields[$field_id]) ? $form_fields[$field_id]['label'] : 'Champ ' . $field_id;
-                    
-                    if (is_address_field($field_label, $value)) {
-                        $address_data[$field_id] = array('value' => $value, 'label' => $field_label);
-                    } elseif (is_city_field($field_label, $value)) {
-                        $city_data[$field_id] = array('value' => $value, 'label' => $field_label);
-                    }
-                }
-                
-                // Deuxième passe : afficher les colonnes
-                foreach ($all_display_fields as $field_id) {
-                    $value = isset($entry[$field_id]) ? $entry[$field_id] : '';
-                    $field_label = isset($form_fields[$field_id]) ? $form_fields[$field_id]['label'] : '';
-                    
-                    // ✅ NOUVEAU : Traitement spécial pour le champ 4.3 (Ville)
-                    if ($field_id === '4.3') {
-                        echo '<td>' . esc_html($value) . '</td>';
-                        continue;
-                    }
-                    
-                    // ✅ NOUVEAU : Ne pas afficher les liens d'analyse dans une colonne séparée
-                    // Ils seront regroupés dans la colonne Actions
-                    if (filter_var($value, FILTER_VALIDATE_URL) && (
-                        strpos($value, 'immo-data.fr') !== false || 
-                        strpos($value, 'analyse') !== false ||
-                        strpos($value, 'http') !== false ||
-                        strpos($value, 'www.') !== false ||
-                        strpos($value, '.fr') !== false ||
-                        strpos($value, '.com') !== false
-                    )) {
-                        // Stocker le lien pour l'utiliser dans la colonne Actions
-                        $analyse_link = $value;
-                        // ✅ NOUVEAU : Ne pas générer de cellule vide, simplement ignorer ce champ
-                        continue;
-                    } 
-                    // Vérifier si c'est un champ téléphone
-                    elseif (is_phone_field($field_label, $value)) {
-                        echo '<td>';
-                        $formatted_phone = format_phone_for_dialing($value);
-                        echo '<a href="tel:' . esc_attr($formatted_phone) . '" class="phone-link" title="Appeler directement">';
-                        echo '<i class="fas fa-phone" style="margin-right: 5px; color: #007cba;"></i>';
-                        echo esc_html($value);
-                        echo '</a>';
-                        echo '</td>';
-                    }
-                    // Vérifier si c'est un champ d'adresse (combiner avec ville si disponible)
-                    elseif (is_address_field($field_label, $value)) {
-                        echo '<td>';
-                        // Chercher une ville correspondante
-                        $city_value = '';
-                        foreach ($city_data as $city_field_id => $city_info) {
-                            if (!empty($city_info['value'])) {
-                                $city_value = $city_info['value'];
-                                break;
-                            }
+            // ✅ NOUVEAU : Colonnes configurées (sauf Site Web qui sera en dernier)
+            if (!empty($config['display_fields'])) {
+                foreach ($config['display_fields'] as $field_id) {
+                    if (isset($form_fields[$field_id])) {
+                        $field_label = $form_fields[$field_id]['label'];
+                        
+                        // Filtrer seulement les champs de lien d'analyse spécifiques
+                        if (strpos(strtolower($field_label), 'lien analyse') !== false || 
+                            strpos(strtolower($field_label), 'analyse du bien') !== false) {
+                            continue;
                         }
                         
-                        $formatted_address = format_address_with_city($value, $city_value, $field_label);
-                        echo $formatted_address;
-                        echo '</td>';
-                    }
-                    // Vérifier si c'est un champ ville (ne pas l'afficher séparément si déjà combiné avec adresse)
-                    elseif (is_city_field($field_label, $value)) {
-                        // Vérifier si cette ville a déjà été utilisée dans un champ d'adresse
-                        $already_used = false;
-                        foreach ($address_data as $addr_field_id => $addr_info) {
-                            if (!empty($addr_info['value'])) {
-                                $already_used = true;
-                                break;
-                            }
+                        // ✅ NOUVEAU : Ne pas afficher Site Web ici, il sera en dernier
+                        if (strpos(strtolower($field_label), 'site') !== false ||
+                            strpos(strtolower($field_label), 'web') !== false ||
+                            strpos(strtolower($field_label), 'url') !== false) {
+                            continue;
                         }
                         
-                        if (!$already_used) {
+                        $value = isset($entry[$field_id]) ? $entry[$field_id] : '';
+                        
+                        // Vérifier si c'est un champ téléphone
+                        if (is_phone_field($field_label, $value)) {
+                            echo '<td>';
+                            $formatted_phone = format_phone_for_dialing($value);
+                            echo '<a href="tel:' . esc_attr($formatted_phone) . '" class="phone-link" title="Appeler directement">';
+                            echo '<i class="fas fa-phone" style="margin-right: 5px; color: #007cba;"></i>';
+                            echo esc_html($value);
+                            echo '</a>';
+                            echo '</td>';
+                        } else {
                             echo '<td>' . esc_html($value) . '</td>';
                         }
-                        // ✅ NOUVEAU : Ne pas afficher de cellule vide, simplement ignorer ce champ
-                    } else {
-                        echo '<td>' . esc_html($value) . '</td>';
                     }
                 }
             }
@@ -2959,23 +2994,83 @@ function lead_vendeur_ajax_pagination() {
             // Date
             echo '<td>' . esc_html(date('d/m/Y H:i', strtotime($entry['date_created']))) . '</td>';
             
-            // Actions
-            echo '<td>';
-            echo '<button class="button button-small view-lead-details" data-entry-id="' . esc_attr($entry['id']) . '">';
-            echo '<i class="fas fa-eye" style="margin-right: 5px;"></i>Voir détails';
-            echo '</button>';
+            // ✅ SUPPRIMÉ : Colonne Site Web séparée (maintenant dans Actions)
             
-            // ✅ NOUVEAU : Toujours afficher le bouton d'analyse, mais le désactiver si pas de lien
-            echo ' ';
-            if (!empty($analyse_link)) {
-                echo '<button class="button button-small analyse-bien-btn" onclick="window.open(\'' . esc_url($analyse_link) . '\', \'_blank\')" style="background-color: #BA55D3; color: white; border: none; padding: 6px 12px; border-radius: 3px; cursor: pointer; font-size: 12px; margin-left: 5px;">';
-                echo '<i class="fas fa-chart-line" style="margin-right: 5px;"></i>Analyser';
+            // ✅ NOUVEAU : Colonne Actions (Localiser + Analyser le bien + Voir détails)
+            echo '<td class="actions-column">';
+            
+            // 1. Bouton Localiser le bien (en premier, couleur Google Maps)
+            $address_parts = array();
+            
+            // Récupérer l'adresse (champ 4.1)
+            if (isset($entry['4.1']) && !empty($entry['4.1'])) {
+                $address_parts[] = $entry['4.1'];
+            }
+            
+            // Récupérer la ville (champ 4.3)
+            if (isset($entry['4.3']) && !empty($entry['4.3'])) {
+                $address_parts[] = $entry['4.3'];
+            }
+            
+            // Récupérer le code postal (champ 4.5)
+            if (isset($entry['4.5']) && !empty($entry['4.5'])) {
+                $address_parts[] = $entry['4.5'];
+            }
+            
+            $full_address = implode(' ', $address_parts);
+            
+            if (!empty($full_address)) {
+                $google_maps_url = 'https://www.google.com/maps?q=' . urlencode($full_address);
+                echo '<button class="localiser-bien-btn button" onclick="window.open(\'' . esc_url($google_maps_url) . '\', \'_blank\')" title="Localiser sur Google Maps: ' . esc_attr($full_address) . '">';
+                echo '<i class="fas fa-map-marker-alt" style="margin-right: 5px;"></i>';
+                echo 'Localiser';
                 echo '</button>';
             } else {
-                echo '<button class="button button-small analyse-bien-btn" disabled style="background-color: #6c757d; color: white; border: none; padding: 6px 12px; border-radius: 3px; cursor: not-allowed; font-size: 12px; margin-left: 5px; opacity: 0.6;">';
-                echo '<i class="fas fa-chart-line" style="margin-right: 5px;"></i>Analyser';
+                $default_address = 'Nice, France';
+                $google_maps_url = 'https://www.google.com/maps?q=' . urlencode($default_address);
+                echo '<button class="localiser-bien-btn button" onclick="window.open(\'' . esc_url($google_maps_url) . '\', \'_blank\')" title="Localiser sur Google Maps (adresse par défaut)">';
+                echo '<i class="fas fa-map-marker-alt" style="margin-right: 5px;"></i>';
+                echo 'Localiser';
                 echo '</button>';
             }
+            
+            // 2. Bouton Analyser le bien (au lieu de Site Web)
+            $site_web_url = '';
+            if (!empty($config['display_fields'])) {
+                foreach ($config['display_fields'] as $field_id) {
+                    if (isset($form_fields[$field_id])) {
+                        $field_label = $form_fields[$field_id]['label'];
+                        $value = isset($entry[$field_id]) ? $entry[$field_id] : '';
+                        
+                        if (strpos(strtolower($field_label), 'site') !== false ||
+                            strpos(strtolower($field_label), 'web') !== false ||
+                            strpos(strtolower($field_label), 'url') !== false) {
+                            if (filter_var($value, FILTER_VALIDATE_URL)) {
+                                $site_web_url = $value;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if (!empty($site_web_url)) {
+                echo '<button class="analyser-bien-btn button" onclick="window.open(\'' . esc_url($site_web_url) . '\', \'_blank\')" title="Analyser le bien sur le site web">';
+                echo '<i class="fas fa-search" style="margin-right: 5px;"></i>';
+                echo 'Analyser le bien';
+                echo '</button>';
+            } else {
+                echo '<button class="analyser-bien-btn button" disabled title="Pas d\'analyse disponible">';
+                echo '<i class="fas fa-search" style="margin-right: 5px;"></i>';
+                echo 'Analyser le bien';
+                echo '</button>';
+            }
+            
+            // 3. Bouton Voir détails (en dernier, couleur bleue)
+            echo '<button class="view-lead-details button button-primary" data-entry-id="' . esc_attr($entry['id']) . '">';
+            echo '<i class="fas fa-eye" style="margin-right: 5px;"></i>';
+            echo 'Voir détails';
+            echo '</button>';
             
             echo '</td>';
             
