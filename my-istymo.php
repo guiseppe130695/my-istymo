@@ -133,6 +133,10 @@ require_once plugin_dir_path(__FILE__) . 'includes/lead-workflow.php';
 require_once plugin_dir_path(__FILE__) . 'includes/favoris-handler.php';
 require_once plugin_dir_path(__FILE__) . 'includes/dpe-favoris-handler.php';
 
+// ✅ NOUVEAU : Inclure les gestionnaires Lead Vendeur
+require_once plugin_dir_path(__FILE__) . 'includes/lead-vendeur-config-manager.php';
+require_once plugin_dir_path(__FILE__) . 'includes/lead-vendeur-favoris-handler.php';
+
 // --- Ajout du menu SCI dans l'admin WordPress ---
 add_action('admin_menu', 'sci_ajouter_menu');
 
@@ -228,6 +232,16 @@ function sci_ajouter_menu() {
            -4
        );
        
+       // ✅ NOUVEAU : Sous-menu Configuration Lead Vendeur
+       add_submenu_page(
+           'lead-vendeur',
+           'Configuration Lead Vendeur',
+           'Configuration',
+           'manage_options',
+           'lead-vendeur-config',
+           'lead_vendeur_config_page'
+       );
+       
        // ✅ NOUVEAU : Menu Carte de Succession
        add_menu_page(
            'Carte de Succession',
@@ -238,12 +252,161 @@ function sci_ajouter_menu() {
            'dashicons-chart-area',
            -5
        );
+       
+       // ✅ NOUVEAU : Menu Lead Parrainage
+       add_menu_page(
+           'Lead Parrainage',
+           'Lead Parrainage',
+           'read',
+           'lead-parrainage',
+           'lead_parrainage_page',
+           'dashicons-groups',
+           -6
+       );
 }
 
 
        // ✅ PHASE 1 : Inclure la page d'administration des leads unifiés
        require_once plugin_dir_path(__FILE__) . 'templates/unified-leads-admin.php';
        
+       // ✅ NOUVEAU : Fonction pour détecter si un champ est un téléphone
+       function is_phone_field($field_label, $value) {
+           if (empty($value)) return false;
+           
+           // Vérifier le label du champ
+           $phone_keywords = ['téléphone', 'telephone', 'phone', 'tel', 'mobile', 'portable', 'fixe'];
+           $label_lower = strtolower($field_label);
+           
+           foreach ($phone_keywords as $keyword) {
+               if (strpos($label_lower, $keyword) !== false) {
+                   return true;
+               }
+           }
+           
+           // Vérifier si la valeur ressemble à un numéro de téléphone français
+           $clean_value = preg_replace('/[^0-9+]/', '', $value);
+           if (preg_match('/^(0[1-9]|\\+33[1-9]|33[1-9])[0-9]{8}$/', $clean_value)) {
+               return true;
+           }
+           
+           return false;
+       }
+       
+       // ✅ NOUVEAU : Fonction pour formater un numéro de téléphone pour l'appel direct
+       function format_phone_for_dialing($phone) {
+           if (empty($phone)) return '';
+           
+           // Nettoyer le numéro (garder seulement les chiffres et +)
+           $clean_phone = preg_replace('/[^0-9+]/', '', $phone);
+           
+           // Si le numéro commence par 0, le remplacer par +33
+           if (preg_match('/^0([1-9][0-9]{8})$/', $clean_phone, $matches)) {
+               return '+33' . $matches[1];
+           }
+           
+           // Si le numéro commence déjà par +33, le garder tel quel
+           if (preg_match('/^\\+33([1-9][0-9]{8})$/', $clean_phone)) {
+               return $clean_phone;
+           }
+           
+           // Si le numéro commence par 33 (sans +), ajouter le +
+           if (preg_match('/^33([1-9][0-9]{8})$/', $clean_phone, $matches)) {
+               return '+33' . $matches[1];
+           }
+           
+           // Si le numéro commence par +, le garder tel quel
+           if (strpos($clean_phone, '+') === 0) {
+               return $clean_phone;
+           }
+           
+           // Par défaut, retourner le numéro tel quel
+           return $clean_phone;
+       }
+       
+       // ✅ NOUVEAU : Fonction pour détecter si un champ est une adresse
+       function is_address_field($field_label, $value) {
+           if (empty($value)) return false;
+           
+           // Vérifier le label du champ - mots-clés étendus
+           $address_keywords = [
+               'adresse', 'address', 'rue', 'street', 'voie', 'avenue', 'boulevard', 'place', 'lieu',
+               'adr', 'addr', 'location', 'localisation', 'adresse complète', 'adresse complète',
+               'adresse du bien', 'adresse du logement', 'adresse de la propriété',
+               'numéro', 'numero', 'n°', 'n ', 'street number', 'numéro de rue',
+               'adresse postale', 'adresse de contact', 'adresse principale'
+           ];
+           $label_lower = strtolower($field_label);
+           
+           foreach ($address_keywords as $keyword) {
+               if (strpos($label_lower, $keyword) !== false) {
+                   return true;
+               }
+           }
+           
+           // Vérifier aussi si la valeur ressemble à une adresse (contient des chiffres et des lettres)
+           $clean_value = trim($value);
+           if (preg_match('/\d+/', $clean_value) && preg_match('/[a-zA-ZÀ-ÿ]/', $clean_value) && strlen($clean_value) > 5) {
+               return true;
+           }
+           
+           // ✅ NOUVEAU : Détection spéciale pour les champs avec des IDs comme "4.1", "4.3", etc.
+           if (preg_match('/^\d+\.\d+$/', $field_label)) {
+               // Si c'est un champ avec un ID numérique, vérifier le contenu
+               if (preg_match('/\d+/', $clean_value) && preg_match('/[a-zA-ZÀ-ÿ]/', $clean_value) && strlen($clean_value) > 5) {
+                   return true;
+               }
+           }
+           
+           return false;
+       }
+       
+       // ✅ NOUVEAU : Fonction pour détecter si un champ est une ville
+       function is_city_field($field_label, $value) {
+           if (empty($value)) return false;
+           
+           // Vérifier le label du champ
+           $city_keywords = ['ville', 'city', 'commune', 'municipalité', 'localité'];
+           $label_lower = strtolower($field_label);
+           
+           foreach ($city_keywords as $keyword) {
+               if (strpos($label_lower, $keyword) !== false) {
+                   return true;
+               }
+           }
+           
+           // ✅ NOUVEAU : Détection spéciale pour les champs avec des IDs comme "4.3"
+           if (preg_match('/^\d+\.\d+$/', $field_label)) {
+               // Si c'est un champ avec un ID numérique, vérifier le contenu
+               $clean_value = trim($value);
+               // Une ville est généralement composée uniquement de lettres (pas de chiffres)
+               if (preg_match('/^[a-zA-ZÀ-ÿ\s\-]+$/', $clean_value) && strlen($clean_value) > 2) {
+                   return true;
+               }
+           }
+           
+           return false;
+       }
+       
+       // ✅ NOUVEAU : Fonction pour formater une adresse complète avec ville
+       function format_address_with_city($address_value, $city_value, $field_label) {
+           $address = trim($address_value);
+           $city = trim($city_value);
+           
+           if (empty($address) && empty($city)) {
+               return '';
+           }
+           
+           if (empty($address)) {
+               return $city;
+           }
+           
+           if (empty($city)) {
+               return $address;
+           }
+           
+           return $address . '<br><small style="color: #666;">' . $city . '</small>';
+       }
+
        // ✅ NOUVEAU : Fonction pour la page Lead Vendeur
        function lead_vendeur_page() {
            // Vérifier si l'utilisateur est connecté
@@ -252,14 +415,314 @@ function sci_ajouter_menu() {
                return;
            }
            
+           // Charger les gestionnaires
+           $config_manager = lead_vendeur_config_manager();
+           $favoris_handler = lead_vendeur_favoris_handler();
+           
+           // Vérifier si Gravity Forms est actif
+           if (!$config_manager->is_gravity_forms_active()) {
+               echo '<div class="wrap">';
+               echo '<h1>🏢 Lead Vendeur</h1>';
+               echo '<div class="notice notice-error"><p><strong>Gravity Forms n\'est pas actif !</strong> Veuillez installer et activer Gravity Forms pour utiliser cette fonctionnalité.</p></div>';
+               echo '</div>';
+               return;
+           }
+           
+           $config = $config_manager->get_config();
+           
+           // Si aucun formulaire configuré, afficher un message
+           if (empty($config['gravity_form_id']) || !isset($config['gravity_form_id'])) {
+               echo '<div class="wrap">';
+               echo '<h1>🏢 Lead Vendeur</h1>';
+               echo '<div class="notice notice-warning"><p><strong>Configuration requise !</strong> Veuillez d\'abord configurer le formulaire Gravity Forms dans la <a href="' . admin_url('admin.php?page=lead-vendeur-config') . '">page de configuration</a>.</p></div>';
+               echo '</div>';
+               return;
+           }
+           
+           // ✅ NOUVEAU : Gestion de la pagination AJAX
+           $current_page = 1; // Page par défaut pour le chargement initial
+           $per_page = 20; // Nombre d'entrées par page
+           
+           // Récupérer les entrées du formulaire avec pagination
+           $entries = $config_manager->get_form_entries_paginated(
+               isset($config['gravity_form_id']) ? $config['gravity_form_id'] : 0, 
+               $current_page, 
+               $per_page
+           );
+           $favori_ids = $favoris_handler->get_user_favori_ids(get_current_user_id());
+           
+           // Calculer les informations de pagination
+           $total_entries = $config_manager->get_form_entries_count(isset($config['gravity_form_id']) ? $config['gravity_form_id'] : 0);
+           $total_pages = ceil($total_entries / $per_page);
+           
+           // Charger les styles et scripts
+           wp_enqueue_style('lead-vendeur-style', plugin_dir_url(__FILE__) . 'assets/css/lead-vendeur.css', array(), '1.0.0');
+           wp_enqueue_script('lead-vendeur-js', plugin_dir_url(__FILE__) . 'assets/js/lead-vendeur.js', array('jquery'), '1.0.0', true);
+           
+           // ✅ NOUVEAU : Données AJAX pour la pagination
+           wp_localize_script('lead-vendeur-js', 'leadVendeurAjax', array(
+               'ajax_url' => admin_url('admin-ajax.php'),
+               'nonce' => wp_create_nonce('lead_vendeur_nonce'),
+               'current_page' => $current_page,
+               'per_page' => $per_page,
+               'total_entries' => $total_entries,
+               'total_pages' => $total_pages
+           ));
+           
            echo '<div class="wrap">';
            echo '<h1>🏢 Lead Vendeur</h1>';
            echo '<div class="my-istymo-container">';
-           echo '<div class="my-istymo-card">';
-           echo '<h2>📋 Gestion des Leads Vendeur</h2>';
-           echo '<p>Cette section sera dédiée à la gestion des leads vendeur.</p>';
-           echo '<p><em>Contenu à développer...</em></p>';
-           echo '</div>';
+           
+           // Affichage du tableau des leads
+           if (!empty($entries)) {
+               echo '<div class="my-istymo-card">';
+               echo '<h2>📋 Leads Vendeur (' . $total_entries . ' au total)</h2>';
+               
+               // ✅ NOUVEAU : Informations de pagination (style DPE/SCI)
+               if ($total_pages > 1) {
+                   $start_entry = (($current_page - 1) * $per_page) + 1;
+                   $end_entry = min($current_page * $per_page, $total_entries);
+                   echo '<div class="pagination-info">';
+                   echo '<span id="page-info">Page ' . $current_page . ' sur ' . $total_pages . '</span>';
+                   echo '<span style="margin-left: 15px; color: #666;">Affichage des entrées ' . $start_entry . ' à ' . $end_entry . ' sur ' . $total_entries . '</span>';
+                   echo '</div>';
+               }
+               
+               echo '<div class="lead-vendeur-table-container">';
+               echo '<table class="wp-list-table widefat fixed striped lead-vendeur-table">';
+               echo '<thead>';
+               echo '<tr>';
+               echo '<th class="favori-column">⭐</th>';
+               
+               // ✅ NOUVEAU : Ajouter la colonne Ville juste après Favoris
+               if (!empty($entries)) {
+                   $first_entry = reset($entries);
+                   $city_field_found = false;
+                   
+                   // Chercher le champ ville (4.3) dans les données
+                   foreach ($first_entry as $field_id => $value) {
+                       if ($field_id === '4.3' && !empty($value)) {
+                           echo '<th>Ville</th>';
+                           $city_field_found = true;
+                           break;
+                       }
+                   }
+               }
+               
+               // En-têtes des colonnes configurées
+               if (!empty($config['display_fields'])) {
+                   $form_fields = $config_manager->get_form_fields(isset($config['gravity_form_id']) ? $config['gravity_form_id'] : 0);
+                   foreach ($config['display_fields'] as $field_id) {
+                       if (isset($form_fields[$field_id])) {
+                           $field_label = $form_fields[$field_id]['label'];
+                           
+                           // ✅ NOUVEAU : Filtrer les champs d'analyse du bien
+                           if (strpos(strtolower($field_label), 'lien analyse') !== false || 
+                               strpos(strtolower($field_label), 'analyse du bien') !== false ||
+                               strpos(strtolower($field_label), 'analyse') !== false) {
+                               continue; // Ne pas afficher ces champs
+                           }
+                           
+                           echo '<th>' . esc_html($field_label) . '</th>';
+                       }
+                   }
+               }
+               
+               // ✅ NOUVEAU : Ajouter automatiquement les autres colonnes détectées (sauf ville déjà ajoutée)
+               if (!empty($entries)) {
+                   $first_entry = reset($entries);
+                   $additional_columns = array();
+                   
+                   // Chercher les autres champs d'adresse et ville dans les données
+                   foreach ($first_entry as $field_id => $value) {
+                       if (!empty($value) && !in_array($field_id, $config['display_fields'] ?? array()) && $field_id !== '4.3') {
+                           if (is_address_field($field_id, $value) || is_city_field($field_id, $value)) {
+                               $additional_columns[] = $field_id;
+                           }
+                       }
+                   }
+                   
+                   // Afficher les en-têtes des colonnes supplémentaires
+                   foreach ($additional_columns as $field_id) {
+                       // ✅ NOUVEAU : Renommer et filtrer les colonnes
+                       if ($field_id === 'user_agent' || $field_id === '4.1') {
+                           continue; // Supprimer ces champs
+                       }
+                       
+                       $field_label = 'Champ ' . $field_id;
+                       echo '<th>' . esc_html($field_label) . '</th>';
+                   }
+               }
+               
+               echo '<th>Date</th>';
+               echo '<th>Actions</th>';
+               echo '</tr>';
+               echo '</thead>';
+               echo '<tbody id="lead-vendeur-table-body">';
+               
+               // ✅ NOUVEAU : Charger les données initiales via AJAX
+               echo '<tr><td colspan="100%" style="text-align: center; padding: 20px;"><div class="loading-spinner"></div><p>Chargement des données...</p></td></tr>';
+               
+               // ✅ NOUVEAU : Les données seront chargées via AJAX
+               // Mais on peut afficher les colonnes supplémentaires ici pour le débogage
+               if (!empty($entries)) {
+                   $first_entry = reset($entries);
+                   $additional_columns = array();
+                   
+                   // Chercher les champs d'adresse et ville dans les données
+                   foreach ($first_entry as $field_id => $value) {
+                       if (!empty($value) && !in_array($field_id, $config['display_fields'] ?? array())) {
+                           if (is_address_field($field_id, $value) || is_city_field($field_id, $value)) {
+                               $additional_columns[] = $field_id;
+                           }
+                       }
+                   }
+                   
+                   // Afficher les données des colonnes supplémentaires pour le débogage
+                   if (!empty($additional_columns)) {
+                       echo '<tr><td colspan="100%" style="text-align: center; padding: 20px; background: #f8f9fa; border: 1px solid #dee2e6;">';
+                       echo '<strong>🔍 Colonnes supplémentaires détectées :</strong><br>';
+                       
+                       // ✅ NOUVEAU : Afficher d'abord la colonne Ville
+                       if (isset($first_entry['4.3']) && !empty($first_entry['4.3'])) {
+                           echo 'Ville: "' . esc_html($first_entry['4.3']) . '"<br>';
+                       }
+                       
+                       foreach ($additional_columns as $field_id) {
+                           // ✅ NOUVEAU : Filtrer les champs à exclure dans le débogage
+                           if ($field_id === 'user_agent' || $field_id === '4.1' || $field_id === '4.3') {
+                               continue; // Supprimer ces champs
+                           }
+                           
+                           $value = $first_entry[$field_id] ?? '';
+                           $field_label = 'Champ ' . $field_id;
+                           echo $field_label . ': "' . esc_html($value) . '"<br>';
+                       }
+                       echo '</td></tr>';
+                   }
+               }
+               
+               echo '</tbody>';
+               echo '</table>';
+               echo '</div>';
+               
+               // ✅ NOUVEAU : Conteneur pour la pagination AJAX
+               echo '<div id="lead-vendeur-pagination-container">';
+               // La pagination sera chargée via AJAX
+               echo '</div>';
+               
+               echo '</div>';
+           } else {
+               echo '<div class="my-istymo-card">';
+               echo '<h2>📋 Aucun lead trouvé</h2>';
+               echo '<p>Aucune entrée trouvée pour le formulaire configuré.</p>';
+               echo '</div>';
+           }
+           
+           // ✅ NOUVEAU : Section de débogage des données brutes (toujours visible)
+           if (current_user_can('manage_options')) {
+               echo '<div class="my-istymo-card" style="margin-top: 30px;">';
+               echo '<h2>🔧 Données de débogage (Admin uniquement)</h2>';
+               echo '<button type="button" id="toggle-debug-data" class="button button-secondary" style="margin-bottom: 15px;">';
+               echo '<i class="fas fa-eye"></i> Afficher/Masquer les données brutes';
+               echo '</button>';
+               
+               echo '<div id="debug-data-section" style="display: none; background: #f8f9fa; padding: 15px; border-radius: 5px; border: 1px solid #dee2e6;">';
+               echo '<h3>📊 Données brutes récupérées depuis la base de données</h3>';
+               
+               // Afficher les informations de configuration
+               echo '<div style="margin-bottom: 20px;">';
+               echo '<h4>⚙️ Configuration du formulaire</h4>';
+               echo '<pre style="background: #fff; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 12px;">';
+               echo esc_html(print_r($config, true));
+               echo '</pre>';
+               echo '</div>';
+               
+               // Afficher les champs du formulaire
+               if (!empty($form_fields)) {
+                   echo '<div style="margin-bottom: 20px;">';
+                   echo '<h4>📝 Champs du formulaire Gravity Forms</h4>';
+                   echo '<pre style="background: #fff; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 12px;">';
+                   echo esc_html(print_r($form_fields, true));
+                   echo '</pre>';
+                   
+                   // ✅ NOUVEAU : Détection des champs d'adresse pour débogage
+                   echo '<h5>🔍 Détection des champs d\'adresse :</h5>';
+                   echo '<ul style="background: #fff; padding: 10px; border-radius: 3px; font-size: 12px;">';
+                   foreach ($form_fields as $field_id => $field) {
+                       $label = $field['label'] ?? '';
+                       $is_address = is_address_field($label, 'test_value');
+                       $is_city = is_city_field($label, 'test_value');
+                       $is_phone = is_phone_field($label, '0123456789');
+                       
+                       echo '<li><strong>' . esc_html($label) . '</strong> (ID: ' . $field_id . ') - ';
+                       echo 'Adresse: ' . ($is_address ? '✅' : '❌') . ' | ';
+                       echo 'Ville: ' . ($is_city ? '✅' : '❌') . ' | ';
+                       echo 'Téléphone: ' . ($is_phone ? '✅' : '❌');
+                       echo '</li>';
+                   }
+                   echo '</ul>';
+                   
+                   // ✅ NOUVEAU : Test avec des valeurs réelles
+                   if (!empty($entries)) {
+                       echo '<h5>🧪 Test avec des valeurs réelles (première entrée) :</h5>';
+                       echo '<ul style="background: #fff; padding: 10px; border-radius: 3px; font-size: 12px;">';
+                       $first_entry = reset($entries);
+                       foreach ($config['display_fields'] as $field_id) {
+                           $value = isset($first_entry[$field_id]) ? $first_entry[$field_id] : '';
+                           $field_label = isset($form_fields[$field_id]) ? $form_fields[$field_id]['label'] : '';
+                           $is_address = is_address_field($field_label, $value);
+                           $is_city = is_city_field($field_label, $value);
+                           $is_phone = is_phone_field($field_label, $value);
+                           
+                           echo '<li><strong>' . esc_html($field_label) . '</strong> (ID: ' . $field_id . ') - ';
+                           echo 'Valeur: "' . esc_html($value) . '" - ';
+                           echo 'Adresse: ' . ($is_address ? '✅' : '❌') . ' | ';
+                           echo 'Ville: ' . ($is_city ? '✅' : '❌') . ' | ';
+                           echo 'Téléphone: ' . ($is_phone ? '✅' : '❌');
+                           echo '</li>';
+                       }
+                       echo '</ul>';
+                   }
+               echo '</div>';
+               }
+               
+               // Afficher les entrées brutes
+               if (!empty($entries)) {
+                   echo '<div style="margin-bottom: 20px;">';
+                   echo '<h4>📋 Entrées brutes du formulaire (' . count($entries) . ' entrées)</h4>';
+                   echo '<pre style="background: #fff; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 12px; max-height: 400px; overflow-y: auto;">';
+                   echo esc_html(print_r($entries, true));
+                   echo '</pre>';
+               echo '</div>';
+               }
+               
+               // Afficher les favoris
+               if (!empty($favori_ids)) {
+                   echo '<div style="margin-bottom: 20px;">';
+                   echo '<h4>⭐ IDs des favoris de l\'utilisateur</h4>';
+                   echo '<pre style="background: #fff; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 12px;">';
+                   echo esc_html(print_r($favori_ids, true));
+                   echo '</pre>';
+               echo '</div>';
+           }
+           
+               // Informations système
+               echo '<div style="margin-bottom: 20px;">';
+               echo '<h4>🖥️ Informations système</h4>';
+               echo '<ul style="list-style: none; padding: 0;">';
+               echo '<li><strong>User ID:</strong> ' . get_current_user_id() . '</li>';
+               echo '<li><strong>Gravity Forms actif:</strong> ' . ($config_manager->is_gravity_forms_active() ? 'Oui' : 'Non') . '</li>';
+               echo '<li><strong>Form ID configuré:</strong> ' . (isset($config['gravity_form_id']) ? $config['gravity_form_id'] : 'Non configuré') . '</li>';
+               echo '<li><strong>Champs d\'affichage configurés:</strong> ' . (isset($config['display_fields']) ? count($config['display_fields']) : 0) . '</li>';
+               echo '<li><strong>Timestamp:</strong> ' . current_time('Y-m-d H:i:s') . '</li>';
+               echo '</ul>';
+               echo '</div>';
+               
+               echo '</div>'; // Fin debug-data-section
+               echo '</div>'; // Fin my-istymo-card
+           }
+           
            echo '</div>';
            echo '</div>';
        }
@@ -284,8 +747,31 @@ function sci_ajouter_menu() {
            echo '</div>';
        }
        
+       // ✅ NOUVEAU : Fonction pour la page Lead Parrainage
+       function lead_parrainage_page() {
+           // Vérifier si l'utilisateur est connecté
+           if (!is_user_logged_in()) {
+               echo '<div class="wrap"><h1>Lead Parrainage</h1><p>Vous devez être connecté pour accéder à cette page.</p></div>';
+               return;
+           }
+           
+           echo '<div class="wrap">';
+           echo '<h1>🤝 Lead Parrainage</h1>';
+           echo '<div class="my-istymo-container">';
+           echo '<div class="my-istymo-card">';
+           echo '<h2>👥 Gestion des Leads Parrainage</h2>';
+           echo '<p>Cette section sera dédiée à la gestion des leads générés par le système de parrainage.</p>';
+           echo '<p><em>Contenu à développer...</em></p>';
+           echo '</div>';
+           echo '</div>';
+           echo '</div>';
+       }
+       
        // ✅ PHASE 2 : Inclure la page de configuration des leads unifiés
        require_once plugin_dir_path(__FILE__) . 'templates/unified-leads-config.php';
+       
+       // ✅ NOUVEAU : Inclure la page de configuration Lead Vendeur
+       require_once plugin_dir_path(__FILE__) . 'templates/lead-vendeur-config.php';
 
 // --- Affichage du panneau d'administration SCI ---
 function sci_afficher_panel() {
@@ -1261,6 +1747,11 @@ add_action('wp_ajax_my_istymo_update_lead', 'my_istymo_ajax_update_lead');
 add_action('wp_ajax_my_istymo_update_lead_from_modal', 'my_istymo_ajax_update_lead_from_modal');
 add_action('wp_ajax_nopriv_my_istymo_update_lead_from_modal', 'my_istymo_ajax_update_lead_from_modal');
 
+// ✅ NOUVEAU : Handlers AJAX pour les favoris Lead Vendeur
+add_action('wp_ajax_lead_vendeur_toggle_favori', 'lead_vendeur_ajax_toggle_favori');
+add_action('wp_ajax_lead_vendeur_get_entry_details', 'lead_vendeur_ajax_get_entry_details');
+add_action('wp_ajax_lead_vendeur_pagination', 'lead_vendeur_ajax_pagination');
+
 // ✅ Fonction de mise à jour de lead
 function my_istymo_ajax_update_lead() {
     check_ajax_referer('my_istymo_nonce', 'nonce');
@@ -2183,6 +2674,399 @@ require_once plugin_dir_path(__FILE__) . 'migrations/migration-remove-etiquette-
 // Charger l'interface d'administration des migrations
 if (is_admin()) {
     require_once plugin_dir_path(__FILE__) . 'admin/migration-admin.php';
+}
+
+// ✅ NOUVEAU : Fonctions AJAX pour Lead Vendeur
+function lead_vendeur_ajax_toggle_favori() {
+    check_ajax_referer('lead_vendeur_nonce', 'nonce');
+    
+    $entry_id = intval($_POST['entry_id']);
+    $user_id = get_current_user_id();
+    
+    if (!$entry_id || !$user_id) {
+        wp_send_json_error('Paramètres manquants');
+        return;
+    }
+    
+    $favoris_handler = lead_vendeur_favoris_handler();
+    $config_manager = lead_vendeur_config_manager();
+    $config = $config_manager->get_config();
+    
+    // Vérifier si c'est déjà un favori
+    $is_favori = $favoris_handler->is_favori($user_id, $entry_id);
+    
+    if ($is_favori) {
+        // Supprimer des favoris
+        $result = $favoris_handler->remove_favori($user_id, $entry_id);
+        $action = 'removed';
+    } else {
+        // Ajouter aux favoris
+        $result = $favoris_handler->add_favori($user_id, $entry_id, isset($config['gravity_form_id']) ? $config['gravity_form_id'] : 0);
+        $action = 'added';
+    }
+    
+    if ($result) {
+        wp_send_json_success(array(
+            'action' => $action,
+            'is_favori' => !$is_favori
+        ));
+    } else {
+        wp_send_json_error('Erreur lors de la mise à jour des favoris');
+    }
+}
+
+function lead_vendeur_ajax_get_entry_details() {
+    check_ajax_referer('lead_vendeur_nonce', 'nonce');
+    
+    $entry_id = intval($_POST['entry_id']);
+    
+    if (!$entry_id) {
+        wp_send_json_error('ID d\'entrée manquant');
+        return;
+    }
+    
+    if (!class_exists('GFAPI')) {
+        wp_send_json_error('Gravity Forms non disponible');
+        return;
+    }
+    
+    $entry = GFAPI::get_entry($entry_id);
+    
+    if (is_wp_error($entry)) {
+        wp_send_json_error('Entrée introuvable');
+        return;
+    }
+    
+    $config_manager = lead_vendeur_config_manager();
+    $config = $config_manager->get_config();
+    $form_fields = $config_manager->get_form_fields(isset($config['gravity_form_id']) ? $config['gravity_form_id'] : 0);
+    
+    // Préparer les données formatées
+    $formatted_data = array();
+    foreach ($form_fields as $field_id => $field) {
+        $value = isset($entry[$field_id]) ? $entry[$field_id] : '';
+        $formatted_data[] = array(
+            'label' => $field['label'],
+            'value' => $value,
+            'type' => $field['type']
+        );
+    }
+    
+    wp_send_json_success(array(
+        'entry' => $entry,
+        'formatted_data' => $formatted_data,
+        'date_created' => $entry['date_created']
+    ));
+}
+
+// ✅ NOUVEAU : Handler AJAX pour la pagination Lead Vendeur
+function lead_vendeur_ajax_pagination() {
+    check_ajax_referer('lead_vendeur_nonce', 'nonce');
+    
+    $page = intval($_POST['page'] ?? 1);
+    $per_page = intval($_POST['per_page'] ?? 20);
+    
+    if ($page < 1) $page = 1;
+    if ($per_page < 1) $per_page = 20;
+    
+    // Récupérer les gestionnaires
+    $config_manager = lead_vendeur_config_manager();
+    $favoris_handler = lead_vendeur_favoris_handler();
+    
+    // Vérifier si Gravity Forms est actif
+    if (!$config_manager->is_gravity_forms_active()) {
+        wp_send_json_error('Gravity Forms n\'est pas actif');
+        return;
+    }
+    
+    $config = $config_manager->get_config();
+    
+    // Si aucun formulaire configuré
+    if (empty($config['gravity_form_id'])) {
+        wp_send_json_error('Aucun formulaire configuré');
+        return;
+    }
+    
+    // Récupérer les entrées avec pagination
+    $entries = $config_manager->get_form_entries_paginated(
+        $config['gravity_form_id'], 
+        $page, 
+        $per_page
+    );
+    $favori_ids = $favoris_handler->get_user_favori_ids(get_current_user_id());
+    
+    // Calculer les informations de pagination
+    $total_entries = $config_manager->get_form_entries_count($config['gravity_form_id']);
+    $total_pages = ceil($total_entries / $per_page);
+    
+    // Récupérer les champs du formulaire
+    $form_fields = $config_manager->get_form_fields($config['gravity_form_id']);
+    
+    // Générer le HTML du tableau
+    ob_start();
+    
+    if (!empty($entries)) {
+        foreach ($entries as $entry) {
+            $is_favori = in_array($entry['id'], $favori_ids);
+            $favori_class = $is_favori ? 'favori-active' : '';
+            
+            // ✅ NOUVEAU : Initialiser la variable analyse_link pour chaque entrée
+            $analyse_link = '';
+            
+            echo '<tr class="lead-vendeur-row" data-entry-id="' . esc_attr($entry['id']) . '">';
+            
+            // Colonne favori
+            echo '<td class="favori-column">';
+            echo '<span class="favori-toggle ' . $favori_class . '" data-entry-id="' . esc_attr($entry['id']) . '">';
+            echo '<i class="fas fa-star"></i>';
+            echo '</span>';
+            echo '</td>';
+            
+            // ✅ NOUVEAU : Colonne Ville juste après Favoris
+            if (isset($entry['4.3']) && !empty($entry['4.3'])) {
+                echo '<td>' . esc_html($entry['4.3']) . '</td>';
+            }
+            // ✅ NOUVEAU : Ne pas générer de cellule vide si la ville n'existe pas
+            
+            // Colonnes configurées + colonnes supplémentaires détectées
+            $all_display_fields = $config['display_fields'] ?? array();
+            
+            // ✅ NOUVEAU : Filtrer les champs d'analyse du bien des colonnes configurées
+            $filtered_display_fields = array();
+            $form_fields = $config_manager->get_form_fields(isset($config['gravity_form_id']) ? $config['gravity_form_id'] : 0);
+            foreach ($all_display_fields as $field_id) {
+                if (isset($form_fields[$field_id])) {
+                    $field_label = $form_fields[$field_id]['label'];
+                    
+                    // ✅ NOUVEAU : Filtrer les champs d'analyse du bien
+                    if (strpos(strtolower($field_label), 'lien analyse') !== false || 
+                        strpos(strtolower($field_label), 'analyse du bien') !== false ||
+                        strpos(strtolower($field_label), 'analyse') !== false) {
+                        continue; // Ne pas afficher ces champs
+                    }
+                    
+                    $filtered_display_fields[] = $field_id;
+                }
+            }
+            $all_display_fields = $filtered_display_fields;
+            
+            // ✅ NOUVEAU : Ajouter automatiquement les autres colonnes détectées (sauf ville déjà ajoutée)
+            $additional_columns = array();
+            foreach ($entry as $field_id => $value) {
+                if (!empty($value) && !in_array($field_id, $all_display_fields) && $field_id !== '4.3') {
+                    // ✅ NOUVEAU : Filtrer les champs à exclure
+                    if ($field_id === 'user_agent' || $field_id === '4.1') {
+                        continue; // Supprimer ces champs
+                    }
+                    
+                    if (is_address_field($field_id, $value) || is_city_field($field_id, $value)) {
+                        $additional_columns[] = $field_id;
+                    }
+                }
+            }
+            $all_display_fields = array_merge($all_display_fields, $additional_columns);
+            
+            if (!empty($all_display_fields)) {
+                // Préparer les données pour la combinaison adresse/ville
+                $address_data = array();
+                $city_data = array();
+                
+                // Première passe : identifier les champs d'adresse et ville
+                foreach ($all_display_fields as $field_id) {
+                    $value = isset($entry[$field_id]) ? $entry[$field_id] : '';
+                    $field_label = isset($form_fields[$field_id]) ? $form_fields[$field_id]['label'] : 'Champ ' . $field_id;
+                    
+                    if (is_address_field($field_label, $value)) {
+                        $address_data[$field_id] = array('value' => $value, 'label' => $field_label);
+                    } elseif (is_city_field($field_label, $value)) {
+                        $city_data[$field_id] = array('value' => $value, 'label' => $field_label);
+                    }
+                }
+                
+                // Deuxième passe : afficher les colonnes
+                foreach ($all_display_fields as $field_id) {
+                    $value = isset($entry[$field_id]) ? $entry[$field_id] : '';
+                    $field_label = isset($form_fields[$field_id]) ? $form_fields[$field_id]['label'] : '';
+                    
+                    // ✅ NOUVEAU : Traitement spécial pour le champ 4.3 (Ville)
+                    if ($field_id === '4.3') {
+                        echo '<td>' . esc_html($value) . '</td>';
+                        continue;
+                    }
+                    
+                    // ✅ NOUVEAU : Ne pas afficher les liens d'analyse dans une colonne séparée
+                    // Ils seront regroupés dans la colonne Actions
+                    if (filter_var($value, FILTER_VALIDATE_URL) && (
+                        strpos($value, 'immo-data.fr') !== false || 
+                        strpos($value, 'analyse') !== false ||
+                        strpos($value, 'http') !== false ||
+                        strpos($value, 'www.') !== false ||
+                        strpos($value, '.fr') !== false ||
+                        strpos($value, '.com') !== false
+                    )) {
+                        // Stocker le lien pour l'utiliser dans la colonne Actions
+                        $analyse_link = $value;
+                        // ✅ NOUVEAU : Ne pas générer de cellule vide, simplement ignorer ce champ
+                        continue;
+                    } 
+                    // Vérifier si c'est un champ téléphone
+                    elseif (is_phone_field($field_label, $value)) {
+                        echo '<td>';
+                        $formatted_phone = format_phone_for_dialing($value);
+                        echo '<a href="tel:' . esc_attr($formatted_phone) . '" class="phone-link" title="Appeler directement">';
+                        echo '<i class="fas fa-phone" style="margin-right: 5px; color: #007cba;"></i>';
+                        echo esc_html($value);
+                        echo '</a>';
+                        echo '</td>';
+                    }
+                    // Vérifier si c'est un champ d'adresse (combiner avec ville si disponible)
+                    elseif (is_address_field($field_label, $value)) {
+                        echo '<td>';
+                        // Chercher une ville correspondante
+                        $city_value = '';
+                        foreach ($city_data as $city_field_id => $city_info) {
+                            if (!empty($city_info['value'])) {
+                                $city_value = $city_info['value'];
+                                break;
+                            }
+                        }
+                        
+                        $formatted_address = format_address_with_city($value, $city_value, $field_label);
+                        echo $formatted_address;
+                        echo '</td>';
+                    }
+                    // Vérifier si c'est un champ ville (ne pas l'afficher séparément si déjà combiné avec adresse)
+                    elseif (is_city_field($field_label, $value)) {
+                        // Vérifier si cette ville a déjà été utilisée dans un champ d'adresse
+                        $already_used = false;
+                        foreach ($address_data as $addr_field_id => $addr_info) {
+                            if (!empty($addr_info['value'])) {
+                                $already_used = true;
+                                break;
+                            }
+                        }
+                        
+                        if (!$already_used) {
+                            echo '<td>' . esc_html($value) . '</td>';
+                        }
+                        // ✅ NOUVEAU : Ne pas afficher de cellule vide, simplement ignorer ce champ
+                    } else {
+                        echo '<td>' . esc_html($value) . '</td>';
+                    }
+                }
+            }
+            
+            // Date
+            echo '<td>' . esc_html(date('d/m/Y H:i', strtotime($entry['date_created']))) . '</td>';
+            
+            // Actions
+            echo '<td>';
+            echo '<button class="button button-small view-lead-details" data-entry-id="' . esc_attr($entry['id']) . '">';
+            echo '<i class="fas fa-eye" style="margin-right: 5px;"></i>Voir détails';
+            echo '</button>';
+            
+            // ✅ NOUVEAU : Toujours afficher le bouton d'analyse, mais le désactiver si pas de lien
+            echo ' ';
+            if (!empty($analyse_link)) {
+                echo '<button class="button button-small analyse-bien-btn" onclick="window.open(\'' . esc_url($analyse_link) . '\', \'_blank\')" style="background-color: #BA55D3; color: white; border: none; padding: 6px 12px; border-radius: 3px; cursor: pointer; font-size: 12px; margin-left: 5px;">';
+                echo '<i class="fas fa-chart-line" style="margin-right: 5px;"></i>Analyser';
+                echo '</button>';
+            } else {
+                echo '<button class="button button-small analyse-bien-btn" disabled style="background-color: #6c757d; color: white; border: none; padding: 6px 12px; border-radius: 3px; cursor: not-allowed; font-size: 12px; margin-left: 5px; opacity: 0.6;">';
+                echo '<i class="fas fa-chart-line" style="margin-right: 5px;"></i>Analyser';
+                echo '</button>';
+            }
+            
+            echo '</td>';
+            
+            echo '</tr>';
+        }
+    }
+    
+    $table_html = ob_get_clean();
+    
+    // Générer le HTML de pagination
+    ob_start();
+    
+    if ($total_pages > 1) {
+        echo '<div class="lead-vendeur-pagination">';
+        echo '<div class="pagination-controls">';
+        
+        // Bouton Précédent
+        if ($page > 1) {
+            echo '<button type="button" class="button button-secondary pagination-btn" data-page="' . ($page - 1) . '">';
+            echo '<i class="fas fa-chevron-left"></i> Précédent';
+            echo '</button>';
+        } else {
+            echo '<span class="button button-secondary pagination-btn disabled">';
+            echo '<i class="fas fa-chevron-left"></i> Précédent';
+            echo '</span>';
+        }
+        
+        // Numéros de pages
+        echo '<div class="pagination-numbers">';
+        $start_page = max(1, $page - 2);
+        $end_page = min($total_pages, $page + 2);
+        
+        // Première page si nécessaire
+        if ($start_page > 1) {
+            echo '<button type="button" class="pagination-number" data-page="1">1</button>';
+            if ($start_page > 2) {
+                echo '<span class="pagination-ellipsis">...</span>';
+            }
+        }
+        
+        // Pages autour de la page actuelle
+        for ($i = $start_page; $i <= $end_page; $i++) {
+            if ($i == $page) {
+                echo '<span class="pagination-number current">' . $i . '</span>';
+            } else {
+                echo '<button type="button" class="pagination-number" data-page="' . $i . '">' . $i . '</button>';
+            }
+        }
+        
+        // Dernière page si nécessaire
+        if ($end_page < $total_pages) {
+            if ($end_page < $total_pages - 1) {
+                echo '<span class="pagination-ellipsis">...</span>';
+            }
+            echo '<button type="button" class="pagination-number" data-page="' . $total_pages . '">' . $total_pages . '</button>';
+        }
+        
+        echo '</div>';
+        
+        // Bouton Suivant
+        if ($page < $total_pages) {
+            echo '<button type="button" class="button button-secondary pagination-btn" data-page="' . ($page + 1) . '">';
+            echo 'Suivant <i class="fas fa-chevron-right"></i>';
+            echo '</button>';
+        } else {
+            echo '<span class="button button-secondary pagination-btn disabled">';
+            echo 'Suivant <i class="fas fa-chevron-right"></i>';
+            echo '</span>';
+        }
+        
+        echo '</div>';
+        echo '</div>';
+    }
+    
+    $pagination_html = ob_get_clean();
+    
+    // Informations de pagination
+    $start_entry = (($page - 1) * $per_page) + 1;
+    $end_entry = min($page * $per_page, $total_entries);
+    
+    wp_send_json_success(array(
+        'table_html' => $table_html,
+        'pagination_html' => $pagination_html,
+        'pagination_info' => array(
+            'current_page' => $page,
+            'total_pages' => $total_pages,
+            'total_entries' => $total_entries,
+            'start_entry' => $start_entry,
+            'end_entry' => $end_entry
+        )
+    ));
 }
 
 ?>
