@@ -1,0 +1,258 @@
+/**
+ * Styles pour le popup lead vendeur
+ */
+
+/* Modal principal */
+.lead-details-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.lead-details-modal-content {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    max-width: 1200px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+/* En-tête du modal */
+.lead-details-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 25px;
+    border-bottom: 1px solid #e9ecef;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px 12px 0 0;
+}
+
+.lead-details-header-left {
+    display: flex;
+    align-items: center;
+}
+
+.lead-details-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #007cba 0%, #0056b3 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    box-shadow: 0 4px 12px rgba(0, 124, 186, 0.3);
+}
+
+.lead-details-icon i {
+    color: #fff;
+    font-size: 20px;
+}
+
+.lead-details-title-section h2 {
+    margin: 0;
+    color: #333;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.lead-details-subtitle {
+    margin: 5px 0 0 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.lead-details-date {
+    margin: 5px 0 0 0;
+    color: #888;
+    font-size: 12px;
+}
+
+.lead-details-header-right {
+    display: flex;
+    align-items: center;
+}
+
+.lead-details-modal-close {
+    font-size: 28px;
+    color: #999;
+    cursor: pointer;
+    transition: color 0.3s;
+    line-height: 1;
+}
+
+.lead-details-modal-close:hover {
+    color: #333;
+}
+
+/* Contenu principal */
+.lead-details-main-content {
+    display: flex;
+    padding: 25px;
+    gap: 25px;
+}
+
+.lead-details-left-column,
+.lead-details-right-column {
+    flex: 1;
+}
+
+/* Sections d'informations */
+.lead-details-info-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #f8f9fa;
+}
+
+.lead-details-section-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.lead-details-section-header i {
+    color: #007cba;
+    margin-right: 10px;
+    font-size: 16px;
+}
+
+.lead-details-section-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* Grille d'informations */
+.lead-details-info-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.lead-details-info-item {
+    margin-bottom: 8px;
+    padding: 8px;
+    background: #fff;
+    border-left: 3px solid #007cba;
+    border-radius: 4px;
+}
+
+.lead-details-info-label {
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.lead-details-info-value {
+    color: #666;
+}
+
+/* Bouton d'analyse */
+.analysis-button-container {
+    margin-top: 15px;
+    padding: 10px;
+    background: #fff;
+    border: 1px solid #28a745;
+    border-radius: 6px;
+}
+
+.analysis-button-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.analysis-button-left {
+    display: flex;
+    align-items: center;
+}
+
+.analysis-button-left i {
+    color: #28a745;
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+.analysis-button-left span {
+    font-weight: bold;
+    color: #333;
+}
+
+.analysis-button-link {
+    background: #28a745;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+    transition: background 0.3s;
+    display: inline-flex;
+    align-items: center;
+}
+
+.analysis-button-link:hover {
+    background: #218838;
+    color: #fff;
+}
+
+.analysis-button-link i {
+    margin-right: 5px;
+}
+
+/* Messages d'absence de données */
+.no-data-message {
+    padding: 10px;
+    background: #fff;
+    border-left: 3px solid #28a745;
+    color: #666;
+    border-radius: 4px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .lead-details-modal {
+        padding: 10px;
+    }
+    
+    .lead-details-main-content {
+        flex-direction: column;
+        padding: 15px;
+        gap: 15px;
+    }
+    
+    .lead-details-modal-header {
+        padding: 15px;
+    }
+    
+    .lead-details-title-section h2 {
+        font-size: 20px;
+    }
+    
+    .analysis-button-content {
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
+    }
+    
+    .analysis-button-link {
+        text-align: center;
+        justify-content: center;
+    }
+}
