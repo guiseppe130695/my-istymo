@@ -167,22 +167,10 @@ jQuery(document).ready(function($) {
             '</div>' +
             '<div class="lead-details-main-content">' +
             '<div class="lead-details-left-column">' +
-            '<div class="lead-details-info-section">' +
-            '<div class="lead-details-section-header">' +
-            '<i class="fas fa-home"></i>' +
-            '<h3>Informations sur le bien</h3>' +
-            '</div>' +
-            '<div class="lead-details-info-grid" id="property-data"></div>' +
-            '</div>' +
+            '<div id="property-data"></div>' +
             '</div>' +
             '<div class="lead-details-right-column">' +
-            '<div class="lead-details-info-section">' +
-            '<div class="lead-details-section-header">' +
-            '<i class="fas fa-info-circle"></i>' +
-            '<h3>Informations sur le lead</h3>' +
-            '</div>' +
-            '<div class="lead-details-info-grid" id="client-data"></div>' +
-            '</div>' +
+            '<div id="client-data"></div>' +
             '</div>' +
             '</div>' +
             '</div>' +
@@ -336,6 +324,12 @@ jQuery(document).ready(function($) {
                 continue; // Ignorer ce champ
             }
             
+            // Filtrer les champs indésirables
+            if (isUnwantedField(item)) {
+                console.log('🔍 Champ indésirable filtré:', item.label, '=', item.value);
+                continue; // Ignorer ce champ
+            }
+            
             var fieldId = item.field_id || item.id;
             var label = item.label.toLowerCase();
             
@@ -401,6 +395,46 @@ jQuery(document).ready(function($) {
         }
         
         return isSiteWebLabel && isSpecificUrl;
+    }
+    
+    /**
+     * Vérifier si un champ est indésirable et doit être filtré
+     */
+    function isUnwantedField(item) {
+        var label = item.label.toLowerCase();
+        var value = item.value.toLowerCase();
+        
+        // Champs à filtrer par label
+        var unwantedLabels = [
+            'sans titre',
+            'en cochant la case, vous acceptez nos conditions générales d\'utilisation',
+            'conditions générales',
+            'acceptez nos conditions',
+            'checkbox',
+            'case à cocher'
+        ];
+        
+        // Vérifier par label
+        for (var i = 0; i < unwantedLabels.length; i++) {
+            if (label.indexOf(unwantedLabels[i]) !== -1) {
+                return true;
+            }
+        }
+        
+        // Vérifier par valeur (pour les champs avec des valeurs spécifiques)
+        var unwantedValues = [
+            'en cochant la case, vous acceptez nos conditions générales d\'utilisation',
+            'conditions générales d\'utilisation',
+            'j\'accepte les conditions'
+        ];
+        
+        for (var j = 0; j < unwantedValues.length; j++) {
+            if (value.indexOf(unwantedValues[j]) !== -1) {
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     /**

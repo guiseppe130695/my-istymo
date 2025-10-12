@@ -2750,8 +2750,135 @@ function unified_leads_admin_shortcode($atts) {
     return $content;
 }
 
+// ✅ NOUVEAU : Shortcode spécifique pour les leads vendeur
+function my_istymo_leads_vendeur_shortcode($atts) {
+    // Vérifier si l'utilisateur est connecté
+    if (!is_user_logged_in()) {
+        return '<div class="my-istymo-error">Vous devez être connecté pour accéder à la gestion des leads vendeur.</div>';
+    }
+    
+    $atts = shortcode_atts(array(
+        'title' => 'Leads Vendeur',
+        'per_page' => 20
+    ), $atts);
+    
+    // Charger Font Awesome pour les icônes
+    wp_enqueue_style(
+        'font-awesome',
+        'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+        array(),
+        '6.4.0'
+    );
+    
+    // Charger les styles et scripts spécifiques aux leads vendeur
+    wp_enqueue_style('lead-vendeur-style', plugin_dir_url(__FILE__) . 'assets/css/lead-vendeur.css', array(), '1.0.0');
+    wp_enqueue_style('lead-vendeur-popup-style', plugin_dir_url(__FILE__) . 'assets/css/lead-vendeur-popup.css', array(), '1.0.1');
+    wp_enqueue_script('lead-vendeur-js', plugin_dir_url(__FILE__) . 'assets/js/lead-vendeur.js', array('jquery'), '1.0.0', true);
+    
+    // Localiser le script avec les données nécessaires
+    wp_localize_script('lead-vendeur-js', 'leadVendeurAjax', array(
+        'ajax_url' => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('lead_vendeur_nonce'),
+        'per_page' => intval($atts['per_page'])
+    ));
+    
+    // Capturer la sortie
+    ob_start();
+    
+    // Afficher le titre
+    if (!empty($atts['title'])) {
+        echo '<h2 class="lead-vendeur-title">' . esc_html($atts['title']) . '</h2>';
+    }
+    
+    // Utiliser la fonction existante pour afficher les leads vendeur
+    $config_manager = lead_vendeur_config_manager();
+    $favoris_handler = lead_vendeur_favoris_handler();
+    
+    if (!$config_manager->is_configured()) {
+        echo '<div class="notice notice-warning"><p><strong>Configuration requise !</strong> Veuillez d\'abord configurer le formulaire Gravity Forms dans la <a href="' . admin_url('admin.php?page=lead-vendeur-config') . '">page de configuration</a>.</p></div>';
+    } else {
+        // Afficher le tableau des leads vendeur
+        $config = $config_manager->get_config();
+        $form_id = $config['gravity_form_id'];
+        $per_page = intval($atts['per_page']);
+        
+        // Récupérer les entrées
+        $entries = $config_manager->get_form_entries_paginated($form_id, 1, $per_page);
+        $total_entries = $config_manager->get_form_entries_count($form_id);
+        $total_pages = ceil($total_entries / $per_page);
+        
+        echo '<div class="lead-vendeur-table-container">';
+        echo '<table class="wp-list-table widefat fixed striped lead-vendeur-table">';
+        
+        // En-têtes du tableau
+        echo '<thead><tr>';
+        echo '<th class="favori-column">⭐</th>';
+        echo '<th>Ville</th>';
+        echo '<th>Type</th>';
+        echo '<th>Téléphone</th>';
+        echo '<th>Date</th>';
+        echo '<th>Actions</th>';
+        echo '</tr></thead>';
+        
+        echo '<tbody id="lead-vendeur-table-body">';
+        
+        if (empty($entries)) {
+            echo '<tr><td colspan="6" style="text-align: center; padding: 20px;">Aucun lead vendeur trouvé.</td></tr>';
+        } else {
+            foreach ($entries as $entry) {
+                // Extraire les données des champs Gravity Forms
+                $city = isset($entry['city']) ? $entry['city'] : (isset($entry['ville']) ? $entry['ville'] : 'N/A');
+                $type = isset($entry['type']) ? $entry['type'] : (isset($entry['type_bien']) ? $entry['type_bien'] : 'N/A');
+                $phone = isset($entry['phone']) ? $entry['phone'] : (isset($entry['telephone']) ? $entry['telephone'] : 'N/A');
+                $date_created = isset($entry['date_created']) ? $entry['date_created'] : date('Y-m-d H:i:s');
+                
+                echo '<tr class="lead-vendeur-row" data-entry-id="' . esc_attr($entry['id']) . '">';
+                echo '<td class="favori-column">';
+                echo '<span class="favori-toggle" data-entry-id="' . esc_attr($entry['id']) . '">';
+                echo '<i class="far fa-star"></i>';
+                echo '</span>';
+                echo '</td>';
+                echo '<td>' . esc_html($city) . '</td>';
+                echo '<td>' . esc_html($type) . '</td>';
+                echo '<td>' . esc_html($phone) . '</td>';
+                echo '<td>' . esc_html(date('d/m/Y', strtotime($date_created))) . '</td>';
+                echo '<td class="actions-column">';
+                echo '<button class="view-lead-details" data-entry-id="' . esc_attr($entry['id']) . '">';
+                echo '<i class="fas fa-eye"></i> Voir détails';
+                echo '</button>';
+                echo '</td>';
+                echo '</tr>';
+            }
+        }
+        
+        echo '</tbody>';
+        echo '</table>';
+        echo '</div>';
+        
+        // Pagination (sans affichage des informations de page)
+        if ($total_pages > 1) {
+            echo '<div class="lead-vendeur-pagination">';
+            echo '<div class="pagination-controls">';
+            echo '<button class="pagination-btn" data-page="1" disabled><i class="fas fa-chevron-left"></i> Précédent</button>';
+            for ($i = 1; $i <= min(5, $total_pages); $i++) {
+                $active = ($i === 1) ? 'current' : '';
+                echo '<button class="pagination-number ' . $active . '" data-page="' . $i . '">' . $i . '</button>';
+            }
+            if ($total_pages > 1) {
+                echo '<button class="pagination-btn" data-page="2">Suivant <i class="fas fa-chevron-right"></i></button>';
+            }
+            echo '</div>';
+            echo '</div>';
+        }
+    }
+    
+    $content = ob_get_clean();
+    return $content;
+}
+
 // Enregistrer les shortcodes
 add_shortcode('my_istymo_leads', 'my_istymo_leads_shortcode');
+add_shortcode('my_istymo_leads_vendeur', 'my_istymo_leads_vendeur_shortcode');
 add_shortcode('unified_leads_admin', 'unified_leads_admin_shortcode');
 
 // Hook pour charger les styles sur toutes les pages où le shortcode est utilisé

@@ -231,6 +231,14 @@ class Lead_Vendeur_Config_Manager {
     public function save_config($config) {
         return update_option($this->config_key, $config);
     }
+    
+    /**
+     * Vérifier si la configuration est complète
+     */
+    public function is_configured() {
+        $config = $this->get_config();
+        return !empty($config['gravity_form_id']) && $config['gravity_form_id'] > 0;
+    }
 }
 
 // Fonction utilitaire pour récupérer l'instance

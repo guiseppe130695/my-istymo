@@ -116,7 +116,6 @@
     padding: 15px;
     border: 1px solid #ddd;
     border-radius: 8px;
-    background: #f8f9fa;
 }
 
 .lead-details-section-header {
@@ -149,8 +148,6 @@
     margin-bottom: 8px;
     padding: 8px;
     background: #fff;
-    border-left: 3px solid #007cba;
-    border-radius: 4px;
 }
 
 .lead-details-info-label {
@@ -168,7 +165,7 @@
     margin-top: 15px;
     padding: 10px;
     background: #fff;
-    border: 1px solid #28a745;
+    border: 1px solid #BA55D3; 
     border-radius: 6px;
 }
 
@@ -184,7 +181,7 @@
 }
 
 .analysis-button-left i {
-    color: #28a745;
+    color: #BA55D3;
     margin-right: 8px;
     font-size: 16px;
 }
@@ -195,7 +192,7 @@
 }
 
 .analysis-button-link {
-    background: #28a745;
+    background: #BA55D3;
     color: #fff;
     padding: 8px 16px;
     border-radius: 4px;
@@ -220,7 +217,7 @@
 .no-data-message {
     padding: 10px;
     background: #fff;
-    border-left: 3px solid #28a745;
+    border-left: 3px solid #BA55D3;
     color: #666;
     border-radius: 4px;
 }
