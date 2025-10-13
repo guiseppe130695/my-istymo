@@ -243,6 +243,16 @@ function sci_ajouter_menu() {
            'lead_vendeur_config_page'
        );
        
+       // ✅ NOUVEAU : Sous-menu Utilisateurs Lead Vendeur
+       add_submenu_page(
+           'lead-vendeur',
+           'Utilisateurs Lead Vendeur',
+           'Utilisateurs',
+           'manage_options',
+           'lead-vendeur-users',
+           'lead_vendeur_users_page'
+       );
+       
        // ✅ NOUVEAU : Menu Carte de Succession
        add_menu_page(
            'Carte de Succession',
@@ -406,6 +416,175 @@ function sci_ajouter_menu() {
            }
            
            return $address . '<br><small style="color: #666;">' . $city . '</small>';
+       }
+
+// ✅ NOUVEAU : Fonction pour la page des utilisateurs Lead Vendeur
+function lead_vendeur_users_page() {
+    // Vérifier les permissions
+    if (!current_user_can('manage_options')) {
+        echo '<div class="wrap"><h1>Accès refusé</h1><p>Vous n\'avez pas les permissions nécessaires pour accéder à cette page.</p></div>';
+        return;
+    }
+    
+    // Récupérer la configuration
+    $config_manager = lead_vendeur_config_manager();
+    $config = $config_manager->get_config();
+    
+    // ✅ DEBUG : Afficher la configuration utilisée
+    error_log("Lead Vendeur Users - Config: " . print_r($config, true));
+    error_log("Lead Vendeur Users - Form ID: " . $config['gravity_form_id']);
+    
+    if (empty($config['gravity_form_id'])) {
+        echo '<div class="wrap">';
+        echo '<h1>👥 Utilisateurs Lead Vendeur</h1>';
+        echo '<div class="notice notice-warning"><p>Aucun formulaire configuré. Veuillez d\'abord configurer le formulaire Lead Vendeur.</p></div>';
+        echo '</div>';
+        return;
+    }
+    
+    // Récupérer tous les utilisateurs
+    $users = get_users(array(
+        'orderby' => 'display_name',
+        'order' => 'ASC'
+    ));
+    
+    // Récupérer les statistiques pour chaque utilisateur
+    $user_stats = array();
+    foreach ($users as $user) {
+        // ✅ NOUVEAU : Forcer le filtrage par utilisateur même pour les admins
+        $leads_count = $config_manager->get_form_entries_count_for_user($config['gravity_form_id'], $user->ID);
+        
+        $user_stats[] = array(
+            'user' => $user,
+            'leads_count' => $leads_count
+        );
+    }
+    
+    // Trier par nombre de leads (décroissant)
+    usort($user_stats, function($a, $b) {
+        return $b['leads_count'] - $a['leads_count'];
+    });
+    
+    echo '<div class="wrap">';
+    echo '<h1>👥 Utilisateurs Lead Vendeur</h1>';
+    echo '<p>Liste des utilisateurs avec le nombre de leads attribués.</p>';
+    
+    // Tableau des utilisateurs
+    echo '<table class="wp-list-table widefat fixed striped">';
+    echo '<thead>';
+    echo '<tr>';
+    echo '<th style="width: 5%;">ID</th>';
+    echo '<th style="width: 20%;">Nom d\'utilisateur</th>';
+    echo '<th style="width: 25%;">Nom complet</th>';
+    echo '<th style="width: 25%;">Email</th>';
+    echo '<th style="width: 15%;">Rôle</th>';
+    echo '<th style="width: 10%;">Leads</th>';
+    echo '</tr>';
+    echo '</thead>';
+    echo '<tbody>';
+    
+    foreach ($user_stats as $stat) {
+        $user = $stat['user'];
+        $leads_count = $stat['leads_count'];
+        
+        echo '<tr>';
+        echo '<td>' . esc_html($user->ID) . '</td>';
+        echo '<td><strong>' . esc_html($user->user_login) . '</strong></td>';
+        echo '<td>' . esc_html($user->display_name) . '</td>';
+        echo '<td>' . esc_html($user->user_email) . '</td>';
+        echo '<td>' . esc_html(implode(', ', $user->roles)) . '</td>';
+        // Choisir la couleur du badge selon le nombre de leads
+        $badge_class = 'badge-primary';
+        if ($leads_count == 0) {
+            $badge_class = 'badge-danger';
+        } elseif ($leads_count >= 10) {
+            $badge_class = 'badge-success';
+        } elseif ($leads_count >= 5) {
+            $badge_class = 'badge-warning';
+        }
+        
+        echo '<td><span class="badge ' . $badge_class . '">' . esc_html($leads_count) . '</span></td>';
+        echo '</tr>';
+    }
+    
+    echo '</tbody>';
+    echo '</table>';
+    
+    // Statistiques globales
+    $total_leads = array_sum(array_column($user_stats, 'leads_count'));
+    $users_with_leads = count(array_filter($user_stats, function($stat) {
+        return $stat['leads_count'] > 0;
+    }));
+    $users_without_leads = count($users) - $users_with_leads;
+    
+    // Calculer les moyennes
+    $average_leads_per_user = $users_with_leads > 0 ? round($total_leads / $users_with_leads, 2) : 0;
+    $average_leads_per_all_users = count($users) > 0 ? round($total_leads / count($users), 2) : 0;
+    
+    // Trouver l'utilisateur avec le plus de leads
+    $top_user = $user_stats[0] ?? null;
+    $top_user_name = $top_user ? $top_user['user']->display_name : 'Aucun';
+    $top_user_leads = $top_user ? $top_user['leads_count'] : 0;
+    
+    echo '<div class="notice notice-info" style="margin-top: 20px;">';
+    echo '<h3>📊 Statistiques détaillées</h3>';
+    echo '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">';
+    
+    // Colonne gauche
+    echo '<div>';
+    echo '<h4>📈 Données globales</h4>';
+    echo '<ul style="list-style: none; padding: 0;">';
+    echo '<li style="margin: 8px 0;"><strong>📋 Formulaire utilisé :</strong> ID ' . esc_html($config['gravity_form_id']) . '</li>';
+    echo '<li style="margin: 8px 0;"><strong>👥 Utilisateurs total :</strong> ' . count($users) . '</li>';
+    echo '<li style="margin: 8px 0;"><strong>✅ Utilisateurs avec leads :</strong> ' . $users_with_leads . '</li>';
+    echo '<li style="margin: 8px 0;"><strong>❌ Utilisateurs sans leads :</strong> ' . $users_without_leads . '</li>';
+    echo '<li style="margin: 8px 0;"><strong>📊 Total des leads :</strong> <span style="color: #0073aa; font-weight: bold;">' . number_format($total_leads) . '</span></li>';
+    echo '</ul>';
+    echo '</div>';
+    
+    // Colonne droite
+    echo '<div>';
+    echo '<h4>🏆 Performances</h4>';
+    echo '<ul style="list-style: none; padding: 0;">';
+    echo '<li style="margin: 8px 0;"><strong>🥇 Meilleur utilisateur :</strong> ' . esc_html($top_user_name) . ' (' . $top_user_leads . ' leads)</li>';
+    echo '<li style="margin: 8px 0;"><strong>📊 Moyenne par utilisateur actif :</strong> ' . $average_leads_per_user . ' leads</li>';
+    echo '<li style="margin: 8px 0;"><strong>📊 Moyenne par tous les utilisateurs :</strong> ' . $average_leads_per_all_users . ' leads</li>';
+    echo '<li style="margin: 8px 0;"><strong>📈 Taux d\'activité :</strong> ' . round(($users_with_leads / count($users)) * 100, 1) . '%</li>';
+    echo '</ul>';
+    echo '</div>';
+    
+    echo '</div>';
+    echo '</div>';
+    
+    echo '</div>';
+    
+    // Ajouter du CSS pour le badge
+    echo '<style>
+    .badge {
+        display: inline-block;
+        padding: 4px 8px;
+        font-size: 12px;
+        font-weight: bold;
+        line-height: 1;
+        color: #fff;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: baseline;
+        border-radius: 3px;
+    }
+    .badge-primary {
+        background-color: #0073aa;
+    }
+    .badge-success {
+        background-color: #46b450;
+    }
+    .badge-warning {
+        background-color: #ffb900;
+    }
+    .badge-danger {
+        background-color: #dc3232;
+    }
+    </style>';
        }
 
        // ✅ NOUVEAU : Fonction pour la page Lead Vendeur

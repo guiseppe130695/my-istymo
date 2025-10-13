@@ -249,6 +249,31 @@ class Lead_Vendeur_Config_Manager {
     }
     
     /**
+     * ✅ NOUVEAU : Compter les entrées d'un formulaire pour un utilisateur spécifique (force le filtrage)
+     */
+    public function get_form_entries_count_for_user($form_id, $user_id) {
+        if (!class_exists('GFAPI')) {
+            return 0;
+        }
+        
+        $search_criteria = array();
+        
+        // ✅ FORCER le filtrage par utilisateur (même pour les admins)
+        if ($user_id) {
+            $search_criteria['field_filters'] = array(
+                array(
+                    'key' => 'created_by',
+                    'value' => $user_id
+                )
+            );
+        }
+        
+        $total_count = GFAPI::count_entries($form_id, $search_criteria);
+        
+        return $total_count;
+    }
+    
+    /**
      * Vérifier si Gravity Forms est actif
      */
     public function is_gravity_forms_active() {
