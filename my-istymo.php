@@ -481,15 +481,6 @@ function sci_ajouter_menu() {
                echo '<div class="my-istymo-card">';
                echo '<h2>📋 Leads Vendeur (' . $total_entries . ' au total)</h2>';
                
-               // Informations de pagination (style DPE/SCI)
-               if ($total_pages > 1) {
-                   $start_entry = (($current_page - 1) * $per_page) + 1;
-                   $end_entry = min($current_page * $per_page, $total_entries);
-                   echo '<div class="pagination-info">';
-                   echo '<span id="page-info">Page ' . $current_page . ' sur ' . $total_pages . '</span>';
-                   echo '<span style="margin-left: 15px; color: #666;">Affichage des entrées ' . $start_entry . ' à ' . $end_entry . ' sur ' . $total_entries . '</span>';
-                   echo '</div>';
-               }
                
                // Tableau principal avec style DPE/SCI
                echo '<div class="lead-vendeur-table-container">';
@@ -2808,10 +2799,6 @@ function my_istymo_leads_vendeur_shortcode($atts) {
     // Capturer la sortie
     ob_start();
     
-    // Afficher le titre
-    if (!empty($atts['title'])) {
-        echo '<h2 class="lead-vendeur-title">' . esc_html($atts['title']) . '</h2>';
-    }
     
     // Utiliser la fonction existante pour afficher les leads vendeur
     $config_manager = lead_vendeur_config_manager();
@@ -2842,14 +2829,6 @@ function my_istymo_leads_vendeur_shortcode($atts) {
         $total_pages = ceil($total_entries / $per_page);
         
         // Informations de pagination
-        if ($total_pages > 1) {
-            $start_entry = 1;
-            $end_entry = min($per_page, $total_entries);
-            echo '<div class="pagination-info">';
-            echo '<span id="page-info">Page 1 sur ' . $total_pages . '</span>';
-            echo '<span style="margin-left: 15px; color: #666;">Affichage des entrées ' . $start_entry . ' à ' . $end_entry . ' sur ' . $total_entries . '</span>';
-            echo '</div>';
-        }
         
         echo '<div class="lead-vendeur-table-container">';
         echo '<table class="wp-list-table widefat fixed striped lead-vendeur-table">';
@@ -3094,7 +3073,7 @@ function my_istymo_leads_vendeur_shortcode($atts) {
             // Fonction pour afficher les messages
             function showMessage(message, type) {
                 var $message = $("<div class=\"notice notice-" + type + " is-dismissible\"><p>" + message + "</p></div>");
-                $(".lead-vendeur-title").after($message);
+                $(".lead-vendeur-table-container").before($message);
                 setTimeout(function() {
                     $message.fadeOut();
                 }, 3000);
