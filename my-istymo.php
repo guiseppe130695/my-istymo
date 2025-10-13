@@ -459,6 +459,7 @@ function sci_ajouter_menu() {
            // Charger les styles et scripts
            wp_enqueue_style('lead-vendeur-style', plugin_dir_url(__FILE__) . 'assets/css/lead-vendeur.css', array(), '1.0.0');
            wp_enqueue_style('lead-vendeur-popup-style', plugin_dir_url(__FILE__) . 'assets/css/lead-vendeur-popup.css', array(), '1.0.1');
+           wp_enqueue_style('lead-vendeur-sections-style', plugin_dir_url(__FILE__) . 'assets/css/lead-vendeur-sections.css', array(), '1.0.0');
            wp_enqueue_script('lead-vendeur-js', plugin_dir_url(__FILE__) . 'assets/js/lead-vendeur.js', array('jquery'), '1.0.0', true);
            
            // ✅ NOUVEAU : Données AJAX pour la pagination
@@ -2675,6 +2676,7 @@ function my_istymo_leads_shortcode($atts) {
     // Charger les styles et scripts de manière persistante
     wp_enqueue_style('unified-leads-css', plugin_dir_url(__FILE__) . 'assets/css/unified-leads.css', array('font-awesome'), '1.0.0');
     wp_enqueue_style('lead-edit-modal-css', plugin_dir_url(__FILE__) . 'assets/css/lead-edit-modal.css', array('font-awesome'), '1.0.0');
+    wp_enqueue_style('lead-vendeur-sections-style', plugin_dir_url(__FILE__) . 'assets/css/lead-vendeur-sections.css', array(), '1.0.0');
     wp_enqueue_script('unified-leads-admin', plugin_dir_url(__FILE__) . 'assets/js/unified-leads-admin.js', array('jquery'), '1.0.0', true);
     wp_enqueue_script('lead-actions', plugin_dir_url(__FILE__) . 'assets/js/lead-actions.js', array('jquery', 'jquery-ui-tooltip'), '1.0.0', true);
     wp_enqueue_script('lead-workflow', plugin_dir_url(__FILE__) . 'assets/js/lead-workflow.js', array('jquery'), '1.0.0', true);
@@ -2783,6 +2785,7 @@ function my_istymo_leads_vendeur_shortcode($atts) {
     wp_enqueue_style('lead-vendeur-style', plugin_dir_url(__FILE__) . 'assets/css/lead-vendeur.css', array(), '1.0.0');
     wp_enqueue_style('lead-vendeur-popup-style', plugin_dir_url(__FILE__) . 'assets/css/lead-vendeur-popup.css', array(), '1.0.1');
     wp_enqueue_style('lead-vendeur-favorites-style', plugin_dir_url(__FILE__) . 'assets/css/lead-vendeur-favorites.css', array(), '1.0.0');
+    wp_enqueue_style('lead-vendeur-sections-style', plugin_dir_url(__FILE__) . 'assets/css/lead-vendeur-sections.css', array(), '1.0.0');
     wp_enqueue_script('lead-vendeur-js', plugin_dir_url(__FILE__) . 'assets/js/lead-vendeur.js', array('jquery'), '1.0.0', true);
     
     // Localiser le script avec les données nécessaires (sans form_id pour l'instant)
@@ -3247,6 +3250,7 @@ function my_istymo_enqueue_shortcode_styles() {
         // Charger les styles de manière globale
         wp_enqueue_style('unified-leads-css', plugin_dir_url(__FILE__) . 'assets/css/unified-leads.css', array('font-awesome'), '1.0.0');
         wp_enqueue_style('lead-edit-modal-css', plugin_dir_url(__FILE__) . 'assets/css/lead-edit-modal.css', array('font-awesome'), '1.0.0');
+        wp_enqueue_style('lead-vendeur-sections-style', plugin_dir_url(__FILE__) . 'assets/css/lead-vendeur-sections.css', array(), '1.0.0');
         
         // Charger les scripts
         wp_enqueue_script('unified-leads-admin', plugin_dir_url(__FILE__) . 'assets/js/unified-leads-admin.js', array('jquery'), '1.0.0', true);

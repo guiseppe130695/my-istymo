@@ -1,0 +1,348 @@
+/**
+ * Styles pour les sections Lead Vendeur
+ * Système de sections avec analyse du bien
+ */
+
+/* ===== SECTIONS GÉNÉRALES ===== */
+.my-istymo-section {
+    margin-bottom: 25px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #007cba;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== SOUS-SECTIONS ===== */
+.my-istymo-subsection {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #ffffff;
+    border-radius: 6px;
+    border-left: 3px solid #e9ecef;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.my-istymo-subsection-title {
+    margin: 0 0 12px 0;
+    color: #495057;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.my-istymo-subsection-title i {
+    color: #6c757d;
+    font-size: 12px;
+}
+
+.my-istymo-section-title {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.my-istymo-section-title i {
+    color: #007cba;
+    font-size: 14px;
+}
+
+/* ===== SECTION ANALYSER LE BIEN ===== */
+.my-istymo-lead-vendeur-info .my-istymo-analyze-section {
+    background: #ffffff !important;
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 8px !important;
+    padding: 16px !important;
+    margin: 0 !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 16px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.my-istymo-lead-vendeur-info .my-istymo-analyze-section .my-istymo-section-title {
+    color: #7b1fa2 !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    flex: 1 !important;
+}
+
+.my-istymo-lead-vendeur-info .my-istymo-analyze-section .my-istymo-section-title i {
+    color: #9c27b0 !important;
+    font-size: 18px !important;
+}
+
+.my-istymo-lead-vendeur-info .my-istymo-analyze-content {
+    display: none !important; /* Masquer le contenu descriptif */
+}
+
+.my-istymo-lead-vendeur-info .my-istymo-analyze-description {
+    display: none !important; /* Masquer la description */
+}
+
+.my-istymo-lead-vendeur-info .my-istymo-analyze-actions {
+    margin: 0 !important;
+    flex-shrink: 0 !important;
+}
+
+.my-istymo-lead-vendeur-info .my-istymo-btn-analyze {
+    background: #7b1fa2 !important;
+    border: none !important;
+    color: white !important;
+    padding: 10px 20px !important;
+    border-radius: 6px !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+    box-shadow: 0 2px 4px rgba(123, 31, 162, 0.2) !important;
+    transition: all 0.2s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    white-space: nowrap !important;
+}
+
+.my-istymo-lead-vendeur-info .my-istymo-btn-analyze:hover {
+    background: #9c27b0 !important;
+    box-shadow: 0 4px 8px rgba(123, 31, 162, 0.3) !important;
+    transform: translateY(-1px) !important;
+}
+
+.my-istymo-lead-vendeur-info .my-istymo-btn-analyze:active {
+    transform: translateY(0) !important;
+}
+
+.my-istymo-lead-vendeur-info .my-istymo-btn-analyze i {
+    font-size: 16px !important;
+}
+
+/* ===== STYLES SPÉCIFIQUES POUR LEADS UNIFIÉS ===== */
+.my-istymo-section.my-istymo-analyze-section {
+    margin: 15px 0;
+    padding: 16px;
+    background: #ffffff;
+    border: 1px solid #BA55D3;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(186, 85, 211, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    transition: all 0.3s ease;
+}
+
+.my-istymo-section.my-istymo-analyze-section:hover {
+    box-shadow: 0 4px 8px rgba(186, 85, 211, 0.15);
+    border-color: #9B3DB3;
+}
+
+.my-istymo-section.my-istymo-analyze-section .my-istymo-section-title {
+    color: #BA55D3;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.my-istymo-section.my-istymo-analyze-section .my-istymo-section-title i {
+    color: #9B3DB3;
+    font-size: 18px;
+}
+
+.my-istymo-section.my-istymo-analyze-section .my-istymo-analyze-actions {
+    margin: 0;
+    flex-shrink: 0;
+}
+
+button.my-istymo-btn-analyze,
+.my-istymo-section.my-istymo-analyze-section .my-istymo-btn-analyze {
+    background: #BA55D3;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 14px;
+    box-shadow: 0 2px 4px rgba(186, 85, 211, 0.2);
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+button.my-istymo-btn-analyze:hover,
+.my-istymo-section.my-istymo-analyze-section .my-istymo-btn-analyze:hover {
+    background: #9B3DB3;
+    box-shadow: 0 4px 8px rgba(186, 85, 211, 0.3);
+    transform: translateY(-1px);
+}
+
+button.my-istymo-btn-analyze:active,
+.my-istymo-section.my-istymo-analyze-section .my-istymo-btn-analyze:active {
+    transform: translateY(0);
+}
+
+button.my-istymo-btn-analyze i,
+.my-istymo-section.my-istymo-analyze-section .my-istymo-btn-analyze i {
+    font-size: 16px;
+}
+
+i.fas.fa-external-link-alt {
+    margin-right: 5px;
+}
+
+/* ===== INFORMATIONS LIÉES AU BIEN ===== */
+.my-istymo-section:nth-child(2) {
+    border-left-color: #4caf50;
+}
+
+.my-istymo-section:nth-child(2) .my-istymo-section-title {
+    color: #2e7d32;
+}
+
+.my-istymo-section:nth-child(2) .my-istymo-section-title i {
+    color: #4caf50;
+}
+
+/* ===== CONTACT ===== */
+.my-istymo-section:nth-child(4) {
+    border-left-color: #ff9800;
+}
+
+.my-istymo-section:nth-child(4) .my-istymo-section-title {
+    color: #f57c00;
+}
+
+.my-istymo-section:nth-child(4) .my-istymo-section-title i {
+    color: #ff9800;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .my-istymo-section {
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .my-istymo-section-title {
+        font-size: 14px;
+    }
+    
+    .my-istymo-lead-vendeur-info .my-istymo-analyze-section {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+    }
+    
+    .my-istymo-lead-vendeur-info .my-istymo-analyze-actions {
+        width: 100% !important;
+    }
+    
+    .my-istymo-lead-vendeur-info .my-istymo-btn-analyze {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+    
+    /* Section Analyser le bien - Responsive pour leads unifiés */
+    .my-istymo-section.my-istymo-analyze-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .my-istymo-section.my-istymo-analyze-section .my-istymo-analyze-actions {
+        width: 100%;
+    }
+    
+    .my-istymo-section.my-istymo-analyze-section .my-istymo-btn-analyze {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ===== ANIMATIONS ===== */
+.my-istymo-section {
+    animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.my-istymo-btn-analyze {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 4px 8px rgba(156, 39, 176, 0.3);
+    }
+    50% {
+        box-shadow: 0 4px 8px rgba(156, 39, 176, 0.5);
+    }
+    100% {
+        box-shadow: 0 4px 8px rgba(156, 39, 176, 0.3);
+    }
+}
+
+/* ===== ICÔNES SPÉCIFIQUES ===== */
+.my-istymo-section-title i.fa-info-circle {
+    color: #007cba;
+}
+
+.my-istymo-section-title i.fa-building {
+    color: #4caf50;
+}
+
+.my-istymo-section-title i.fa-search {
+    color: #9c27b0;
+}
+
+.my-istymo-section-title i.fa-user {
+    color: #ff9800;
+}
+
+/* ===== ÉTATS DE CHARGEMENT ===== */
+.my-istymo-btn-analyze.loading {
+    opacity: 0.7;
+    cursor: not-allowed;
+    animation: none;
+}
+
+.my-istymo-btn-analyze.loading i {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}

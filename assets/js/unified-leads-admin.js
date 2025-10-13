@@ -124,8 +124,24 @@ jQuery(document).ready(function($) {
                     
                     // Mettre à jour le titre du modal
                     var leadType = response.data.lead_type || 'lead';
-                    var typeIcon = leadType === 'sci' ? '<i class="fas fa-building"></i>' : '<i class="fas fa-home"></i>';
-                    $('#lead-modal-title').html(typeIcon + ' Lead #' + leadId + ' - ' + leadType.toUpperCase());
+                    var typeIcon = '';
+                    var typeLabel = '';
+                    
+                    if (leadType === 'sci') {
+                        typeIcon = '<i class="fas fa-building"></i>';
+                        typeLabel = 'SCI';
+                    } else if (leadType === 'dpe') {
+                        typeIcon = '<i class="fas fa-home"></i>';
+                        typeLabel = 'DPE';
+                    } else if (leadType === 'lead_vendeur') {
+                        typeIcon = '<i class="fas fa-store"></i>';
+                        typeLabel = 'Lead Vendeur';
+                    } else {
+                        typeIcon = '<i class="fas fa-users"></i>';
+                        typeLabel = leadType.toUpperCase();
+                    }
+                    
+                    $('#lead-modal-title').html(typeIcon + ' Lead #' + leadId + ' - ' + typeLabel);
                     
                     // Mettre à jour la date de création dans l'en-tête
                     var creationDate = response.data.date_creation || response.data.created_at || response.data.date_ajout || response.data.timestamp;
@@ -391,7 +407,11 @@ jQuery(document).ready(function($) {
         html += '<div class="my-istymo-info-card">';
         html += '<h4 class="my-istymo-card-title">';
         html += '<i class="fas fa-info-circle"></i> ';
+        if (leadData.lead_type === 'lead_vendeur') {
+            html += 'Informations liées au bien';
+        } else {
         html += 'Informations ' + (leadData.lead_type === 'sci' ? 'SCI' : 'DPE');
+        }
         html += '</h4>';
         
         // Afficher les données originales selon le type
@@ -401,8 +421,10 @@ jQuery(document).ready(function($) {
             
             if (leadData.lead_type === 'sci') {
                 html += generateSCIInfo(originalData);
-            } else {
+            } else if (leadData.lead_type === 'dpe') {
                 html += generateDPEInfo(originalData);
+            } else if (leadData.lead_type === 'lead_vendeur') {
+                html += generateLeadVendeurInfo(originalData);
             }
         }
         
@@ -614,6 +636,297 @@ jQuery(document).ready(function($) {
         html += '</div>';
         return html;
     }
+    
+    /**
+     * Génère les informations Lead Vendeur (données disponibles uniquement)
+     */
+    function generateLeadVendeurInfo(data) {
+        var html = '<div class="my-istymo-lead-vendeur-info">';
+        
+        // ===== DONNÉES DISPONIBLES UNIQUEMENT (SANS SECTIONS) =====
+        
+        // Adresse complète (champs 4.1, 4.3, 4.5)
+        var adresse_parts = [];
+        if (data['4.1']) adresse_parts.push(data['4.1']);
+        if (data['4.3']) adresse_parts.push(data['4.3']);
+        if (data['4.5']) adresse_parts.push(data['4.5']);
+        
+        if (adresse_parts.length > 0) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-map-marker-alt"></i> Adresse</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(adresse_parts.join(', ')) + '</span>';
+            html += '</div>';
+        }
+        
+        // Ville (séparée pour compatibilité)
+        if (data['4.3']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-city"></i> Ville</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['4.3']) + '</span>';
+            html += '</div>';
+        }
+        
+        // Type de bien (champ 6)
+        if (data['6']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-home"></i> Type de bien</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['6']) + '</span>';
+            html += '</div>';
+        }
+        
+        // Surface (champ 10)
+        if (data['10']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-ruler-combined"></i> Surface</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['10']) + ' m²</span>';
+            html += '</div>';
+        }
+        
+        // Date de création de l'entrée
+        if (data.date_created) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-calendar-alt"></i> Date de soumission</span>';
+            html += '<span class="my-istymo-info-value">' + formatDate(data.date_created) + '</span>';
+            html += '</div>';
+        }
+        
+        // Caractéristiques du bien (champs 12, 13, 18, 20)
+        var caracteristiques = [];
+        if (data['12']) caracteristiques.push(data['12']);
+        if (data['13']) caracteristiques.push(data['13']);
+        if (data['18']) caracteristiques.push(data['18']);
+        if (data['20']) caracteristiques.push(data['20']);
+        
+        if (caracteristiques.length > 0) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-check-circle"></i> Caractéristiques</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(caracteristiques.join(', ')) + '</span>';
+            html += '</div>';
+        }
+        
+        // Nombre de pièces (champ 40)
+        if (data['40']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-door-open"></i> Nombre de pièces</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['40']) + '</span>';
+            html += '</div>';
+        }
+        
+        // Surface habitable (champ 29)
+        if (data['29']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-ruler-combined"></i> Surface habitable</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['29']) + ' m²</span>';
+            html += '</div>';
+        }
+        
+        // Surface du terrain (champ 30)
+        if (data['30']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-map"></i> Surface du terrain</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['30']) + ' m²</span>';
+            html += '</div>';
+        }
+        
+        // Étage de l'appartement (champ 58)
+        if (data['58']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-layer-group"></i> Étage</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['58']) + '</span>';
+            html += '</div>';
+        }
+        
+        // Nombre d'étages de l'immeuble (champ 11)
+        if (data['11']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-building"></i> Nombre d\'étages immeuble</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['11']) + '</span>';
+            html += '</div>';
+        }
+        
+        // Nombre de véhicules (champ 59)
+        if (data['59']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-car"></i> Nombre de véhicules</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['59']) + '</span>';
+            html += '</div>';
+        }
+        
+        // Parking couvert (champ 38)
+        if (data['38']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-parking"></i> Parking couvert</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['38']) + ' places</span>';
+            html += '</div>';
+        }
+        
+        // Parking extérieur (champ 39)
+        if (data['39']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-parking"></i> Parking extérieur</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['39']) + ' places</span>';
+            html += '</div>';
+        }
+        
+        // Année de construction (champs 23, 32)
+        var annee_construction = data['23'] || data['32'];
+        if (annee_construction) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-calendar-alt"></i> Année de construction</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(annee_construction) + '</span>';
+            html += '</div>';
+        }
+        
+        // Rénovation (champs 25, 31)
+        var renovation = data['25'] || data['31'];
+        if (renovation) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-tools"></i> Rénovation</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(renovation) + '</span>';
+            html += '</div>';
+        }
+        
+        // Année de rénovation (champs 26, 33)
+        var annee_renovation = data['26'] || data['33'];
+        if (annee_renovation) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-calendar-alt"></i> Année de rénovation</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(annee_renovation) + '</span>';
+            html += '</div>';
+        }
+        
+        // Type de terrain (champ 57)
+        if (data['57']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-tree"></i> Type de terrain</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['57']) + '</span>';
+            html += '</div>';
+        }
+        
+        // Surface du terrain (champ 62)
+        if (data['62']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-map"></i> Surface terrain</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['62']) + ' m²</span>';
+            html += '</div>';
+        }
+        
+        // Viabilisation (champ 63)
+        if (data['63']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-plug"></i> Viabilisation</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['63']) + '</span>';
+            html += '</div>';
+        }
+        
+        // Type de fond de commerce (champ 61)
+        if (data['61']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-store"></i> Type de fond de commerce</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['61']) + '</span>';
+            html += '</div>';
+        }
+        
+        // Surface fond de commerce (champ 52)
+        if (data['52']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-ruler-combined"></i> Surface fond de commerce</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['52']) + ' m²</span>';
+            html += '</div>';
+        }
+        
+        // Équipement (champ 53)
+        if (data['53']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-cogs"></i> Équipement</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['53']) + '</span>';
+            html += '</div>';
+        }
+        
+        // Téléphone (champ 45)
+        if (data['45']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-phone"></i> Téléphone</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['45']) + '</span>';
+            html += '</div>';
+        }
+        
+        // Email (champ 46)
+        if (data['46']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-envelope"></i> Email</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['46']) + '</span>';
+            html += '</div>';
+        }
+        
+        // Commentaire (champ 55)
+        if (data['55']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-comment"></i> Commentaire</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['55']) + '</span>';
+            html += '</div>';
+        }
+        
+        // ===== SECTION ANALYSER LE BIEN (SEULEMENT SI SITE WEB DISPONIBLE) =====
+        if (data['64']) { // Champ 64 = Site Web
+            console.log('🔍 Site Web trouvé:', data['64']);
+            var escapedUrl = escapeHtml(data['64']);
+            console.log('🔍 URL échappée:', escapedUrl);
+            
+            html += '<div class="my-istymo-section my-istymo-analyze-section">';
+            html += '<h5 class="my-istymo-section-title"><i class="fas fa-chart-line"></i> Analyser le bien</h5>';
+            html += '<div class="my-istymo-analyze-actions">';
+            html += '<button type="button" class="my-istymo-btn-analyze" onclick="openPropertyReport(\'' + escapedUrl + '\')">';
+            html += '<i class="fas fa-external-link-alt"></i> Ouvrir le rapport';
+            html += '</button>';
+            html += '</div>';
+            html += '</div>'; // Fin section analyser le bien
+        } else {
+            console.log('🔍 Aucun site web trouvé (champ 64 vide)');
+        }
+        
+        html += '</div>';
+        return html;
+    }
+    
+    /**
+     * Fonction pour ouvrir le rapport d'analyse du bien
+     */
+    function openPropertyReport(websiteUrl) {
+        console.log('🚀 openPropertyReport appelée avec URL:', websiteUrl);
+        console.log('🚀 Type d\'URL:', typeof websiteUrl);
+        console.log('🚀 URL vide?', !websiteUrl);
+        console.log('🚀 URL trim vide?', websiteUrl && websiteUrl.trim() === '');
+        
+        // Vérifier si l'URL est valide
+        if (websiteUrl && websiteUrl.trim() !== '') {
+            var originalUrl = websiteUrl;
+            
+            // Ajouter http:// si l'URL ne commence pas par http:// ou https://
+            if (!websiteUrl.startsWith('http://') && !websiteUrl.startsWith('https://')) {
+                websiteUrl = 'http://' + websiteUrl;
+                console.log('🚀 URL modifiée de', originalUrl, 'vers', websiteUrl);
+            }
+            
+            console.log('🚀 Tentative d\'ouverture de l\'URL:', websiteUrl);
+            
+            // Ouvrir l'URL dans un nouvel onglet
+            var newWindow = window.open(websiteUrl, '_blank');
+            
+            if (newWindow) {
+                console.log('✅ Nouvel onglet ouvert avec succès');
+            } else {
+                console.error('❌ Échec de l\'ouverture du nouvel onglet (peut-être bloqué par le navigateur)');
+                alert('Impossible d\'ouvrir le lien. Vérifiez que les popups ne sont pas bloqués.');
+            }
+        } else {
+            console.log('❌ URL vide ou invalide');
+            alert('URL du site web non disponible pour ce bien.');
+        }
+    }
+    
+    // Rendre la fonction accessible globalement
+    window.openPropertyReport = openPropertyReport;
     
     /**
      * Fonctions utilitaires

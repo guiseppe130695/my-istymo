@@ -491,6 +491,23 @@ class Unified_Leads_Manager {
                 } else {
                     error_log("Favori DPE supprimé automatiquement pour DPE ID: " . $original_id);
                 }
+            } elseif ($lead_type === 'lead_vendeur') {
+                // ✅ NOUVEAU : Supprimer le favori Lead Vendeur en base
+                $lead_vendeur_table = $wpdb->prefix . 'lead_vendeur_favorites';
+                $result = $wpdb->delete(
+                    $lead_vendeur_table,
+                    array(
+                        'user_id' => $user_id,
+                        'entry_id' => $original_id
+                    ),
+                    array('%d', '%d')
+                );
+                
+                if ($result === false) {
+                    error_log("Erreur lors de la suppression automatique du favori Lead Vendeur: " . $wpdb->last_error);
+                } else {
+                    error_log("Favori Lead Vendeur supprimé automatiquement pour Entry ID: " . $original_id);
+                }
             }
         } catch (Exception $e) {
             error_log("Exception lors de la suppression automatique du favori original: " . $e->getMessage());

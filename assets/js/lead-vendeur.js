@@ -5,7 +5,7 @@
 jQuery(document).ready(function($) {
     
     // Toggle favori
-    $(document).on('click', '.favori-toggle', function(e) {
+    $(document).on('click', '.favorite-btn', function(e) {
         e.preventDefault();
         
         var $toggle = $(this);
@@ -19,21 +19,24 @@ jQuery(document).ready(function($) {
         $toggle.addClass('loading');
         
         $.ajax({
-            url: leadVendeurAjax.ajax_url,
+            url: simpleFavoritesAjax.ajax_url,
             type: 'POST',
             data: {
-                action: 'lead_vendeur_toggle_favori',
+                action: 'simple_favorites_toggle',
                 entry_id: entryId,
-                nonce: leadVendeurAjax.nonce
+                form_id: leadVendeurAjax.form_id,
+                nonce: simpleFavoritesAjax.nonce
             },
             success: function(response) {
                 if (response.success) {
                     if (response.data.action === 'added') {
                         $toggle.addClass('favori-active');
+                        $toggle.html('★'); // Étoile pleine
                         $row.addClass('favori-row');
                         showMessage('Lead ajouté aux favoris', 'success');
                     } else {
                         $toggle.removeClass('favori-active');
+                        $toggle.html('☆'); // Étoile vide
                         $row.removeClass('favori-row');
                         showMessage('Lead retiré des favoris', 'success');
                     }
@@ -525,19 +528,15 @@ jQuery(document).ready(function($) {
             }
         }
         
-        // Bouton "Analyser le bien" avec lien dynamique (seulement si URL trouvée)
+        // ✅ NOUVEAU : Section "Analyser le bien" avec le style demandé
         var analysisUrl = getAnalysisUrlFromData(data);
         if (analysisUrl) {
-            html += '<div class="analysis-button-container">';
-            html += '<div class="analysis-button-content">';
-            html += '<div class="analysis-button-left">';
-            html += '<i class="fas fa-chart-line"></i>';
-            html += '<span>Analyser le bien</span>';
-            html += '</div>';
-            html += '<a href="' + escapeHtml(analysisUrl) + '" target="_blank" class="analysis-button-link">';
-            html += '<i class="fas fa-external-link-alt"></i>';
-            html += 'Ouvrir le rapport';
-            html += '</a>';
+            html += '<div class="my-istymo-section my-istymo-analyze-section">';
+            html += '<h5 class="my-istymo-section-title"><i class="fas fa-chart-line"></i> Analyser le bien</h5>';
+            html += '<div class="my-istymo-analyze-actions">';
+            html += '<button type="button" class="my-istymo-btn-analyze" onclick="openPropertyReport(\'' + escapeHtml(analysisUrl) + '\')">';
+            html += '<i class="fas fa-external-link-alt"></i> Ouvrir le rapport';
+            html += '</button>';
             html += '</div>';
             html += '</div>';
         } else {
@@ -1387,7 +1386,7 @@ jQuery(document).ready(function($) {
     
     // Auto-refresh des favoris au chargement de la page
     function refreshFavoris() {
-        $('.favori-toggle').each(function() {
+        $('.favorite-btn').each(function() {
             var $toggle = $(this);
             var entryId = $toggle.data('entry-id');
             
@@ -1503,6 +1502,36 @@ jQuery(document).ready(function($) {
                 $tableBody.html('<tr><td colspan="100%" style="text-align: center; padding: 20px; color: #d63384;">Erreur de connexion</td></tr>');
             }
         });
+    }
+    
+    // ✅ NOUVEAU : Fonction pour ouvrir le rapport d'analyse
+    function openPropertyReport(websiteUrl) {
+        console.log('Ouverture du rapport pour l\'URL:', websiteUrl);
+        
+        // Vérifier si l'URL est valide
+        if (websiteUrl && websiteUrl.trim() !== '') {
+            // Ajouter http:// si l'URL ne commence pas par http:// ou https://
+            if (!websiteUrl.startsWith('http://') && !websiteUrl.startsWith('https://')) {
+                websiteUrl = 'http://' + websiteUrl;
+            }
+            
+            // Ouvrir l'URL dans un nouvel onglet
+            window.open(websiteUrl, '_blank');
+        } else {
+            alert('URL du site web non disponible pour ce bien.');
+        }
+    }
+    
+    // ✅ NOUVEAU : Fonction utilitaire pour échapper le HTML
+    function escapeHtml(text) {
+        var map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
     }
     
 });

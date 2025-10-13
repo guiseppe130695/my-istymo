@@ -289,7 +289,8 @@ class Lead_Vendeur_Favoris_Handler {
             
             foreach ($leads as $lead) {
                 if ($lead->lead_type === 'lead_vendeur' && $lead->original_id == $entry_id) {
-                    $delete_result = $leads_manager->delete_lead($lead->id);
+                    // ✅ IMPORTANT : skip_favori_removal = true pour éviter la boucle infinie
+                    $delete_result = $leads_manager->delete_lead($lead->id, true);
                     
                     if (is_wp_error($delete_result)) {
                         error_log("Erreur lors de la suppression automatique du lead unifié Lead Vendeur: " . $delete_result->get_error_message());

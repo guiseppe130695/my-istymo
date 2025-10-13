@@ -237,7 +237,8 @@ class Simple_Favorites_Handler {
                 
                 if ($lead->lead_type === 'lead_vendeur' && $lead->original_id == $entry_id) {
                     error_log("Simple Favorites - Lead Lead Vendeur trouvé, suppression en cours...");
-                    $delete_result = $leads_manager->delete_lead($lead->id);
+                    // ✅ IMPORTANT : skip_favori_removal = true pour éviter la boucle infinie
+                    $delete_result = $leads_manager->delete_lead($lead->id, true);
                     
                     if (is_wp_error($delete_result)) {
                         error_log("Erreur lors de la suppression automatique du lead unifié Lead Vendeur: " . $delete_result->get_error_message());
@@ -261,50 +262,8 @@ class Simple_Favorites_Handler {
      * ✅ NOUVEAU : Formater les notes pour Lead Vendeur
      */
     private function format_lead_vendeur_notes($entry_data) {
-        $notes = array();
-        
-        // Adresse complète
-        $adresse_parts = array();
-        if (!empty($entry_data['4.1'])) {
-            $adresse_parts[] = $entry_data['4.1'];
-        }
-        if (!empty($entry_data['4.3'])) {
-            $adresse_parts[] = $entry_data['4.3'];
-        }
-        if (!empty($entry_data['4.5'])) {
-            $adresse_parts[] = $entry_data['4.5'];
-        }
-        
-        if (!empty($adresse_parts)) {
-            $notes[] = "Adresse: " . implode(', ', $adresse_parts);
-        }
-        
-        // Ville (séparée pour compatibilité)
-        if (!empty($entry_data['4.3'])) {
-            $notes[] = "Ville: " . $entry_data['4.3'];
-        }
-        
-        // Type de bien
-        if (!empty($entry_data['6'])) {
-            $notes[] = "Type: " . $entry_data['6'];
-        }
-        
-        // Téléphone
-        if (!empty($entry_data['45'])) {
-            $notes[] = "Téléphone: " . $entry_data['45'];
-        }
-        
-        // Email
-        if (!empty($entry_data['46'])) {
-            $notes[] = "Email: " . $entry_data['46'];
-        }
-        
-        // Surface
-        if (!empty($entry_data['10'])) {
-            $notes[] = "Surface: " . $entry_data['10'] . " m²";
-        }
-        
-        return implode(" | ", $notes);
+        // ✅ NOUVEAU : Notes vides par défaut pour Lead Vendeur
+        return '';
     }
 }
 
