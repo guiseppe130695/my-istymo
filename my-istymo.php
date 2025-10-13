@@ -481,6 +481,15 @@ function sci_ajouter_menu() {
                echo '<div class="my-istymo-card">';
                echo '<h2>📋 Leads Vendeur (' . $total_entries . ' au total)</h2>';
                
+               // Informations de pagination (style DPE/SCI)
+               if ($total_pages > 1) {
+                   $start_entry = (($current_page - 1) * $per_page) + 1;
+                   $end_entry = min($current_page * $per_page, $total_entries);
+                   echo '<div class="pagination-info">';
+                   echo '<span id="page-info">Page ' . $current_page . ' sur ' . $total_pages . '</span>';
+                   echo '<span style="margin-left: 15px; color: #666;">Affichage des entrées ' . $start_entry . ' à ' . $end_entry . ' sur ' . $total_entries . '</span>';
+                   echo '</div>';
+               }
                
                // Tableau principal avec style DPE/SCI
                echo '<div class="lead-vendeur-table-container">';
@@ -2799,6 +2808,10 @@ function my_istymo_leads_vendeur_shortcode($atts) {
     // Capturer la sortie
     ob_start();
     
+    // Afficher le titre
+    if (!empty($atts['title'])) {
+        echo '<h2 class="lead-vendeur-title">' . esc_html($atts['title']) . '</h2>';
+    }
     
     // Utiliser la fonction existante pour afficher les leads vendeur
     $config_manager = lead_vendeur_config_manager();
@@ -2829,6 +2842,14 @@ function my_istymo_leads_vendeur_shortcode($atts) {
         $total_pages = ceil($total_entries / $per_page);
         
         // Informations de pagination
+        if ($total_pages > 1) {
+            $start_entry = 1;
+            $end_entry = min($per_page, $total_entries);
+            echo '<div class="pagination-info">';
+            echo '<span id="page-info">Page 1 sur ' . $total_pages . '</span>';
+            echo '<span style="margin-left: 15px; color: #666;">Affichage des entrées ' . $start_entry . ' à ' . $end_entry . ' sur ' . $total_entries . '</span>';
+            echo '</div>';
+        }
         
         echo '<div class="lead-vendeur-table-container">';
         echo '<table class="wp-list-table widefat fixed striped lead-vendeur-table">';
@@ -3073,7 +3094,7 @@ function my_istymo_leads_vendeur_shortcode($atts) {
             // Fonction pour afficher les messages
             function showMessage(message, type) {
                 var $message = $("<div class=\"notice notice-" + type + " is-dismissible\"><p>" + message + "</p></div>");
-                $(".lead-vendeur-table-container").before($message);
+                $(".lead-vendeur-title").after($message);
                 setTimeout(function() {
                     $message.fadeOut();
                 }, 3000);
@@ -3267,39 +3288,39 @@ if (is_admin()) {
 // ✅ NOUVEAU : Fonctions AJAX pour le système de favoris simple
 function simple_favorites_ajax_toggle() {
     try {
-        check_ajax_referer('simple_favorites_nonce', 'nonce');
-        
-        $entry_id = intval($_POST['entry_id']);
-        $user_id = get_current_user_id();
-        
-        if (!$entry_id || !$user_id) {
-            wp_send_json_error('Paramètres manquants');
-            return;
-        }
-        
-        $favorites_handler = simple_favorites_handler();
-        
-        // Vérifier si c'est déjà un favori
-        $is_favorite = $favorites_handler->is_favorite($user_id, $entry_id);
-        
-        if ($is_favorite) {
-            // Supprimer des favoris
-            $result = $favorites_handler->remove_favorite($user_id, $entry_id);
-            $action = 'removed';
-        } else {
-            // Ajouter aux favoris
-            $form_id = isset($_POST['form_id']) ? intval($_POST['form_id']) : 0;
-            $result = $favorites_handler->add_favorite($user_id, $entry_id, $form_id);
-            $action = 'added';
-        }
-        
-        if ($result) {
-            wp_send_json_success(array(
-                'action' => $action,
-                'is_favorite' => !$is_favorite
-            ));
-        } else {
-            wp_send_json_error('Erreur lors de la mise à jour des favoris');
+    check_ajax_referer('simple_favorites_nonce', 'nonce');
+    
+    $entry_id = intval($_POST['entry_id']);
+    $user_id = get_current_user_id();
+    
+    if (!$entry_id || !$user_id) {
+        wp_send_json_error('Paramètres manquants');
+        return;
+    }
+    
+    $favorites_handler = simple_favorites_handler();
+    
+    // Vérifier si c'est déjà un favori
+    $is_favorite = $favorites_handler->is_favorite($user_id, $entry_id);
+    
+    if ($is_favorite) {
+        // Supprimer des favoris
+        $result = $favorites_handler->remove_favorite($user_id, $entry_id);
+        $action = 'removed';
+    } else {
+        // Ajouter aux favoris
+        $form_id = isset($_POST['form_id']) ? intval($_POST['form_id']) : 0;
+        $result = $favorites_handler->add_favorite($user_id, $entry_id, $form_id);
+        $action = 'added';
+    }
+    
+    if ($result) {
+        wp_send_json_success(array(
+            'action' => $action,
+            'is_favorite' => !$is_favorite
+        ));
+    } else {
+        wp_send_json_error('Erreur lors de la mise à jour des favoris');
         }
         
     } catch (Exception $e) {

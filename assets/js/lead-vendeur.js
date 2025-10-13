@@ -1453,6 +1453,7 @@ jQuery(document).ready(function($) {
     function loadPage(page) {
         var $tableBody = $('#lead-vendeur-table-body');
         var $paginationContainer = $('#lead-vendeur-pagination-container');
+        var $paginationInfo = $('.pagination-info');
         
         // Afficher l'indicateur de chargement
         $tableBody.html('<tr><td colspan="100%" style="text-align: center; padding: 20px;"><div class="loading-spinner"></div><p>Chargement des données...</p></td></tr>');
@@ -1477,6 +1478,13 @@ jQuery(document).ready(function($) {
                     $paginationContainer.html(response.data.pagination_html);
                     
                     // Mettre à jour les informations de pagination
+                    var info = response.data.pagination_info;
+                    if (info.total_pages > 1) {
+                        $paginationInfo.html(
+                            '<span id="page-info">Page ' + info.current_page + ' sur ' + info.total_pages + '</span>' +
+                            '<span style="margin-left: 15px; color: #666;">Affichage des entrées ' + info.start_entry + ' à ' + info.end_entry + ' sur ' + info.total_entries + '</span>'
+                        );
+                    }
                     
                     // Animation pour les nouvelles lignes
                     $('.lead-vendeur-row').each(function(index) {

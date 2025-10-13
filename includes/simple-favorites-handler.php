@@ -188,6 +188,15 @@ class Simple_Favorites_Handler {
                 return;
             }
             
+            // Récupérer les vraies données de Gravity Forms
+            $entry_data = array();
+            if (class_exists('GFAPI')) {
+                $entry = GFAPI::get_entry($entry_id);
+                if (!is_wp_error($entry)) {
+                    $entry_data = $entry;
+                }
+            }
+            
             $leads_manager = Unified_Leads_Manager::get_instance();
             
             $lead_data = array(
@@ -197,8 +206,8 @@ class Simple_Favorites_Handler {
                 'form_id' => $form_id,
                 'status' => 'nouveau',
                 'priorite' => 'normale',
-                'notes' => '',
-                'data_originale' => array(),
+                'notes' => $this->format_lead_vendeur_notes($entry_data),
+                'data_originale' => $entry_data,
                 'date_creation' => current_time('mysql'),
                 'date_modification' => current_time('mysql')
             );
@@ -213,11 +222,36 @@ class Simple_Favorites_Handler {
     
     
     /**
-     * ✅ NOUVEAU : Formater les notes pour Lead Vendeur
+     * Formater les notes pour Lead Vendeur
      */
     private function format_lead_vendeur_notes($entry_data) {
-        // ✅ NOUVEAU : Notes vides par défaut pour Lead Vendeur
-        return '';
+        if (empty($entry_data) || !is_array($entry_data)) {
+            return '';
+        }
+        
+        $notes = array();
+        
+        // Extraire les informations importantes
+        if (!empty($entry_data['1'])) { // Nom
+            $notes[] = 'Nom: ' . $entry_data['1'];
+        }
+        if (!empty($entry_data['2'])) { // Email
+            $notes[] = 'Email: ' . $entry_data['2'];
+        }
+        if (!empty($entry_data['3'])) { // Téléphone
+            $notes[] = 'Téléphone: ' . $entry_data['3'];
+        }
+        if (!empty($entry_data['4'])) { // Adresse du bien
+            $notes[] = 'Adresse: ' . $entry_data['4'];
+        }
+        if (!empty($entry_data['5'])) { // Type de bien
+            $notes[] = 'Type: ' . $entry_data['5'];
+        }
+        if (!empty($entry_data['6'])) { // Prix
+            $notes[] = 'Prix: ' . $entry_data['6'];
+        }
+        
+        return implode("\n", $notes);
     }
 }
 
