@@ -3305,8 +3305,9 @@ function simple_favorites_ajax_toggle() {
     
     if ($is_favorite) {
         // Supprimer des favoris
-        error_log("Simple Favorites AJAX - Removing favorite");
+        error_log("Simple Favorites AJAX - Removing favorite for entry_id: $entry_id, user_id: $user_id");
         $result = $favorites_handler->remove_favorite($user_id, $entry_id);
+        error_log("Simple Favorites AJAX - Remove result: " . ($result ? 'success' : 'failed'));
         $action = 'removed';
     } else {
         // Ajouter aux favoris

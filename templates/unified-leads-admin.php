@@ -107,6 +107,7 @@ function unified_leads_admin_page($context = array()) {
                             ?>
                             <option value="sci" <?php selected($current_lead_type, 'sci'); ?>>SCI</option>
                             <option value="dpe" <?php selected($current_lead_type, 'dpe'); ?>>DPE</option>
+                            <option value="lead_vendeur" <?php selected($current_lead_type, 'lead_vendeur'); ?>>Lead Vendeur</option>
                         </select>
                     </div>
                     
@@ -225,6 +226,39 @@ function unified_leads_admin_page($context = array()) {
                                         $code_postal = $lead->data_originale['code_postal'] ?? '';
                                         $location = $ville . ($code_postal ? ' (' . $code_postal . ')' : '');
                                         $category = 'Lead SCI';
+                                            } elseif ($lead->lead_type === 'lead_vendeur') {
+                                        // Données Lead Vendeur depuis Gravity Forms - Adresse complète
+                                        $adresse_complete = '';
+                                        $adresse_parts = array();
+                                        
+                                        // Champ 4.1 - Adresse
+                                        if (!empty($lead->data_originale['4.1'])) {
+                                            $adresse_parts[] = $lead->data_originale['4.1'];
+                                        }
+                                        
+                                        // Champ 4.3 - Ville
+                                        if (!empty($lead->data_originale['4.3'])) {
+                                            $adresse_parts[] = $lead->data_originale['4.3'];
+                                        }
+                                        
+                                        // Champ 4.5 - Code postal
+                                        if (!empty($lead->data_originale['4.5'])) {
+                                            $adresse_parts[] = $lead->data_originale['4.5'];
+                                        }
+                                        
+                                        $adresse_complete = implode(', ', $adresse_parts);
+                                        $company_name = $adresse_complete ?: 'Lead Vendeur';
+                                        
+                                        // ✅ DEBUG : Afficher les données pour debug
+                                        error_log("Lead Vendeur Debug - Entry ID: " . $lead->original_id);
+                                        error_log("Lead Vendeur Debug - Data originale: " . print_r($lead->data_originale, true));
+                                        error_log("Lead Vendeur Debug - Adresse parts: " . print_r($adresse_parts, true));
+                                        error_log("Lead Vendeur Debug - Company name: " . $company_name);
+                                        $domain = 'leadvendeur.com';
+                                        $ville = $lead->data_originale['4.3'] ?? '';
+                                        $code_postal = $lead->data_originale['4.5'] ?? '';
+                                        $location = $ville . ($code_postal ? ' (' . $code_postal . ')' : '');
+                                        $category = 'Lead Vendeur';
                                     }
                                 }
                             ?>
@@ -237,6 +271,8 @@ function unified_leads_admin_page($context = array()) {
                                             <div class="my-istymo-company-icon">
                                                 <?php if ($lead->lead_type === 'dpe'): ?>
                                                     <span class="my-istymo-icon my-istymo-icon-house">🏠</span>
+                                                <?php elseif ($lead->lead_type === 'lead_vendeur'): ?>
+                                                    <span class="my-istymo-icon my-istymo-icon-vendor">🏪</span>
                                                 <?php else: ?>
                                                     <span class="my-istymo-icon my-istymo-icon-building">🏢</span>
                                                 <?php endif; ?>
@@ -409,6 +445,7 @@ function unified_leads_admin_page($context = array()) {
                     <select id="edit-lead-type" name="lead_type" class="my-istymo-select" required>
                         <option value="sci">SCI</option>
                         <option value="dpe">DPE</option>
+                        <option value="lead_vendeur">Lead Vendeur</option>
                     </select>
                 </div>
                 
@@ -885,20 +922,21 @@ function unified_leads_admin_page($context = array()) {
         // Carte d'informations principales avec toutes les données SCI/DPE
         html += '<div class="my-istymo-info-card">';
         html += '<div class="my-istymo-card-header">';
-        html += '<h4><span class="dashicons dashicons-info"></span> Informations ' + (leadData.lead_type === 'sci' ? 'SCI' : 'DPE') + '</h4>';
+        var typeLabel = leadData.lead_type === 'sci' ? 'SCI' : (leadData.lead_type === 'dpe' ? 'DPE' : 'Lead Vendeur');
+        html += '<h4><span class="dashicons dashicons-info"></span> Informations ' + typeLabel + '</h4>';
         html += '</div>';
         html += '<div class="my-istymo-card-content">';
         
         // Type de lead avec badge
-        var typeIcon = leadData.lead_type === 'sci' ? '🏢' : '🏠';
-        var typeText = leadData.lead_type === 'sci' ? 'Société Civile' : 'Bien Immobilier';
+        var typeIcon = leadData.lead_type === 'sci' ? '🏢' : (leadData.lead_type === 'dpe' ? '🏠' : '🏪');
+        var typeText = leadData.lead_type === 'sci' ? 'Société Civile' : (leadData.lead_type === 'dpe' ? 'Bien Immobilier' : 'Lead Vendeur');
         html += '<div class="my-istymo-info-row">';
         html += '<span class="my-istymo-info-label">Type :</span>';
         html += '<span class="my-istymo-info-value">' + typeIcon + ' ' + typeText + '</span>';
         html += '</div>';
         
-        // ID original (SIREN pour SCI, DPE ID pour DPE)
-        var idLabel = leadData.lead_type === 'sci' ? 'SIREN :' : 'DPE ID :';
+        // ID original (SIREN pour SCI, DPE ID pour DPE, Entry ID pour Lead Vendeur)
+        var idLabel = leadData.lead_type === 'sci' ? 'SIREN :' : (leadData.lead_type === 'dpe' ? 'DPE ID :' : 'Entry ID :');
         html += '<div class="my-istymo-info-row">';
         html += '<span class="my-istymo-info-label">' + idLabel + '</span>';
         html += '<span class="my-istymo-info-value">' + (leadData.original_id || '—') + '</span>';
@@ -1089,6 +1127,73 @@ function unified_leads_admin_page($context = array()) {
                     html += '</a>';
                     html += '</div>';
                 }
+            } else if (leadData.lead_type === 'lead_vendeur') {
+                // Section Lead Vendeur - Données Gravity Forms
+                html += '<div class="my-istymo-info-section">';
+                html += '<h5>Informations Lead Vendeur</h5>';
+                
+                // Adresse complète
+                var adresse_parts = [];
+                if (data['4.1']) adresse_parts.push(data['4.1']);
+                if (data['4.3']) adresse_parts.push(data['4.3']);
+                if (data['4.5']) adresse_parts.push(data['4.5']);
+                
+                if (adresse_parts.length > 0) {
+                    html += '<div class="my-istymo-info-row">';
+                    html += '<span class="my-istymo-info-label">Adresse :</span>';
+                    html += '<span class="my-istymo-info-value">' + adresse_parts.join(', ') + '</span>';
+                    html += '</div>';
+                }
+                
+                // Ville (séparée pour compatibilité)
+                if (data['4.3']) {
+                    html += '<div class="my-istymo-info-row">';
+                    html += '<span class="my-istymo-info-label">Ville :</span>';
+                    html += '<span class="my-istymo-info-value">' + data['4.3'] + '</span>';
+                    html += '</div>';
+                }
+                
+                // Type de bien
+                if (data['6']) {
+                    html += '<div class="my-istymo-info-row">';
+                    html += '<span class="my-istymo-info-label">Type de bien :</span>';
+                    html += '<span class="my-istymo-info-value">' + data['6'] + '</span>';
+                    html += '</div>';
+                }
+                
+                // Téléphone
+                if (data['45']) {
+                    html += '<div class="my-istymo-info-row">';
+                    html += '<span class="my-istymo-info-label">Téléphone :</span>';
+                    html += '<span class="my-istymo-info-value">' + data['45'] + '</span>';
+                    html += '</div>';
+                }
+                
+                // Email
+                if (data['46']) {
+                    html += '<div class="my-istymo-info-row">';
+                    html += '<span class="my-istymo-info-label">Email :</span>';
+                    html += '<span class="my-istymo-info-value">' + data['46'] + '</span>';
+                    html += '</div>';
+                }
+                
+                // Surface
+                if (data['10']) {
+                    html += '<div class="my-istymo-info-row">';
+                    html += '<span class="my-istymo-info-label">Surface :</span>';
+                    html += '<span class="my-istymo-info-value">' + data['10'] + ' m²</span>';
+                    html += '</div>';
+                }
+                
+                // Commentaire
+                if (data['55']) {
+                    html += '<div class="my-istymo-info-row">';
+                    html += '<span class="my-istymo-info-label">Commentaire :</span>';
+                    html += '<span class="my-istymo-info-value">' + data['55'] + '</span>';
+                    html += '</div>';
+                }
+                
+                html += '</div>'; // Fin section Lead Vendeur
             }
         }
         

@@ -50,7 +50,7 @@ class Unified_Leads_Manager {
         $leads_sql = "CREATE TABLE IF NOT EXISTS {$this->leads_table} (
             id bigint(20) NOT NULL AUTO_INCREMENT,
             user_id bigint(20) NOT NULL,
-            lead_type enum('sci', 'dpe') NOT NULL,
+            lead_type enum('sci', 'dpe', 'lead_vendeur') NOT NULL,
             original_id varchar(255) NOT NULL,
             status varchar(50) DEFAULT 'nouveau',
             priorite varchar(20) DEFAULT 'normale',
@@ -90,6 +90,9 @@ class Unified_Leads_Manager {
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($leads_sql);
         dbDelta($actions_sql);
+        
+        // ✅ NOUVEAU : Mettre à jour la table pour supporter lead_vendeur
+        $this->update_table_for_lead_vendeur();
         
         // Vérifier et ajouter les colonnes manquantes
         $this->ensure_date_prochaine_action_column();
@@ -1061,6 +1064,26 @@ class Unified_Leads_Manager {
             // Ajouter une action d'ajout de note
             $this->add_action($lead_id, 'ajout_note', "Note ajoutée : {$note}");
             wp_send_json_success();
+        }
+    }
+    
+    /**
+     * ✅ NOUVEAU : Mettre à jour la table pour supporter lead_vendeur
+     */
+    private function update_table_for_lead_vendeur() {
+        global $wpdb;
+        
+        // Vérifier si la colonne lead_type supporte déjà lead_vendeur
+        $column_info = $wpdb->get_results("SHOW COLUMNS FROM {$this->leads_table} LIKE 'lead_type'");
+        
+        if (!empty($column_info)) {
+            $column_definition = $column_info[0]->Type;
+            
+            // Si lead_vendeur n'est pas dans l'enum, l'ajouter
+            if (strpos($column_definition, 'lead_vendeur') === false) {
+                $wpdb->query("ALTER TABLE {$this->leads_table} MODIFY COLUMN lead_type ENUM('sci', 'dpe', 'lead_vendeur') NOT NULL");
+                error_log("Table unified_leads mise à jour pour supporter lead_vendeur");
+            }
         }
     }
 }
