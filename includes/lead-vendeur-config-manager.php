@@ -177,12 +177,32 @@ class Lead_Vendeur_Config_Manager {
     /**
      * ✅ NOUVEAU : Récupérer les entrées d'un formulaire avec pagination
      */
-    public function get_form_entries_paginated($form_id, $page = 1, $per_page = 20) {
+    public function get_form_entries_paginated($form_id, $page = 1, $per_page = 20, $user_id = null) {
         if (!class_exists('GFAPI')) {
             return array();
         }
         
         $search_criteria = array();
+        
+        // ✅ DEBUG : Afficher les informations de filtrage
+        error_log("Lead Vendeur Config - User ID: " . $user_id);
+        error_log("Lead Vendeur Config - Is admin: " . (current_user_can('administrator') ? 'YES' : 'NO'));
+        
+        // ✅ NOUVEAU : Filtrer par utilisateur si spécifié et pas admin
+        if ($user_id && !current_user_can('administrator')) {
+            $search_criteria['field_filters'] = array(
+                array(
+                    'key' => 'created_by',
+                    'value' => $user_id
+                )
+            );
+            error_log("Lead Vendeur Config - Filter applied for user: " . $user_id);
+        } else {
+            error_log("Lead Vendeur Config - No filter applied (admin or no user_id)");
+        }
+        
+        error_log("Lead Vendeur Config - Search criteria: " . print_r($search_criteria, true));
+        
         $sorting = array('key' => 'date_created', 'direction' => 'DESC');
         
         // Calculer l'offset pour la pagination
@@ -199,12 +219,30 @@ class Lead_Vendeur_Config_Manager {
     /**
      * ✅ NOUVEAU : Compter le nombre total d'entrées d'un formulaire
      */
-    public function get_form_entries_count($form_id) {
+    public function get_form_entries_count($form_id, $user_id = null) {
         if (!class_exists('GFAPI')) {
             return 0;
         }
         
         $search_criteria = array();
+        
+        // ✅ DEBUG : Afficher les informations de filtrage pour le count
+        error_log("Lead Vendeur Config Count - User ID: " . $user_id);
+        error_log("Lead Vendeur Config Count - Is admin: " . (current_user_can('administrator') ? 'YES' : 'NO'));
+        
+        // ✅ NOUVEAU : Filtrer par utilisateur si spécifié et pas admin
+        if ($user_id && !current_user_can('administrator')) {
+            $search_criteria['field_filters'] = array(
+                array(
+                    'key' => 'created_by',
+                    'value' => $user_id
+                )
+            );
+            error_log("Lead Vendeur Config Count - Filter applied for user: " . $user_id);
+        } else {
+            error_log("Lead Vendeur Config Count - No filter applied (admin or no user_id)");
+        }
+        
         $total_count = GFAPI::count_entries($form_id, $search_criteria);
         
         return $total_count;

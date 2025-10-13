@@ -488,7 +488,7 @@ function sci_ajouter_menu() {
                echo '<table class="wp-list-table widefat fixed striped lead-vendeur-table">';
                echo '<thead>';
                echo '<tr>';
-               echo '<th class="favori-column">⭐</th>';
+               echo '<th class="favori-column"><i class="fas fa-heart"></i></th>';
                
                // Colonne Ville (toujours affichée si configurée)
                            echo '<th><i class="fas fa-city"></i> Ville</th>';
@@ -2825,8 +2825,10 @@ function my_istymo_leads_vendeur_shortcode($atts) {
         ));
         
         // Récupérer les entrées
-        $entries = $config_manager->get_form_entries_paginated($form_id, 1, $per_page);
-        $total_entries = $config_manager->get_form_entries_count($form_id);
+        // ✅ NOUVEAU : Filtrer par utilisateur connecté
+        $user_id = get_current_user_id();
+        $entries = $config_manager->get_form_entries_paginated($form_id, 1, $per_page, $user_id);
+        $total_entries = $config_manager->get_form_entries_count($form_id, $user_id);
         $total_pages = ceil($total_entries / $per_page);
         
         // Informations de pagination
@@ -2836,7 +2838,7 @@ function my_istymo_leads_vendeur_shortcode($atts) {
         
         // En-têtes du tableau
         echo '<thead><tr>';
-        echo '<th class="favori-column">⭐</th>';
+        echo '<th class="favori-column"><i class="fas fa-heart"></i></th>';
         echo '<th><i class="fas fa-city"></i> Ville</th>';
         echo '<th><i class="fas fa-building"></i> Type</th>';
         echo '<th><i class="fas fa-phone"></i> Téléphone</th>';
@@ -3407,6 +3409,11 @@ function lead_vendeur_ajax_pagination() {
     
     $page = intval($_POST['page'] ?? 1);
     $per_page = intval($_POST['per_page'] ?? 20);
+    $user_id = get_current_user_id(); // ✅ NOUVEAU : Récupérer l'ID utilisateur
+    
+    // ✅ DEBUG : Afficher les informations utilisateur
+    error_log("Lead Vendeur AJAX - Current User ID: " . $user_id);
+    error_log("Lead Vendeur AJAX - Is admin: " . (current_user_can('administrator') ? 'YES' : 'NO'));
     
     if ($page < 1) $page = 1;
     if ($per_page < 1) $per_page = 20;
@@ -3429,11 +3436,12 @@ function lead_vendeur_ajax_pagination() {
         return;
     }
     
-    // Récupérer les entrées avec pagination
+    // ✅ NOUVEAU : Passer l'ID utilisateur pour le filtrage
     $entries = $config_manager->get_form_entries_paginated(
         $config['gravity_form_id'], 
         $page, 
-        $per_page
+        $per_page,
+        $user_id // ✅ NOUVEAU : Filtrer par utilisateur
     );
     
     // ✅ NOUVEAU : Utiliser le système de favoris simple
@@ -3449,18 +3457,25 @@ function lead_vendeur_ajax_pagination() {
     
     error_log("Lead Vendeur AJAX - User favorites: " . print_r($favori_ids, true));
     
-    // Calculer les informations de pagination
-    $total_entries = $config_manager->get_form_entries_count($config['gravity_form_id']);
+    // ✅ NOUVEAU : Calculer les informations de pagination avec filtrage
+    $total_entries = $config_manager->get_form_entries_count($config['gravity_form_id'], $user_id);
     $total_pages = ceil($total_entries / $per_page);
     
     // Récupérer les champs du formulaire
     $form_fields = $config_manager->get_form_fields($config['gravity_form_id']);
+    
+    // ✅ DEBUG : Afficher les informations de debug
+    error_log("Lead Vendeur AJAX - Entries count: " . count($entries));
+    if (!empty($entries)) {
+        error_log("Lead Vendeur AJAX - First entry data: " . print_r($entries[0], true));
+    }
     
     // Générer le HTML du tableau
     ob_start();
     
     if (!empty($entries)) {
         foreach ($entries as $entry) {
+            
             $is_favori = in_array($entry['id'], $favori_ids);
             $favori_class = $is_favori ? 'favori-active' : '';
             
@@ -3480,7 +3495,7 @@ function lead_vendeur_ajax_pagination() {
             echo '</button>';
             echo '</td>';
             
-            // ✅ NOUVEAU : Colonne Ville juste après Favoris
+            // ✅ Colonne Ville (champ 4.3)
             if (isset($entry['4.3']) && !empty($entry['4.3'])) {
                 echo '<td>' . esc_html($entry['4.3']) . '</td>';
             } else {
@@ -3573,6 +3588,7 @@ function lead_vendeur_ajax_pagination() {
             // 1. Bouton Localiser le bien (en premier, couleur Google Maps)
             $address_parts = array();
             
+            // ✅ Récupérer l'adresse (champs spécifiques)
             // Récupérer l'adresse (champ 4.1)
             if (isset($entry['4.1']) && !empty($entry['4.1'])) {
                 $address_parts[] = $entry['4.1'];

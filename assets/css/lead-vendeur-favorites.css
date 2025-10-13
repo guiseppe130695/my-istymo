@@ -206,7 +206,7 @@ button.favori-toggle.loading {
 /* Centrage des icônes dans les en-têtes */
 .lead-vendeur-table th i {
     margin-right: 6px !important;
-    color: #666 !important;
+    color: #000 !important;
     font-size: 14px !important;
 }
 
