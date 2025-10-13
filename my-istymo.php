@@ -136,6 +136,7 @@ require_once plugin_dir_path(__FILE__) . 'includes/dpe-favoris-handler.php';
 // ✅ NOUVEAU : Inclure les gestionnaires Lead Vendeur
 require_once plugin_dir_path(__FILE__) . 'includes/lead-vendeur-config-manager.php';
 require_once plugin_dir_path(__FILE__) . 'includes/lead-vendeur-favoris-handler.php';
+require_once plugin_dir_path(__FILE__) . 'includes/simple-favorites-handler.php';
 
 // --- Ajout du menu SCI dans l'admin WordPress ---
 add_action('admin_menu', 'sci_ajouter_menu');
@@ -496,21 +497,14 @@ function sci_ajouter_menu() {
                echo '<tr>';
                echo '<th class="favori-column">⭐</th>';
                
-               // Colonne Ville
-               if (!empty($entries)) {
-                   $first_entry = reset($entries);
-                   foreach ($first_entry as $field_id => $value) {
-                       if ($field_id === '4.3' && !empty($value)) {
-                           echo '<th>Ville</th>';
-                           break;
-                       }
-                   }
-               }
+               // Colonne Ville (toujours affichée si configurée)
+                           echo '<th><i class="fas fa-city"></i> Ville</th>';
                
                // En-têtes fixes pour les colonnes principales
-               echo '<th>Type</th>';
-               echo '<th>Téléphone</th>';
-               echo '<th>Date</th>';
+               echo '<th><i class="fas fa-building"></i> Type</th>';
+               echo '<th><i class="fas fa-phone"></i> Téléphone</th>';
+               echo '<th><i class="fas fa-calendar"></i> Date</th>';
+               echo '<th><i class="fas fa-cogs"></i> Actions</th>';
                
                // En-têtes des colonnes configurées (sauf Site Web qui sera en dernier)
                if (!empty($config['display_fields'])) {
@@ -566,7 +560,7 @@ function sci_ajouter_menu() {
                
                // Pagination (style DPE/SCI)
                if ($total_pages > 1) {
-                   echo '<div class="lead-vendeur-pagination">';
+                   echo '<div id="lead-vendeur-pagination-container" class="lead-vendeur-pagination">';
                    echo '<div class="pagination-controls">';
                    
                    // Bouton précédent
@@ -607,6 +601,9 @@ function sci_ajouter_menu() {
                    
                    echo '</div>';
                    echo '</div>';
+           } else {
+               // Conteneur de pagination vide si pas de pagination
+               echo '<div id="lead-vendeur-pagination-container"></div>';
                }
                
                echo '</div>';
@@ -1874,6 +1871,18 @@ add_action('wp_ajax_my_istymo_update_lead', 'my_istymo_ajax_update_lead');
 add_action('wp_ajax_my_istymo_update_lead_from_modal', 'my_istymo_ajax_update_lead_from_modal');
 add_action('wp_ajax_nopriv_my_istymo_update_lead_from_modal', 'my_istymo_ajax_update_lead_from_modal');
 
+// ✅ NOUVEAU : Initialisation de la table des favoris
+add_action('init', 'simple_favorites_init_table');
+
+function simple_favorites_init_table() {
+    $favorites_handler = simple_favorites_handler();
+    $favorites_handler->create_table();
+}
+
+// ✅ NOUVEAU : Handlers AJAX pour le système de favoris simple
+add_action('wp_ajax_simple_favorites_toggle', 'simple_favorites_ajax_toggle');
+add_action('wp_ajax_nopriv_simple_favorites_toggle', 'simple_favorites_ajax_toggle');
+
 // ✅ NOUVEAU : Handlers AJAX pour les favoris Lead Vendeur
 add_action('wp_ajax_lead_vendeur_toggle_favori', 'lead_vendeur_ajax_toggle_favori');
 add_action('wp_ajax_lead_vendeur_get_entry_details', 'lead_vendeur_ajax_get_entry_details');
@@ -2773,13 +2782,23 @@ function my_istymo_leads_vendeur_shortcode($atts) {
     // Charger les styles et scripts spécifiques aux leads vendeur
     wp_enqueue_style('lead-vendeur-style', plugin_dir_url(__FILE__) . 'assets/css/lead-vendeur.css', array(), '1.0.0');
     wp_enqueue_style('lead-vendeur-popup-style', plugin_dir_url(__FILE__) . 'assets/css/lead-vendeur-popup.css', array(), '1.0.1');
+    wp_enqueue_style('lead-vendeur-favorites-style', plugin_dir_url(__FILE__) . 'assets/css/lead-vendeur-favorites.css', array(), '1.0.0');
     wp_enqueue_script('lead-vendeur-js', plugin_dir_url(__FILE__) . 'assets/js/lead-vendeur.js', array('jquery'), '1.0.0', true);
     
-    // Localiser le script avec les données nécessaires
+    // Localiser le script avec les données nécessaires (sans form_id pour l'instant)
     wp_localize_script('lead-vendeur-js', 'leadVendeurAjax', array(
         'ajax_url' => admin_url('admin-ajax.php'),
         'nonce' => wp_create_nonce('lead_vendeur_nonce'),
-        'per_page' => intval($atts['per_page'])
+        'current_page' => 1,
+        'per_page' => intval($atts['per_page']),
+        'total_entries' => 0, // Sera mis à jour par AJAX
+        'total_pages' => 0    // Sera mis à jour par AJAX
+    ));
+    
+    // ✅ NOUVEAU : Localiser le script pour le système de favoris simple
+    wp_localize_script('lead-vendeur-js', 'simpleFavoritesAjax', array(
+        'ajax_url' => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('simple_favorites_nonce')
     ));
     
     // Capturer la sortie
@@ -2802,10 +2821,31 @@ function my_istymo_leads_vendeur_shortcode($atts) {
         $form_id = $config['gravity_form_id'];
         $per_page = intval($atts['per_page']);
         
+        // ✅ NOUVEAU : Mettre à jour le form_id dans le script localisé
+        wp_localize_script('lead-vendeur-js', 'leadVendeurAjax', array(
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('lead_vendeur_nonce'),
+            'current_page' => 1,
+            'per_page' => intval($atts['per_page']),
+            'total_entries' => 0, // Sera mis à jour par AJAX
+            'total_pages' => 0,    // Sera mis à jour par AJAX
+            'form_id' => $form_id
+        ));
+        
         // Récupérer les entrées
         $entries = $config_manager->get_form_entries_paginated($form_id, 1, $per_page);
         $total_entries = $config_manager->get_form_entries_count($form_id);
         $total_pages = ceil($total_entries / $per_page);
+        
+        // Informations de pagination
+        if ($total_pages > 1) {
+            $start_entry = 1;
+            $end_entry = min($per_page, $total_entries);
+            echo '<div class="pagination-info">';
+            echo '<span id="page-info">Page 1 sur ' . $total_pages . '</span>';
+            echo '<span style="margin-left: 15px; color: #666;">Affichage des entrées ' . $start_entry . ' à ' . $end_entry . ' sur ' . $total_entries . '</span>';
+            echo '</div>';
+        }
         
         echo '<div class="lead-vendeur-table-container">';
         echo '<table class="wp-list-table widefat fixed striped lead-vendeur-table">';
@@ -2813,64 +2853,254 @@ function my_istymo_leads_vendeur_shortcode($atts) {
         // En-têtes du tableau
         echo '<thead><tr>';
         echo '<th class="favori-column">⭐</th>';
-        echo '<th>Ville</th>';
-        echo '<th>Type</th>';
-        echo '<th>Téléphone</th>';
-        echo '<th>Date</th>';
-        echo '<th>Actions</th>';
+        echo '<th><i class="fas fa-city"></i> Ville</th>';
+        echo '<th><i class="fas fa-building"></i> Type</th>';
+        echo '<th><i class="fas fa-phone"></i> Téléphone</th>';
+        echo '<th><i class="fas fa-calendar"></i> Date</th>';
+        echo '<th><i class="fas fa-cogs"></i> Actions</th>';
         echo '</tr></thead>';
         
         echo '<tbody id="lead-vendeur-table-body">';
         
-        if (empty($entries)) {
-            echo '<tr><td colspan="6" style="text-align: center; padding: 20px;">Aucun lead vendeur trouvé.</td></tr>';
-        } else {
-            foreach ($entries as $entry) {
-                // Extraire les données des champs Gravity Forms
-                $city = isset($entry['city']) ? $entry['city'] : (isset($entry['ville']) ? $entry['ville'] : 'N/A');
-                $type = isset($entry['type']) ? $entry['type'] : (isset($entry['type_bien']) ? $entry['type_bien'] : 'N/A');
-                $phone = isset($entry['phone']) ? $entry['phone'] : (isset($entry['telephone']) ? $entry['telephone'] : 'N/A');
-                $date_created = isset($entry['date_created']) ? $entry['date_created'] : date('Y-m-d H:i:s');
-                
-                echo '<tr class="lead-vendeur-row" data-entry-id="' . esc_attr($entry['id']) . '">';
-                echo '<td class="favori-column">';
-                echo '<span class="favori-toggle" data-entry-id="' . esc_attr($entry['id']) . '">';
-                echo '<i class="far fa-star"></i>';
-                echo '</span>';
-                echo '</td>';
-                echo '<td>' . esc_html($city) . '</td>';
-                echo '<td>' . esc_html($type) . '</td>';
-                echo '<td>' . esc_html($phone) . '</td>';
-                echo '<td>' . esc_html(date('d/m/Y', strtotime($date_created))) . '</td>';
-                echo '<td class="actions-column">';
-                echo '<button class="view-lead-details" data-entry-id="' . esc_attr($entry['id']) . '">';
-                echo '<i class="fas fa-eye"></i> Voir détails';
-                echo '</button>';
-                echo '</td>';
-                echo '</tr>';
-            }
-        }
+        // Laisser la pagination AJAX gérer l'affichage des données
+        echo '<tr><td colspan="100%" style="text-align: center; padding: 20px;"><div class="loading-spinner"></div><p>Chargement des données...</p></td></tr>';
         
         echo '</tbody>';
         echo '</table>';
         echo '</div>';
         
-        // Pagination (sans affichage des informations de page)
+        // Pagination AJAX (même système que la page admin)
         if ($total_pages > 1) {
-            echo '<div class="lead-vendeur-pagination">';
+            echo '<div id="lead-vendeur-pagination-container" class="lead-vendeur-pagination">';
             echo '<div class="pagination-controls">';
-            echo '<button class="pagination-btn" data-page="1" disabled><i class="fas fa-chevron-left"></i> Précédent</button>';
-            for ($i = 1; $i <= min(5, $total_pages); $i++) {
-                $active = ($i === 1) ? 'current' : '';
-                echo '<button class="pagination-number ' . $active . '" data-page="' . $i . '">' . $i . '</button>';
+            
+            // Bouton Précédent
+            echo '<button type="button" class="button button-secondary pagination-btn disabled" data-page="1">';
+            echo '<i class="fas fa-chevron-left"></i> Précédent';
+            echo '</button>';
+            
+            // Numéros de pages
+            echo '<div class="pagination-numbers">';
+            $start_page = 1;
+            $end_page = min(5, $total_pages);
+            
+            for ($i = $start_page; $i <= $end_page; $i++) {
+                if ($i == 1) {
+                    echo '<span class="pagination-number current">1</span>';
+                } else {
+                    echo '<button type="button" class="pagination-number" data-page="' . $i . '">' . $i . '</button>';
+                }
             }
+            
+            // Dernière page si nécessaire
+            if ($end_page < $total_pages) {
+                if ($end_page < $total_pages - 1) {
+                    echo '<span class="pagination-ellipsis">...</span>';
+                }
+                echo '<button type="button" class="pagination-number" data-page="' . $total_pages . '">' . $total_pages . '</button>';
+            }
+            
+            echo '</div>';
+            
+            // Bouton Suivant
             if ($total_pages > 1) {
-                echo '<button class="pagination-btn" data-page="2">Suivant <i class="fas fa-chevron-right"></i></button>';
+                echo '<button type="button" class="button button-secondary pagination-btn" data-page="2">';
+                echo 'Suivant <i class="fas fa-chevron-right"></i>';
+                echo '</button>';
+            } else {
+                echo '<button type="button" class="button button-secondary pagination-btn disabled" data-page="1">';
+                echo 'Suivant <i class="fas fa-chevron-right"></i>';
+                echo '</button>';
             }
+            
             echo '</div>';
             echo '</div>';
+        } else {
+            // Conteneur de pagination vide si pas de pagination
+            echo '<div id="lead-vendeur-pagination-container"></div>';
         }
     }
+    
+    // Ajouter les styles CSS pour les favoris
+    echo '<style type="text/css">
+    /* Styles uniformes chargés via lead-vendeur-favorites.css */
+    
+    .lead-vendeur-row:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .lead-vendeur-row.favori-row {
+        background-color: #fff3cd;
+    }
+    
+    .notice {
+        padding: 12px;
+        margin: 10px 0;
+        border-left: 4px solid;
+        background: #fff;
+    }
+    
+    .notice.notice-success {
+        border-left-color: #46b450;
+        background: #ecf7ed;
+    }
+    
+    .notice.notice-error {
+        border-left-color: #dc3232;
+        background: #fbeaea;
+    }
+    
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #007cba;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    </style>';
+    
+    // Ajouter un script inline pour initialiser la pagination
+    echo '<script type="text/javascript">
+    jQuery(document).ready(function($) {
+        // Initialiser la pagination pour le shortcode
+        if (typeof leadVendeurAjax !== "undefined") {
+            // Charger la première page automatiquement
+            function loadPage(page) {
+                var $tableBody = $("#lead-vendeur-table-body");
+                var $paginationContainer = $("#lead-vendeur-pagination-container");
+                var $paginationInfo = $(".pagination-info");
+                
+                // Afficher l\'indicateur de chargement
+                $tableBody.html(\'<tr><td colspan="100%" style="text-align: center; padding: 20px;"><div class="loading-spinner"></div><p>Chargement des données...</p></td></tr>\');
+                $paginationContainer.html(\'<div style="text-align: center; padding: 20px;"><div class="loading-spinner"></div></div>\');
+                
+                // Requête AJAX
+                $.ajax({
+                    url: leadVendeurAjax.ajax_url,
+                    type: "POST",
+                    data: {
+                        action: "lead_vendeur_pagination",
+                        nonce: leadVendeurAjax.nonce,
+                        page: page,
+                        per_page: leadVendeurAjax.per_page
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Mettre à jour le tableau
+                            $tableBody.html(response.data.table_html);
+                            
+                            // Mettre à jour la pagination
+                            $paginationContainer.html(response.data.pagination_html);
+                            
+                            // Mettre à jour les informations de pagination
+                            var info = response.data.pagination_info;
+                            if (info.total_pages > 1) {
+                                $paginationInfo.html(
+                                    \'<span id="page-info">Page \' + info.current_page + \' sur \' + info.total_pages + \'</span>\' +
+                                    \'<span style="margin-left: 15px; color: #666;">Affichage des entrées \' + info.start_entry + \' à \' + info.end_entry + \' sur \' + info.total_entries + \'</span>\'
+                                );
+                            }
+                            
+                            // Animation pour les nouvelles lignes
+                            $(".lead-vendeur-row").each(function(index) {
+                                $(this).css("opacity", "0").delay(index * 50).animate({
+                                    opacity: 1
+                                }, 300);
+                            });
+                        } else {
+                            console.error("Erreur lors du chargement de la page:", response.data);
+                            $tableBody.html(\'<tr><td colspan="100%" style="text-align: center; padding: 20px; color: #d63384;">Erreur lors du chargement des données</td></tr>\');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Erreur AJAX:", error);
+                        $tableBody.html(\'<tr><td colspan="100%" style="text-align: center; padding: 20px; color: #d63384;">Erreur de connexion</td></tr>\');
+                    }
+                });
+            }
+            
+            // Gestion des clics sur les boutons de pagination
+            $(document).on("click", ".pagination-btn, .pagination-number", function(e) {
+                e.preventDefault();
+                
+                var $button = $(this);
+                var page = $button.data("page");
+                
+                if (page && !$button.hasClass("disabled") && !$button.hasClass("current")) {
+                    loadPage(page);
+                }
+            });
+            
+            // Gestion des favoris
+            $(document).on("click", ".favorite-btn", function(e) {
+                e.preventDefault();
+                
+                var $toggle = $(this);
+                var entryId = $toggle.data("entry-id");
+                var $row = $toggle.closest(".lead-vendeur-row");
+                
+                if ($toggle.hasClass("loading")) {
+                    return; // Éviter les clics multiples
+                }
+                
+                $toggle.addClass("loading");
+                
+                $.ajax({
+                    url: simpleFavoritesAjax.ajax_url,
+                    type: "POST",
+                    data: {
+                        action: "simple_favorites_toggle",
+                        entry_id: entryId,
+                        form_id: leadVendeurAjax.form_id,
+                        nonce: simpleFavoritesAjax.nonce
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            if (response.data.action === "added") {
+                                $toggle.addClass("favori-active");
+                                $toggle.html(\'★\'); // Étoile pleine
+                                $row.addClass("favori-row");
+                                showMessage("Lead ajouté aux favoris", "success");
+                            } else {
+                                $toggle.removeClass("favori-active");
+                                $toggle.html(\'☆\'); // Étoile vide
+                                $row.removeClass("favori-row");
+                                showMessage("Lead retiré des favoris", "success");
+                            }
+                        } else {
+                            showMessage("Erreur: " + response.data, "error");
+                        }
+                    },
+                    error: function() {
+                        showMessage("Erreur de connexion", "error");
+                    },
+                    complete: function() {
+                        $toggle.removeClass("loading");
+                    }
+                });
+            });
+            
+            // Fonction pour afficher les messages
+            function showMessage(message, type) {
+                var $message = $("<div class=\"notice notice-" + type + " is-dismissible\"><p>" + message + "</p></div>");
+                $(".lead-vendeur-title").after($message);
+                setTimeout(function() {
+                    $message.fadeOut();
+                }, 3000);
+            }
+            
+            // Charger la première page automatiquement
+            loadPage(1);
+        }
+    });
+    </script>';
     
     $content = ob_get_clean();
     return $content;
@@ -2879,6 +3109,126 @@ function my_istymo_leads_vendeur_shortcode($atts) {
 // Enregistrer les shortcodes
 add_shortcode('my_istymo_leads', 'my_istymo_leads_shortcode');
 add_shortcode('my_istymo_leads_vendeur', 'my_istymo_leads_vendeur_shortcode');
+
+// ✅ NOUVEAU : Shortcode pour afficher les favoris
+add_shortcode('my_istymo_favorites', 'my_istymo_favorites_shortcode');
+
+/**
+ * Shortcode pour afficher les favoris de l'utilisateur
+ */
+function my_istymo_favorites_shortcode($atts) {
+    // Vérifier que l'utilisateur est connecté
+    if (!is_user_logged_in()) {
+        return '<p>Vous devez être connecté pour voir vos favoris.</p>';
+    }
+    
+    $user_id = get_current_user_id();
+    $favorites_handler = simple_favorites_handler();
+    
+    // Obtenir les favoris avec les données
+    $favorites = $favorites_handler->get_user_favorites_with_data($user_id);
+    
+    if (empty($favorites)) {
+        return '<p>Aucun favori trouvé.</p>';
+    }
+    
+    // Enqueue les scripts nécessaires
+    wp_enqueue_script('jquery');
+    wp_localize_script('jquery', 'simpleFavoritesAjax', array(
+        'ajax_url' => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('simple_favorites_nonce')
+    ));
+    
+    ob_start();
+    ?>
+    <div class="my-istymo-favorites">
+        <h3>Mes Favoris (<?php echo count($favorites); ?>)</h3>
+        <div class="favorites-list">
+            <?php foreach ($favorites as $favorite): 
+                $entry = $favorite['entry'];
+                $entry_id = $entry['id'];
+                $is_favorite = true; // Toujours true dans cette liste
+            ?>
+            <div class="favorite-item" data-entry-id="<?php echo esc_attr($entry_id); ?>">
+                <div class="favorite-header">
+                    <button class="favorite-star active" data-entry-id="<?php echo esc_attr($entry_id); ?>" title="Retirer des favoris">
+                        ★
+                    </button>
+                    <span class="favorite-date"><?php echo date('d/m/Y H:i', strtotime($favorite['date_created'])); ?></span>
+                </div>
+                <div class="favorite-content">
+                    <?php
+                    // Afficher les informations importantes
+                    $display_fields = array(
+                        '6' => 'Type de bien',
+                        '10' => 'Surface',
+                        '50' => 'Emplacement',
+                        '4' => 'Adresse',
+                        '45' => 'Téléphone',
+                        '46' => 'Email'
+                    );
+                    
+                    foreach ($display_fields as $field_id => $label) {
+                        if (isset($entry[$field_id]) && !empty($entry[$field_id])) {
+                            echo '<div class="favorite-field">';
+                            echo '<strong>' . esc_html($label) . ':</strong> ';
+                            echo esc_html($entry[$field_id]);
+                            echo '</div>';
+                        }
+                    }
+                    ?>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+    
+    <!-- Styles CSS uniformes chargés via lead-vendeur-favorites.css -->
+    
+    <script>
+    jQuery(document).ready(function($) {
+        $('.favorite-star').on('click', function() {
+            var $star = $(this);
+            var entryId = $star.data('entry-id');
+            var $item = $star.closest('.favorite-item');
+            
+            $.ajax({
+                url: simpleFavoritesAjax.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'simple_favorites_toggle',
+                    entry_id: entryId,
+                    nonce: simpleFavoritesAjax.nonce
+                },
+                beforeSend: function() {
+                    $star.html('<i class="fas fa-spinner fa-spin"></i>');
+                },
+                success: function(response) {
+                    if (response.success) {
+                        if (response.data.action === 'removed') {
+                            $item.fadeOut(300, function() {
+                                $(this).remove();
+                            });
+                        } else {
+                            $star.html(\'★\').addClass(\'active\');
+                        }
+                    } else {
+                        alert('Erreur: ' + response.data);
+                        $star.html(\'☆\');
+                    }
+                },
+                error: function() {
+                    alert('Erreur lors de la mise à jour');
+                    $star.html(\'☆\');
+                }
+            });
+        });
+    });
+    </script>
+    <?php
+    
+    return ob_get_clean();
+}
 add_shortcode('unified_leads_admin', 'unified_leads_admin_shortcode');
 
 // Hook pour charger les styles sur toutes les pages où le shortcode est utilisé
@@ -2930,6 +3280,54 @@ if (is_admin()) {
     require_once plugin_dir_path(__FILE__) . 'admin/migration-admin.php';
 }
 
+// ✅ NOUVEAU : Fonctions AJAX pour le système de favoris simple
+function simple_favorites_ajax_toggle() {
+    error_log("Simple Favorites AJAX - Function called");
+    
+    check_ajax_referer('simple_favorites_nonce', 'nonce');
+    
+    $entry_id = intval($_POST['entry_id']);
+    $user_id = get_current_user_id();
+    
+    error_log("Simple Favorites AJAX - entry_id: $entry_id, user_id: $user_id");
+    
+    if (!$entry_id || !$user_id) {
+        error_log("Simple Favorites AJAX - Missing parameters");
+        wp_send_json_error('Paramètres manquants');
+        return;
+    }
+    
+    $favorites_handler = simple_favorites_handler();
+    
+    // Vérifier si c'est déjà un favori
+    $is_favorite = $favorites_handler->is_favorite($user_id, $entry_id);
+    error_log("Simple Favorites AJAX - is_favorite: " . ($is_favorite ? 'true' : 'false'));
+    
+    if ($is_favorite) {
+        // Supprimer des favoris
+        error_log("Simple Favorites AJAX - Removing favorite");
+        $result = $favorites_handler->remove_favorite($user_id, $entry_id);
+        $action = 'removed';
+    } else {
+        // Ajouter aux favoris
+        $form_id = isset($_POST['form_id']) ? intval($_POST['form_id']) : 0;
+        error_log("Simple Favorites AJAX - Adding favorite, form_id: $form_id");
+        $result = $favorites_handler->add_favorite($user_id, $entry_id, $form_id);
+        $action = 'added';
+    }
+    
+    error_log("Simple Favorites AJAX - Result: " . ($result ? 'success' : 'failed'));
+    
+    if ($result) {
+        wp_send_json_success(array(
+            'action' => $action,
+            'is_favorite' => !$is_favorite
+        ));
+    } else {
+        wp_send_json_error('Erreur lors de la mise à jour des favoris');
+    }
+}
+
 // ✅ NOUVEAU : Fonctions AJAX pour Lead Vendeur
 function lead_vendeur_ajax_toggle_favori() {
     check_ajax_referer('lead_vendeur_nonce', 'nonce');
@@ -2954,8 +3352,17 @@ function lead_vendeur_ajax_toggle_favori() {
         $result = $favoris_handler->remove_favori($user_id, $entry_id);
         $action = 'removed';
     } else {
-        // Ajouter aux favoris
-        $result = $favoris_handler->add_favori($user_id, $entry_id, isset($config['gravity_form_id']) ? $config['gravity_form_id'] : 0);
+        // Récupérer les données de l'entrée pour les passer au gestionnaire
+        $entry_data = null;
+        if (class_exists('GFAPI')) {
+            $entry = GFAPI::get_entry($entry_id);
+            if (!is_wp_error($entry)) {
+                $entry_data = json_encode($entry);
+            }
+        }
+        
+        // Ajouter aux favoris avec les données
+        $result = $favoris_handler->add_favori($user_id, $entry_id, isset($config['gravity_form_id']) ? $config['gravity_form_id'] : 0, $entry_data);
         $action = 'added';
     }
     
@@ -3047,7 +3454,19 @@ function lead_vendeur_ajax_pagination() {
         $page, 
         $per_page
     );
-    $favori_ids = $favoris_handler->get_user_favori_ids(get_current_user_id());
+    
+    // ✅ NOUVEAU : Utiliser le système de favoris simple
+    $simple_favorites_handler = simple_favorites_handler();
+    $user_id = get_current_user_id();
+    $favori_ids = array();
+    
+    // Récupérer les favoris de l'utilisateur
+    $favorites = $simple_favorites_handler->get_user_favorites($user_id);
+    foreach ($favorites as $favorite) {
+        $favori_ids[] = $favorite->entry_id;
+    }
+    
+    error_log("Lead Vendeur AJAX - User favorites: " . print_r($favori_ids, true));
     
     // Calculer les informations de pagination
     $total_entries = $config_manager->get_form_entries_count($config['gravity_form_id']);
@@ -3071,18 +3490,66 @@ function lead_vendeur_ajax_pagination() {
             
             // Colonne favori
             echo '<td class="favori-column">';
-            echo '<span class="favori-toggle ' . $favori_class . '" data-entry-id="' . esc_attr($entry['id']) . '">';
-            echo '<i class="fas fa-star"></i>';
-            echo '</span>';
+            echo '<button class="favorite-btn ' . $favori_class . '" data-entry-id="' . esc_attr($entry['id']) . '" title="Ajouter aux favoris">';
+            if ($is_favori) {
+                echo '★'; // Étoile pleine pour favori actif
+            } else {
+                echo '☆'; // Étoile vide pour non-favori
+            }
+            echo '</button>';
             echo '</td>';
             
             // ✅ NOUVEAU : Colonne Ville juste après Favoris
             if (isset($entry['4.3']) && !empty($entry['4.3'])) {
                 echo '<td>' . esc_html($entry['4.3']) . '</td>';
+            } else {
+                echo '<td>-</td>'; // Cellule vide si pas de ville
             }
-            // ✅ NOUVEAU : Ne pas générer de cellule vide si la ville n'existe pas
             
-            // ✅ NOUVEAU : Colonnes configurées (sauf Site Web qui sera en dernier)
+            // ✅ NOUVEAU : Colonne Type (récupérer depuis les champs configurés)
+            $type_value = '';
+            if (!empty($config['display_fields'])) {
+                foreach ($config['display_fields'] as $field_id) {
+                    if (isset($form_fields[$field_id])) {
+                        $field_label = $form_fields[$field_id]['label'];
+                        if (strpos(strtolower($field_label), 'type') !== false || 
+                            strpos(strtolower($field_label), 'bien') !== false) {
+                            $type_value = isset($entry[$field_id]) ? $entry[$field_id] : '';
+                            break;
+                        }
+                    }
+                }
+            }
+            echo '<td>' . esc_html($type_value ?: '-') . '</td>';
+            
+            // ✅ NOUVEAU : Colonne Téléphone (récupérer depuis les champs configurés)
+            $phone_value = '';
+            if (!empty($config['display_fields'])) {
+                foreach ($config['display_fields'] as $field_id) {
+                    if (isset($form_fields[$field_id])) {
+                        $field_label = $form_fields[$field_id]['label'];
+                        $value = isset($entry[$field_id]) ? $entry[$field_id] : '';
+                        if (is_phone_field($field_label, $value)) {
+                            $phone_value = $value;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            if (!empty($phone_value)) {
+                echo '<td>';
+                $formatted_phone = format_phone_for_dialing($phone_value);
+                echo '<a href="tel:' . esc_attr($formatted_phone) . '" class="phone-link" title="Appeler directement">';
+                echo '<i class="fas fa-phone" style="margin-right: 5px; color: #007cba;"></i>';
+                echo esc_html($phone_value);
+                echo '</a>';
+                echo '</td>';
+            } else {
+                echo '<td>-</td>';
+            }
+            
+            // ✅ NOUVEAU : Colonnes configurées (sauf Site Web, Type, Téléphone qui sont déjà traités)
             if (!empty($config['display_fields'])) {
                 foreach ($config['display_fields'] as $field_id) {
                     if (isset($form_fields[$field_id])) {
@@ -3101,20 +3568,15 @@ function lead_vendeur_ajax_pagination() {
                             continue;
                         }
                         
-                        $value = isset($entry[$field_id]) ? $entry[$field_id] : '';
-                        
-                        // Vérifier si c'est un champ téléphone
-                        if (is_phone_field($field_label, $value)) {
-                            echo '<td>';
-                            $formatted_phone = format_phone_for_dialing($value);
-                            echo '<a href="tel:' . esc_attr($formatted_phone) . '" class="phone-link" title="Appeler directement">';
-                            echo '<i class="fas fa-phone" style="margin-right: 5px; color: #007cba;"></i>';
-                            echo esc_html($value);
-                            echo '</a>';
-                            echo '</td>';
-                        } else {
-                            echo '<td>' . esc_html($value) . '</td>';
+                        // ✅ NOUVEAU : Ne pas afficher Type et Téléphone ici (déjà traités)
+                        if (strpos(strtolower($field_label), 'type') !== false || 
+                            strpos(strtolower($field_label), 'bien') !== false ||
+                            is_phone_field($field_label, isset($entry[$field_id]) ? $entry[$field_id] : '')) {
+                            continue;
                         }
+                        
+                        $value = isset($entry[$field_id]) ? $entry[$field_id] : '';
+                            echo '<td>' . esc_html($value) . '</td>';
                     }
                 }
             }

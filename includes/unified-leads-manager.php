@@ -642,6 +642,23 @@ class Unified_Leads_Manager {
     }
     
     /**
+     * Migre les favoris Lead Vendeur existants
+     */
+    public function migrate_lead_vendeur_favorites() {
+        // Vérifier si le gestionnaire Lead Vendeur est disponible
+        if (!function_exists('lead_vendeur_favoris_handler')) {
+            my_istymo_log('Gestionnaire Lead Vendeur non disponible, migration ignorée', 'unified_leads');
+            return 0;
+        }
+        
+        $favoris_handler = lead_vendeur_favoris_handler();
+        $migrated_count = $favoris_handler->migrate_existing_favorites();
+        
+        my_istymo_log("Migration Lead Vendeur terminée : {$migrated_count} leads migrés", 'unified_leads');
+        return $migrated_count;
+    }
+    
+    /**
      * AJAX: Ajouter un lead
      */
     public function ajax_add_lead() {
