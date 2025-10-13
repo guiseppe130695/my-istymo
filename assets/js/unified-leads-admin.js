@@ -928,6 +928,7 @@ jQuery(document).ready(function($) {
     // Rendre la fonction accessible globalement
     window.openPropertyReport = openPropertyReport;
     
+    
     /**
      * Fonctions utilitaires
      */

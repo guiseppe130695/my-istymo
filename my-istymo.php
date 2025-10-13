@@ -1889,6 +1889,7 @@ add_action('wp_ajax_lead_vendeur_toggle_favori', 'lead_vendeur_ajax_toggle_favor
 add_action('wp_ajax_lead_vendeur_get_entry_details', 'lead_vendeur_ajax_get_entry_details');
 add_action('wp_ajax_lead_vendeur_pagination', 'lead_vendeur_ajax_pagination');
 
+
 // ✅ Fonction de mise à jour de lead
 function my_istymo_ajax_update_lead() {
     check_ajax_referer('my_istymo_nonce', 'nonce');
@@ -3286,50 +3287,46 @@ if (is_admin()) {
 
 // ✅ NOUVEAU : Fonctions AJAX pour le système de favoris simple
 function simple_favorites_ajax_toggle() {
-    error_log("Simple Favorites AJAX - Function called");
-    
-    check_ajax_referer('simple_favorites_nonce', 'nonce');
-    
-    $entry_id = intval($_POST['entry_id']);
-    $user_id = get_current_user_id();
-    
-    error_log("Simple Favorites AJAX - entry_id: $entry_id, user_id: $user_id");
-    
-    if (!$entry_id || !$user_id) {
-        error_log("Simple Favorites AJAX - Missing parameters");
-        wp_send_json_error('Paramètres manquants');
-        return;
-    }
-    
-    $favorites_handler = simple_favorites_handler();
-    
-    // Vérifier si c'est déjà un favori
-    $is_favorite = $favorites_handler->is_favorite($user_id, $entry_id);
-    error_log("Simple Favorites AJAX - is_favorite: " . ($is_favorite ? 'true' : 'false'));
-    
-    if ($is_favorite) {
-        // Supprimer des favoris
-        error_log("Simple Favorites AJAX - Removing favorite for entry_id: $entry_id, user_id: $user_id");
-        $result = $favorites_handler->remove_favorite($user_id, $entry_id);
-        error_log("Simple Favorites AJAX - Remove result: " . ($result ? 'success' : 'failed'));
-        $action = 'removed';
-    } else {
-        // Ajouter aux favoris
-        $form_id = isset($_POST['form_id']) ? intval($_POST['form_id']) : 0;
-        error_log("Simple Favorites AJAX - Adding favorite, form_id: $form_id");
-        $result = $favorites_handler->add_favorite($user_id, $entry_id, $form_id);
-        $action = 'added';
-    }
-    
-    error_log("Simple Favorites AJAX - Result: " . ($result ? 'success' : 'failed'));
-    
-    if ($result) {
-        wp_send_json_success(array(
-            'action' => $action,
-            'is_favorite' => !$is_favorite
-        ));
-    } else {
-        wp_send_json_error('Erreur lors de la mise à jour des favoris');
+    try {
+        check_ajax_referer('simple_favorites_nonce', 'nonce');
+        
+        $entry_id = intval($_POST['entry_id']);
+        $user_id = get_current_user_id();
+        
+        if (!$entry_id || !$user_id) {
+            wp_send_json_error('Paramètres manquants');
+            return;
+        }
+        
+        $favorites_handler = simple_favorites_handler();
+        
+        // Vérifier si c'est déjà un favori
+        $is_favorite = $favorites_handler->is_favorite($user_id, $entry_id);
+        
+        if ($is_favorite) {
+            // Supprimer des favoris
+            $result = $favorites_handler->remove_favorite($user_id, $entry_id);
+            $action = 'removed';
+        } else {
+            // Ajouter aux favoris
+            $form_id = isset($_POST['form_id']) ? intval($_POST['form_id']) : 0;
+            $result = $favorites_handler->add_favorite($user_id, $entry_id, $form_id);
+            $action = 'added';
+        }
+        
+        if ($result) {
+            wp_send_json_success(array(
+                'action' => $action,
+                'is_favorite' => !$is_favorite
+            ));
+        } else {
+            wp_send_json_error('Erreur lors de la mise à jour des favoris');
+        }
+        
+    } catch (Exception $e) {
+        wp_send_json_error('Erreur: ' . $e->getMessage());
+    } catch (Error $e) {
+        wp_send_json_error('Erreur fatale: ' . $e->getMessage());
     }
 }
 
@@ -3758,5 +3755,6 @@ function lead_vendeur_ajax_pagination() {
         )
     ));
 }
+
 
 ?>
