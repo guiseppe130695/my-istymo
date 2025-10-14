@@ -676,7 +676,7 @@ function lead_vendeur_users_page() {
                echo '<th><i class="fas fa-building"></i> Type</th>';
                echo '<th><i class="fas fa-phone"></i> Téléphone</th>';
                echo '<th><i class="fas fa-calendar"></i> Date</th>';
-               echo '<th><i class="fas fa-cogs"></i> Actions</th>';
+               echo '<th><i class="fas fa-map-marker-alt"></i> Actions</th>';
                
                // En-têtes des colonnes configurées (sauf Site Web qui sera en dernier)
                if (!empty($config['display_fields'])) {
@@ -718,7 +718,7 @@ function lead_vendeur_users_page() {
                    }
                }
                
-               echo '<th>Actions</th>';
+               echo '<th><i class="fas fa-map-marker-alt"></i> Actions</th>';
                echo '</tr>';
                echo '</thead>';
                echo '<tbody id="lead-vendeur-table-body">';
@@ -3022,7 +3022,7 @@ function my_istymo_leads_vendeur_shortcode($atts) {
         echo '<th><i class="fas fa-building"></i> Type</th>';
         echo '<th><i class="fas fa-phone"></i> Téléphone</th>';
         echo '<th><i class="fas fa-calendar"></i> Date</th>';
-        echo '<th><i class="fas fa-cogs"></i> Actions</th>';
+        echo '<th><i class="fas fa-map-marker-alt"></i> Actions</th>';
         echo '</tr></thead>';
         
         echo '<tbody id="lead-vendeur-table-body">';

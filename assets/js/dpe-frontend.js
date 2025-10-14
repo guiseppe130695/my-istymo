@@ -157,7 +157,7 @@ function displayResults(data) {
                 geoLink.href = 'https://www.google.com/maps/place/' + encodeURIComponent(result.adresse_ban.trim());
                 geoLink.target = '_blank';
                 geoLink.rel = 'noopener noreferrer';
-                geoLink.innerHTML = 'Localiser';
+                geoLink.innerHTML = '<i class="fas fa-map-marker-alt"></i> Localiser';
                 geoLink.title = 'Localiser sur Google Maps';
                 geoCell.appendChild(geoLink);
             } else {

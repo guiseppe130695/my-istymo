@@ -273,7 +273,7 @@
 /* Lien de géolocalisation simplifié */
 .maps-link {
     color: #0073aa !important;
-    text-decoration: underline !important;
+    text-decoration: none !important;
     background: none !important;
     padding: 0 !important;
     margin: 0 !important;
