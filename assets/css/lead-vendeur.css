@@ -60,48 +60,7 @@
     background-color: #fff3cd;
 }
 
-.view-lead-details {
-    background-color: #007cba !important;
-    color: white !important;
-    border: none !important;
-    padding: 6px 12px !important;
-    border-radius: 3px !important;
-    cursor: pointer !important;
-    font-size: 12px !important;
-    margin-right: 5px !important;
-    display: inline-block !important;
-    text-decoration: none !important;
-    transition: background-color 0.3s ease !important;
-}
 
-.view-lead-details:hover {
-    background-color: #005a87 !important;
-    color: white !important;
-}
-
-/* Bouton Analyser le bien */
-.analyse-bien-btn {
-    background-color: #28a745 !important;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 3px;
-    cursor: pointer;
-    font-size: 12px;
-    transition: background-color 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.analyse-bien-btn:hover {
-    background-color: #218838 !important;
-    color: white;
-}
-
-.analyse-bien-btn i {
-    font-size: 11px;
-}
 
 /* Lien téléphone cliquable - Style simple */
 .phone-link {
@@ -622,29 +581,6 @@
     border: 1px solid #f5c6cb;
 }
 
-/* ✅ NOUVEAU : Style pour le bouton d'analyse du bien dans Actions */
-.lead-vendeur-table .analyse-bien-btn {
-    background-color: #BA55D3 !important;
-    color: white !important;
-    border: none !important;
-    padding: 6px 12px !important;
-    border-radius: 3px !important;
-    cursor: pointer !important;
-    font-size: 12px !important;
-    margin-left: 5px !important;
-    display: inline-block !important;
-    text-decoration: none !important;
-    transition: background-color 0.3s ease !important;
-}
-
-.lead-vendeur-table .analyse-bien-btn:hover {
-    background-color: #9B3DB3 !important;
-    color: white !important;
-}
-
-.lead-vendeur-table .analyse-bien-btn i {
-    margin-right: 5px !important;
-}
 
 /* ✅ NOUVEAU : Style pour la colonne Actions */
 .lead-vendeur-table td:last-child {
@@ -664,95 +600,49 @@
     display: inline-block !important;
 }
 
-/* ✅ NOUVEAU : Style pour l'icône du bouton "Voir détails" */
-.view-lead-details i {
-    margin-right: 5px !important;
-    font-size: 11px !important;
-}
 
-/* ✅ NOUVEAU : Styles pour le bouton Analyser le bien */
-.analyser-bien-btn,
-.lead-vendeur-table .analyser-bien-btn {
-    background-color: #BA55D3 !important; /* Violet */
-    color: white !important;
-    border: none !important;
-    padding: 6px 8px !important;
-    border-radius: 4px !important;
-    cursor: pointer !important;
-    font-size: 11px !important;
-    margin: 2px !important;
-    display: inline-block !important;
-    width: auto !important;
-    max-width: 100px !important;
-    text-decoration: none !important;
-    transition: background-color 0.3s ease !important;
-    white-space: nowrap !important;
-    text-align: center !important;
-}
-
-.lead-vendeur-table .analyser-bien-btn:hover:not(:disabled) {
-    background-color: #9B4DB8 !important; /* Violet plus foncé */
-}
-
-.lead-vendeur-table .analyser-bien-btn:disabled {
-    background-color: #6c757d !important;
-    cursor: not-allowed !important;
-    opacity: 0.6 !important;
-}
 
 .localiser-bien-btn,
 .lead-vendeur-table .localiser-bien-btn {
-    background-color: #4285f4 !important; /* Couleur Google Maps */
-    color: white !important;
-    border: none !important;
-    padding: 6px 8px !important;
+    color: #0064A6;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+    border: none;
+    box-shadow: none;
+    background: none;
+    font-size: 14px !important;
+}
+
+td.actions-column button {
+    border: 1px solid #000;
     border-radius: 4px !important;
-    cursor: pointer !important;
-    font-size: 11px !important;
-    margin: 2px !important;
-    display: inline-block !important;
-    width: auto !important;
-    max-width: 100px !important;
-    text-decoration: none !important;
-    transition: background-color 0.3s ease !important;
-    white-space: nowrap !important;
-    text-align: center !important;
+    padding: 6px 12px !important;
+    font-size: 12px !important;
 }
 
-.lead-vendeur-table .localiser-bien-btn:hover:not(:disabled) {
-    background-color: #3367d6 !important; /* Couleur Google Maps plus foncée */
+button.view-lead-details.button.button-primary {
+    background: #e3f2fd;
+    border-color: #2196f3;
+    color: #1976d2;
 }
 
-.lead-vendeur-table .localiser-bien-btn:disabled {
-    background-color: #6c757d !important;
-    cursor: not-allowed !important;
-    opacity: 0.6 !important;
+button.view-lead-details.button.button-primary:hover {
+    background: #bbdefb;
+    border-color: #1976d2;
 }
 
-.view-lead-details,
-.lead-vendeur-table .view-lead-details {
-    background-color: #007cba !important;
-    color: white !important;
-    border: none !important;
-    padding: 6px 8px !important;
-    border-radius: 4px !important;
-    cursor: pointer !important;
-    font-size: 11px !important;
-    margin: 2px !important;
-    display: inline-block !important;
-    width: auto !important;
-    max-width: 100px !important;
-    text-decoration: none !important;
-    transition: background-color 0.3s ease !important;
-    white-space: nowrap !important;
-    text-align: center !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+button.analyser-bien-btn.button {
+    background: #fcfafd !important;
+    border-color: #BA55D3 !important;
+    color: #BA55D3 !important;
 }
 
-.lead-vendeur-table .view-lead-details:hover {
-    background-color: #005a87 !important;
+button.analyser-bien-btn.button:hover {
+    background: #e7d9ea !important;
+    border-color: #9736af !important;
 }
+
 
 /* ✅ NOUVEAU : Styles généraux pour tous les boutons d'actions */
 .actions-column button,
@@ -760,19 +650,13 @@
     margin: 2px !important;
     padding: 6px 8px !important;
     border-radius: 4px !important;
-    font-size: 11px !important;
+    font-size: 11px;
     display: inline-block !important;
     width: auto !important;
     max-width: 100px !important;
     text-align: center !important;
     white-space: nowrap !important;
     transition: all 0.3s ease !important;
-}
-
-.actions-column button:hover:not(:disabled),
-.lead-vendeur-table .actions-column button:hover:not(:disabled) {
-    transform: translateY(-1px) !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
 }
 
 .actions-column button:disabled,
@@ -783,18 +667,6 @@
     box-shadow: none !important;
 }
 
-/* ✅ NOUVEAU : Style pour le bouton "Analyser" désactivé */
-.analyse-bien-btn:disabled {
-    background-color: #6c757d !important;
-    color: white !important;
-    cursor: not-allowed !important;
-    opacity: 0.6 !important;
-}
-
-.analyse-bien-btn:disabled:hover {
-    background-color: #6c757d !important;
-    color: white !important;
-}
 
 /* ========================================
    NOUVEAUX PANELS AVEC ACCORDÉONS
