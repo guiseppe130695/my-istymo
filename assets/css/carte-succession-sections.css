@@ -1,0 +1,388 @@
+/**
+ * Styles pour les sections Carte de Succession
+ * Système de sections avec analyse de la succession
+ */
+
+/* ===== SECTIONS GÉNÉRALES ===== */
+.my-istymo-section {
+    margin-bottom: 25px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #007cba;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== SOUS-SECTIONS ===== */
+.my-istymo-subsection {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #ffffff;
+    border-radius: 6px;
+    border-left: 3px solid #e9ecef;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.my-istymo-subsection-title {
+    margin: 0 0 12px 0;
+    color: #495057;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* ===== SECTIONS SPÉCIFIQUES CARTE DE SUCCESSION ===== */
+
+/* Section Contact */
+.contact-section {
+    border-left-color: #28a745;
+    background: linear-gradient(135deg, #f8fff8 0%, #e8f5e8 100%);
+}
+
+.contact-section .my-istymo-subsection-title {
+    color: #28a745;
+}
+
+.contact-section .my-istymo-subsection-title::before {
+    content: "👤 ";
+    margin-right: 5px;
+}
+
+/* Section Succession */
+.succession-section {
+    border-left-color: #dc3545;
+    background: linear-gradient(135deg, #fff5f5 0%, #ffe8e8 100%);
+}
+
+.succession-section .my-istymo-subsection-title {
+    color: #dc3545;
+}
+
+.succession-section .my-istymo-subsection-title::before {
+    content: "⚖️ ";
+    margin-right: 5px;
+}
+
+/* Section Biens */
+.biens-section {
+    border-left-color: #ffc107;
+    background: linear-gradient(135deg, #fffbf0 0%, #fff3cd 100%);
+}
+
+.biens-section .my-istymo-subsection-title {
+    color: #e6a700;
+}
+
+.biens-section .my-istymo-subsection-title::before {
+    content: "🏠 ";
+    margin-right: 5px;
+}
+
+/* Section Dettes */
+.dettes-section {
+    border-left-color: #6c757d;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.dettes-section .my-istymo-subsection-title {
+    color: #6c757d;
+}
+
+.dettes-section .my-istymo-subsection-title::before {
+    content: "💰 ";
+    margin-right: 5px;
+}
+
+/* Section Assurance */
+.assurance-section {
+    border-left-color: #17a2b8;
+    background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+}
+
+.assurance-section .my-istymo-subsection-title {
+    color: #17a2b8;
+}
+
+.assurance-section .my-istymo-subsection-title::before {
+    content: "🛡️ ";
+    margin-right: 5px;
+}
+
+/* ===== ÉLÉMENTS DE CONTENU ===== */
+
+/* Champs de données */
+.data-field {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    background: white;
+    border-radius: 4px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.data-field:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.data-field-label {
+    font-weight: 600;
+    color: #495057;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.data-field-value {
+    color: #212529;
+    font-weight: 500;
+    text-align: right;
+    max-width: 60%;
+    word-break: break-word;
+}
+
+/* Champs spéciaux */
+.data-field.important {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border-color: #ffc107;
+}
+
+.data-field.important .data-field-label {
+    color: #856404;
+}
+
+.data-field.critical {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    border-color: #dc3545;
+}
+
+.data-field.critical .data-field-label {
+    color: #721c24;
+}
+
+.data-field.success {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border-color: #28a745;
+}
+
+.data-field.success .data-field-label {
+    color: #155724;
+}
+
+/* ===== GRILLES DE DONNÉES ===== */
+.data-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.data-grid-2 {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.data-grid-3 {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+/* ===== BADGES ET ÉTIQUETTES ===== */
+.data-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-succession-type {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.badge-date {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.badge-notaire {
+    background: #e8f5e8;
+    color: #388e3c;
+}
+
+.badge-heritiers {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .my-istymo-section {
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .my-istymo-subsection {
+        padding: 12px;
+        margin-bottom: 15px;
+    }
+    
+    .data-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .data-field {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+    }
+    
+    .data-field-value {
+        max-width: 100%;
+        margin-top: 5px;
+    }
+    
+    .my-istymo-subsection-title {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .my-istymo-section {
+        padding: 12px;
+    }
+    
+    .my-istymo-subsection {
+        padding: 10px;
+    }
+    
+    .data-field {
+        padding: 6px 10px;
+    }
+    
+    .data-field-label {
+        font-size: 12px;
+    }
+}
+
+/* ===== ANIMATIONS ===== */
+.my-istymo-section {
+    animation: slideInLeft 0.5s ease-out;
+}
+
+.my-istymo-subsection {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+.data-field {
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* ===== ÉTATS INTERACTIFS ===== */
+.data-field.clickable {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.data-field.clickable:hover {
+    background: #e3f2fd;
+    border-color: #2196f3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.data-field.clickable:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== INDICATEURS DE STATUT ===== */
+.status-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.status-indicator.active {
+    background: #28a745;
+    box-shadow: 0 0 6px rgba(40, 167, 69, 0.5);
+}
+
+.status-indicator.pending {
+    background: #ffc107;
+    box-shadow: 0 0 6px rgba(255, 193, 7, 0.5);
+}
+
+.status-indicator.inactive {
+    background: #6c757d;
+}
+
+/* ===== TOOLTIPS ===== */
+.data-field[title] {
+    position: relative;
+}
+
+.data-field[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 5px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    margin-bottom: 5px;
+}
+
+.data-field[title]:hover::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top-color: #333;
+    z-index: 1000;
+}
+

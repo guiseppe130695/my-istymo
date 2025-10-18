@@ -1,5 +1,5 @@
 /**
- * JavaScript pour le système Lead Vendeur
+ * JavaScript pour le système Carte de Succession
  * Gestion de la pagination, favoris et interactions
  */
 
@@ -11,21 +11,16 @@
     let isLoading = false;
 
     /**
-     * Initialisation du système Lead Vendeur
+     * Initialisation du système Carte de Succession
      */
-    function initLeadVendeur() {
-        console.log('Initialisation Lead Vendeur...');
-        
-        if (typeof leadVendeurAjax === 'undefined') {
-            console.warn('Lead Vendeur: Variables AJAX non disponibles');
+    function initCarteSuccession() {
+        if (typeof carteSuccessionAjax === 'undefined') {
+            console.warn('Carte Succession: Variables AJAX non disponibles');
             return;
         }
 
-        console.log('Variables AJAX trouvées:', leadVendeurAjax);
-
         // Attacher les événements
         attachEventListeners();
-        console.log('Event listeners attachés');
         
         // Charger la première page automatiquement
         loadPage(1);
@@ -53,7 +48,7 @@
             
             var $toggle = $(this);
             var entryId = $toggle.data("entry-id");
-            var $row = $toggle.closest(".lead-vendeur-row");
+            var $row = $toggle.closest(".carte-succession-row");
             
             if ($toggle.hasClass("loading")) {
                 return; // Éviter les clics multiples
@@ -67,7 +62,7 @@
                 data: {
                     action: "simple_favorites_toggle",
                     entry_id: entryId,
-                    form_id: leadVendeurAjax.form_id,
+                    form_id: carteSuccessionAjax.form_id,
                     nonce: simpleFavoritesAjax.nonce
                 },
                 success: function(response) {
@@ -76,12 +71,12 @@
                             $toggle.addClass("favori-active");
                             $toggle.html('★'); // Étoile pleine
                             $row.addClass("favori-row");
-                            showMessage("Lead ajouté aux favoris", "success");
+                            showMessage("Carte de succession ajoutée aux favoris", "success");
                         } else {
                             $toggle.removeClass("favori-active");
                             $toggle.html('☆'); // Étoile vide
                             $row.removeClass("favori-row");
-                            showMessage("Lead retiré des favoris", "success");
+                            showMessage("Carte de succession retirée des favoris", "success");
                         }
                     } else {
                         showMessage("Erreur: " + response.data, "error");
@@ -97,12 +92,10 @@
         });
 
         // Gestion des clics sur les détails
-        $(document).on("click", ".view-lead-details", function(e) {
+        $(document).on("click", ".carte-details-btn", function(e) {
             e.preventDefault();
-            e.stopPropagation();
-            console.log('Bouton détails cliqué, entryId:', $(this).data("entry-id"));
             var entryId = $(this).data("entry-id");
-            showLeadDetails(entryId);
+            showCarteDetails(entryId);
         });
     }
 
@@ -112,9 +105,9 @@
     function loadPage(page) {
         if (isLoading) return;
         
-        var $tableBody = $("#lead-vendeur-table-body");
-        var $paginationContainer = $("#lead-vendeur-pagination-container");
-        var $paginationInfo = $("#lead-vendeur-pagination-info");
+        var $tableBody = $("#carte-succession-table-body");
+        var $paginationContainer = $("#carte-succession-pagination-container");
+        var $paginationInfo = $("#carte-succession-pagination-info");
         
         isLoading = true;
         currentPage = page;
@@ -125,13 +118,13 @@
         
         // Requête AJAX
         $.ajax({
-            url: leadVendeurAjax.ajax_url,
+            url: carteSuccessionAjax.ajax_url,
             type: "POST",
             data: {
-                action: "lead_vendeur_pagination",
-                nonce: leadVendeurAjax.nonce,
+                action: "carte_succession_pagination",
+                nonce: carteSuccessionAjax.nonce,
                 page: page,
-                per_page: leadVendeurAjax.per_page
+                per_page: carteSuccessionAjax.per_page
             },
             success: function(response) {
                 if (response.success) {
@@ -151,7 +144,7 @@
                     }
                     
                     // Animation pour les nouvelles lignes
-                    $(".lead-vendeur-row").each(function(index) {
+                    $(".carte-succession-row").each(function(index) {
                         $(this).css("opacity", "0").delay(index * 50).animate({
                             opacity: 1
                         }, 300);
@@ -172,44 +165,35 @@
     }
 
     /**
-     * Afficher les détails d'un lead
+     * Afficher les détails d'une carte de succession
      */
-    function showLeadDetails(entryId) {
-        console.log('showLeadDetails appelée avec entryId:', entryId);
-        
-        if (typeof leadVendeurAjax === 'undefined') {
-            console.warn('Lead Vendeur: Variables AJAX non disponibles');
+    function showCarteDetails(entryId) {
+        if (typeof carteSuccessionAjax === 'undefined') {
+            console.warn('Carte Succession: Variables AJAX non disponibles');
             return;
         }
 
-        console.log('Variables AJAX disponibles:', leadVendeurAjax);
-
         // Afficher un modal de chargement
-        var $modal = $('<div class="lead-details-modal"><div class="lead-details-modal-content"><div class="loading-container"><div class="spinner"></div><p>Chargement des détails...</p></div></div></div>');
+        var $modal = $('<div class="carte-details-modal"><div class="carte-details-modal-content"><div class="loading-spinner"></div><p>Chargement des détails...</p></div></div>');
         $('body').append($modal);
-        console.log('Modal ajouté au DOM');
 
         $.ajax({
-            url: leadVendeurAjax.ajax_url,
+            url: carteSuccessionAjax.ajax_url,
             type: "POST",
             data: {
-                action: "lead_vendeur_get_entry_details",
+                action: "carte_succession_get_entry_details",
                 entry_id: entryId,
-                nonce: leadVendeurAjax.nonce
+                nonce: carteSuccessionAjax.nonce
             },
             success: function(response) {
-                console.log('Réponse AJAX reçue:', response);
                 if (response.success) {
-                    console.log('Données reçues:', response.data);
-                    $modal.find('.lead-details-modal-content').html(response.data);
+                    $modal.find('.carte-details-modal-content').html(response.data);
                 } else {
-                    console.error('Erreur dans la réponse:', response);
-                    $modal.find('.lead-details-modal-content').html('<p>Erreur lors du chargement des détails.</p>');
+                    $modal.find('.carte-details-modal-content').html('<p>Erreur lors du chargement des détails.</p>');
                 }
             },
-            error: function(xhr, status, error) {
-                console.error('Erreur AJAX:', xhr, status, error);
-                $modal.find('.lead-details-modal-content').html('<p>Erreur de connexion.</p>');
+            error: function() {
+                $modal.find('.carte-details-modal-content').html('<p>Erreur de connexion.</p>');
             }
         });
 
@@ -221,7 +205,7 @@
         });
 
         // Bouton de fermeture
-        $modal.on('click', '.lead-details-modal-close', function() {
+        $modal.on('click', '.close-modal', function() {
             $modal.remove();
         });
     }
@@ -231,7 +215,7 @@
      */
     function showMessage(message, type) {
         var $message = $('<div class="notice notice-' + type + ' is-dismissible"><p>' + message + '</p></div>');
-        $('.lead-vendeur-table-container').before($message);
+        $('.carte-succession-table-container').before($message);
         setTimeout(function() {
             $message.fadeOut();
         }, 3000);
@@ -244,18 +228,83 @@
         loadPage(currentPage);
     }
 
+    /**
+     * Basculer l'état d'un favori
+     */
+    function toggleFavorite(entryId, isCurrentlyFavorite) {
+        var $toggle = $('.favorite-btn[data-entry-id="' + entryId + '"]');
+        var $row = $toggle.closest('.carte-succession-row');
+        
+        if ($toggle.hasClass('loading')) {
+            return;
+        }
+        
+        $toggle.addClass('loading');
+        
+        $.ajax({
+            url: simpleFavoritesAjax.ajax_url,
+            type: "POST",
+            data: {
+                action: "simple_favorites_toggle",
+                entry_id: entryId,
+                form_id: carteSuccessionAjax.form_id,
+                nonce: simpleFavoritesAjax.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    if (response.data.action === "added") {
+                        $toggle.addClass("favori-active");
+                        $toggle.html('★');
+                        $row.addClass("favori-row");
+                        showMessage("Carte de succession ajoutée aux favoris", "success");
+                    } else {
+                        $toggle.removeClass("favori-active");
+                        $toggle.html('☆');
+                        $row.removeClass("favori-row");
+                        showMessage("Carte de succession retirée des favoris", "success");
+                    }
+                } else {
+                    showMessage("Erreur: " + response.data, "error");
+                }
+            },
+            error: function() {
+                showMessage("Erreur de connexion", "error");
+            },
+            complete: function() {
+                $toggle.removeClass("loading");
+            }
+        });
+    }
+
+    /**
+     * Exporter les données (fonctionnalité future)
+     */
+    function exportData(format) {
+        showMessage("Fonctionnalité d'export en cours de développement", "info");
+    }
+
+    /**
+     * Filtrer les données (fonctionnalité future)
+     */
+    function filterData(criteria) {
+        showMessage("Fonctionnalité de filtrage en cours de développement", "info");
+    }
+
     // Exposer les fonctions globalement
-    window.leadVendeur = {
-        init: initLeadVendeur,
+    window.carteSuccession = {
+        init: initCarteSuccession,
         loadPage: loadPage,
         refresh: refreshCurrentPage,
-        showDetails: showLeadDetails
+        showDetails: showCarteDetails,
+        toggleFavorite: toggleFavorite,
+        exportData: exportData,
+        filterData: filterData
     };
 
     // Initialisation automatique
     $(document).ready(function() {
-        console.log('Document ready - Initialisation Lead Vendeur');
-        initLeadVendeur();
+        initCarteSuccession();
     });
 
 })(jQuery);
+

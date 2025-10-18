@@ -1,0 +1,298 @@
+/**
+ * Styles pour le popup carte de succession
+ */
+
+/* Modal principal */
+.carte-details-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.carte-details-modal-content {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    max-width: 900px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+/* En-tête du modal */
+.carte-details-modal-header {
+    padding: 20px 25px;
+    border-bottom: 1px solid #e1e5e9;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px 12px 0 0;
+    position: relative;
+}
+
+.carte-details-modal-header h3 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.carte-details-modal-header .close-modal {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: all 0.3s ease;
+}
+
+.carte-details-modal-header .close-modal:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+/* Contenu du modal */
+.carte-succession-details {
+    padding: 0;
+}
+
+.details-content {
+    padding: 25px;
+}
+
+.details-section {
+    margin-bottom: 30px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    border-left: 4px solid #007cba;
+}
+
+.details-section h4 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 18px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.details-section h4 i {
+    color: #007cba;
+    font-size: 16px;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 15px;
+}
+
+.detail-item {
+    background: white;
+    padding: 12px 15px;
+    border-radius: 6px;
+    border: 1px solid #e1e5e9;
+    transition: all 0.3s ease;
+}
+
+.detail-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.detail-item strong {
+    color: #007cba;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 5px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-item:not(:has(strong)) {
+    padding: 8px 15px;
+    font-style: italic;
+    color: #666;
+}
+
+/* Section commentaire */
+.comment-content {
+    background: white;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #e1e5e9;
+    line-height: 1.6;
+    color: #333;
+}
+
+/* Actions du modal */
+.details-actions {
+    padding: 20px 25px;
+    border-top: 1px solid #e1e5e9;
+    background: #f8f9fa;
+    border-radius: 0 0 12px 12px;
+    text-align: right;
+}
+
+.details-actions .button {
+    margin-left: 10px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .carte-details-modal {
+        padding: 10px;
+    }
+    
+    .carte-details-modal-content {
+        width: 95%;
+        max-height: 95vh;
+    }
+    
+    .carte-details-modal-header {
+        padding: 15px 20px;
+    }
+    
+    .carte-details-modal-header h3 {
+        font-size: 20px;
+    }
+    
+    .details-content {
+        padding: 20px;
+    }
+    
+    .details-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .details-section {
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .details-actions {
+        padding: 15px 20px;
+        text-align: center;
+    }
+    
+    .details-actions .button {
+        margin: 5px;
+        width: 100%;
+        max-width: 200px;
+    }
+}
+
+/* Animations */
+.carte-details-modal {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.carte-details-modal-content {
+    animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* États de chargement */
+.carte-details-modal.loading .carte-details-modal-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+}
+
+.carte-details-modal.loading .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border-width: 4px;
+}
+
+/* Styles pour les icônes */
+.details-section h4 i.fas.fa-user {
+    color: #28a745;
+}
+
+.details-section h4 i.fas.fa-gavel {
+    color: #dc3545;
+}
+
+.details-section h4 i.fas.fa-comment {
+    color: #ffc107;
+}
+
+/* Amélioration de l'accessibilité */
+.carte-details-modal:focus {
+    outline: none;
+}
+
+.carte-details-modal-content:focus {
+    outline: 2px solid #007cba;
+    outline-offset: 2px;
+}
+
+/* Styles pour les liens dans le contenu */
+.details-content a {
+    color: #007cba;
+    text-decoration: none;
+    border-bottom: 1px dotted #007cba;
+}
+
+.details-content a:hover {
+    color: #005a87;
+    border-bottom-style: solid;
+}
+
+/* Styles pour les listes */
+.details-content ul,
+.details-content ol {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+.details-content li {
+    margin-bottom: 5px;
+    line-height: 1.5;
+}
+

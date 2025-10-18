@@ -665,6 +665,8 @@ button.analyser-bien-btn.button:hover {
     cursor: not-allowed !important;
     transform: none !important;
     box-shadow: none !important;
+    color: #d1d1d1!important;
+    border: 1px solid #d1d1d1 !important;
 }
 
 

@@ -136,6 +136,10 @@ require_once plugin_dir_path(__FILE__) . 'includes/dpe-favoris-handler.php';
 // ✅ NOUVEAU : Inclure les gestionnaires Lead Vendeur
 require_once plugin_dir_path(__FILE__) . 'includes/lead-vendeur-config-manager.php';
 require_once plugin_dir_path(__FILE__) . 'includes/lead-vendeur-favoris-handler.php';
+
+// ✅ NOUVEAU : Inclure les gestionnaires Carte de Succession
+require_once plugin_dir_path(__FILE__) . 'includes/carte-succession-config-manager.php';
+require_once plugin_dir_path(__FILE__) . 'includes/carte-succession-favoris-handler.php';
 require_once plugin_dir_path(__FILE__) . 'includes/simple-favorites-handler.php';
 
 // --- Ajout du menu SCI dans l'admin WordPress ---
@@ -262,6 +266,16 @@ function sci_ajouter_menu() {
            'carte_succession_page',
            'dashicons-chart-area',
            -5
+       );
+       
+       // ✅ NOUVEAU : Sous-menu Configuration Carte de Succession
+       add_submenu_page(
+           'carte-succession',
+           'Configuration Carte de Succession',
+           'Configuration',
+           'manage_options',
+           'carte-succession-config',
+           'carte_succession_config_page'
        );
        
        // ✅ NOUVEAU : Menu Lead Parrainage
@@ -589,35 +603,56 @@ function lead_vendeur_users_page() {
 
        // ✅ NOUVEAU : Fonction pour la page Lead Vendeur
        function lead_vendeur_page() {
+           // Debug: Vérifier que la fonction est appelée
+           error_log('Lead Vendeur: Fonction lead_vendeur_page() appelée');
+           
+           echo '<div class="wrap">';
+           echo '<h1>🏢 Lead Vendeur - Debug</h1>';
+           echo '<p>Fonction appelée avec succès !</p>';
+           
            // Vérifier si l'utilisateur est connecté
            if (!is_user_logged_in()) {
-               echo '<div class="wrap"><h1>Lead Vendeur</h1><p>Vous devez être connecté pour accéder à cette page.</p></div>';
+               echo '<div class="notice notice-error"><p>Vous devez être connecté pour accéder à cette page.</p></div>';
+               echo '</div>';
                return;
            }
            
+           echo '<p>✅ Utilisateur connecté</p>';
+           
            // Charger les gestionnaires
-           $config_manager = lead_vendeur_config_manager();
-           $favoris_handler = lead_vendeur_favoris_handler();
+           try {
+               $config_manager = lead_vendeur_config_manager();
+               echo '<p>✅ Config manager chargé</p>';
+               
+               $favoris_handler = lead_vendeur_favoris_handler();
+               echo '<p>✅ Favoris handler chargé</p>';
+           } catch (Exception $e) {
+               echo '<div class="notice notice-error"><p>Erreur lors du chargement des gestionnaires: ' . $e->getMessage() . '</p></div>';
+               echo '</div>';
+               return;
+           }
            
            // Vérifier si Gravity Forms est actif
            if (!$config_manager->is_gravity_forms_active()) {
-               echo '<div class="wrap">';
-               echo '<h1>🏢 Lead Vendeur</h1>';
                echo '<div class="notice notice-error"><p><strong>Gravity Forms n\'est pas actif !</strong> Veuillez installer et activer Gravity Forms pour utiliser cette fonctionnalité.</p></div>';
                echo '</div>';
                return;
            }
            
+           echo '<p>✅ Gravity Forms actif</p>';
+           
            $config = $config_manager->get_config();
+           echo '<p>✅ Configuration récupérée</p>';
+           echo '<p>Config: ' . print_r($config, true) . '</p>';
            
            // Si aucun formulaire configuré, afficher un message
            if (empty($config['gravity_form_id']) || !isset($config['gravity_form_id'])) {
-               echo '<div class="wrap">';
-               echo '<h1>🏢 Lead Vendeur</h1>';
                echo '<div class="notice notice-warning"><p><strong>Configuration requise !</strong> Veuillez d\'abord configurer le formulaire Gravity Forms dans la <a href="' . admin_url('admin.php?page=lead-vendeur-config') . '">page de configuration</a>.</p></div>';
                echo '</div>';
                return;
            }
+           
+           echo '<p>✅ Formulaire configuré (ID: ' . $config['gravity_form_id'] . ')</p>';
            
            // ✅ NOUVEAU : Gestion de la pagination AJAX
            $current_page = 1; // Page par défaut pour le chargement initial
@@ -676,7 +711,7 @@ function lead_vendeur_users_page() {
                echo '<th><i class="fas fa-building"></i> Type</th>';
                echo '<th><i class="fas fa-phone"></i> Téléphone</th>';
                echo '<th><i class="fas fa-calendar"></i> Date</th>';
-               echo '<th><i class="fas fa-map-marker-alt"></i> Actions</th>';
+               echo '<th></th>';
                
                // En-têtes des colonnes configurées (sauf Site Web qui sera en dernier)
                if (!empty($config['display_fields'])) {
@@ -718,7 +753,7 @@ function lead_vendeur_users_page() {
                    }
                }
                
-               echo '<th><i class="fas fa-map-marker-alt"></i> Actions</th>';
+               echo '<th></th>';
                echo '</tr>';
                echo '</thead>';
                echo '<tbody id="lead-vendeur-table-body">';
@@ -1021,6 +1056,9 @@ function lead_vendeur_users_page() {
             
            echo '</div>';
            echo '</div>';
+           
+           echo '<p>✅ Page Lead Vendeur chargée avec succès !</p>';
+           echo '</div>';
        }
        
        // ✅ NOUVEAU : Fonction pour la page Carte de Succession
@@ -1031,16 +1069,672 @@ function lead_vendeur_users_page() {
                return;
            }
            
+           // Charger les gestionnaires
+           $config_manager = carte_succession_config_manager();
+           $favoris_handler = carte_succession_favoris_handler();
+           
+           // Vérifier si Gravity Forms est actif
+           if (!$config_manager->is_gravity_forms_active()) {
+               echo '<div class="wrap">';
+               echo '<h1>🗺️ Carte de Succession</h1>';
+               echo '<div class="notice notice-error"><p><strong>Gravity Forms n\'est pas actif !</strong> Veuillez installer et activer Gravity Forms pour utiliser cette fonctionnalité.</p></div>';
+               echo '</div>';
+               return;
+           }
+           
+           $config = $config_manager->get_config();
+           
+           // Si aucun formulaire configuré, afficher un message
+           if (empty($config['gravity_form_id']) || !isset($config['gravity_form_id'])) {
+               echo '<div class="wrap">';
+               echo '<h1>🗺️ Carte de Succession</h1>';
+               echo '<div class="notice notice-warning"><p><strong>Configuration requise !</strong> Veuillez d\'abord configurer le formulaire Gravity Forms dans la <a href="' . admin_url('admin.php?page=carte-succession-config') . '">page de configuration</a>.</p></div>';
+               echo '</div>';
+               return;
+           }
+           
+           // ✅ NOUVEAU : Gestion de la pagination AJAX
+           $current_page = 1; // Page par défaut pour le chargement initial
+           $per_page = 20; // Nombre d'entrées par page
+           
+           // Récupérer les entrées du formulaire avec pagination
+           $entries = $config_manager->get_form_entries_paginated(
+               isset($config['gravity_form_id']) ? $config['gravity_form_id'] : 0, 
+               $current_page, 
+               $per_page
+           );
+           $favori_ids = $favoris_handler->get_user_favori_ids(get_current_user_id());
+           
+           // Calculer les informations de pagination
+           $total_entries = $config_manager->get_form_entries_count(isset($config['gravity_form_id']) ? $config['gravity_form_id'] : 0);
+           $total_pages = ceil($total_entries / $per_page);
+           
+           // Charger les styles et scripts
+           wp_enqueue_style('carte-succession-style', plugin_dir_url(__FILE__) . 'assets/css/carte-succession.css', array(), '1.0.0');
+           wp_enqueue_style('carte-succession-popup-style', plugin_dir_url(__FILE__) . 'assets/css/carte-succession-popup.css', array(), '1.0.1');
+           wp_enqueue_style('carte-succession-sections-style', plugin_dir_url(__FILE__) . 'assets/css/carte-succession-sections.css', array(), '1.0.0');
+           wp_enqueue_script('carte-succession-js', plugin_dir_url(__FILE__) . 'assets/js/carte-succession.js', array('jquery'), '1.0.0', true);
+           
+           // ✅ NOUVEAU : Données AJAX pour la pagination
+           wp_localize_script('carte-succession-js', 'carteSuccessionAjax', array(
+               'ajax_url' => admin_url('admin-ajax.php'),
+               'nonce' => wp_create_nonce('carte_succession_nonce'),
+               'current_page' => $current_page,
+               'per_page' => $per_page,
+               'total_entries' => $total_entries,
+               'total_pages' => $total_pages,
+               'form_id' => isset($config['gravity_form_id']) ? $config['gravity_form_id'] : 0
+           ));
+           
+           // ✅ NOUVEAU : Localiser le script pour le système de favoris simple
+           wp_localize_script('carte-succession-js', 'simpleFavoritesAjax', array(
+               'ajax_url' => admin_url('admin-ajax.php'),
+               'nonce' => wp_create_nonce('simple_favorites_nonce')
+           ));
+           
            echo '<div class="wrap">';
            echo '<h1>🗺️ Carte de Succession</h1>';
            echo '<div class="my-istymo-container">';
-           echo '<div class="my-istymo-card">';
-           echo '<h2>📊 Cartographie des Successions</h2>';
-           echo '<p>Cette section sera dédiée à la cartographie et à l\'analyse des successions immobilières.</p>';
-           echo '<p><em>Contenu à développer...</em></p>';
+           
+           // ✅ NOUVEAU : Tableau principal avec style DPE/SCI et système de favoris
+           if (!empty($entries)) {
+               echo '<div class="carte-succession-table-container">';
+               echo '<table class="carte-succession-table">';
+               echo '<thead>';
+               echo '<tr>';
+               echo '<th><i class="fas fa-star"></i></th>';
+               echo '<th><i class="fas fa-tag"></i> Type</th>';
+               echo '<th><i class="fas fa-map-marker-alt"></i> Adresse</th>';
+               echo '<th><i class="fas fa-city"></i> Ville</th>';
+               echo '<th><i class="fas fa-calendar"></i> Date</th>';
+               echo '<th></th>';
+               echo '</tr>';
+               echo '</thead>';
+               echo '<tbody id="carte-succession-table-body">';
+               
+               foreach ($entries as $entry) {
+                   $entry_id = $entry['id'];
+                   $is_favori = in_array($entry_id, $favori_ids);
+                   
+                   echo '<tr class="carte-succession-row' . ($is_favori ? ' favori-row' : '') . '">';
+                   
+                   // Bouton favori
+                   echo '<td class="favori-column">';
+                   echo '<button class="favori-toggle' . ($is_favori ? ' favori-active' : '') . '" data-entry-id="' . $entry_id . '" title="' . ($is_favori ? 'Retirer des favoris' : 'Ajouter aux favoris') . '">';
+                   echo $is_favori ? '★' : '☆';
+                   echo '</button>';
+                   echo '</td>';
+                   
+                   // Type (champ 52)
+                   $type = isset($entry['52']) ? $entry['52'] : '';
+                   echo '<td>' . esc_html($type ?: '-') . '</td>';
+                   
+                   // Adresse (champ 4.1)
+                   $adresse = isset($entry['4.1']) ? $entry['4.1'] : '';
+                   echo '<td>' . esc_html($adresse ?: '-') . '</td>';
+                   
+                   // Ville (champ 4.3)
+                   $ville = isset($entry['4.3']) ? $entry['4.3'] : '';
+                   echo '<td>' . esc_html($ville ?: '-') . '</td>';
+                   
+                   // Date
+                   $date_created = isset($entry['date_created']) ? $entry['date_created'] : '';
+                   $date_formatted = $date_created ? date('d/m/Y', strtotime($date_created)) : '';
+                   echo '<td>' . esc_html($date_formatted) . '</td>';
+                   
+                   // Actions
+                   echo '<td class="actions-column">';
+                   
+                   // Bouton Localiser
+                   $adresse_complete = '';
+                   if (!empty($adresse)) {
+                       $adresse_complete = $adresse;
+                       if (!empty($ville)) {
+                           $adresse_complete .= ', ' . $ville;
+                       }
+                       if (isset($entry['4.5']) && !empty($entry['4.5'])) {
+                           $adresse_complete .= ', ' . $entry['4.5'];
+                       }
+                   }
+                   
+                   if (!empty($adresse_complete)) {
+                       $google_maps_url = 'https://www.google.com/maps?q=' . urlencode($adresse_complete);
+                       echo '<button class="button button-small localiser-btn" onclick="window.open(\'' . esc_url($google_maps_url) . '\', \'_blank\')" title="Localiser sur Google Maps: ' . esc_attr($adresse_complete) . '">';
+                       echo '<i class="fas fa-map-marker-alt"></i> Localiser';
+                       echo '</button>';
+                   } else {
+                       echo '<button class="button button-small localiser-btn" disabled title="Pas d\'adresse disponible">';
+                       echo '<i class="fas fa-map-marker-alt"></i> Localiser';
+                       echo '</button>';
+                   }
+                   
+                   echo ' ';
+                   
+                   // Bouton Voir détails
+                   echo '<button class="button button-small carte-details-btn" data-entry-id="' . $entry_id . '" title="Voir les détails">';
+                   echo '<i class="fas fa-eye"></i> Voir détails';
+                   echo '</button>';
+                   
+                   echo '</td>';
+                   
+                   echo '</tr>';
+               }
+               
+               echo '</tbody>';
+               echo '</table>';
+               
+               // Pagination
+               if ($total_pages > 1) {
+                   echo '<div id="carte-succession-pagination-container">';
+                   echo '<div class="pagination-info" id="carte-succession-pagination-info">';
+                   echo '<span id="page-info">Page ' . $current_page . ' sur ' . $total_pages . '</span>';
+                   echo '<span style="margin-left: 15px; color: #666;">Affichage des entrées 1 à ' . min($per_page, $total_entries) . ' sur ' . $total_entries . '</span>';
+                   echo '</div>';
+                   echo '<div class="pagination">';
+                   
+                   // Bouton précédent
+                   if ($current_page > 1) {
+                       echo '<button class="pagination-btn" data-page="' . ($current_page - 1) . '">« Précédent</button>';
+                   }
+                   
+                   // Numéros de pages
+                   $start_page = max(1, $current_page - 2);
+                   $end_page = min($total_pages, $current_page + 2);
+                   
+                   for ($i = $start_page; $i <= $end_page; $i++) {
+                       $active_class = ($i == $current_page) ? ' current' : '';
+                       echo '<button class="pagination-number' . $active_class . '" data-page="' . $i . '">' . $i . '</button>';
+                   }
+                   
+                   // Bouton suivant
+                   if ($current_page < $total_pages) {
+                       echo '<button class="pagination-btn" data-page="' . ($current_page + 1) . '">Suivant »</button>';
+                   }
+                   
+                   echo '</div>';
+                   echo '</div>';
+               }
+               
+               echo '</div>';
+           } else {
+               echo '<div class="notice notice-info"><p>Aucune carte de succession trouvée.</p></div>';
+           }
+           
            echo '</div>';
            echo '</div>';
+           
+           // ✅ NOUVEAU : JavaScript inline pour la pagination et les favoris
+           echo '<script type="text/javascript">
+           jQuery(document).ready(function($) {
+               // Initialiser la pagination pour le shortcode
+               if (typeof carteSuccessionAjax !== "undefined") {
+                   // Charger la première page automatiquement
+                   function loadPage(page) {
+                       var $tableBody = $("#carte-succession-table-body");
+                       var $paginationContainer = $("#carte-succession-pagination-container");
+
+                       // Afficher l\'indicateur de chargement
+                       $tableBody.html(\'<tr><td colspan="100%" style="text-align: center; padding: 20px;"><div class="loading-spinner"></div><p>Chargement des données...</p></td></tr>\');
+                       $paginationContainer.html(\'<div style="text-align: center; padding: 20px;"><div class="loading-spinner"></div></div>\');
+
+                       // Requête AJAX
+                       $.ajax({
+                           url: carteSuccessionAjax.ajax_url,
+                           type: "POST",
+                           data: {
+                               action: "carte_succession_pagination",
+                               nonce: carteSuccessionAjax.nonce,
+                               page: page,
+                               per_page: carteSuccessionAjax.per_page
+                           },
+                           success: function(response) {
+                               if (response.success) {
+                                   // Mettre à jour le tableau
+                                   $tableBody.html(response.data.table_html);
+
+                                   // Mettre à jour la pagination
+                                   $paginationContainer.html(response.data.pagination_html);
+
+                                   // Mettre à jour les informations de pagination
+                                   var info = response.data.pagination_info;
+                                   if (info.total_pages > 1) {
+                                       $paginationInfo.html(
+                                           \'<span id="page-info">Page \' + info.current_page + \' sur \' + info.total_pages + \'</span>\' +
+                                           \'<span style="margin-left: 15px; color: #666;">Affichage des entrées \' + info.start_entry + \' à \' + info.end_entry + \' sur \' + info.total_entries + \'</span>\'
+                                       );
+                                   }
+
+                                   // Animation pour les nouvelles lignes
+                                   $(".carte-succession-row").each(function(index) {
+                                       $(this).css("opacity", "0").delay(index * 50).animate({
+                                           opacity: 1
+                                       }, 300);
+                                   });
+                               } else {
+                                   console.error("Erreur lors du chargement de la page:", response.data);
+                                   $tableBody.html(\'<tr><td colspan="100%" style="text-align: center; padding: 20px; color: #d63384;">Erreur lors du chargement des données</td></tr>\');
+                               }
+                           },
+                           error: function(xhr, status, error) {
+                               console.error("Erreur AJAX:", error);
+                               $tableBody.html(\'<tr><td colspan="100%" style="text-align: center; padding: 20px; color: #d63384;">Erreur de connexion</td></tr>\');
+                           }
+                       });
+                   }
+                   
+                   // Gestion des clics sur les boutons de pagination
+                   $(document).on("click", ".pagination-btn, .pagination-number", function(e) {
+                       e.preventDefault();
+                       var $button = $(this);
+                       var page = $button.data("page");
+                       
+                       if (page && !$button.hasClass("disabled") && !$button.hasClass("current")) {
+                           loadPage(page);
+                       }
+                   });
+                   
+                   // Gestion des favoris
+                   $(document).on("click", ".favorite-btn", function(e) {
+                       e.preventDefault();
+                       var $toggle = $(this);
+                       var entryId = $toggle.data("entry-id");
+                       var $row = $toggle.closest(".carte-succession-row");
+                       
+                       if ($toggle.hasClass("loading")) {
+                           return;
+                       }
+                       
+                       $toggle.addClass("loading");
+                       
+                       $.ajax({
+                           url: simpleFavoritesAjax.ajax_url,
+                           type: "POST",
+                           data: {
+                               action: "simple_favorites_toggle",
+                               entry_id: entryId,
+                               form_id: carteSuccessionAjax.form_id,
+                               nonce: simpleFavoritesAjax.nonce
+                           },
+                           success: function(response) {
+                               if (response.success) {
+                                   if (response.data.action === "added") {
+                                       $toggle.addClass("favori-active");
+                                       $toggle.html(\'★\');
+                                       $row.addClass("favori-row");
+                                   } else {
+                                       $toggle.removeClass("favori-active");
+                                       $toggle.html(\'☆\');
+                                       $row.removeClass("favori-row");
+                                   }
+                               }
+                           },
+                           error: function() {
+                               console.error("Erreur lors de la mise à jour des favoris");
+                           },
+                           complete: function() {
+                               $toggle.removeClass("loading");
+                           }
+                       });
+                   });
+                   
+                   // Gestion des détails
+                   $(document).on("click", ".carte-details-btn", function(e) {
+                       e.preventDefault();
+                       var entryId = $(this).data("entry-id");
+                       
+                       // Afficher un modal de chargement
+                       var $modal = $(\'<div class="carte-details-modal"><div class="carte-details-modal-content"><div class="loading-spinner"></div><p>Chargement des détails...</p></div></div>\');
+                       $(\'body\').append($modal);
+                       
+                       $.ajax({
+                           url: carteSuccessionAjax.ajax_url,
+                           type: "POST",
+                           data: {
+                               action: "carte_succession_get_entry_details",
+                               entry_id: entryId,
+                               nonce: carteSuccessionAjax.nonce
+                           },
+                           success: function(response) {
+                               if (response.success) {
+                                   $modal.find(\'.carte-details-modal-content\').html(response.data);
+                               } else {
+                                   $modal.find(\'.carte-details-modal-content\').html(\'<p>Erreur lors du chargement des détails.</p>\');
+                               }
+                           },
+                           error: function() {
+                               $modal.find(\'.carte-details-modal-content\').html(\'<p>Erreur de connexion.</p>\');
+                           }
+                       });
+                       
+                       // Fermer le modal
+                       $modal.on(\'click\', function(e) {
+                           if (e.target === this) {
+                               $modal.remove();
+                           }
+                       });
+                       
+                       $modal.on(\'click\', \'.close-modal\', function() {
+                           $modal.remove();
+                       });
+                   });
+               }
+           });
+           </script>';
+       }
+       
+       // ✅ NOUVEAU : Fonction pour la page de configuration Carte de Succession
+       function carte_succession_config_page() {
+           $config_manager = carte_succession_config_manager();
+           $config = $config_manager->get_config();
+           
+           // Traitement du formulaire de configuration
+           if (isset($_POST['submit']) && wp_verify_nonce($_POST['carte_succession_config_nonce'], 'carte_succession_config')) {
+               $new_config = array(
+                   'gravity_form_id' => intval($_POST['gravity_form_id']),
+                   'display_fields' => isset($_POST['display_fields']) ? $_POST['display_fields'] : array(),
+                   'title_field' => isset($_POST['title_field']) ? sanitize_text_field($_POST['title_field']) : '',
+                   'description_field' => isset($_POST['description_field']) ? sanitize_text_field($_POST['description_field']) : ''
+               );
+               
+               $config_manager->save_config($new_config);
+               $config = $new_config;
+               
+               echo '<div class="notice notice-success"><p>Configuration sauvegardée avec succès !</p></div>';
+           }
+           
+           // Vérifier si Gravity Forms est actif
+           if (!$config_manager->is_gravity_forms_active()) {
+               echo '<div class="notice notice-error"><p><strong>Gravity Forms n\'est pas actif !</strong> Veuillez installer et activer Gravity Forms pour utiliser cette fonctionnalité.</p></div>';
+               return;
+           }
+           
+           $available_forms = $config_manager->get_available_forms();
+           $form_fields = array();
+           
+           if (isset($config['gravity_form_id']) && $config['gravity_form_id'] > 0) {
+               $form_fields = $config_manager->get_form_fields($config['gravity_form_id']);
+           }
+           
+           echo '<div class="wrap">';
+           echo '<h1>🗺️ Configuration Carte de Succession</h1>';
+           echo '<form method="post" action="">';
+           wp_nonce_field('carte_succession_config', 'carte_succession_config_nonce');
+           
+           echo '<table class="form-table">';
+           echo '<tr>';
+           echo '<th scope="row"><label for="gravity_form_id">Formulaire Gravity Forms</label></th>';
+           echo '<td>';
+           echo '<select name="gravity_form_id" id="gravity_form_id" onchange="loadFormFields(this.value)">';
+           echo '<option value="0">Sélectionner un formulaire...</option>';
+           foreach ($available_forms as $form_id => $form_title) {
+               $selected = (isset($config['gravity_form_id']) && $config['gravity_form_id'] == $form_id) ? 'selected' : '';
+               echo '<option value="' . $form_id . '" ' . $selected . '>' . esc_html($form_title) . '</option>';
+           }
+           echo '</select>';
+           echo '<p class="description">Sélectionnez le formulaire Gravity Forms contenant les cartes de succession.</p>';
+           echo '</td>';
+           echo '</tr>';
+           
+           if (!empty($form_fields)) {
+               echo '<tr>';
+               echo '<th scope="row">Champs à afficher</th>';
+               echo '<td>';
+               foreach ($form_fields as $field_id => $field) {
+                   $checked = (isset($config['display_fields']) && in_array($field_id, $config['display_fields'])) ? 'checked' : '';
+                   echo '<label><input type="checkbox" name="display_fields[]" value="' . $field_id . '" ' . $checked . '> ' . esc_html($field['label']) . ' (' . $field['type'] . ')</label><br>';
+               }
+               echo '</td>';
+               echo '</tr>';
+           }
+           
+           echo '</table>';
+           echo '<p class="submit">';
+           echo '<input type="submit" name="submit" class="button-primary" value="Sauvegarder la configuration">';
+           echo '</p>';
+           echo '</form>';
+           
+           // ✅ NOUVEAU : Section de débogage pour voir les données complètes
+           if (isset($config['gravity_form_id']) && $config['gravity_form_id'] > 0) {
+               echo '<div class="wrap" style="margin-top: 30px;">';
+               echo '<h2>🔍 Section de Débogage - Données du Formulaire</h2>';
+               echo '<div class="debug-section">';
+               
+               // Afficher les informations du formulaire
+               echo '<h3>📋 Informations du Formulaire</h3>';
+               echo '<div class="debug-info">';
+               echo '<p><strong>ID du Formulaire :</strong> ' . $config['gravity_form_id'] . '</p>';
+               
+               if (class_exists('GFAPI')) {
+                   $form = GFAPI::get_form($config['gravity_form_id']);
+                   if (!is_wp_error($form)) {
+                       echo '<p><strong>Titre :</strong> ' . esc_html($form['title']) . '</p>';
+                       echo '<p><strong>Description :</strong> ' . esc_html($form['description']) . '</p>';
+                       echo '<p><strong>Nombre de champs :</strong> ' . count($form['fields']) . '</p>';
+                       echo '<p><strong>Date de création :</strong> ' . date('d/m/Y H:i', strtotime($form['date_created'])) . '</p>';
+                   }
+               }
+               echo '</div>';
+               
+               // Afficher tous les champs du formulaire
+               echo '<h3>🏷️ Tous les Champs du Formulaire</h3>';
+               echo '<div class="debug-fields">';
+               if (!empty($form_fields)) {
+                   echo '<table class="wp-list-table widefat fixed striped">';
+                   echo '<thead>';
+                   echo '<tr>';
+                   echo '<th>ID</th>';
+                   echo '<th>Label</th>';
+                   echo '<th>Type</th>';
+                   echo '<th>Admin Label</th>';
+                   echo '<th>Required</th>';
+                   echo '<th>Choix</th>';
+                   echo '</tr>';
+                   echo '</thead>';
+                   echo '<tbody>';
+                   
+                   foreach ($form_fields as $field_id => $field) {
+                       echo '<tr>';
+                       echo '<td><code>' . esc_html($field_id) . '</code></td>';
+                       echo '<td><strong>' . esc_html($field['label']) . '</strong></td>';
+                       echo '<td><span class="field-type-badge">' . esc_html($field['type']) . '</span></td>';
+                       echo '<td>' . esc_html($field['adminLabel'] ?? '') . '</td>';
+                       echo '<td>' . (isset($field['isRequired']) && $field['isRequired'] ? '✅ Oui' : '❌ Non') . '</td>';
+                       echo '<td>';
+                       if (isset($field['choices']) && is_array($field['choices'])) {
+                           echo '<ul>';
+                           foreach ($field['choices'] as $choice) {
+                               echo '<li>' . esc_html($choice['text'] ?? $choice) . '</li>';
+                           }
+                           echo '</ul>';
+                       } else {
+                           echo '-';
+                       }
+                       echo '</td>';
+                       echo '</tr>';
+                   }
+                   
+                   echo '</tbody>';
+                   echo '</table>';
+               } else {
+                   echo '<p class="notice notice-warning">Aucun champ trouvé pour ce formulaire.</p>';
+               }
+               echo '</div>';
+               
+               // Afficher les entrées récentes
+               echo '<h3>📊 Entrées Récentes (5 dernières)</h3>';
+               echo '<div class="debug-entries">';
+               if (class_exists('GFAPI')) {
+                   $entries = GFAPI::get_entries($config['gravity_form_id'], array(), array('key' => 'date_created', 'direction' => 'DESC'), array('page_size' => 5));
+                   
+                   if (!empty($entries)) {
+                       echo '<table class="wp-list-table widefat fixed striped">';
+                       echo '<thead>';
+                       echo '<tr>';
+                       echo '<th>ID</th>';
+                       echo '<th>Date</th>';
+                       echo '<th>Utilisateur</th>';
+                       echo '<th>Données</th>';
+                       echo '</tr>';
+                       echo '</thead>';
+                       echo '<tbody>';
+                       
+                       foreach ($entries as $entry) {
+                           echo '<tr>';
+                           echo '<td><code>' . $entry['id'] . '</code></td>';
+                           echo '<td>' . date('d/m/Y H:i', strtotime($entry['date_created'])) . '</td>';
+                           echo '<td>' . esc_html($entry['created_by'] ?? 'Anonyme') . '</td>';
+                           echo '<td>';
+                           echo '<details>';
+                           echo '<summary>Voir les données</summary>';
+                           echo '<pre style="background: #f1f1f1; padding: 10px; margin: 10px 0; border-radius: 4px; max-height: 200px; overflow-y: auto;">';
+                           echo esc_html(print_r($entry, true));
+                           echo '</pre>';
+                           echo '</details>';
+                           echo '</td>';
+                           echo '</tr>';
+                       }
+                       
+                       echo '</tbody>';
+                       echo '</table>';
+                   } else {
+                       echo '<p class="notice notice-info">Aucune entrée trouvée pour ce formulaire.</p>';
+                   }
+               } else {
+                   echo '<p class="notice notice-error">Gravity Forms API non disponible.</p>';
+               }
+               echo '</div>';
+               
+               // Afficher la configuration actuelle
+               echo '<h3>⚙️ Configuration Actuelle</h3>';
+               echo '<div class="debug-config">';
+               echo '<pre style="background: #f1f1f1; padding: 15px; border-radius: 4px; max-height: 300px; overflow-y: auto;">';
+               echo esc_html(print_r($config, true));
+               echo '</pre>';
+               echo '</div>';
+               
+               echo '</div>';
+               echo '</div>';
+           }
+           
            echo '</div>';
+           
+           // ✅ NOUVEAU : Styles CSS pour la section de débogage
+           echo '<style>
+           .debug-section {
+               background: #f9f9f9;
+               border: 1px solid #ddd;
+               border-radius: 8px;
+               padding: 20px;
+               margin: 20px 0;
+           }
+           
+           .debug-section h3 {
+               color: #0073aa;
+               border-bottom: 2px solid #0073aa;
+               padding-bottom: 10px;
+               margin-bottom: 15px;
+           }
+           
+           .debug-info {
+               background: white;
+               padding: 15px;
+               border-radius: 4px;
+               border-left: 4px solid #0073aa;
+               margin-bottom: 20px;
+           }
+           
+           .debug-info p {
+               margin: 8px 0;
+               font-size: 14px;
+           }
+           
+           .debug-fields table,
+           .debug-entries table {
+               margin-top: 10px;
+           }
+           
+           .field-type-badge {
+               background: #0073aa;
+               color: white;
+               padding: 2px 8px;
+               border-radius: 12px;
+               font-size: 11px;
+               font-weight: bold;
+               text-transform: uppercase;
+           }
+           
+           .debug-config pre {
+               font-size: 12px;
+               line-height: 1.4;
+               white-space: pre-wrap;
+               word-wrap: break-word;
+           }
+           
+           .debug-entries details {
+               margin: 5px 0;
+           }
+           
+           .debug-entries summary {
+               cursor: pointer;
+               font-weight: bold;
+               color: #0073aa;
+               padding: 5px 10px;
+               background: #f0f0f0;
+               border-radius: 4px;
+               border: 1px solid #ddd;
+           }
+           
+           .debug-entries summary:hover {
+               background: #e0e0e0;
+           }
+           
+           .debug-entries pre {
+               font-size: 11px;
+               background: #f8f8f8 !important;
+               border: 1px solid #ddd;
+               border-radius: 4px;
+           }
+           
+           .debug-section .notice {
+               margin: 10px 0;
+               padding: 10px 15px;
+           }
+           
+           .debug-section .wp-list-table {
+               margin-top: 10px;
+           }
+           
+           .debug-section .wp-list-table th {
+               background: #f1f1f1;
+               font-weight: 600;
+           }
+           
+           .debug-section .wp-list-table td {
+               vertical-align: top;
+               padding: 8px 12px;
+           }
+           
+           .debug-section .wp-list-table code {
+               background: #f0f0f0;
+               padding: 2px 6px;
+               border-radius: 3px;
+               font-size: 12px;
+           }
+           </style>';
+           
+           // JavaScript pour charger les champs du formulaire
+           echo '<script>
+           function loadFormFields(formId) {
+               if (formId == 0) {
+                   document.querySelector(\'tr:nth-child(2)\').style.display = \'none\';
+                   return;
+               }
+               
+               // Ici on pourrait ajouter du JavaScript pour charger les champs dynamiquement
+               // Pour l\'instant, on recharge la page avec le formulaire sélectionné
+               window.location.href = \'?page=carte-succession-config&form_id=\' + formId;
+           }
+           </script>';
        }
        
        // ✅ NOUVEAU : Fonction pour la page Lead Parrainage
@@ -2060,6 +2754,11 @@ add_action('wp_ajax_lead_vendeur_toggle_favori', 'lead_vendeur_ajax_toggle_favor
 add_action('wp_ajax_lead_vendeur_get_entry_details', 'lead_vendeur_ajax_get_entry_details');
 add_action('wp_ajax_lead_vendeur_pagination', 'lead_vendeur_ajax_pagination');
 
+// ✅ NOUVEAU : Handlers AJAX pour Carte de Succession
+add_action('wp_ajax_carte_succession_toggle_favori', 'carte_succession_ajax_toggle_favori');
+add_action('wp_ajax_carte_succession_get_entry_details', 'carte_succession_ajax_get_entry_details');
+add_action('wp_ajax_carte_succession_pagination', 'carte_succession_ajax_pagination');
+
 
 // ✅ Fonction de mise à jour de lead
 function my_istymo_ajax_update_lead() {
@@ -3022,7 +3721,7 @@ function my_istymo_leads_vendeur_shortcode($atts) {
         echo '<th><i class="fas fa-building"></i> Type</th>';
         echo '<th><i class="fas fa-phone"></i> Téléphone</th>';
         echo '<th><i class="fas fa-calendar"></i> Date</th>';
-        echo '<th><i class="fas fa-map-marker-alt"></i> Actions</th>';
+        echo '<th></th>';
         echo '</tr></thead>';
         
         echo '<tbody id="lead-vendeur-table-body">';
@@ -3131,140 +3830,221 @@ function my_istymo_leads_vendeur_shortcode($atts) {
     }
     </style>';
     
-    // Ajouter un script inline pour initialiser la pagination
-    echo '<script type="text/javascript">
-    jQuery(document).ready(function($) {
-        // Initialiser la pagination pour le shortcode
-        if (typeof leadVendeurAjax !== "undefined") {
-            // Charger la première page automatiquement
-            function loadPage(page) {
-                var $tableBody = $("#lead-vendeur-table-body");
-                var $paginationContainer = $("#lead-vendeur-pagination-container");
+    // Le JavaScript est maintenant dans le fichier lead-vendeur.js
+    
+    $content = ob_get_clean();
+    return $content;
+}
+
+// ✅ NOUVEAU : Shortcode spécifique pour les cartes de succession
+function my_istymo_carte_succession_shortcode($atts) {
+    // Vérifier si l'utilisateur est connecté
+    if (!is_user_logged_in()) {
+        return '<div class="my-istymo-error">Vous devez être connecté pour accéder à la gestion des cartes de succession.</div>';
+    }
+    
+    $atts = shortcode_atts(array(
+        'title' => '',
+        'per_page' => 20
+    ), $atts);
+    
+    // Charger Font Awesome pour les icônes
+    wp_enqueue_style(
+        'font-awesome',
+        'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+        array(),
+        '6.4.0'
+    );
+    
+    // Charger les styles et scripts spécifiques aux cartes de succession
+    wp_enqueue_style('carte-succession-style', plugin_dir_url(__FILE__) . 'assets/css/carte-succession.css', array(), '1.0.0');
+    wp_enqueue_style('carte-succession-popup-style', plugin_dir_url(__FILE__) . 'assets/css/carte-succession-popup.css', array(), '1.0.1');
+    wp_enqueue_style('carte-succession-sections-style', plugin_dir_url(__FILE__) . 'assets/css/carte-succession-sections.css', array(), '1.0.0');
+    wp_enqueue_script('carte-succession-js', plugin_dir_url(__FILE__) . 'assets/js/carte-succession.js', array('jquery'), '1.0.0', true);
+    
+    // Localiser le script avec les données nécessaires
+    wp_localize_script('carte-succession-js', 'carteSuccessionAjax', array(
+        'ajax_url' => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('carte_succession_nonce'),
+        'current_page' => 1,
+        'per_page' => intval($atts['per_page']),
+        'total_entries' => 0, // Sera mis à jour par AJAX
+        'total_pages' => 0    // Sera mis à jour par AJAX
+    ));
+    
+    // ✅ NOUVEAU : Localiser le script pour le système de favoris simple
+    wp_localize_script('carte-succession-js', 'simpleFavoritesAjax', array(
+        'ajax_url' => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('simple_favorites_nonce')
+    ));
+    
+    // Capturer la sortie
+    ob_start();
+    
+    // Utiliser la fonction existante pour afficher les cartes de succession
+    $config_manager = carte_succession_config_manager();
+    $favoris_handler = carte_succession_favoris_handler();
+    
+    if (!$config_manager->is_configured()) {
+        echo '<div class="notice notice-warning"><p><strong>Configuration requise !</strong> Veuillez d\'abord configurer le formulaire Gravity Forms dans la <a href="' . admin_url('admin.php?page=carte-succession-config') . '">page de configuration</a>.</p></div>';
+    } else {
+        // Afficher le tableau des cartes de succession
+        $config = $config_manager->get_config();
+        $form_id = $config['gravity_form_id'];
+        $per_page = intval($atts['per_page']);
+        
+        // ✅ NOUVEAU : Mettre à jour le form_id dans le script localisé
+        wp_localize_script('carte-succession-js', 'carteSuccessionAjax', array(
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('carte_succession_nonce'),
+            'current_page' => 1,
+            'per_page' => intval($atts['per_page']),
+            'total_entries' => 0, // Sera mis à jour par AJAX
+            'total_pages' => 0,    // Sera mis à jour par AJAX
+            'form_id' => $form_id
+        ));
+        
+        // Récupérer les entrées
+        // ✅ NOUVEAU : Filtrer par utilisateur connecté
+        $user_id = get_current_user_id();
+        $entries = $config_manager->get_form_entries_paginated($form_id, 1, $per_page, $user_id);
+        $total_entries = $config_manager->get_form_entries_count($form_id, $user_id);
+        $total_pages = ceil($total_entries / $per_page);
+        
+        // Informations de pagination
+        echo '<div class="carte-succession-table-container">';
+        echo '<table class="carte-succession-table">';
+        echo '<thead>';
+        echo '<tr>';
+        echo '<th><i class="fas fa-star"></i></th>';
+        echo '<th><i class="fas fa-tag"></i> Type</th>';
+        echo '<th><i class="fas fa-map-marker-alt"></i> Adresse</th>';
+        echo '<th><i class="fas fa-city"></i> Ville</th>';
+        echo '<th><i class="fas fa-calendar"></i> Date</th>';
+        echo '<th></th>';
+        echo '</tr></thead>';
+        echo '<tbody id="carte-succession-table-body">';
+        
+        if (!empty($entries)) {
+            $favori_ids = $favoris_handler->get_user_favori_ids($user_id);
+            
+            foreach ($entries as $entry) {
+                $entry_id = $entry['id'];
+                $is_favori = in_array($entry_id, $favori_ids);
                 
-                // Afficher l\'indicateur de chargement
-                $tableBody.html(\'<tr><td colspan="100%" style="text-align: center; padding: 20px;"><div class="loading-spinner"></div><p>Chargement des données...</p></td></tr>\');
-                $paginationContainer.html(\'<div style="text-align: center; padding: 20px;"><div class="loading-spinner"></div></div>\');
+                echo '<tr class="carte-succession-row' . ($is_favori ? ' favori-row' : '') . '">';
                 
-                // Requête AJAX
-                $.ajax({
-                    url: leadVendeurAjax.ajax_url,
-                    type: "POST",
-                    data: {
-                        action: "lead_vendeur_pagination",
-                        nonce: leadVendeurAjax.nonce,
-                        page: page,
-                        per_page: leadVendeurAjax.per_page
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            // Mettre à jour le tableau
-                            $tableBody.html(response.data.table_html);
-                            
-                            // Mettre à jour la pagination
-                            $paginationContainer.html(response.data.pagination_html);
-                            
-                            // Mettre à jour les informations de pagination
-                            var info = response.data.pagination_info;
-                            if (info.total_pages > 1) {
-                                $paginationInfo.html(
-                                    \'<span id="page-info">Page \' + info.current_page + \' sur \' + info.total_pages + \'</span>\' +
-                                    \'<span style="margin-left: 15px; color: #666;">Affichage des entrées \' + info.start_entry + \' à \' + info.end_entry + \' sur \' + info.total_entries + \'</span>\'
-                                );
-                            }
-                            
-                            // Animation pour les nouvelles lignes
-                            $(".lead-vendeur-row").each(function(index) {
-                                $(this).css("opacity", "0").delay(index * 50).animate({
-                                    opacity: 1
-                                }, 300);
-                            });
-                        } else {
-                            console.error("Erreur lors du chargement de la page:", response.data);
-                            $tableBody.html(\'<tr><td colspan="100%" style="text-align: center; padding: 20px; color: #d63384;">Erreur lors du chargement des données</td></tr>\');
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("Erreur AJAX:", error);
-                        $tableBody.html(\'<tr><td colspan="100%" style="text-align: center; padding: 20px; color: #d63384;">Erreur de connexion</td></tr>\');
+                // Bouton favori
+                echo '<td class="favori-column">';
+                echo '<button class="favorite-btn' . ($is_favori ? ' favori-active' : '') . '" data-entry-id="' . $entry_id . '" title="' . ($is_favori ? 'Retirer des favoris' : 'Ajouter aux favoris') . '">';
+                echo $is_favori ? '★' : '☆';
+                echo '</button>';
+                echo '</td>';
+                
+                // Type (champ 52)
+                $type = isset($entry['52']) ? $entry['52'] : '';
+                echo '<td>' . esc_html($type ?: '-') . '</td>';
+                
+                // Adresse (champ 4.1)
+                $adresse = isset($entry['4.1']) ? $entry['4.1'] : '';
+                echo '<td>' . esc_html($adresse ?: '-') . '</td>';
+                
+                // Ville (champ 4.3)
+                $ville = isset($entry['4.3']) ? $entry['4.3'] : '';
+                echo '<td>' . esc_html($ville ?: '-') . '</td>';
+                
+                // Date
+                $date_created = isset($entry['date_created']) ? $entry['date_created'] : '';
+                $date_formatted = $date_created ? date('d/m/Y', strtotime($date_created)) : '';
+                echo '<td>' . esc_html($date_formatted) . '</td>';
+                
+                // Actions
+                echo '<td class="actions-column">';
+                
+                // Bouton Localiser
+                $adresse_complete = '';
+                if (!empty($adresse)) {
+                    $adresse_complete = $adresse;
+                    if (!empty($ville)) {
+                        $adresse_complete .= ', ' . $ville;
                     }
-                });
-            }
-            
-            // Gestion des clics sur les boutons de pagination
-            $(document).on("click", ".pagination-btn, .pagination-number", function(e) {
-                e.preventDefault();
-                
-                var $button = $(this);
-                var page = $button.data("page");
-                
-                if (page && !$button.hasClass("disabled") && !$button.hasClass("current")) {
-                    loadPage(page);
-                }
-            });
-            
-            // Gestion des favoris
-            $(document).on("click", ".favorite-btn", function(e) {
-                e.preventDefault();
-                
-                var $toggle = $(this);
-                var entryId = $toggle.data("entry-id");
-                var $row = $toggle.closest(".lead-vendeur-row");
-                
-                if ($toggle.hasClass("loading")) {
-                    return; // Éviter les clics multiples
-                }
-                
-                $toggle.addClass("loading");
-                
-                $.ajax({
-                    url: simpleFavoritesAjax.ajax_url,
-                    type: "POST",
-                    data: {
-                        action: "simple_favorites_toggle",
-                        entry_id: entryId,
-                        form_id: leadVendeurAjax.form_id,
-                        nonce: simpleFavoritesAjax.nonce
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            if (response.data.action === "added") {
-                                $toggle.addClass("favori-active");
-                                $toggle.html(\'★\'); // Étoile pleine
-                                $row.addClass("favori-row");
-                                showMessage("Lead ajouté aux favoris", "success");
-                            } else {
-                                $toggle.removeClass("favori-active");
-                                $toggle.html(\'☆\'); // Étoile vide
-                                $row.removeClass("favori-row");
-                                showMessage("Lead retiré des favoris", "success");
-                            }
-                        } else {
-                            showMessage("Erreur: " + response.data, "error");
-                        }
-                    },
-                    error: function() {
-                        showMessage("Erreur de connexion", "error");
-                    },
-                    complete: function() {
-                        $toggle.removeClass("loading");
+                    if (isset($entry['4.5']) && !empty($entry['4.5'])) {
+                        $adresse_complete .= ', ' . $entry['4.5'];
                     }
-                });
-            });
-            
-            // Fonction pour afficher les messages
-            function showMessage(message, type) {
-                var $message = $("<div class=\"notice notice-" + type + " is-dismissible\"><p>" + message + "</p></div>");
-                $(".lead-vendeur-table-container").before($message);
-                setTimeout(function() {
-                    $message.fadeOut();
-                }, 3000);
+                }
+                
+                if (!empty($adresse_complete)) {
+                    $google_maps_url = 'https://www.google.com/maps?q=' . urlencode($adresse_complete);
+                    echo '<button class="button button-small localiser-btn" onclick="window.open(\'' . esc_url($google_maps_url) . '\', \'_blank\')" title="Localiser sur Google Maps: ' . esc_attr($adresse_complete) . '">';
+                    echo '<i class="fas fa-map-marker-alt"></i> Localiser';
+                    echo '</button>';
+                } else {
+                    echo '<button class="button button-small localiser-btn" disabled title="Pas d\'adresse disponible">';
+                    echo '<i class="fas fa-map-marker-alt"></i> Localiser';
+                    echo '</button>';
+                }
+                
+                echo ' ';
+                
+                // Bouton Voir détails
+                echo '<button class="button button-small carte-details-btn" data-entry-id="' . $entry_id . '" title="Voir les détails">';
+                echo '<i class="fas fa-eye"></i> Voir détails';
+                echo '</button>';
+                
+                echo '</td>';
+                
+                echo '</tr>';
             }
-            
-            // Charger la première page automatiquement
-            loadPage(1);
+        } else {
+            echo '<tr><td colspan="100%" style="text-align: center; padding: 20px; color: #666;">Aucune carte de succession trouvée</td></tr>';
         }
-    });
-    </script>';
+        
+        echo '</tbody>';
+        echo '</table>';
+        
+        // Pagination
+        if ($total_pages > 1) {
+            echo '<div id="carte-succession-pagination-container">';
+            echo '<div class="pagination-info" id="carte-succession-pagination-info">';
+            echo '<span id="page-info">Page 1 sur ' . $total_pages . '</span>';
+            echo '<span style="margin-left: 15px; color: #666;">Affichage des entrées 1 à ' . min($per_page, $total_entries) . ' sur ' . $total_entries . '</span>';
+            echo '</div>';
+            echo '<div class="pagination">';
+            
+            // Bouton précédent
+            echo '<span class="button button-secondary pagination-btn disabled">';
+            echo '<i class="fas fa-chevron-left"></i> Précédent';
+            echo '</span>';
+            
+            // Numéros de pages
+            $start_page = 1;
+            $end_page = min(5, $total_pages);
+            
+            for ($i = $start_page; $i <= $end_page; $i++) {
+                if ($i == 1) {
+                    echo '<span class="pagination-number current">1</span>';
+                } else {
+                    echo '<button type="button" class="pagination-number" data-page="' . $i . '">' . $i . '</button>';
+                }
+            }
+            
+            // Bouton suivant
+            if ($total_pages > 1) {
+                echo '<button type="button" class="button button-secondary pagination-btn" data-page="2">';
+                echo 'Suivant <i class="fas fa-chevron-right"></i>';
+                echo '</button>';
+            } else {
+                echo '<span class="button button-secondary pagination-btn disabled">';
+                echo 'Suivant <i class="fas fa-chevron-right"></i>';
+                echo '</span>';
+            }
+            
+            echo '</div>';
+            echo '</div>';
+        }
+        
+        echo '</div>';
+    }
     
     $content = ob_get_clean();
     return $content;
@@ -3273,6 +4053,7 @@ function my_istymo_leads_vendeur_shortcode($atts) {
 // Enregistrer les shortcodes
 add_shortcode('my_istymo_leads', 'my_istymo_leads_shortcode');
 add_shortcode('my_istymo_leads_vendeur', 'my_istymo_leads_vendeur_shortcode');
+add_shortcode('my_istymo_carte_succession', 'my_istymo_carte_succession_shortcode');
 
 // ✅ NOUVEAU : Shortcode pour afficher les favoris
 add_shortcode('my_istymo_favorites', 'my_istymo_favorites_shortcode');
@@ -3575,11 +4356,180 @@ function lead_vendeur_ajax_get_entry_details() {
         );
     }
     
-    wp_send_json_success(array(
-        'entry' => $entry,
-        'formatted_data' => $formatted_data,
-        'date_created' => $entry['date_created']
-    ));
+    // Générer le HTML du modal
+    ob_start();
+    ?>
+    <div class="lead-details-modal-header">
+        <div class="lead-details-header-left">
+            <div class="lead-details-icon">
+                <i class="fas fa-store"></i>
+            </div>
+            <div class="lead-details-title-section">
+                <h2>Détails du Type de Lead #<?php echo esc_html($entry['id']); ?></h2>
+                <p class="lead-details-subtitle">Informations complètes</p>
+                <p class="lead-details-date">Créé le <?php echo date('d/m/Y à H:i', strtotime($entry['date_created'])); ?></p>
+            </div>
+        </div>
+        <div class="lead-details-header-right">
+            <span class="lead-details-modal-close">&times;</span>
+        </div>
+    </div>
+    
+    <div class="lead-details-main-content">
+        <div class="lead-details-left-column">
+            <div class="lead-details-info-section">
+                <div class="lead-details-section-header">
+                    <i class="fas fa-info-circle"></i>
+                    <h3>Informations générales</h3>
+                </div>
+                <div class="lead-details-info-grid">
+                    <?php 
+                    // Champs à exclure de la section générale (car ils sont dans la section contact)
+                    $excluded_fields = array('42', '44', '45', '46');
+                    
+                    foreach ($formatted_data as $field): 
+                        // Vérifier si ce champ doit être exclu
+                        $field_id = array_search($field['label'], array_column($formatted_data, 'label'));
+                        $should_exclude = false;
+                        
+                        // Vérifier par ID ou par label
+                        foreach ($excluded_fields as $excluded_id) {
+                            if (isset($entry[$excluded_id]) && $entry[$excluded_id] == $field['value']) {
+                                $should_exclude = true;
+                                break;
+                            }
+                        }
+                        
+                        // Exclure aussi par nom de champ
+                        $field_lower = strtolower($field['label']);
+                        if (strpos($field_lower, 'téléphone') !== false || 
+                            strpos($field_lower, 'telephone') !== false ||
+                            strpos($field_lower, 'civilité') !== false ||
+                            strpos($field_lower, 'email') !== false ||
+                            strpos($field_lower, 'e-mail') !== false ||
+                            strpos($field_lower, 'estimation') !== false ||
+                            strpos($field_lower, 'site') !== false ||
+                            strpos($field_lower, 'web') !== false ||
+                            strpos($field_lower, 'url') !== false ||
+                            strpos($field_lower, 'conditions') !== false ||
+                            strpos($field_lower, 'générales') !== false ||
+                            strpos($field_lower, 'utilisation') !== false ||
+                            strpos($field_lower, 'cochant') !== false ||
+                            strpos($field_lower, 'case') !== false ||
+                            strpos($field_lower, 'acceptez') !== false ||
+                            strpos($field_lower, 'sans titre') !== false ||
+                            $field_lower === 'sans titre' ||
+                            $field_lower === '' ||
+                            empty(trim($field['label']))) {
+                            $should_exclude = true;
+                        }
+                        
+                        if (!$should_exclude):
+                    ?>
+                        <div class="lead-details-info-item">
+                            <div class="lead-details-info-label">
+                                <?php 
+                                // Changer "Lead Label" en "Type de lead"
+                                $display_label = $field['label'];
+                                if (strtolower($display_label) === 'lead label') {
+                                    $display_label = 'Type de lead';
+                                }
+                                echo esc_html($display_label); 
+                                ?>
+                            </div>
+                            <div class="lead-details-info-value">
+                                <?php 
+                                $value = $field['value'];
+                                if (!empty($value)) {
+                                    echo esc_html($value);
+                                } else {
+                                    echo '<span class="empty-value">Non renseigné</span>';
+                                }
+                                ?>
+                            </div>
+                        </div>
+                    <?php 
+                        endif;
+                    endforeach; 
+                    ?>
+                </div>
+            </div>
+            
+            <?php
+            // Section des boutons d'action pour le site web
+            $site_web_url = '';
+            foreach ($formatted_data as $field) {
+                $field_lower = strtolower($field['label']);
+                if ((strpos($field_lower, 'site') !== false || 
+                     strpos($field_lower, 'web') !== false || 
+                     strpos($field_lower, 'url') !== false) && 
+                    !empty($field['value']) && 
+                    filter_var($field['value'], FILTER_VALIDATE_URL)) {
+                    $site_web_url = $field['value'];
+                    break;
+                }
+            }
+            
+            if (!empty($site_web_url)):
+            ?>
+            <div class="my-istymo-section my-istymo-analyze-section">
+                <h5 class="my-istymo-section-title">
+                    <i class="fas fa-chart-line"></i> Analyser le bien
+                </h5>
+                <div class="my-istymo-analyze-actions">
+                    <button type="button" class="my-istymo-btn-analyze" onclick="window.open('<?php echo esc_url($site_web_url); ?>', '_blank')">
+                        <i class="fas fa-external-link-alt"></i> Ouvrir le rapport
+                    </button>
+                </div>
+            </div>
+            <?php endif; ?>
+        </div>
+        
+        <div class="lead-details-right-column">
+            <div class="lead-details-info-section">
+                <div class="lead-details-section-header">
+                    <i class="fas fa-user"></i>
+                    <h3>Informations de contact</h3>
+                </div>
+                <div class="lead-details-info-grid">
+                    <?php
+                    // Afficher les champs de contact spécifiques
+                    $contact_fields = array(
+                        '42' => 'Pourquoi réaliser l\'estimation ?',
+                        '44' => 'Civilité', 
+                        '45' => 'Téléphone',
+                        '46' => 'E-mail'
+                    );
+                    
+                    foreach ($contact_fields as $field_id => $field_label) {
+                        $value = isset($entry[$field_id]) ? $entry[$field_id] : '';
+                        echo '<div class="lead-details-info-item">';
+                        echo '<div class="lead-details-info-label">' . esc_html($field_label) . '</div>';
+                        echo '<div class="lead-details-info-value">';
+                        
+                        if (!empty($value)) {
+                            // Rendre le téléphone cliquable
+                            if ($field_id == '45') {
+                                echo '<a href="tel:' . esc_attr($value) . '" class="phone-link">' . esc_html($value) . '</a>';
+                            } else {
+                                echo esc_html($value);
+                            }
+                        } else {
+                            echo '<span class="empty-value">Non renseigné</span>';
+                        }
+                        
+                        echo '</div>';
+                        echo '</div>';
+                    }
+                    ?>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php
+    $modal_html = ob_get_clean();
+    
+    wp_send_json_success($modal_html);
 }
 
 // ✅ NOUVEAU : Handler AJAX pour la pagination Lead Vendeur
@@ -3928,6 +4878,373 @@ function lead_vendeur_ajax_pagination() {
             'end_entry' => $end_entry
         )
     ));
+}
+
+// ✅ NOUVEAU : Handler AJAX pour la pagination Carte de Succession
+function carte_succession_ajax_pagination() {
+    check_ajax_referer('carte_succession_nonce', 'nonce');
+    
+    $page = intval($_POST['page'] ?? 1);
+    $per_page = intval($_POST['per_page'] ?? 20);
+    $user_id = get_current_user_id();
+    
+    error_log("Carte Succession AJAX - Current User ID: " . $user_id);
+    error_log("Carte Succession AJAX - Is admin: " . (current_user_can('administrator') ? 'YES' : 'NO'));
+    
+    if ($page < 1) $page = 1;
+    if ($per_page < 1) $per_page = 20;
+    
+    // Récupérer les gestionnaires
+    $config_manager = carte_succession_config_manager();
+    $favoris_handler = carte_succession_favoris_handler();
+    
+    // Vérifier si Gravity Forms est actif
+    if (!$config_manager->is_gravity_forms_active()) {
+        wp_send_json_error('Gravity Forms n\'est pas actif');
+        return;
+    }
+    
+    $config = $config_manager->get_config();
+    
+    // Si aucun formulaire configuré
+    if (empty($config['gravity_form_id'])) {
+        wp_send_json_error('Aucun formulaire configuré');
+        return;
+    }
+    
+    // Récupérer les entrées avec filtrage par utilisateur
+    $entries = $config_manager->get_form_entries_paginated(
+        $config['gravity_form_id'], 
+        $page, 
+        $per_page,
+        $user_id
+    );
+    
+    // Utiliser le système de favoris simple
+    $simple_favorites_handler = simple_favorites_handler();
+    $user_id = get_current_user_id();
+    $favori_ids = array();
+    
+    // Récupérer les favoris de l'utilisateur
+    $favorites = $simple_favorites_handler->get_user_favorites($user_id);
+    foreach ($favorites as $favorite) {
+        $favori_ids[] = $favorite->entry_id;
+    }
+    
+    error_log("Carte Succession AJAX - User favorites: " . print_r($favori_ids, true));
+    
+    // Calculer les informations de pagination avec filtrage
+    $total_entries = $config_manager->get_form_entries_count($config['gravity_form_id'], $user_id);
+    $total_pages = ceil($total_entries / $per_page);
+    
+    // Récupérer les champs du formulaire
+    $form_fields = $config_manager->get_form_fields($config['gravity_form_id']);
+    
+    error_log("Carte Succession AJAX - Entries count: " . count($entries));
+    if (!empty($entries)) {
+        error_log("Carte Succession AJAX - First entry data: " . print_r($entries[0], true));
+    }
+    
+    // Générer le HTML du tableau
+    ob_start();
+    
+    if (!empty($entries)) {
+        foreach ($entries as $entry) {
+            $is_favori = in_array($entry['id'], $favori_ids);
+            $favori_class = $is_favori ? 'favori-active' : '';
+            
+            echo '<tr class="carte-succession-row" data-entry-id="' . esc_attr($entry['id']) . '">';
+            
+            // Colonne favori
+            echo '<td class="favori-column">';
+            echo '<button class="favorite-btn ' . $favori_class . '" data-entry-id="' . esc_attr($entry['id']) . '" title="Ajouter aux favoris">';
+            if ($is_favori) {
+                echo '★';
+            } else {
+                echo '☆';
+            }
+            echo '</button>';
+            echo '</td>';
+            
+            // Type (champ 52)
+            $type = isset($entry['52']) ? $entry['52'] : '';
+            echo '<td>' . esc_html($type ?: '-') . '</td>';
+            
+            // Adresse (champ 4.1)
+            $adresse = isset($entry['4.1']) ? $entry['4.1'] : '';
+            echo '<td>' . esc_html($adresse ?: '-') . '</td>';
+            
+            // Ville (champ 4.3)
+            $ville = isset($entry['4.3']) ? $entry['4.3'] : '';
+            echo '<td>' . esc_html($ville ?: '-') . '</td>';
+            
+            // Date
+            $date_created = isset($entry['date_created']) ? $entry['date_created'] : '';
+            $date_formatted = $date_created ? date('d/m/Y', strtotime($date_created)) : '';
+            echo '<td>' . esc_html($date_formatted) . '</td>';
+            
+            // Actions
+            echo '<td class="actions-column">';
+            
+            // Bouton Localiser
+            $adresse_complete = '';
+            if (!empty($adresse)) {
+                $adresse_complete = $adresse;
+                if (!empty($ville)) {
+                    $adresse_complete .= ', ' . $ville;
+                }
+                if (isset($entry['4.5']) && !empty($entry['4.5'])) {
+                    $adresse_complete .= ', ' . $entry['4.5'];
+                }
+            }
+            
+            if (!empty($adresse_complete)) {
+                $google_maps_url = 'https://www.google.com/maps?q=' . urlencode($adresse_complete);
+                echo '<button class="button button-small localiser-btn" onclick="window.open(\'' . esc_url($google_maps_url) . '\', \'_blank\')" title="Localiser sur Google Maps: ' . esc_attr($adresse_complete) . '">';
+                echo '<i class="fas fa-map-marker-alt"></i> Localiser';
+                echo '</button>';
+            } else {
+                echo '<button class="button button-small localiser-btn" disabled title="Pas d\'adresse disponible">';
+                echo '<i class="fas fa-map-marker-alt"></i> Localiser';
+                echo '</button>';
+            }
+            
+            echo ' ';
+            
+            // Bouton Voir détails
+            echo '<button class="button button-small carte-details-btn" data-entry-id="' . $entry['id'] . '" title="Voir les détails">';
+            echo '<i class="fas fa-eye"></i> Voir détails';
+            echo '</button>';
+            
+            echo '</td>';
+            
+            echo '</tr>';
+        }
+    } else {
+        echo '<tr><td colspan="100%" style="text-align: center; padding: 20px; color: #666;">Aucune carte de succession trouvée</td></tr>';
+    }
+    
+    $table_html = ob_get_clean();
+    
+    // Générer le HTML de pagination
+    ob_start();
+    
+    if ($total_pages > 1) {
+        echo '<div class="pagination-info">';
+        echo '<span id="page-info">Page ' . $page . ' sur ' . $total_pages . '</span>';
+        echo '<span style="margin-left: 15px; color: #666;">Affichage des entrées ' . (($page - 1) * $per_page + 1) . ' à ' . min($page * $per_page, $total_entries) . ' sur ' . $total_entries . '</span>';
+        echo '</div>';
+        
+        echo '<div class="pagination">';
+        
+        // Bouton Précédent
+        if ($page > 1) {
+            echo '<button type="button" class="button button-secondary pagination-btn" data-page="' . ($page - 1) . '">';
+            echo '<i class="fas fa-chevron-left"></i> Précédent';
+            echo '</button>';
+        } else {
+            echo '<span class="button button-secondary pagination-btn disabled">';
+            echo '<i class="fas fa-chevron-left"></i> Précédent';
+            echo '</span>';
+        }
+        
+        // Numéros de pages
+        $start_page = max(1, $page - 2);
+        $end_page = min($total_pages, $page + 2);
+        
+        if ($start_page > 1) {
+            echo '<button type="button" class="pagination-number" data-page="1">1</button>';
+            if ($start_page > 2) {
+                echo '<span class="pagination-ellipsis">...</span>';
+            }
+        }
+        
+        for ($i = $start_page; $i <= $end_page; $i++) {
+            if ($i == $page) {
+                echo '<span class="pagination-number current">' . $i . '</span>';
+            } else {
+                echo '<button type="button" class="pagination-number" data-page="' . $i . '">' . $i . '</button>';
+            }
+        }
+        
+        // Dernière page si nécessaire
+        if ($end_page < $total_pages) {
+            if ($end_page < $total_pages - 1) {
+                echo '<span class="pagination-ellipsis">...</span>';
+            }
+            echo '<button type="button" class="pagination-number" data-page="' . $total_pages . '">' . $total_pages . '</button>';
+        }
+        
+        echo '</div>';
+        
+        // Bouton Suivant
+        if ($page < $total_pages) {
+            echo '<button type="button" class="button button-secondary pagination-btn" data-page="' . ($page + 1) . '">';
+            echo 'Suivant <i class="fas fa-chevron-right"></i>';
+            echo '</button>';
+        } else {
+            echo '<span class="button button-secondary pagination-btn disabled">';
+            echo 'Suivant <i class="fas fa-chevron-right"></i>';
+            echo '</span>';
+        }
+        
+        echo '</div>';
+        echo '</div>';
+    }
+    
+    $pagination_html = ob_get_clean();
+    
+    // Informations de pagination
+    $start_entry = (($page - 1) * $per_page) + 1;
+    $end_entry = min($page * $per_page, $total_entries);
+    
+    wp_send_json_success(array(
+        'table_html' => $table_html,
+        'pagination_html' => $pagination_html,
+        'pagination_info' => array(
+            'current_page' => $page,
+            'total_pages' => $total_pages,
+            'total_entries' => $total_entries,
+            'start_entry' => $start_entry,
+            'end_entry' => $end_entry
+        )
+    ));
+}
+
+// ✅ NOUVEAU : Handler AJAX pour basculer les favoris Carte de Succession
+function carte_succession_ajax_toggle_favori() {
+    check_ajax_referer('carte_succession_nonce', 'nonce');
+    
+    $entry_id = intval($_POST['entry_id'] ?? 0);
+    $is_favori = intval($_POST['is_favori'] ?? 0);
+    
+    if ($entry_id <= 0) {
+        wp_send_json_error('ID d\'entrée invalide');
+        return;
+    }
+    
+    $user_id = get_current_user_id();
+    $favoris_handler = carte_succession_favoris_handler();
+    
+    if ($is_favori) {
+        // Supprimer des favoris
+        $result = $favoris_handler->remove_favori($user_id, $entry_id);
+        $action = 'removed';
+    } else {
+        // Ajouter aux favoris
+        $result = $favoris_handler->add_favori($user_id, $entry_id, 0); // form_id sera récupéré automatiquement
+        $action = 'added';
+    }
+    
+    if ($result) {
+        wp_send_json_success(array('action' => $action));
+    } else {
+        wp_send_json_error('Erreur lors de la mise à jour des favoris');
+    }
+}
+
+// ✅ NOUVEAU : Handler AJAX pour récupérer les détails d'une carte de succession
+function carte_succession_ajax_get_entry_details() {
+    check_ajax_referer('carte_succession_nonce', 'nonce');
+    
+    $entry_id = intval($_POST['entry_id'] ?? 0);
+    
+    if ($entry_id <= 0) {
+        wp_send_json_error('ID d\'entrée invalide');
+        return;
+    }
+    
+    if (!class_exists('GFAPI')) {
+        wp_send_json_error('Gravity Forms n\'est pas actif');
+        return;
+    }
+    
+    $entry = GFAPI::get_entry($entry_id);
+    
+    if (is_wp_error($entry)) {
+        wp_send_json_error('Entrée non trouvée');
+        return;
+    }
+    
+    // Générer le HTML des détails
+    ob_start();
+    echo '<div class="carte-succession-details">';
+    echo '<h3>🗺️ Détails de la Carte de Succession</h3>';
+    echo '<div class="details-content">';
+    
+    // Informations de contact
+    echo '<div class="details-section">';
+    echo '<h4><i class="fas fa-user"></i> Informations de contact</h4>';
+    echo '<div class="details-grid">';
+    
+    $contact_fields = array(
+        '1' => 'Nom',
+        '2' => 'Prénom', 
+        '3' => 'Téléphone',
+        '4' => 'Email',
+        '5' => 'Adresse'
+    );
+    
+    foreach ($contact_fields as $field_id => $label) {
+        if (isset($entry[$field_id]) && !empty($entry[$field_id])) {
+            echo '<div class="detail-item">';
+            echo '<strong>' . esc_html($label) . ':</strong> ';
+            echo esc_html($entry[$field_id]);
+            echo '</div>';
+        }
+    }
+    
+    echo '</div>';
+    echo '</div>';
+    
+    // Informations de succession
+    echo '<div class="details-section">';
+    echo '<h4><i class="fas fa-gavel"></i> Informations de succession</h4>';
+    echo '<div class="details-grid">';
+    
+    $succession_fields = array(
+        '6' => 'Type de succession',
+        '7' => 'Date de décès',
+        '8' => 'Lieu de décès',
+        '9' => 'Notaire',
+        '10' => 'Héritiers',
+        '11' => 'Biens immobiliers',
+        '12' => 'Biens mobiliers',
+        '13' => 'Dettes',
+        '14' => 'Assurance vie'
+    );
+    
+    foreach ($succession_fields as $field_id => $label) {
+        if (isset($entry[$field_id]) && !empty($entry[$field_id])) {
+            echo '<div class="detail-item">';
+            echo '<strong>' . esc_html($label) . ':</strong> ';
+            echo esc_html($entry[$field_id]);
+            echo '</div>';
+        }
+    }
+    
+    echo '</div>';
+    echo '</div>';
+    
+    // Commentaire
+    if (isset($entry['15']) && !empty($entry['15'])) {
+        echo '<div class="details-section">';
+        echo '<h4><i class="fas fa-comment"></i> Commentaire</h4>';
+        echo '<div class="comment-content">';
+        echo wp_kses_post(nl2br($entry['15']));
+        echo '</div>';
+        echo '</div>';
+    }
+    
+    echo '</div>';
+    echo '<div class="details-actions">';
+    echo '<button class="button button-primary close-modal">Fermer</button>';
+    echo '</div>';
+    echo '</div>';
+    
+    $details_html = ob_get_clean();
+    
+    wp_send_json_success($details_html);
 }
 
 

@@ -1,0 +1,382 @@
+/**
+ * Styles pour la section Carte de Succession
+ */
+
+.carte-succession-table-container {
+    overflow-x: auto;
+    margin-top: 20px;
+    width: 100%;
+    max-width: 100%;
+}
+
+.carte-succession-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    table-layout: fixed;
+}
+
+.carte-succession-table th,
+.carte-succession-table td {
+    padding: 12px 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Largeurs des colonnes */
+.carte-succession-table th:nth-child(1),
+.carte-succession-table td:nth-child(1) {
+    width: 5%;
+    text-align: center;
+}
+
+.carte-succession-table th:nth-child(2),
+.carte-succession-table td:nth-child(2) {
+    width: 15%;
+}
+
+.carte-succession-table th:nth-child(3),
+.carte-succession-table td:nth-child(3) {
+    width: 30%;
+}
+
+.carte-succession-table th:nth-child(4),
+.carte-succession-table td:nth-child(4) {
+    width: 20%;
+}
+
+.carte-succession-table th:nth-child(5),
+.carte-succession-table td:nth-child(5) {
+    width: 15%;
+}
+
+.carte-succession-table th:nth-child(6),
+.carte-succession-table td:nth-child(6) {
+    width: 15%;
+    text-align: center;
+}
+
+.carte-succession-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #333;
+}
+
+.carte-succession-table .favori-column {
+    width: 50px;
+    text-align: center;
+}
+
+.favorite-btn {
+    cursor: pointer;
+    font-size: 18px;
+    color: #ddd;
+    transition: color 0.3s ease;
+    display: inline-block;
+    padding: 5px;
+    background: none;
+    border: none;
+}
+
+.favorite-btn:hover {
+    color: #ffc107;
+}
+
+.favorite-btn.favori-active {
+    color: #ffc107;
+}
+
+.carte-succession-row {
+    transition: background-color 0.3s ease;
+}
+
+.carte-succession-row:hover {
+    background-color: #f8f9fa;
+}
+
+.carte-succession-row.favori-row {
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+}
+
+.actions-column {
+    text-align: center;
+    white-space: nowrap;
+}
+
+.carte-details-btn,
+.localiser-btn {
+    margin: 0 2px;
+    padding: 4px 8px;
+    font-size: 12px;
+    display: inline-block;
+}
+
+.localiser-btn {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: white;
+}
+
+.localiser-btn:hover:not(:disabled) {
+    background-color: #218838;
+    border-color: #1e7e34;
+    color: white;
+}
+
+.localiser-btn:disabled {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: #fff;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.carte-details-btn {
+    background-color: #007cba;
+    border-color: #007cba;
+    color: white;
+}
+
+.carte-details-btn:hover {
+    background-color: #005a87;
+    border-color: #005a87;
+    color: white;
+}
+
+button.button.button-small.localiser-btn {
+    color: #0064A6;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+    border: none;
+    box-shadow: none;
+    background: none;
+    font-size: 14px !important;
+}
+
+.phone-link {
+    color: #007cba;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+.phone-link:hover {
+    color: #005a87;
+    text-decoration: underline;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px 0;
+    gap: 5px;
+}
+
+.pagination-btn,
+.pagination-number {
+    padding: 8px 12px;
+    margin: 0 2px;
+    border: 1px solid #ddd;
+    background: #fff;
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.pagination-btn:hover,
+.pagination-number:hover {
+    background: #007cba;
+    color: #fff;
+    border-color: #007cba;
+}
+
+.pagination-number.current {
+    background: #007cba;
+    color: #fff;
+    border-color: #007cba;
+}
+
+.pagination-btn.disabled {
+    background: #f5f5f5;
+    color: #999;
+    cursor: not-allowed;
+    border-color: #ddd;
+}
+
+.pagination-ellipsis {
+    padding: 8px 4px;
+    color: #666;
+}
+
+.pagination-info {
+    text-align: center;
+    margin-bottom: 15px;
+    color: #666;
+    font-size: 14px;
+}
+
+/* Loading spinner */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #007cba;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .carte-succession-table-container {
+        font-size: 14px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .carte-succession-table {
+        min-width: 600px; /* Largeur minimale pour éviter l'écrasement */
+    }
+    
+    .carte-succession-table th,
+    .carte-succession-table td {
+        padding: 8px 4px;
+        font-size: 12px;
+    }
+    
+    .carte-succession-table th:nth-child(1),
+    .carte-succession-table td:nth-child(1) {
+        width: 8%;
+    }
+    
+    .carte-succession-table th:nth-child(2),
+    .carte-succession-table td:nth-child(2) {
+        width: 12%;
+    }
+    
+    .carte-succession-table th:nth-child(3),
+    .carte-succession-table td:nth-child(3) {
+        width: 25%;
+    }
+    
+    .carte-succession-table th:nth-child(4),
+    .carte-succession-table td:nth-child(4) {
+        width: 15%;
+    }
+    
+    .carte-succession-table th:nth-child(5),
+    .carte-succession-table td:nth-child(5) {
+        width: 15%;
+    }
+    
+    .carte-succession-table th:nth-child(6),
+    .carte-succession-table td:nth-child(6) {
+        width: 25%;
+    }
+    
+    .pagination {
+        flex-wrap: wrap;
+        gap: 3px;
+    }
+    
+    .pagination-btn,
+    .pagination-number {
+        padding: 6px 8px;
+        font-size: 12px;
+    }
+    
+    .localiser-btn,
+    .carte-details-btn {
+        padding: 3px 6px;
+        font-size: 10px;
+        margin: 1px;
+    }
+}
+
+/* Notices */
+.notice {
+    padding: 12px;
+    margin: 15px 0;
+    border-left: 4px solid;
+    background: #fff;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+}
+
+.notice.notice-success {
+    border-left-color: #46b450;
+    background: #f7fff7;
+}
+
+.notice.notice-error {
+    border-left-color: #dc3232;
+    background: #fff5f5;
+}
+
+.notice.notice-warning {
+    border-left-color: #ffb900;
+    background: #fffbf0;
+}
+
+.notice.notice-info {
+    border-left-color: #00a0d2;
+    background: #f0f8ff;
+}
+
+/* Container principal */
+.my-istymo-container {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Animations */
+.carte-succession-row {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* États des boutons */
+.button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.button.loading {
+    position: relative;
+    color: transparent;
+}
+
+.button.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid transparent;
+    border-top: 2px solid #fff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}

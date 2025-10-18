@@ -215,15 +215,15 @@ i.fas.fa-external-link-alt {
 
 /* ===== INFORMATIONS LIÉES AU BIEN ===== */
 .my-istymo-section:nth-child(2) {
-    border-left-color: #4caf50;
+    border-left-color: #BA55D3;
 }
 
 .my-istymo-section:nth-child(2) .my-istymo-section-title {
-    color: #2e7d32;
+    color: #BA55D3;
 }
 
 .my-istymo-section:nth-child(2) .my-istymo-section-title i {
-    color: #4caf50;
+    color: #BA55D3;
 }
 
 /* ===== CONTACT ===== */
