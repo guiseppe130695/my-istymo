@@ -278,6 +278,16 @@ function sci_ajouter_menu() {
            'carte_succession_config_page'
        );
        
+       // ✅ NOUVEAU : Sous-menu Utilisateurs Carte de Succession
+       add_submenu_page(
+           'carte-succession',
+           'Utilisateurs Carte de Succession',
+           'Utilisateurs',
+           'manage_options',
+           'carte-succession-users',
+           'carte_succession_users_page'
+       );
+       
        // ✅ NOUVEAU : Menu Lead Parrainage
        add_menu_page(
            'Lead Parrainage',
@@ -431,6 +441,147 @@ function sci_ajouter_menu() {
            
            return $address . '<br><small style="color: #666;">' . $city . '</small>';
        }
+
+// ✅ NOUVEAU : Fonction pour la page des utilisateurs Carte de Succession
+function carte_succession_users_page() {
+    // Vérifier les permissions
+    if (!current_user_can('manage_options')) {
+        echo '<div class="wrap"><h1>Accès refusé</h1><p>Vous n\'avez pas les permissions nécessaires pour accéder à cette page.</p></div>';
+        return;
+    }
+    
+    // Configuration pour le formulaire ID 2 (Carte de Succession)
+    $form_id = 2;
+    
+    // Vérifier si Gravity Forms est actif
+    if (!class_exists('GFAPI')) {
+        echo '<div class="wrap">';
+        echo '<h1>👥 Utilisateurs Carte de Succession</h1>';
+        echo '<div class="notice notice-error"><p>Gravity Forms n\'est pas actif.</p></div>';
+        echo '</div>';
+        return;
+    }
+    
+    // Vérifier si le formulaire existe
+    $form = GFAPI::get_form($form_id);
+    if (is_wp_error($form)) {
+        echo '<div class="wrap">';
+        echo '<h1>👥 Utilisateurs Carte de Succession</h1>';
+        echo '<div class="notice notice-error"><p>Le formulaire ID ' . $form_id . ' n\'existe pas.</p></div>';
+        echo '</div>';
+        return;
+    }
+    
+    // Récupérer tous les utilisateurs
+    $users = get_users(array(
+        'orderby' => 'display_name',
+        'order' => 'ASC'
+    ));
+    
+    // Récupérer les statistiques pour chaque utilisateur
+    $user_stats = array();
+    foreach ($users as $user) {
+        // Compter les entrées pour cet utilisateur
+        $search_criteria = array(
+            'status' => 'active',
+            'field_filters' => array(
+                array(
+                    'key' => 'created_by',
+                    'value' => $user->ID
+                )
+            )
+        );
+        
+        $entries = GFAPI::get_entries($form_id, $search_criteria);
+        $entries_count = count($entries);
+        
+        $user_stats[] = array(
+            'user' => $user,
+            'entries_count' => $entries_count
+        );
+    }
+    
+    // Trier par nombre d'entrées (décroissant)
+    usort($user_stats, function($a, $b) {
+        return $b['entries_count'] - $a['entries_count'];
+    });
+    
+    echo '<div class="wrap">';
+    echo '<h1>👥 Utilisateurs Carte de Succession</h1>';
+    echo '<p>Liste des utilisateurs avec le nombre de cartes de succession créées (Formulaire ID: ' . $form_id . ').</p>';
+    
+    // Tableau des utilisateurs
+    echo '<table class="wp-list-table widefat fixed striped">';
+    echo '<thead>';
+    echo '<tr>';
+    echo '<th style="width: 5%;">ID</th>';
+    echo '<th style="width: 20%;">Nom d\'utilisateur</th>';
+    echo '<th style="width: 25%;">Nom complet</th>';
+    echo '<th style="width: 25%;">Email</th>';
+    echo '<th style="width: 15%;">Rôle</th>';
+    echo '<th style="width: 10%;">Cartes</th>';
+    echo '</tr>';
+    echo '</thead>';
+    echo '<tbody>';
+    
+    foreach ($user_stats as $stat) {
+        $user = $stat['user'];
+        $entries_count = $stat['entries_count'];
+        
+        echo '<tr>';
+        echo '<td>' . esc_html($user->ID) . '</td>';
+        echo '<td><strong>' . esc_html($user->user_login) . '</strong></td>';
+        echo '<td>' . esc_html($user->display_name) . '</td>';
+        echo '<td>' . esc_html($user->user_email) . '</td>';
+        echo '<td>' . esc_html(implode(', ', $user->roles)) . '</td>';
+        
+        // Choisir la couleur du badge selon le nombre d'entrées
+        $badge_class = 'badge-primary';
+        if ($entries_count == 0) {
+            $badge_class = 'badge-danger';
+        } elseif ($entries_count >= 10) {
+            $badge_class = 'badge-success';
+        } elseif ($entries_count >= 5) {
+            $badge_class = 'badge-warning';
+        }
+        
+        echo '<td><span class="badge ' . $badge_class . '">' . esc_html($entries_count) . '</span></td>';
+        echo '</tr>';
+    }
+    
+    echo '</tbody>';
+    echo '</table>';
+    
+    // Statistiques globales
+    $total_entries = array_sum(array_column($user_stats, 'entries_count'));
+    $users_with_entries = count(array_filter($user_stats, function($stat) {
+        return $stat['entries_count'] > 0;
+    }));
+    $users_without_entries = count($users) - $users_with_entries;
+    
+    // Calculer les moyennes
+    $average_entries_per_user = $users_with_entries > 0 ? round($total_entries / $users_with_entries, 2) : 0;
+    $average_entries_per_all_users = count($users) > 0 ? round($total_entries / count($users), 2) : 0;
+    
+    // Trouver l'utilisateur avec le plus d'entrées
+    $top_user = $user_stats[0] ?? null;
+    $top_user_name = $top_user ? $top_user['user']->display_name : 'Aucun';
+    $top_user_entries = $top_user ? $top_user['entries_count'] : 0;
+    
+    echo '<div class="notice notice-info">';
+    echo '<h3>📊 Statistiques globales</h3>';
+    echo '<ul>';
+    echo '<li><strong>Total des cartes de succession :</strong> ' . $total_entries . '</li>';
+    echo '<li><strong>Utilisateurs avec des entrées :</strong> ' . $users_with_entries . ' / ' . count($users) . '</li>';
+    echo '<li><strong>Utilisateurs sans entrées :</strong> ' . $users_without_entries . '</li>';
+    echo '<li><strong>Moyenne par utilisateur actif :</strong> ' . $average_entries_per_user . ' cartes</li>';
+    echo '<li><strong>Moyenne par tous les utilisateurs :</strong> ' . $average_entries_per_all_users . ' cartes</li>';
+    echo '<li><strong>Meilleur utilisateur :</strong> ' . $top_user_name . ' (' . $top_user_entries . ' cartes)</li>';
+    echo '</ul>';
+    echo '</div>';
+    
+    echo '</div>';
+}
 
 // ✅ NOUVEAU : Fonction pour la page des utilisateurs Lead Vendeur
 function lead_vendeur_users_page() {
