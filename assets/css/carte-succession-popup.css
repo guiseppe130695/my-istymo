@@ -1,298 +1,371 @@
 /**
- * Styles pour le popup carte de succession
+ * Styles pour le popup carte de succession - Reprend les styles du popup Lead Vendeur
+ * Version: 1.0.3 - Styles identiques au popup Lead Vendeur
  */
 
-/* Modal principal */
+/* ========================================
+   MODAL CARTE DE SUCCESSION - DESIGN MODERNE
+   ======================================== */
+
+/* Modal principal - Reprend les styles du Lead Vendeur */
 .carte-details-modal {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 9999;
+    z-index: 100000;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
-    box-sizing: border-box;
-}
-
-.carte-details-modal-content {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-    max-width: 900px;
-    width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
-    position: relative;
-}
-
-/* En-tête du modal */
-.carte-details-modal-header {
-    padding: 20px 25px;
-    border-bottom: 1px solid #e1e5e9;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 12px 12px 0 0;
-    position: relative;
-}
-
-.carte-details-modal-header h3 {
-    margin: 0;
-    font-size: 24px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.carte-details-modal-header .close-modal {
-    position: absolute;
-    top: 15px;
-    right: 20px;
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    color: white;
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
+    opacity: 0;
+    visibility: hidden;
     transition: all 0.3s ease;
 }
 
-.carte-details-modal-header .close-modal:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: scale(1.1);
+.carte-details-modal.show {
+    opacity: 1;
+    visibility: visible;
 }
 
-/* Contenu du modal */
-.carte-succession-details {
-    padding: 0;
+.carte-details-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
 }
 
-.details-content {
-    padding: 25px;
+.carte-details-modal-content {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    max-width: 900px;
+    width: 95%;
+    max-height: 90vh;
+    overflow: hidden;
+    transform: scale(0.95) translateY(20px);
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+    border: 1px solid #e5e7eb;
 }
 
-.details-section {
-    margin-bottom: 30px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    padding: 20px;
-    border-left: 4px solid #007cba;
+.carte-details-modal.show .carte-details-modal-content {
+    transform: scale(1) translateY(0);
 }
 
-.details-section h4 {
-    margin: 0 0 15px 0;
-    color: #333;
-    font-size: 18px;
-    font-weight: 600;
+/* ========================================
+   EN-TÊTE DU MODAL - STYLE LEAD VENDEUR
+   ======================================== */
+
+.lead-details-modal-header {
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: space-between;
+    padding: 20px 25px;
+    border-bottom: 1px solid #e9ecef;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px 12px 0 0;
 }
 
-.details-section h4 i {
-    color: #007cba;
+.lead-details-header-left {
+    display: flex;
+    align-items: center;
+}
+
+.lead-details-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+}
+
+.lead-details-title-section h2 {
+    margin: 0;
+    color: #333;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.lead-details-icon i {
+    font-size: 24px;
+    color: #6b7280;
+}
+
+.lead-details-title-section {
+    flex: 1;
+}
+
+.lead-details-subtitle {
+    margin: 5px 0 0 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.lead-details-date {
+    margin: 5px 0 0 0;
+    color: #888;
+    font-size: 12px;
+}
+
+.lead-details-header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.lead-details-modal-close {
+    font-size: 28px;
+    color: #000;
+    cursor: pointer;
+    transition: color 0.3s;
+    line-height: 1;
+}
+
+.lead-details-modal-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: #000;
+    transform: scale(1.02);
+}
+
+/* ========================================
+   CONTENU PRINCIPAL - STYLE LEAD VENDEUR
+   ======================================== */
+
+.lead-details-main-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    padding: 30px;
+    min-height: 400px;
+    align-items: start;
+}
+
+.lead-details-left-column,
+.lead-details-right-column {
+    display: flex;
+    flex-direction: column;
+    gap: 0px;
+}
+
+/* ========================================
+   SECTIONS D'INFORMATIONS - STYLE LEAD VENDEUR
+   ======================================== */
+
+.lead-details-info-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.lead-details-section-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.lead-details-section-header i {
+    color: #000;
+    margin-right: 10px;
     font-size: 16px;
 }
 
-.details-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 15px;
-}
-
-.detail-item {
-    background: white;
-    padding: 12px 15px;
-    border-radius: 6px;
-    border: 1px solid #e1e5e9;
-    transition: all 0.3s ease;
-}
-
-.detail-item:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transform: translateY(-1px);
-}
-
-.detail-item strong {
-    color: #007cba;
-    font-weight: 600;
-    display: block;
-    margin-bottom: 5px;
-    font-size: 14px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.detail-item:not(:has(strong)) {
-    padding: 8px 15px;
-    font-style: italic;
-    color: #666;
-}
-
-/* Section commentaire */
-.comment-content {
-    background: white;
-    padding: 15px;
-    border-radius: 6px;
-    border: 1px solid #e1e5e9;
-    line-height: 1.6;
+.lead-details-section-header h3 {
+    margin: 0;
     color: #333;
+    font-size: 16px;
+    font-weight: 600;
 }
 
-/* Actions du modal */
-.details-actions {
-    padding: 20px 25px;
-    border-top: 1px solid #e1e5e9;
-    background: #f8f9fa;
-    border-radius: 0 0 12px 12px;
+.lead-details-info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.lead-details-info-item:last-child {
+    border-bottom: none;
+}
+
+.lead-details-info-label {
+    font-weight: 600;
+    color: #6b7280;
+    font-size: 14px;
+    min-width: 120px;
+}
+
+.lead-details-info-value {
+    color: #1f2937;
+    font-weight: 500;
     text-align: right;
+    flex: 1;
+    margin-left: 16px;
+    word-break: break-word;
 }
 
-.details-actions .button {
-    margin-left: 10px;
+.empty-value {
+    color: #9ca3af;
+    font-style: italic;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .carte-details-modal {
-        padding: 10px;
-    }
-    
-    .carte-details-modal-content {
-        width: 95%;
-        max-height: 95vh;
-    }
-    
-    .carte-details-modal-header {
-        padding: 15px 20px;
-    }
-    
-    .carte-details-modal-header h3 {
-        font-size: 20px;
-    }
-    
-    .details-content {
-        padding: 20px;
-    }
-    
-    .details-grid {
-        grid-template-columns: 1fr;
-        gap: 10px;
-    }
-    
-    .details-section {
-        padding: 15px;
-        margin-bottom: 20px;
-    }
-    
-    .details-actions {
-        padding: 15px 20px;
+/* ========================================
+   BOUTONS D'ACTION - STYLE LEAD VENDEUR
+   ======================================== */
+
+.lead-details-actions {
+    padding: 20px 30px;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+    align-items: center;
+    background: #f8f9fa;
+}
+
+.lead-details-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 14px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    line-height: 1;
+}
+
+.lead-details-btn-primary {
+    background: #0073aa;
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 115, 170, 0.2);
+}
+
+.lead-details-btn-primary:hover {
+    background: #005a87;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 115, 170, 0.3);
+}
+
+.lead-details-btn-secondary {
+    background: white;
+    color: #6c757d;
+    border: 1px solid #dee2e6;
+}
+
+.lead-details-btn-secondary:hover {
+    background: #f8f9fa;
+    color: #495057;
+    border-color: #adb5bd;
+}
+
+.lead-details-btn i {
+    font-size: 14px;
+    width: 16px;
         text-align: center;
     }
     
-    .details-actions .button {
-        margin: 5px;
-        width: 100%;
-        max-width: 200px;
-    }
-}
+/* ========================================
+   ÉTAT DE CHARGEMENT - STYLE LEAD VENDEUR
+   ======================================== */
 
-/* Animations */
-.carte-details-modal {
-    animation: fadeIn 0.3s ease-out;
-}
-
-.carte-details-modal-content {
-    animation: slideInUp 0.3s ease-out;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-@keyframes slideInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* États de chargement */
-.carte-details-modal.loading .carte-details-modal-content {
+/* Styles spécifiques pour l'état de chargement uniquement */
+.carte-details-modal-content:has(.loading-spinner) {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 200px;
+    padding: 60px 20px;
+    text-align: center;
 }
 
-.carte-details-modal.loading .loading-spinner {
+.carte-details-modal-content .loading-spinner {
+    margin-bottom: 20px;
+}
+
+.carte-details-modal-content .loading-spinner .spinner {
     width: 40px;
     height: 40px;
-    border-width: 4px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
 }
 
-/* Styles pour les icônes */
-.details-section h4 i.fas.fa-user {
-    color: #28a745;
+.carte-details-modal-content .loading-text {
+    margin: 0;
+    color: #666;
+    font-size: 16px;
+    font-weight: 500;
+    animation: none !important;
+    transform: none !important;
 }
 
-.details-section h4 i.fas.fa-gavel {
-    color: #dc3545;
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
-.details-section h4 i.fas.fa-comment {
-    color: #ffc107;
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 1200px) {
+    .lead-details-main-content {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .lead-details-right-column {
+        order: -1;
+    }
 }
 
-/* Amélioration de l'accessibilité */
-.carte-details-modal:focus {
-    outline: none;
+@media (max-width: 768px) {
+    .lead-details-modal-header {
+        padding: 20px;
+    }
+    
+    .lead-details-header-left {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .lead-details-main-content {
+        padding: 20px;
+    }
+    
+    .lead-details-actions {
+        padding: 15px 20px;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .lead-details-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .lead-details-info-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .lead-details-info-value {
+        text-align: left;
+        margin-left: 0;
+    }
 }
-
-.carte-details-modal-content:focus {
-    outline: 2px solid #007cba;
-    outline-offset: 2px;
-}
-
-/* Styles pour les liens dans le contenu */
-.details-content a {
-    color: #007cba;
-    text-decoration: none;
-    border-bottom: 1px dotted #007cba;
-}
-
-.details-content a:hover {
-    color: #005a87;
-    border-bottom-style: solid;
-}
-
-/* Styles pour les listes */
-.details-content ul,
-.details-content ol {
-    margin: 10px 0;
-    padding-left: 20px;
-}
-
-.details-content li {
-    margin-bottom: 5px;
-    line-height: 1.5;
-}
-

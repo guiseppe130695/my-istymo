@@ -606,17 +606,14 @@ function lead_vendeur_users_page() {
            // Debug: Vérifier que la fonction est appelée
            error_log('Lead Vendeur: Fonction lead_vendeur_page() appelée');
            
-           echo '<div class="wrap">';
-           echo '<h1>🏢 Lead Vendeur - Debug</h1>';
-           echo '<p>Fonction appelée avec succès !</p>';
-           
            // Vérifier si l'utilisateur est connecté
            if (!is_user_logged_in()) {
-               echo '<div class="notice notice-error"><p>Vous devez être connecté pour accéder à cette page.</p></div>';
-               echo '</div>';
+               echo '<div class="wrap"><h1>Accès refusé</h1><p>Vous devez être connecté pour accéder à cette page.</p></div>';
                return;
            }
            
+           echo '<div class="wrap">';
+           echo '<h1>🏢 Lead Vendeur - Debug</h1>';
            echo '<p>✅ Utilisateur connecté</p>';
            
            // Charger les gestionnaires
@@ -654,175 +651,121 @@ function lead_vendeur_users_page() {
            
            echo '<p>✅ Formulaire configuré (ID: ' . $config['gravity_form_id'] . ')</p>';
            
-           // ✅ NOUVEAU : Gestion de la pagination AJAX
-           $current_page = 1; // Page par défaut pour le chargement initial
-           $per_page = 20; // Nombre d'entrées par page
-           
-           // Récupérer les entrées du formulaire avec pagination
-           $entries = $config_manager->get_form_entries_paginated(
-               isset($config['gravity_form_id']) ? $config['gravity_form_id'] : 0, 
-               $current_page, 
-               $per_page
+           // Utiliser la même logique que le shortcode
+           $atts = array(
+               'title' => 'Lead Vendeur',
+               'per_page' => 20
            );
-           $favori_ids = $favoris_handler->get_user_favori_ids(get_current_user_id());
            
-           // Calculer les informations de pagination
-           $total_entries = $config_manager->get_form_entries_count(isset($config['gravity_form_id']) ? $config['gravity_form_id'] : 0);
-           $total_pages = ceil($total_entries / $per_page);
+           echo '<p>🔄 Génération du contenu directement...</p>';
            
-           // Charger les styles et scripts
+           // Charger les styles et scripts nécessaires
+           wp_enqueue_style('font-awesome', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css', array(), '6.4.0');
            wp_enqueue_style('lead-vendeur-style', plugin_dir_url(__FILE__) . 'assets/css/lead-vendeur.css', array(), '1.0.0');
            wp_enqueue_style('lead-vendeur-popup-style', plugin_dir_url(__FILE__) . 'assets/css/lead-vendeur-popup.css', array(), '1.0.1');
+           wp_enqueue_style('lead-vendeur-favorites-style', plugin_dir_url(__FILE__) . 'assets/css/lead-vendeur-favorites.css', array(), '1.0.0');
            wp_enqueue_style('lead-vendeur-sections-style', plugin_dir_url(__FILE__) . 'assets/css/lead-vendeur-sections.css', array(), '1.0.0');
            wp_enqueue_script('lead-vendeur-js', plugin_dir_url(__FILE__) . 'assets/js/lead-vendeur.js', array('jquery'), '1.0.0', true);
            
-           // ✅ NOUVEAU : Données AJAX pour la pagination
+           // Localiser le script avec les données nécessaires
            wp_localize_script('lead-vendeur-js', 'leadVendeurAjax', array(
                'ajax_url' => admin_url('admin-ajax.php'),
                'nonce' => wp_create_nonce('lead_vendeur_nonce'),
-               'current_page' => $current_page,
-               'per_page' => $per_page,
-               'total_entries' => $total_entries,
-               'total_pages' => $total_pages
+               'current_page' => 1,
+               'per_page' => intval($atts['per_page']),
+               'total_entries' => 0,
+               'total_pages' => 0,
+               'form_id' => $config['gravity_form_id']
            ));
            
-           echo '<div class="wrap">';
-           echo '<h1>🏢 Lead Vendeur</h1>';
-           echo '<div class="my-istymo-container">';
+           wp_localize_script('lead-vendeur-js', 'simpleFavoritesAjax', array(
+               'ajax_url' => admin_url('admin-ajax.php'),
+               'nonce' => wp_create_nonce('simple_favorites_nonce')
+           ));
            
-           // ✅ NOUVEAU : Tableau principal avec style DPE/SCI et système de favoris
-           if (!empty($entries)) {
-               echo '<div class="my-istymo-card">';
-               echo '<h2>📋 Leads Vendeur (' . $total_entries . ' au total)</h2>';
-               
-               // Informations de pagination (style DPE/SCI)
-               
-               // Tableau principal avec style DPE/SCI
+           echo '<p>✅ Styles et scripts chargés</p>';
+           
+           // Récupérer les entrées
+           $user_id = get_current_user_id();
+           $entries = $config_manager->get_form_entries_paginated($config['gravity_form_id'], 1, $atts['per_page'], $user_id);
+           $total_entries = $config_manager->get_form_entries_count($config['gravity_form_id'], $user_id);
+           $total_pages = ceil($total_entries / $atts['per_page']);
+           
+           echo '<p>✅ Entrées récupérées: ' . count($entries) . ' sur ' . $total_entries . ' total</p>';
+           
+           // Afficher le tableau des leads vendeur
                echo '<div class="lead-vendeur-table-container">';
                echo '<table class="wp-list-table widefat fixed striped lead-vendeur-table">';
-               echo '<thead>';
-               echo '<tr>';
-               echo '<th class="favori-column"><i class="fas fa-heart"></i></th>';
                
-               // Colonne Ville (toujours affichée si configurée)
+           // En-têtes du tableau
+           echo '<thead><tr>';
+           echo '<th class="favori-column"><i class="fas fa-heart"></i></th>';
                            echo '<th><i class="fas fa-city"></i> Ville</th>';
-               
-               // En-têtes fixes pour les colonnes principales
                echo '<th><i class="fas fa-building"></i> Type</th>';
                echo '<th><i class="fas fa-phone"></i> Téléphone</th>';
                echo '<th><i class="fas fa-calendar"></i> Date</th>';
                echo '<th></th>';
-               
-               // En-têtes des colonnes configurées (sauf Site Web qui sera en dernier)
-               if (!empty($config['display_fields'])) {
-                   foreach ($config['display_fields'] as $field_id) {
-                       if (isset($form_fields[$field_id])) {
-                           $field_label = $form_fields[$field_id]['label'];
-                           
-                           // ✅ NOUVEAU : Filtrer seulement les champs de lien d'analyse spécifiques
-                           if (strpos(strtolower($field_label), 'lien analyse') !== false || 
-                               strpos(strtolower($field_label), 'analyse du bien') !== false) {
-                               continue;
-                           }
-                           
-                           // ✅ NOUVEAU : Ne pas afficher Site Web ici, il sera en dernier
-                           if (strpos(strtolower($field_label), 'site') !== false ||
-                               strpos(strtolower($field_label), 'web') !== false ||
-                               strpos(strtolower($field_label), 'url') !== false) {
-                               continue;
-                           }
-                           
-                           // ✅ NOUVEAU : Titres plus explicites
-                           $display_label = $field_label;
-                           if (strpos(strtolower($field_label), 'nom') !== false || 
-                               strpos(strtolower($field_label), 'name') !== false) {
-                               $display_label = 'Nom';
-                           } elseif (strpos(strtolower($field_label), 'telephone') !== false || 
-                                     strpos(strtolower($field_label), 'phone') !== false) {
-                               $display_label = 'Téléphone';
-                           } elseif (strpos(strtolower($field_label), 'email') !== false || 
-                                     strpos(strtolower($field_label), 'mail') !== false) {
-                               $display_label = 'Email';
-                           } elseif (strpos(strtolower($field_label), 'adresse') !== false || 
-                                     strpos(strtolower($field_label), 'address') !== false) {
-                               $display_label = 'Adresse';
-                           }
-                           
-                           echo '<th>' . esc_html($display_label) . '</th>';
-                       }
-                   }
+           echo '</tr></thead>';
+           
+           echo '<tbody id="lead-vendeur-table-body">';
+           
+           // Afficher les données
+           if (!empty($entries)) {
+               foreach ($entries as $entry) {
+                   echo '<tr class="lead-vendeur-row">';
+                   echo '<td class="favori-column">';
+                   echo '<button class="favori-toggle" data-entry-id="' . esc_attr($entry['id']) . '">';
+                   echo '<i class="fas fa-heart"></i>';
+                   echo '</button>';
+                   echo '</td>';
+                   echo '<td>' . esc_html($entry['ville'] ?? 'N/A') . '</td>';
+                   echo '<td>' . esc_html($entry['type'] ?? 'N/A') . '</td>';
+                   echo '<td>' . esc_html($entry['telephone'] ?? 'N/A') . '</td>';
+                   echo '<td>' . esc_html($entry['date_created'] ?? 'N/A') . '</td>';
+                   echo '<td class="actions-column">';
+                   echo '<button class="button button-primary">Voir</button>';
+                   echo '</td>';
+                   echo '</tr>';
                }
-               
-               echo '<th></th>';
-               echo '</tr>';
-               echo '</thead>';
-               echo '<tbody id="lead-vendeur-table-body">';
-               
-               // ✅ NOUVEAU : Laisser la pagination AJAX gérer l'affichage des données
-               echo '<tr><td colspan="100%" style="text-align: center; padding: 20px;"><div class="loading-spinner"></div><p>Chargement des données...</p></td></tr>';
+           } else {
+               echo '<tr><td colspan="6" style="text-align: center; padding: 20px;">Aucune entrée trouvée</td></tr>';
+           }
                
                echo '</tbody>';
                echo '</table>';
                echo '</div>';
                
-               // Pagination (style DPE/SCI)
+           // Pagination
                if ($total_pages > 1) {
                    echo '<div id="lead-vendeur-pagination-container" class="lead-vendeur-pagination">';
                    echo '<div class="pagination-controls">';
-                   
-                   // Bouton précédent
-                   if ($current_page > 1) {
-                       echo '<button class="pagination-btn" data-page="' . ($current_page - 1) . '">← Précédent</button>';
-                   }
-                   
-                   // Numéros de page
-                   echo '<div class="pagination-numbers">';
-                   $start_page = max(1, $current_page - 2);
-                   $end_page = min($total_pages, $current_page + 2);
-                   
-                   if ($start_page > 1) {
-                       echo '<span class="pagination-number" data-page="1">1</span>';
-                       if ($start_page > 2) {
-                           echo '<span class="pagination-ellipsis">...</span>';
-                       }
-                   }
-                   
-                   for ($i = $start_page; $i <= $end_page; $i++) {
-                       $active_class = ($i == $current_page) ? 'current' : '';
-                       echo '<span class="pagination-number ' . $active_class . '" data-page="' . $i . '">' . $i . '</span>';
-                   }
-                   
-                   if ($end_page < $total_pages) {
-                       if ($end_page < $total_pages - 1) {
-                           echo '<span class="pagination-ellipsis">...</span>';
-                       }
-                       echo '<span class="pagination-number" data-page="' . $total_pages . '">' . $total_pages . '</span>';
-                   }
-                   
-                   echo '</div>';
-                   
-                   // Bouton suivant
-                   if ($current_page < $total_pages) {
-                       echo '<button class="pagination-btn" data-page="' . ($current_page + 1) . '">Suivant →</button>';
-                   }
-                   
-                   echo '</div>';
-                   echo '</div>';
-           } else {
-               // Conteneur de pagination vide si pas de pagination
-               echo '<div id="lead-vendeur-pagination-container"></div>';
-               }
+               echo '<button type="button" class="button button-secondary pagination-btn disabled" data-page="1">';
+               echo '<i class="fas fa-chevron-left"></i> Précédent';
+               echo '</button>';
                
-               echo '</div>';
-           } else {
-               echo '<div class="my-istymo-card">';
-               echo '<h2>📋 Aucun lead trouvé</h2>';
-               echo '<p>Aucune entrée trouvée pour le formulaire configuré.</p>';
-               echo '</div>';
+                   echo '<div class="pagination-numbers">';
+               for ($i = 1; $i <= min(5, $total_pages); $i++) {
+                   if ($i == 1) {
+                       echo '<span class="pagination-number current">1</span>';
+                   } else {
+                       echo '<button type="button" class="pagination-number" data-page="' . $i . '">' . $i . '</button>';
+                   }
+               }
+                   echo '</div>';
+                   
+               if ($total_pages > 1) {
+                   echo '<button type="button" class="button button-secondary pagination-btn" data-page="2">';
+                   echo 'Suivant <i class="fas fa-chevron-right"></i>';
+                   echo '</button>';
+                   }
+                   
+                   echo '</div>';
+                   echo '</div>';
            }
            
-           // ✅ NOUVEAU : Section de débogage des données brutes (toujours visible)
-           if (current_user_can('manage_options')) {
+           echo '<p>✅ Contenu généré avec succès</p>';
+           
+           // ✅ NOUVEAU : Section de debug des données brutes
                echo '<div class="my-istymo-card" style="margin-top: 30px;">';
                echo '<h2>🔧 Données de débogage (Admin uniquement)</h2>';
                echo '<button type="button" id="toggle-debug-data" class="button button-secondary" style="margin-bottom: 15px;">';
@@ -841,161 +784,22 @@ function lead_vendeur_users_page() {
                echo '</div>';
                
                // Afficher les champs du formulaire
+           $form_fields = $config_manager->get_form_fields($config['gravity_form_id']);
                if (!empty($form_fields)) {
                    echo '<div style="margin-bottom: 20px;">';
                    echo '<h4>📝 Champs du formulaire Gravity Forms</h4>';
                    echo '<pre style="background: #fff; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 12px;">';
                    echo esc_html(print_r($form_fields, true));
                    echo '</pre>';
-                   
-                   // ✅ NOUVEAU : Détection des champs d'adresse pour débogage
-                   echo '<h5>🔍 Détection des champs d\'adresse :</h5>';
-                   echo '<ul style="background: #fff; padding: 10px; border-radius: 3px; font-size: 12px;">';
-                   foreach ($form_fields as $field_id => $field) {
-                       $label = $field['label'] ?? '';
-                       $is_address = is_address_field($label, 'test_value');
-                       $is_city = is_city_field($label, 'test_value');
-                       $is_phone = is_phone_field($label, '0123456789');
-                       
-                       echo '<li><strong>' . esc_html($label) . '</strong> (ID: ' . $field_id . ') - ';
-                       echo 'Adresse: ' . ($is_address ? '✅' : '❌') . ' | ';
-                       echo 'Ville: ' . ($is_city ? '✅' : '❌') . ' | ';
-                       echo 'Téléphone: ' . ($is_phone ? '✅' : '❌');
-                       echo '</li>';
-                   }
-                   echo '</ul>';
-                   
-                   // ✅ NOUVEAU : Test avec des valeurs réelles
-                   if (!empty($entries)) {
-                       echo '<h5>🧪 Test avec des valeurs réelles (première entrée) :</h5>';
-                       echo '<ul style="background: #fff; padding: 10px; border-radius: 3px; font-size: 12px;">';
-                       $first_entry = reset($entries);
-                       foreach ($config['display_fields'] as $field_id) {
-                           $value = isset($first_entry[$field_id]) ? $first_entry[$field_id] : '';
-                           $field_label = isset($form_fields[$field_id]) ? $form_fields[$field_id]['label'] : '';
-                           $is_address = is_address_field($field_label, $value);
-                           $is_city = is_city_field($field_label, $value);
-                           $is_phone = is_phone_field($field_label, $value);
-                           
-                           echo '<li><strong>' . esc_html($field_label) . '</strong> (ID: ' . $field_id . ') - ';
-                           echo 'Valeur: "' . esc_html($value) . '" - ';
-                           echo 'Adresse: ' . ($is_address ? '✅' : '❌') . ' | ';
-                           echo 'Ville: ' . ($is_city ? '✅' : '❌') . ' | ';
-                           echo 'Téléphone: ' . ($is_phone ? '✅' : '❌');
-                           echo '</li>';
-                       }
-                       echo '</ul>';
-                   }
                echo '</div>';
                }
                
-               // ✅ NOUVEAU : Afficher les entrées brutes dans un tableau formaté (champs sélectionnés)
+           // Afficher les entrées récupérées
                if (!empty($entries)) {
                    echo '<div style="margin-bottom: 20px;">';
-                   echo '<h4>📋 Données brutes - Champs sélectionnés (' . count($entries) . ' entrées)</h4>';
-                   
-                   // Tableau des données brutes
-                   echo '<div style="overflow-x: auto; border: 1px solid #dee2e6; border-radius: 5px;">';
-                   echo '<table style="width: 100%; border-collapse: collapse; font-size: 12px;">';
-                   echo '<thead style="background: #f8f9fa;">';
-                   echo '<tr>';
-                   echo '<th style="padding: 8px; border: 1px solid #dee2e6; text-align: left;">ID</th>';
-                   echo '<th style="padding: 8px; border: 1px solid #dee2e6; text-align: left;">Date</th>';
-                   
-                   // En-têtes des champs sélectionnés uniquement
-                   if (!empty($config['display_fields']) && !empty($form_fields)) {
-                       foreach ($config['display_fields'] as $field_id) {
-                           if (isset($form_fields[$field_id])) {
-                               echo '<th style="padding: 8px; border: 1px solid #dee2e6; text-align: left;">';
-                               echo esc_html($form_fields[$field_id]['label']) . ' (ID: ' . $field_id . ')';
-                               echo '</th>';
-                           }
-                       }
-                   }
-                   echo '</tr>';
-                   echo '</thead>';
-                   echo '<tbody>';
-                   
-                   // Données des entrées
-                   foreach ($entries as $entry) {
-                       echo '<tr>';
-                       echo '<td style="padding: 8px; border: 1px solid #dee2e6;">' . esc_html($entry['id']) . '</td>';
-                       echo '<td style="padding: 8px; border: 1px solid #dee2e6;">' . esc_html($entry['date_created']) . '</td>';
-                       
-                       // Valeurs des champs sélectionnés uniquement
-                       if (!empty($config['display_fields'])) {
-                           foreach ($config['display_fields'] as $field_id) {
-                               $value = isset($entry[$field_id]) ? $entry[$field_id] : '';
-                               echo '<td style="padding: 8px; border: 1px solid #dee2e6; max-width: 200px; word-wrap: break-word;">';
-                               echo esc_html($value);
-                               echo '</td>';
-                           }
-                       }
-                       echo '</tr>';
-                   }
-                   echo '</tbody>';
-                   echo '</table>';
-                   echo '</div>';
-               echo '</div>';
-               }
-               
-               // ✅ NOUVEAU : Afficher TOUTES les données brutes (tous les champs disponibles)
-               if (!empty($entries)) {
-                   echo '<div style="margin-bottom: 20px;">';
-                   echo '<h4>🗂️ Données brutes complètes - Tous les champs disponibles (' . count($entries) . ' entrées)</h4>';
-                   
-                   // Tableau de toutes les données brutes
-                   echo '<div style="overflow-x: auto; border: 1px solid #dee2e6; border-radius: 5px; max-height: 500px; overflow-y: auto;">';
-                   echo '<table style="width: 100%; border-collapse: collapse; font-size: 11px;">';
-                   echo '<thead style="background: #f8f9fa; position: sticky; top: 0;">';
-                   echo '<tr>';
-                   echo '<th style="padding: 6px; border: 1px solid #dee2e6; text-align: left; min-width: 50px;">ID</th>';
-                   echo '<th style="padding: 6px; border: 1px solid #dee2e6; text-align: left; min-width: 120px;">Date</th>';
-                   
-                   // En-têtes de TOUS les champs disponibles
-                   if (!empty($entries)) {
-                       $first_entry = reset($entries);
-                       foreach ($first_entry as $field_id => $value) {
-                           if ($field_id !== 'id' && $field_id !== 'date_created') {
-                               $field_label = isset($form_fields[$field_id]) ? $form_fields[$field_id]['label'] : 'Champ ' . $field_id;
-                               echo '<th style="padding: 6px; border: 1px solid #dee2e6; text-align: left; min-width: 100px;">';
-                               echo esc_html($field_label) . ' (ID: ' . $field_id . ')';
-                               echo '</th>';
-                           }
-                       }
-                   }
-                   echo '</tr>';
-                   echo '</thead>';
-                   echo '<tbody>';
-                   
-                   // Données de toutes les entrées
-                   foreach ($entries as $entry) {
-                       echo '<tr>';
-                       echo '<td style="padding: 6px; border: 1px solid #dee2e6;">' . esc_html($entry['id']) . '</td>';
-                       echo '<td style="padding: 6px; border: 1px solid #dee2e6;">' . esc_html($entry['date_created']) . '</td>';
-                       
-                       // Valeurs de TOUS les champs
-                       foreach ($entry as $field_id => $value) {
-                           if ($field_id !== 'id' && $field_id !== 'date_created') {
-                               echo '<td style="padding: 6px; border: 1px solid #dee2e6; max-width: 150px; word-wrap: break-word; font-size: 10px;">';
-                               echo esc_html($value);
-                               echo '</td>';
-                           }
-                       }
-                       echo '</tr>';
-                   }
-                   echo '</tbody>';
-                   echo '</table>';
-                   echo '</div>';
-               echo '</div>';
-               }
-               
-               // Afficher les favoris
-               if (!empty($favori_ids)) {
-                   echo '<div style="margin-bottom: 20px;">';
-                   echo '<h4>⭐ IDs des favoris de l\'utilisateur</h4>';
+               echo '<h4>📋 Entrées récupérées (' . count($entries) . ' sur ' . $total_entries . ' total)</h4>';
                    echo '<pre style="background: #fff; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 12px;">';
-                   echo esc_html(print_r($favori_ids, true));
+               echo esc_html(print_r($entries, true));
                    echo '</pre>';
                echo '</div>';
                }
@@ -1009,89 +813,79 @@ function lead_vendeur_users_page() {
                echo '<li><strong>Form ID configuré:</strong> ' . (isset($config['gravity_form_id']) ? $config['gravity_form_id'] : 'Non configuré') . '</li>';
                echo '<li><strong>Champs d\'affichage configurés:</strong> ' . (isset($config['display_fields']) ? count($config['display_fields']) : 0) . '</li>';
                echo '<li><strong>Timestamp:</strong> ' . current_time('Y-m-d H:i:s') . '</li>';
+           echo '<li><strong>Total entrées:</strong> ' . $total_entries . '</li>';
+           echo '<li><strong>Total pages:</strong> ' . $total_pages . '</li>';
+           echo '<li><strong>Page actuelle:</strong> 1</li>';
+           echo '<li><strong>Par page:</strong> ' . $atts['per_page'] . '</li>';
                echo '</ul>';
                echo '</div>';
                
                echo '</div>'; // Fin debug-data-section
                echo '</div>'; // Fin my-istymo-card
-           }
            
-           // ✅ NOUVEAU : Script pour l'intégration avec le système unifié
+           // Script pour le toggle des données de débogage
            echo '<script>
            jQuery(document).ready(function($) {
-               // Gestion des favoris Lead Vendeur
-               $(document).on("click", ".favori-toggle", function(e) {
-                   e.preventDefault();
-                   var $this = $(this);
-                   var entryId = $this.data("entry-id");
-                   var isActive = $this.hasClass("favori-active");
-                   
-                   $.ajax({
-                       url: leadVendeurAjax.ajax_url,
-                       type: "POST",
-                       data: {
-                           action: "toggle_lead_vendeur_favori",
-                           nonce: leadVendeurAjax.nonce,
-                           entry_id: entryId,
-                           is_favori: isActive ? 0 : 1
-                       },
-                       success: function(response) {
-                           if (response.success) {
-                               if (isActive) {
-                                   $this.removeClass("favori-active");
-                                   $this.closest("tr").removeClass("favori-row");
-                               } else {
-                                   $this.addClass("favori-active");
-                                   $this.closest("tr").addClass("favori-row");
-                               }
-                           }
-                       }
-                   });
+               $("#toggle-debug-data").click(function() {
+                   $("#debug-data-section").toggle();
                });
-               
-               // ✅ NOUVEAU : Détails désactivés - focus sur les données brutes
-               console.log("Mode données brutes activé - détails désactivés");
            });
            </script>';
             
            echo '</div>';
-           echo '</div>';
-           
-           echo '<p>✅ Page Lead Vendeur chargée avec succès !</p>';
-           echo '</div>';
        }
+
+// ✅ NOUVEAU : Fonction pour la page des utilisateurs Lead Vendeur
        
        // ✅ NOUVEAU : Fonction pour la page Carte de Succession
        function carte_succession_page() {
+           // Debug: Vérifier que la fonction est appelée
+           error_log('Carte de Succession: Fonction carte_succession_page() appelée');
+           
            // Vérifier si l'utilisateur est connecté
            if (!is_user_logged_in()) {
-               echo '<div class="wrap"><h1>Carte de Succession</h1><p>Vous devez être connecté pour accéder à cette page.</p></div>';
+               echo '<div class="wrap"><h1>Accès refusé</h1><p>Vous devez être connecté pour accéder à cette page.</p></div>';
                return;
            }
            
+           echo '<div class="wrap">';
+           echo '<h1>🗺️ Carte de Succession - Debug</h1>';
+           echo '<p>✅ Utilisateur connecté</p>';
+           
            // Charger les gestionnaires
+           try {
            $config_manager = carte_succession_config_manager();
+               echo '<p>✅ Config manager chargé</p>';
+               
            $favoris_handler = carte_succession_favoris_handler();
+               echo '<p>✅ Favoris handler chargé</p>';
+           } catch (Exception $e) {
+               echo '<div class="notice notice-error"><p>Erreur lors du chargement des gestionnaires: ' . $e->getMessage() . '</p></div>';
+               echo '</div>';
+               return;
+           }
            
            // Vérifier si Gravity Forms est actif
            if (!$config_manager->is_gravity_forms_active()) {
-               echo '<div class="wrap">';
-               echo '<h1>🗺️ Carte de Succession</h1>';
                echo '<div class="notice notice-error"><p><strong>Gravity Forms n\'est pas actif !</strong> Veuillez installer et activer Gravity Forms pour utiliser cette fonctionnalité.</p></div>';
                echo '</div>';
                return;
            }
            
+           echo '<p>✅ Gravity Forms actif</p>';
+           
            $config = $config_manager->get_config();
+           echo '<p>✅ Configuration récupérée</p>';
+           echo '<p>Config: ' . print_r($config, true) . '</p>';
            
            // Si aucun formulaire configuré, afficher un message
            if (empty($config['gravity_form_id']) || !isset($config['gravity_form_id'])) {
-               echo '<div class="wrap">';
-               echo '<h1>🗺️ Carte de Succession</h1>';
                echo '<div class="notice notice-warning"><p><strong>Configuration requise !</strong> Veuillez d\'abord configurer le formulaire Gravity Forms dans la <a href="' . admin_url('admin.php?page=carte-succession-config') . '">page de configuration</a>.</p></div>';
                echo '</div>';
                return;
            }
+           
+           echo '<p>✅ Formulaire configuré (ID: ' . $config['gravity_form_id'] . ')</p>';
            
            // ✅ NOUVEAU : Gestion de la pagination AJAX
            $current_page = 1; // Page par défaut pour le chargement initial
@@ -1109,11 +903,16 @@ function lead_vendeur_users_page() {
            $total_entries = $config_manager->get_form_entries_count(isset($config['gravity_form_id']) ? $config['gravity_form_id'] : 0);
            $total_pages = ceil($total_entries / $per_page);
            
+           echo '<p>✅ Entrées récupérées: ' . count($entries) . ' sur ' . $total_entries . ' total</p>';
+           
            // Charger les styles et scripts
+           wp_enqueue_style('font-awesome', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css', array(), '6.4.0');
            wp_enqueue_style('carte-succession-style', plugin_dir_url(__FILE__) . 'assets/css/carte-succession.css', array(), '1.0.0');
-           wp_enqueue_style('carte-succession-popup-style', plugin_dir_url(__FILE__) . 'assets/css/carte-succession-popup.css', array(), '1.0.1');
+           wp_enqueue_style('carte-succession-popup-style', plugin_dir_url(__FILE__) . 'assets/css/carte-succession-popup.css', array(), '1.0.7');
            wp_enqueue_style('carte-succession-sections-style', plugin_dir_url(__FILE__) . 'assets/css/carte-succession-sections.css', array(), '1.0.0');
            wp_enqueue_script('carte-succession-js', plugin_dir_url(__FILE__) . 'assets/js/carte-succession.js', array('jquery'), '1.0.0', true);
+           
+           echo '<p>✅ Styles et scripts chargés</p>';
            
            // ✅ NOUVEAU : Données AJAX pour la pagination
            wp_localize_script('carte-succession-js', 'carteSuccessionAjax', array(
@@ -1382,8 +1181,8 @@ function lead_vendeur_users_page() {
                        e.preventDefault();
                        var entryId = $(this).data("entry-id");
                        
-                       // Afficher un modal de chargement
-                       var $modal = $(\'<div class="carte-details-modal"><div class="carte-details-modal-content"><div class="loading-spinner"></div><p>Chargement des détails...</p></div></div>\');
+                       // Afficher un modal de chargement avec la structure correcte
+                       var $modal = $(\'<div class="carte-details-modal"><div class="carte-details-modal-content"><div class="loading-spinner"><div class="spinner"></div><p>Chargement des détails...</p></div></div></div>\');
                        $(\'body\').append($modal);
                        
                        $.ajax({
@@ -1420,6 +1219,76 @@ function lead_vendeur_users_page() {
                }
            });
            </script>';
+           
+           // ✅ NOUVEAU : Section de debug des données brutes
+           echo '<div class="my-istymo-card" style="margin-top: 30px;">';
+           echo '<h2>🔧 Données de débogage (Admin uniquement)</h2>';
+           echo '<button type="button" id="toggle-debug-data-carte" class="button button-secondary" style="margin-bottom: 15px;">';
+           echo '<i class="fas fa-eye"></i> Afficher/Masquer les données brutes';
+           echo '</button>';
+           
+           echo '<div id="debug-data-section-carte" style="display: none; background: #f8f9fa; padding: 15px; border-radius: 5px; border: 1px solid #dee2e6;">';
+           echo '<h3>📊 Données brutes récupérées depuis la base de données</h3>';
+           
+           // Afficher les informations de configuration
+           echo '<div style="margin-bottom: 20px;">';
+           echo '<h4>⚙️ Configuration du formulaire</h4>';
+           echo '<pre style="background: #fff; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 12px;">';
+           echo esc_html(print_r($config, true));
+           echo '</pre>';
+           echo '</div>';
+           
+           // Afficher les champs du formulaire
+           $form_fields = $config_manager->get_form_fields($config['gravity_form_id']);
+           if (!empty($form_fields)) {
+               echo '<div style="margin-bottom: 20px;">';
+               echo '<h4>📝 Champs du formulaire Gravity Forms</h4>';
+               echo '<pre style="background: #fff; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 12px;">';
+               echo esc_html(print_r($form_fields, true));
+               echo '</pre>';
+               echo '</div>';
+           }
+           
+           // Afficher les entrées récupérées
+           if (!empty($entries)) {
+               echo '<div style="margin-bottom: 20px;">';
+               echo '<h4>📋 Entrées récupérées (' . count($entries) . ' sur ' . $total_entries . ' total)</h4>';
+               echo '<pre style="background: #fff; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 12px;">';
+               echo esc_html(print_r($entries, true));
+               echo '</pre>';
+               echo '</div>';
+           }
+           
+           // Informations système
+           echo '<div style="margin-bottom: 20px;">';
+           echo '<h4>🖥️ Informations système</h4>';
+           echo '<ul style="list-style: none; padding: 0;">';
+           echo '<li><strong>User ID:</strong> ' . get_current_user_id() . '</li>';
+           echo '<li><strong>Gravity Forms actif:</strong> ' . ($config_manager->is_gravity_forms_active() ? 'Oui' : 'Non') . '</li>';
+           echo '<li><strong>Form ID configuré:</strong> ' . (isset($config['gravity_form_id']) ? $config['gravity_form_id'] : 'Non configuré') . '</li>';
+           echo '<li><strong>Champs d\'affichage configurés:</strong> ' . (isset($config['display_fields']) ? count($config['display_fields']) : 0) . '</li>';
+           echo '<li><strong>Timestamp:</strong> ' . current_time('Y-m-d H:i:s') . '</li>';
+           echo '<li><strong>Total entrées:</strong> ' . $total_entries . '</li>';
+           echo '<li><strong>Total pages:</strong> ' . $total_pages . '</li>';
+           echo '<li><strong>Page actuelle:</strong> ' . $current_page . '</li>';
+           echo '<li><strong>Par page:</strong> ' . $per_page . '</li>';
+           echo '<li><strong>Favoris utilisateur:</strong> ' . count($favori_ids) . ' favoris</li>';
+           echo '</ul>';
+           echo '</div>';
+           
+           echo '</div>'; // Fin debug-data-section-carte
+           echo '</div>'; // Fin my-istymo-card
+           
+           // Script pour le toggle des données de débogage
+           echo '<script>
+           jQuery(document).ready(function($) {
+               $("#toggle-debug-data-carte").click(function() {
+                   $("#debug-data-section-carte").toggle();
+               });
+           });
+           </script>';
+           
+           echo '</div>';
        }
        
        // ✅ NOUVEAU : Fonction pour la page de configuration Carte de Succession
@@ -3931,7 +3800,7 @@ function my_istymo_carte_succession_shortcode($atts) {
     
     // Charger les styles et scripts spécifiques aux cartes de succession
     wp_enqueue_style('carte-succession-style', plugin_dir_url(__FILE__) . 'assets/css/carte-succession.css', array(), '1.0.0');
-    wp_enqueue_style('carte-succession-popup-style', plugin_dir_url(__FILE__) . 'assets/css/carte-succession-popup.css', array(), '1.0.1');
+        wp_enqueue_style('carte-succession-popup-style', plugin_dir_url(__FILE__) . 'assets/css/carte-succession-popup.css', array(), '1.0.7');
     wp_enqueue_style('carte-succession-sections-style', plugin_dir_url(__FILE__) . 'assets/css/carte-succession-sections.css', array(), '1.0.0');
     wp_enqueue_script('carte-succession-js', plugin_dir_url(__FILE__) . 'assets/js/carte-succession.js', array('jquery'), '1.0.0', true);
     
@@ -5252,81 +5121,209 @@ function carte_succession_ajax_get_entry_details() {
         return;
     }
     
-    // Générer le HTML des détails
+    // Générer le HTML du modal avec la même structure que Lead Vendeur
     ob_start();
-    echo '<div class="carte-succession-details">';
-    echo '<h3>🗺️ Détails de la Carte de Succession</h3>';
-    echo '<div class="details-content">';
+    ?>
+    <div class="lead-details-modal-header">
+        <div class="lead-details-header-left">
+            <div class="lead-details-icon">
+                <i class="fas fa-map"></i>
+            </div>
+            <div class="lead-details-title-section">
+                <h2>Détails de la Carte de Succession #<?php echo esc_html($entry['id']); ?></h2>
+                <p class="lead-details-subtitle">Informations complètes</p>
+                <p class="lead-details-date">Créé le <?php echo date('d/m/Y à H:i', strtotime($entry['date_created'])); ?></p>
+            </div>
+        </div>
+        <div class="lead-details-header-right">
+            <span class="lead-details-modal-close">&times;</span>
+        </div>
+    </div>
     
-    // Informations de contact
-    echo '<div class="details-section">';
-    echo '<h4><i class="fas fa-user"></i> Informations de contact</h4>';
-    echo '<div class="details-grid">';
-    
-    $contact_fields = array(
-        '1' => 'Nom',
-        '2' => 'Prénom', 
-        '3' => 'Téléphone',
-        '4' => 'Email',
-        '5' => 'Adresse'
-    );
-    
-    foreach ($contact_fields as $field_id => $label) {
+    <div class="lead-details-main-content">
+        <div class="lead-details-left-column">
+            <div class="lead-details-info-section">
+                <div class="lead-details-section-header">
+                    <i class="fas fa-info-circle"></i>
+                    <h3>Informations générales</h3>
+                </div>
+                <div class="lead-details-info-grid">
+                    <?php
+                    // Type de lead
+                    echo '<div class="lead-details-info-item">';
+                    echo '<div class="lead-details-info-label">Type de lead</div>';
+                    echo '<div class="lead-details-info-value">Carte de Succession</div>';
+                    echo '</div>';
+                    
+                    // Type d'habitation
+                    if (isset($entry['52']) && !empty($entry['52'])) {
+                        echo '<div class="lead-details-info-item">';
+                        echo '<div class="lead-details-info-label">Type d\'habitation</div>';
+                        echo '<div class="lead-details-info-value">' . esc_html($entry['52']) . '</div>';
+                        echo '</div>';
+                    }
+                    
+                    // Adresse complète
+                    $adresse_parts = array();
+                    if (isset($entry['4.1']) && !empty($entry['4.1'])) $adresse_parts[] = $entry['4.1'];
+                    if (isset($entry['4.3']) && !empty($entry['4.3'])) $adresse_parts[] = $entry['4.3'];
+                    if (isset($entry['4.5']) && !empty($entry['4.5'])) $adresse_parts[] = $entry['4.5'];
+                    
+                    if (!empty($adresse_parts)) {
+                        echo '<div class="lead-details-info-item">';
+                        echo '<div class="lead-details-info-label">Adresse</div>';
+                        echo '<div class="lead-details-info-value">' . esc_html(implode(', ', $adresse_parts)) . '</div>';
+            echo '</div>';
+        }
+                    
+                    // Date de décès
+                    if (isset($entry['50']) && !empty($entry['50'])) {
+                        echo '<div class="lead-details-info-item">';
+                        echo '<div class="lead-details-info-label">Date de décès</div>';
+                        echo '<div class="lead-details-info-value">' . esc_html($entry['50']) . '</div>';
+                        echo '</div>';
+                    }
+                    ?>
+                </div>
+            </div>
+            
+        </div>
+        
+        <div class="lead-details-right-column">
+            <div class="lead-details-info-section">
+                <div class="lead-details-section-header">
+                    <i class="fas fa-user"></i>
+                    <h3>Identité du défunt</h3>
+                </div>
+                <div class="lead-details-info-grid">
+                    <?php
+                    // Prénom
+                    if (isset($entry['51.3']) && !empty($entry['51.3'])) {
+                        echo '<div class="lead-details-info-item">';
+                        echo '<div class="lead-details-info-label">Prénom</div>';
+                        echo '<div class="lead-details-info-value">' . esc_html($entry['51.3']) . '</div>';
+    echo '</div>';
+                    } else {
+                        echo '<div class="lead-details-info-item">';
+                        echo '<div class="lead-details-info-label">Prénom</div>';
+                        echo '<div class="lead-details-info-value"><span class="empty-value">Non renseigné</span></div>';
+    echo '</div>';
+                    }
+                    
+                    // Nom
+                    if (isset($entry['51.6']) && !empty($entry['51.6'])) {
+                        echo '<div class="lead-details-info-item">';
+                        echo '<div class="lead-details-info-label">Nom</div>';
+                        echo '<div class="lead-details-info-value">' . esc_html($entry['51.6']) . '</div>';
+                        echo '</div>';
+                    } else {
+                        echo '<div class="lead-details-info-item">';
+                        echo '<div class="lead-details-info-label">Nom</div>';
+                        echo '<div class="lead-details-info-value"><span class="empty-value">Non renseigné</span></div>';
+                        echo '</div>';
+                    }
+                    ?>
+                </div>
+            </div>
+            
+            <div class="lead-details-info-section">
+                <div class="lead-details-section-header">
+                    <i class="fas fa-users"></i>
+                    <h3>Descendants</h3>
+                </div>
+                <div class="lead-details-info-grid">
+                    <?php
+                    // Descendants - Champs 6.1 à 6.6
+                    $descendant_fields = array(
+                        '6.1' => 'Descendant 1',
+                        '6.2' => 'Descendant 2', 
+                        '6.3' => 'Descendant 3',
+                        '6.4' => 'Descendant 4',
+                        '6.5' => 'Descendant 5',
+                        '6.6' => 'Descendant 6'
+                    );
+                    
+                    $has_descendants = false;
+                    foreach ($descendant_fields as $field_id => $label) {
         if (isset($entry[$field_id]) && !empty($entry[$field_id])) {
-            echo '<div class="detail-item">';
-            echo '<strong>' . esc_html($label) . ':</strong> ';
-            echo esc_html($entry[$field_id]);
+                            if (!$has_descendants) {
+                                $has_descendants = true;
+                            }
+                            echo '<div class="lead-details-info-item">';
+                            echo '<div class="lead-details-info-label">' . esc_html($label) . '</div>';
+                            echo '<div class="lead-details-info-value">' . esc_html($entry[$field_id]) . '</div>';
             echo '</div>';
         }
     }
     
+                    if (!$has_descendants) {
+                        echo '<div class="lead-details-info-item">';
+                        echo '<div class="lead-details-info-label">Descendants</div>';
+                        echo '<div class="lead-details-info-value"><span class="empty-value">Aucun descendant renseigné</span></div>';
     echo '</div>';
-    echo '</div>';
-    
-    // Informations de succession
-    echo '<div class="details-section">';
-    echo '<h4><i class="fas fa-gavel"></i> Informations de succession</h4>';
-    echo '<div class="details-grid">';
-    
-    $succession_fields = array(
-        '6' => 'Type de succession',
-        '7' => 'Date de décès',
-        '8' => 'Lieu de décès',
-        '9' => 'Notaire',
-        '10' => 'Héritiers',
-        '11' => 'Biens immobiliers',
-        '12' => 'Biens mobiliers',
-        '13' => 'Dettes',
-        '14' => 'Assurance vie'
-    );
-    
-    foreach ($succession_fields as $field_id => $label) {
-        if (isset($entry[$field_id]) && !empty($entry[$field_id])) {
-            echo '<div class="detail-item">';
-            echo '<strong>' . esc_html($label) . ':</strong> ';
-            echo esc_html($entry[$field_id]);
-            echo '</div>';
-        }
+                    }
+                    ?>
+                </div>
+            </div>
+            
+            <div class="lead-details-info-section">
+                <div class="lead-details-section-header">
+                    <i class="fas fa-users"></i>
+                    <h3>Autres descendants</h3>
+                </div>
+                <div class="lead-details-info-grid">
+                    <?php
+                    // Autres descendants - Champs 8.1 à 8.6
+                    $autres_descendant_fields = array(
+                        '8.1' => 'Autre descendant 1',
+                        '8.2' => 'Autre descendant 2',
+                        '8.3' => 'Autre descendant 3', 
+                        '8.4' => 'Autre descendant 4',
+                        '8.5' => 'Autre descendant 5',
+                        '8.6' => 'Autre descendant 6'
+                    );
+                    
+                    $has_autres_descendants = false;
+                    foreach ($autres_descendant_fields as $field_id => $label) {
+                        if (isset($entry[$field_id]) && !empty($entry[$field_id])) {
+                            if (!$has_autres_descendants) {
+                                $has_autres_descendants = true;
+                            }
+                            echo '<div class="lead-details-info-item">';
+                            echo '<div class="lead-details-info-label">' . esc_html($label) . '</div>';
+                            echo '<div class="lead-details-info-value">' . esc_html($entry[$field_id]) . '</div>';
+        echo '</div>';
+                        }
     }
     
+                    if (!$has_autres_descendants) {
+                        echo '<div class="lead-details-info-item">';
+                        echo '<div class="lead-details-info-label">Autres descendants</div>';
+                        echo '<div class="lead-details-info-value"><span class="empty-value">Aucun autre descendant renseigné</span></div>';
     echo '</div>';
-    echo '</div>';
+                    }
+                    ?>
+                </div>
+            </div>
+            
+            <?php if (isset($entry['53']) && !empty($entry['53'])): ?>
+            <div class="lead-details-info-section">
+                <div class="lead-details-section-header">
+                    <i class="fas fa-comment"></i>
+                    <h3>Commentaire</h3>
+                </div>
+                <div class="lead-details-info-grid">
+                    <div class="lead-details-info-item">
+                        <div class="lead-details-info-label">Commentaire</div>
+                        <div class="lead-details-info-value" style="white-space: pre-wrap; line-height: 1.5;"><?php echo esc_html($entry['53']); ?></div>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
+        </div>
+    </div>
     
-    // Commentaire
-    if (isset($entry['15']) && !empty($entry['15'])) {
-        echo '<div class="details-section">';
-        echo '<h4><i class="fas fa-comment"></i> Commentaire</h4>';
-        echo '<div class="comment-content">';
-        echo wp_kses_post(nl2br($entry['15']));
-        echo '</div>';
-        echo '</div>';
-    }
-    
-    echo '</div>';
-    echo '<div class="details-actions">';
-    echo '<button class="button button-primary close-modal">Fermer</button>';
-    echo '</div>';
-    echo '</div>';
+    <?php
     
     $details_html = ob_get_clean();
     

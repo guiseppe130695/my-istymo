@@ -155,6 +155,26 @@ button.button.button-small.localiser-btn {
     font-size: 14px !important;
 }
 
+button.button.button-small.carte-details-btn {
+    background: #e3f2fd!important;
+    border-color: #2196f3!important;
+    color: #1976d2!important;
+    margin: 2px !important;
+    border-radius: 4px !important;
+    font-size: 11px;
+    display: inline-block !important;
+    width: auto !important;
+    max-width: 100px !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    transition: all 0.3s ease !important;
+}
+
+button.button.button-small.carte-details-btn:hover {
+background: #bbdefb!important;
+border-color: #1976d2!important;
+}
+
 .phone-link {
     color: #007cba;
     text-decoration: none;

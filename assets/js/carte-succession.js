@@ -173,8 +173,8 @@
             return;
         }
 
-        // Afficher un modal de chargement
-        var $modal = $('<div class="carte-details-modal"><div class="carte-details-modal-content"><div class="loading-spinner"></div><p>Chargement des détails...</p></div></div>');
+        // Afficher un modal de chargement avec la structure correcte
+        var $modal = $('<div class="carte-details-modal show"><div class="carte-details-modal-content"><div class="loading-spinner"><div class="spinner"></div></div><p class="loading-text">Chargement des détails...</p></div></div>');
         $('body').append($modal);
 
         $.ajax({
@@ -200,13 +200,19 @@
         // Fermer le modal en cliquant à l'extérieur
         $modal.on('click', function(e) {
             if (e.target === this) {
-                $modal.remove();
+                $modal.removeClass('show');
+                setTimeout(function() {
+                    $modal.remove();
+                }, 300);
             }
         });
 
         // Bouton de fermeture
-        $modal.on('click', '.close-modal', function() {
-            $modal.remove();
+        $modal.on('click', '.lead-details-modal-close', function() {
+            $modal.removeClass('show');
+            setTimeout(function() {
+                $modal.remove();
+            }, 300);
         });
     }
 
