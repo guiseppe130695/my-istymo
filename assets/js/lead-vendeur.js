@@ -97,12 +97,14 @@
         });
 
         // Gestion des clics sur les détails
-        $(document).on("click", ".view-lead-details", function(e) {
+        $(document).on("click", ".view-lead-details, .view-lead", function(e) {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Bouton détails cliqué, entryId:', $(this).data("entry-id"));
-            var entryId = $(this).data("entry-id");
-            showLeadDetails(entryId);
+            console.log('Bouton détails cliqué, entryId:', $(this).data("entry-id") || $(this).data("lead-id"));
+            var entryId = $(this).data("entry-id") || $(this).data("lead-id");
+            if (entryId) {
+                showLeadDetails(entryId);
+            }
         });
     }
 
@@ -251,11 +253,26 @@
         refresh: refreshCurrentPage,
         showDetails: showLeadDetails
     };
+    
+    // Fonction globale pour compatibilité avec les autres systèmes
+    window.openLeadDetailModal = function(leadId) {
+        console.log('openLeadDetailModal appelée avec leadId:', leadId);
+        console.log('Variables AJAX disponibles:', typeof leadVendeurAjax !== 'undefined' ? leadVendeurAjax : 'NON DÉFINI');
+        if (typeof showLeadDetails === 'function') {
+            showLeadDetails(leadId);
+        } else {
+            console.error('showLeadDetails n\'est pas définie');
+        }
+    };
 
     // Initialisation automatique
     $(document).ready(function() {
         console.log('Document ready - Initialisation Lead Vendeur');
+        console.log('Script lead-vendeur.js chargé');
         initLeadVendeur();
     });
+    
+    // Debug global
+    console.log('Script lead-vendeur.js initialisé');
 
 })(jQuery);

@@ -371,6 +371,10 @@ class Unified_Leads_Manager {
             $update_formats[] = '%s';
         }
         
+        // Toujours mettre à jour la date de modification
+        $update_fields['date_modification'] = current_time('mysql');
+        $update_formats[] = '%s';
+        
         if (empty($update_fields)) {
             return new WP_Error('no_updates', 'Aucune donnée à mettre à jour');
         }
