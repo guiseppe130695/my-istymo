@@ -113,8 +113,8 @@
         currentPage = page;
         
         // Afficher l'indicateur de chargement
-        $tableBody.html('<tr><td colspan="100%" style="text-align: center; padding: 20px;"><div class="loading-spinner"></div><p>Chargement des données...</p></td></tr>');
-        $paginationContainer.html('<div style="text-align: center; padding: 20px;"><div class="loading-spinner"></div></div>');
+        $tableBody.html('<tr><td colspan="100%" style="text-align: center; padding: 20px;"><div class="table-loading-spinner"></div><p>Chargement des données...</p></td></tr>');
+        $paginationContainer.html('<div style="text-align: center; padding: 20px;"><div class="table-loading-spinner"></div></div>');
         
         // Requête AJAX
         $.ajax({

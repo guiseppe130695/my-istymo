@@ -3998,10 +3998,15 @@ function my_istymo_carte_succession_shortcode($atts) {
         ));
         
         // Récupérer les entrées
-        // ✅ NOUVEAU : Filtrer par utilisateur connecté
+        // ✅ NOUVEAU : Filtrer par utilisateur connecté (sauf pour les admins)
         $user_id = get_current_user_id();
-        $entries = $config_manager->get_form_entries_paginated($form_id, 1, $per_page, $user_id);
-        $total_entries = $config_manager->get_form_entries_count($form_id, $user_id);
+        $is_admin = current_user_can('administrator');
+        
+        // Les admins voient toutes les entrées, les autres utilisateurs voient seulement leurs entrées
+        $filter_user_id = $is_admin ? null : $user_id;
+        
+        $entries = $config_manager->get_form_entries_paginated($form_id, 1, $per_page, $filter_user_id);
+        $total_entries = $config_manager->get_form_entries_count($form_id, $filter_user_id);
         $total_pages = ceil($total_entries / $per_page);
         
         // Informations de pagination
@@ -5018,12 +5023,15 @@ function carte_succession_ajax_pagination() {
         return;
     }
     
-    // Récupérer les entrées avec filtrage par utilisateur
+    // Récupérer les entrées avec filtrage par utilisateur (sauf pour les admins)
+    $is_admin = current_user_can('administrator');
+    $filter_user_id = $is_admin ? null : $user_id;
+    
     $entries = $config_manager->get_form_entries_paginated(
         $config['gravity_form_id'], 
         $page, 
         $per_page,
-        $user_id
+        $filter_user_id
     );
     
     // Utiliser le système de favoris simple
@@ -5040,7 +5048,7 @@ function carte_succession_ajax_pagination() {
     error_log("Carte Succession AJAX - User favorites: " . print_r($favori_ids, true));
     
     // Calculer les informations de pagination avec filtrage
-    $total_entries = $config_manager->get_form_entries_count($config['gravity_form_id'], $user_id);
+    $total_entries = $config_manager->get_form_entries_count($config['gravity_form_id'], $filter_user_id);
     $total_pages = ceil($total_entries / $per_page);
     
     // Récupérer les champs du formulaire
@@ -5269,6 +5277,15 @@ function carte_succession_ajax_get_entry_details() {
     
     if (is_wp_error($entry)) {
         wp_send_json_error('Entrée non trouvée');
+        return;
+    }
+    
+    // ✅ NOUVEAU : Vérifier les permissions - les non-admins ne peuvent voir que leurs propres cartes
+    $current_user_id = get_current_user_id();
+    $is_admin = current_user_can('administrator');
+    
+    if (!$is_admin && $entry['created_by'] != $current_user_id) {
+        wp_send_json_error('Vous n\'avez pas les permissions pour voir cette carte de succession');
         return;
     }
     

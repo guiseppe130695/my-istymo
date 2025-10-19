@@ -157,7 +157,7 @@ button.button.button-small.localiser-btn {
 
 button.button.button-small.carte-details-btn {
     background: #e3f2fd!important;
-    border-color: #2196f3!important;
+    border: 1px solid #2196f3!important;
     color: #1976d2!important;
     margin: 2px !important;
     border-radius: 4px !important;
@@ -241,8 +241,8 @@ border-color: #1976d2!important;
     font-size: 14px;
 }
 
-/* Loading spinner */
-.loading-spinner {
+/* Loading spinner - Spécifique au tableau, pas au popup */
+.table-loading-spinner {
     display: inline-block;
     width: 20px;
     height: 20px;
