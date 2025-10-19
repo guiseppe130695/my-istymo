@@ -581,7 +581,7 @@ function carte_succession_users_page() {
     echo '</div>';
     
     echo '</div>';
-}
+       }
 
 // ✅ NOUVEAU : Fonction pour la page des utilisateurs Lead Vendeur
 function lead_vendeur_users_page() {
@@ -1176,10 +1176,6 @@ function lead_vendeur_users_page() {
                // Pagination
                if ($total_pages > 1) {
                    echo '<div id="carte-succession-pagination-container">';
-                   echo '<div class="pagination-info" id="carte-succession-pagination-info">';
-                   echo '<span id="page-info">Page ' . $current_page . ' sur ' . $total_pages . '</span>';
-                   echo '<span style="margin-left: 15px; color: #666;">Affichage des entrées 1 à ' . min($per_page, $total_entries) . ' sur ' . $total_entries . '</span>';
-                   echo '</div>';
                    echo '<div class="pagination">';
                    
                    // Bouton précédent
@@ -4103,10 +4099,6 @@ function my_istymo_carte_succession_shortcode($atts) {
         // Pagination
         if ($total_pages > 1) {
             echo '<div id="carte-succession-pagination-container">';
-            echo '<div class="pagination-info" id="carte-succession-pagination-info">';
-            echo '<span id="page-info">Page 1 sur ' . $total_pages . '</span>';
-            echo '<span style="margin-left: 15px; color: #666;">Affichage des entrées 1 à ' . min($per_page, $total_entries) . ' sur ' . $total_entries . '</span>';
-            echo '</div>';
             echo '<div class="pagination">';
             
             // Bouton précédent
@@ -4955,9 +4947,7 @@ function lead_vendeur_ajax_pagination() {
             echo '<button type="button" class="pagination-number" data-page="' . $total_pages . '">' . $total_pages . '</button>';
         }
         
-        echo '</div>';
-        
-        // Bouton Suivant
+        // Bouton Suivant (DANS la div pagination)
         if ($page < $total_pages) {
             echo '<button type="button" class="button button-secondary pagination-btn" data-page="' . ($page + 1) . '">';
             echo 'Suivant <i class="fas fa-chevron-right"></i>';
@@ -4967,6 +4957,8 @@ function lead_vendeur_ajax_pagination() {
             echo 'Suivant <i class="fas fa-chevron-right"></i>';
             echo '</span>';
         }
+        
+        echo '</div>';
         
         echo '</div>';
         echo '</div>';
@@ -5144,10 +5136,6 @@ function carte_succession_ajax_pagination() {
     ob_start();
     
     if ($total_pages > 1) {
-        echo '<div class="pagination-info">';
-        echo '<span id="page-info">Page ' . $page . ' sur ' . $total_pages . '</span>';
-        echo '<span style="margin-left: 15px; color: #666;">Affichage des entrées ' . (($page - 1) * $per_page + 1) . ' à ' . min($page * $per_page, $total_entries) . ' sur ' . $total_entries . '</span>';
-        echo '</div>';
         
         echo '<div class="pagination">';
         
@@ -5189,9 +5177,7 @@ function carte_succession_ajax_pagination() {
             echo '<button type="button" class="pagination-number" data-page="' . $total_pages . '">' . $total_pages . '</button>';
         }
         
-        echo '</div>';
-        
-        // Bouton Suivant
+        // Bouton Suivant (DANS la div pagination)
         if ($page < $total_pages) {
             echo '<button type="button" class="button button-secondary pagination-btn" data-page="' . ($page + 1) . '">';
             echo 'Suivant <i class="fas fa-chevron-right"></i>';
@@ -5201,6 +5187,8 @@ function carte_succession_ajax_pagination() {
             echo 'Suivant <i class="fas fa-chevron-right"></i>';
             echo '</span>';
         }
+        
+        echo '</div>';
         
         echo '</div>';
         echo '</div>';

@@ -107,7 +107,6 @@
         
         var $tableBody = $("#carte-succession-table-body");
         var $paginationContainer = $("#carte-succession-pagination-container");
-        var $paginationInfo = $("#carte-succession-pagination-info");
         
         isLoading = true;
         currentPage = page;
@@ -134,14 +133,6 @@
                     // Mettre à jour la pagination
                     $paginationContainer.html(response.data.pagination_html);
                     
-                    // Mettre à jour les informations de pagination
-                    var info = response.data.pagination_info;
-                    if (info.total_pages > 1) {
-                        $paginationInfo.html(
-                            '<span id="page-info">Page ' + info.current_page + ' sur ' + info.total_pages + '</span>' +
-                            '<span style="margin-left: 15px; color: #666;">Affichage des entrées ' + info.start_entry + ' à ' + info.end_entry + ' sur ' + info.total_entries + '</span>'
-                        );
-                    }
                     
                     // Animation pour les nouvelles lignes
                     $(".carte-succession-row").each(function(index) {

@@ -189,13 +189,12 @@ border-color: #1976d2!important;
 
 /* Pagination */
 .pagination {
-    display: flex !important;
+    display: flex;
     justify-content: center;
     align-items: center;
     margin: 20px 0;
     gap: 5px;
     flex-wrap: nowrap;
-    width: 100%;
 }
 
 .pagination-btn,
@@ -211,9 +210,6 @@ border-color: #1976d2!important;
     transition: all 0.3s ease;
     white-space: nowrap;
     flex-shrink: 0;
-    display: inline-block !important;
-    float: none !important;
-    clear: none !important;
 }
 
 .pagination-btn:hover,
@@ -241,49 +237,6 @@ border-color: #1976d2!important;
     color: #666;
 }
 
-/* Styles spécifiques pour les boutons WordPress dans la pagination */
-.pagination .button {
-    display: inline-block !important;
-    float: none !important;
-    clear: none !important;
-    margin: 0 2px !important;
-    vertical-align: middle !important;
-}
-
-/* Forcer l'alignement des éléments de pagination */
-#carte-succession-pagination-container .pagination {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: center !important;
-}
-
-#carte-succession-pagination-container .pagination > * {
-    display: inline-block !important;
-    float: none !important;
-    clear: none !important;
-}
-
-/* Debug : bordures pour voir la structure */
-#carte-succession-pagination-container {
-    border: 1px solid #ff0000; /* Rouge pour debug */
-}
-
-#carte-succession-pagination-container .pagination {
-    border: 1px solid #00ff00; /* Vert pour debug */
-    min-height: 50px;
-}
-
-#carte-succession-pagination-container .pagination > * {
-    border: 1px solid #0000ff; /* Bleu pour debug */
-}
-
-.pagination-info {
-    text-align: center;
-    margin-bottom: 15px;
-    color: #666;
-    font-size: 14px;
-}
 
 /* Loading spinner - Spécifique au tableau, pas au popup */
 .table-loading-spinner {
