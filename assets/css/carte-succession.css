@@ -86,6 +86,17 @@
     color: #ffc107;
 }
 
+/* Style pour les cartes dans les leads unifiés */
+.carte-succession-row.in-unified-leads {
+    background-color: #e8f5e8;
+    border-left: 4px solid #28a745;
+}
+
+.carte-succession-row.in-unified-leads .favorite-btn.favori-active {
+    color: #28a745;
+    font-weight: bold;
+}
+
 .carte-succession-row {
     transition: background-color 0.3s ease;
 }

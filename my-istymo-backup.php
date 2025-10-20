@@ -2826,10 +2826,7 @@ add_action('wp_ajax_lead_vendeur_get_entry_details', 'lead_vendeur_ajax_get_entr
 add_action('wp_ajax_lead_vendeur_pagination', 'lead_vendeur_ajax_pagination');
 add_action('wp_ajax_get_lead_vendeur_nonce', 'get_lead_vendeur_nonce_ajax');
 
-// ✅ RESTAURÉ : Handlers AJAX pour Carte de Succession
-add_action('wp_ajax_carte_succession_toggle_favori', 'carte_succession_ajax_toggle_favori');
-add_action('wp_ajax_carte_succession_get_entry_details', 'carte_succession_ajax_get_entry_details');
-add_action('wp_ajax_carte_succession_pagination', 'carte_succession_ajax_pagination');
+// ✅ NOUVEAU : Handlers AJAX pour Carte de Succession
 
 
 // ✅ Fonction de mise à jour de lead
@@ -5034,7 +5031,7 @@ function lead_vendeur_ajax_pagination() {
     ));
 }
 
-// ✅ RESTAURÉ : Handler AJAX pour la pagination Carte de Succession
+// ✅ NOUVEAU : Handler AJAX pour la pagination Carte de Succession
 function carte_succession_ajax_pagination() {
     check_ajax_referer('carte_succession_nonce', 'nonce');
     
@@ -5264,7 +5261,7 @@ function carte_succession_ajax_pagination() {
     ));
 }
 
-// ✅ RESTAURÉ : Handler AJAX pour basculer les favoris Carte de Succession
+// ✅ NOUVEAU : Handler AJAX pour basculer les favoris Carte de Succession
 function carte_succession_ajax_toggle_favori() {
     check_ajax_referer('carte_succession_nonce', 'nonce');
     
@@ -5296,7 +5293,7 @@ function carte_succession_ajax_toggle_favori() {
     }
 }
 
-// ✅ RESTAURÉ : Handler AJAX pour récupérer les détails d'une carte de succession
+// ✅ NOUVEAU : Handler AJAX pour récupérer les détails d'une carte de succession
 function carte_succession_ajax_get_entry_details() {
     check_ajax_referer('carte_succession_nonce', 'nonce');
     

@@ -108,6 +108,7 @@ function unified_leads_admin_page($context = array()) {
                             <option value="sci" <?php selected($current_lead_type, 'sci'); ?>>SCI</option>
                             <option value="dpe" <?php selected($current_lead_type, 'dpe'); ?>>DPE</option>
                             <option value="lead_vendeur" <?php selected($current_lead_type, 'lead_vendeur'); ?>>Lead Vendeur</option>
+                            <option value="carte_succession" <?php selected($current_lead_type, 'carte_succession'); ?>>Carte de Succession</option>
                         </select>
                     </div>
                     
@@ -157,6 +158,10 @@ function unified_leads_admin_page($context = array()) {
                         <div class="my-istymo-filter-actions">
                             <button type="submit" class="my-istymo-btn my-istymo-btn-primary">
                                 <i class="fas fa-filter"></i> Filtrer
+                            </button>
+                            
+                            <button type="button" id="fix-misclassified-leads" class="my-istymo-btn my-istymo-btn-warning" title="Corriger automatiquement tous les leads mal catégorisés">
+                                <i class="fas fa-wrench"></i> Corriger les types
                             </button>
                             <?php if (!empty($_GET['lead_type']) || !empty($_GET['status']) || !empty($_GET['priorite']) || !empty($_GET['date_from']) || !empty($_GET['date_to']) || !empty($filters['lead_type']) || !empty($filters['status']) || !empty($filters['priorite'])): ?>
                             <?php if ($context['is_shortcode']): ?>
@@ -259,6 +264,30 @@ function unified_leads_admin_page($context = array()) {
                                         $code_postal = $lead->data_originale['4.5'] ?? '';
                                         $location = $ville . ($code_postal ? ' (' . $code_postal . ')' : '');
                                         $category = 'Lead Vendeur';
+                                            } elseif ($lead->lead_type === 'carte_succession') {
+                                        // Données Carte de Succession depuis Gravity Forms
+                                        
+                                        // Adresse complète (champs 4.1, 4.3, 4.5) pour la colonne Lead
+                                        $adresse_parts = array();
+                                        if (!empty($lead->data_originale['4.1'])) {
+                                            $adresse_parts[] = $lead->data_originale['4.1'];
+                                        }
+                                        if (!empty($lead->data_originale['4.3'])) {
+                                            $adresse_parts[] = $lead->data_originale['4.3'];
+                                        }
+                                        if (!empty($lead->data_originale['4.5'])) {
+                                            $adresse_parts[] = $lead->data_originale['4.5'];
+                                        }
+                                        $adresse_complete = implode(', ', $adresse_parts);
+                                        $company_name = $adresse_complete ?: 'Carte de Succession';
+                                        $domain = 'succession.com';
+                                        
+                                        // Ville + code postal seulement pour la colonne Localisation
+                                        $ville = $lead->data_originale['4.3'] ?? '';
+                                        $code_postal = $lead->data_originale['4.5'] ?? '';
+                                        $location = $ville . ($code_postal ? ' (' . $code_postal . ')' : '');
+                                        
+                                        $category = 'Carte de Succession';
                                     }
                                 }
                             ?>
@@ -273,6 +302,8 @@ function unified_leads_admin_page($context = array()) {
                                                     <span class="my-istymo-icon my-istymo-icon-house">🏠</span>
                                                 <?php elseif ($lead->lead_type === 'lead_vendeur'): ?>
                                                     <span class="my-istymo-icon my-istymo-icon-vendor">🏪</span>
+                                                <?php elseif ($lead->lead_type === 'carte_succession'): ?>
+                                                    <span class="my-istymo-icon my-istymo-icon-succession">⚰️</span>
                                                 <?php else: ?>
                                                     <span class="my-istymo-icon my-istymo-icon-building">🏢</span>
                                                 <?php endif; ?>
@@ -370,6 +401,11 @@ function unified_leads_admin_page($context = array()) {
                                             <button class="my-istymo-action-btn view-lead" data-lead-id="<?php echo $lead->id; ?>" onclick="openLeadDetailModal(<?php echo $lead->id; ?>); return false;" title="Voir les détails">
                                                 <i class="fas fa-eye"></i> Voir
                                             </button>
+                                            <?php if ($lead->lead_type === 'lead_vendeur' && isset($lead->data_originale['form_id']) && $lead->data_originale['form_id'] == 2): ?>
+                                            <button class="my-istymo-action-btn fix-lead-type" data-lead-id="<?php echo $lead->id; ?>" data-new-type="carte_succession" title="Corriger le type (devrait être Carte de Succession)">
+                                                <i class="fas fa-wrench"></i> Corriger
+                                            </button>
+                                            <?php endif; ?>
                                             <button class="my-istymo-action-btn delete-lead" data-lead-id="<?php echo $lead->id; ?>" onclick="deleteLead(<?php echo $lead->id; ?>); return false;" title="Supprimer">
                                                 <i class="fas fa-trash"></i> Supprimer
                                             </button>
@@ -446,6 +482,7 @@ function unified_leads_admin_page($context = array()) {
                         <option value="sci">SCI</option>
                         <option value="dpe">DPE</option>
                         <option value="lead_vendeur">Lead Vendeur</option>
+                        <option value="carte_succession">Carte de Succession</option>
                     </select>
                 </div>
                 
@@ -922,21 +959,39 @@ function unified_leads_admin_page($context = array()) {
         // Carte d'informations principales avec toutes les données SCI/DPE
         html += '<div class="my-istymo-info-card">';
         html += '<div class="my-istymo-card-header">';
-        var typeLabel = leadData.lead_type === 'sci' ? 'SCI' : (leadData.lead_type === 'dpe' ? 'DPE' : 'Lead Vendeur');
+        var typeLabel = leadData.lead_type === 'sci' ? 'SCI' : 
+                        (leadData.lead_type === 'dpe' ? 'DPE' : 
+                        (leadData.lead_type === 'lead_vendeur' ? 'Lead Vendeur' : 'Carte de Succession'));
+        
+        // Pour les cartes de succession, afficher l'adresse complète dans le titre
+        if (leadData.lead_type === 'carte_succession') {
+            var adresse_parts = [];
+            if (data['4.1']) adresse_parts.push(data['4.1']);
+            if (data['4.3']) adresse_parts.push(data['4.3']);
+            if (data['4.5']) adresse_parts.push(data['4.5']);
+            if (adresse_parts.length > 0) {
+                typeLabel = adresse_parts.join(', ');
+            }
+        }
         html += '<h4><span class="dashicons dashicons-info"></span> Informations ' + typeLabel + '</h4>';
         html += '</div>';
         html += '<div class="my-istymo-card-content">';
         
         // Type de lead avec badge
-        var typeIcon = leadData.lead_type === 'sci' ? '🏢' : (leadData.lead_type === 'dpe' ? '🏠' : '🏪');
-        var typeText = leadData.lead_type === 'sci' ? 'Société Civile' : (leadData.lead_type === 'dpe' ? 'Bien Immobilier' : 'Lead Vendeur');
+        var typeIcon = leadData.lead_type === 'sci' ? '🏢' : 
+                      (leadData.lead_type === 'dpe' ? '🏠' : 
+                      (leadData.lead_type === 'lead_vendeur' ? '🏪' : '⚰️'));
+        var typeText = leadData.lead_type === 'sci' ? 'Société Civile' : 
+                      (leadData.lead_type === 'dpe' ? 'Bien Immobilier' : 
+                      (leadData.lead_type === 'lead_vendeur' ? 'Lead Vendeur' : 'Carte de Succession'));
         html += '<div class="my-istymo-info-row">';
         html += '<span class="my-istymo-info-label">Type :</span>';
         html += '<span class="my-istymo-info-value">' + typeIcon + ' ' + typeText + '</span>';
         html += '</div>';
         
-        // ID original (SIREN pour SCI, DPE ID pour DPE, Entry ID pour Lead Vendeur)
-        var idLabel = leadData.lead_type === 'sci' ? 'SIREN :' : (leadData.lead_type === 'dpe' ? 'DPE ID :' : 'Entry ID :');
+        // ID original (SIREN pour SCI, DPE ID pour DPE, Entry ID pour Lead Vendeur et Carte de Succession)
+        var idLabel = leadData.lead_type === 'sci' ? 'SIREN :' : 
+                     (leadData.lead_type === 'dpe' ? 'DPE ID :' : 'Entry ID :');
         html += '<div class="my-istymo-info-row">';
         html += '<span class="my-istymo-info-label">' + idLabel + '</span>';
         html += '<span class="my-istymo-info-value">' + (leadData.original_id || '—') + '</span>';
@@ -1194,6 +1249,89 @@ function unified_leads_admin_page($context = array()) {
                 }
                 
                 html += '</div>'; // Fin section Lead Vendeur
+            } else if (leadData.lead_type === 'carte_succession') {
+                // Section Carte de Succession - Données Gravity Forms
+                html += '<div class="my-istymo-info-section">';
+                html += '<h5>Informations Carte de Succession</h5>';
+                
+                // Type d'habitation (champ 52)
+                if (data['52']) {
+                    html += '<div class="my-istymo-info-row">';
+                    html += '<span class="my-istymo-info-label">Type d\'habitation :</span>';
+                    html += '<span class="my-istymo-info-value">' + data['52'] + '</span>';
+                    html += '</div>';
+                }
+                
+                // Adresse complète (champs 4.1, 4.3, 4.5)
+                var adresse_parts = [];
+                if (data['4.1']) adresse_parts.push(data['4.1']);
+                if (data['4.3']) adresse_parts.push(data['4.3']);
+                if (data['4.5']) adresse_parts.push(data['4.5']);
+                
+                if (adresse_parts.length > 0) {
+                    html += '<div class="my-istymo-info-row">';
+                    html += '<span class="my-istymo-info-label">Adresse :</span>';
+                    html += '<span class="my-istymo-info-value">' + adresse_parts.join(', ') + '</span>';
+                    html += '</div>';
+                }
+                
+                // Identité du défunt (champs 51.3, 51.6)
+                var identite_parts = [];
+                if (data['51.3']) identite_parts.push(data['51.3']);
+                if (data['51.6']) identite_parts.push(data['51.6']);
+                
+                if (identite_parts.length > 0) {
+                    html += '<div class="my-istymo-info-row">';
+                    html += '<span class="my-istymo-info-label">Identité du défunt :</span>';
+                    html += '<span class="my-istymo-info-value">' + identite_parts.join(' ') + '</span>';
+                    html += '</div>';
+                }
+                
+                // Date de décès (champ 50)
+                if (data['50']) {
+                    html += '<div class="my-istymo-info-row">';
+                    html += '<span class="my-istymo-info-label">Date de décès :</span>';
+                    html += '<span class="my-istymo-info-value">' + new Date(data['50']).toLocaleDateString('fr-FR') + '</span>';
+                    html += '</div>';
+                }
+                
+                // Descendants (champs 6.1 à 6.6)
+                var descendants = [];
+                for (var i = 1; i <= 6; i++) {
+                    if (data['6.' + i]) {
+                        descendants.push(data['6.' + i]);
+                    }
+                }
+                if (descendants.length > 0) {
+                    html += '<div class="my-istymo-info-row">';
+                    html += '<span class="my-istymo-info-label">Descendants :</span>';
+                    html += '<span class="my-istymo-info-value">' + descendants.join(', ') + '</span>';
+                    html += '</div>';
+                }
+                
+                // Autres descendants (champs 8.1 à 8.6)
+                var autres_descendants = [];
+                for (var i = 1; i <= 6; i++) {
+                    if (data['8.' + i]) {
+                        autres_descendants.push(data['8.' + i]);
+                    }
+                }
+                if (autres_descendants.length > 0) {
+                    html += '<div class="my-istymo-info-row">';
+                    html += '<span class="my-istymo-info-label">Autres descendants :</span>';
+                    html += '<span class="my-istymo-info-value">' + autres_descendants.join(', ') + '</span>';
+                    html += '</div>';
+                }
+                
+                // Commentaire (champ 53)
+                if (data['53']) {
+                    html += '<div class="my-istymo-info-row">';
+                    html += '<span class="my-istymo-info-label">Commentaire :</span>';
+                    html += '<span class="my-istymo-info-value">' + data['53'] + '</span>';
+                    html += '</div>';
+                }
+                
+                html += '</div>'; // Fin section Carte de Succession
             }
         }
         

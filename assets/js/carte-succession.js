@@ -42,7 +42,7 @@
             }
         });
         
-        // Gestion des favoris
+        // Gestion des favoris - Intégration avec le système unifié
         $(document).on("click", ".favorite-btn", function(e) {
             e.preventDefault();
             
@@ -56,39 +56,48 @@
             
             $toggle.addClass("loading");
             
-            $.ajax({
-                url: simpleFavoritesAjax.ajax_url,
-                type: "POST",
-                data: {
-                    action: "simple_favorites_toggle",
-                    entry_id: entryId,
-                    form_id: carteSuccessionAjax.form_id,
-                    nonce: simpleFavoritesAjax.nonce
-                },
-                success: function(response) {
-                    if (response.success) {
-                        if (response.data.action === "added") {
+            // Si c'est déjà un favori, on le retire
+            if ($toggle.hasClass("favori-active")) {
+                // ✅ SIMPLIFICATION : Seulement les favoris locaux
+                $toggle.removeClass("loading");
+                $toggle.removeClass("favori-active");
+                $toggle.html("☆");
+                $toggle.attr("title", "Ajouter aux favoris");
+                $row.removeClass("favori-row");
+                showMessage("Carte de succession retirée des favoris", "success");
+            } else {
+                // Ajouter aux favoris locaux ET aux leads unifiés
+                $.ajax({
+                    url: simpleFavoritesAjax.ajax_url,
+                    type: "POST",
+                    data: {
+                        action: "simple_favorites_toggle",
+                        entry_id: entryId,
+                        form_id: carteSuccessionAjax.form_id,
+                        nonce: simpleFavoritesAjax.nonce
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Ajouter aux favoris locaux
                             $toggle.addClass("favori-active");
-                            $toggle.html('★'); // Étoile pleine
+                            $toggle.html("★");
+                            $toggle.attr("title", "Retirer des favoris");
                             $row.addClass("favori-row");
+                            
+                            // ✅ SIMPLIFICATION : Seulement les favoris locaux, pas de leads unifiés
+                            $toggle.removeClass("loading");
                             showMessage("Carte de succession ajoutée aux favoris", "success");
                         } else {
-                            $toggle.removeClass("favori-active");
-                            $toggle.html('☆'); // Étoile vide
-                            $row.removeClass("favori-row");
-                            showMessage("Carte de succession retirée des favoris", "success");
+                            $toggle.removeClass("loading");
+                            showMessage("Erreur lors de l'ajout aux favoris", "error");
                         }
-                    } else {
-                        showMessage("Erreur: " + response.data, "error");
+                    },
+                    error: function() {
+                        $toggle.removeClass("loading");
+                        showMessage("Erreur de connexion", "error");
                     }
-                },
-                error: function() {
-                    showMessage("Erreur de connexion", "error");
-                },
-                complete: function() {
-                    $toggle.removeClass("loading");
-                }
-            });
+                });
+            }
         });
 
         // Gestion des clics sur les détails
@@ -97,6 +106,7 @@
             var entryId = $(this).data("entry-id");
             showCarteDetails(entryId);
         });
+        
     }
 
     /**
@@ -140,6 +150,9 @@
                             opacity: 1
                         }, 300);
                     });
+                    
+                    // Vérifier le statut des leads unifiés
+                    // ✅ SUPPRIMÉ : Plus de vérification des leads unifiés
                 } else {
                     console.error("Erreur lors du chargement de la page:", response.data);
                     $tableBody.html('<tr><td colspan="100%" style="text-align: center; padding: 20px; color: #d63384;">Erreur lors du chargement des données</td></tr>');
@@ -206,6 +219,11 @@
             }, 300);
         });
     }
+
+    /**
+     * Vérifier si les cartes sont dans les leads unifiés
+     */
+    // ✅ SUPPRIMÉ : Fonction checkUnifiedLeadsStatus
 
     /**
      * Afficher un message à l'utilisateur

@@ -35,6 +35,7 @@ class Unified_Leads_Manager {
         add_action('wp_ajax_update_lead_status', array($this, 'ajax_update_status'));
         add_action('wp_ajax_update_lead_priority', array($this, 'ajax_update_priority'));
         add_action('wp_ajax_add_lead_note', array($this, 'ajax_add_note'));
+        add_action('wp_ajax_fix_misclassified_leads', array($this, 'ajax_fix_misclassified_leads'));
         
     }
     
@@ -50,7 +51,7 @@ class Unified_Leads_Manager {
         $leads_sql = "CREATE TABLE IF NOT EXISTS {$this->leads_table} (
             id bigint(20) NOT NULL AUTO_INCREMENT,
             user_id bigint(20) NOT NULL,
-            lead_type enum('sci', 'dpe', 'lead_vendeur') NOT NULL,
+            lead_type enum('sci', 'dpe', 'lead_vendeur', 'carte_succession') NOT NULL,
             original_id varchar(255) NOT NULL,
             status varchar(50) DEFAULT 'nouveau',
             priorite varchar(20) DEFAULT 'normale',
@@ -93,6 +94,9 @@ class Unified_Leads_Manager {
         
         // ✅ NOUVEAU : Mettre à jour la table pour supporter lead_vendeur
         $this->update_table_for_lead_vendeur();
+        
+        // ✅ NOUVEAU : Mettre à jour la table pour supporter carte_succession
+        $this->update_table_for_carte_succession();
         
         // Vérifier et ajouter les colonnes manquantes
         $this->ensure_date_prochaine_action_column();
@@ -149,15 +153,25 @@ class Unified_Leads_Manager {
     public function add_lead($lead_data) {
         global $wpdb;
         
+        // ✅ DEBUG : Logs pour identifier le problème
+        error_log("=== Unified_Leads_Manager::add_lead ===");
+        error_log("Lead data reçu: " . print_r($lead_data, true));
+        
         $user_id = get_current_user_id();
         if (!$user_id) {
+            error_log("Erreur: Utilisateur non connecté");
             return new WP_Error('not_logged_in', 'Utilisateur non connecté');
         }
         
         // Validation des données
         if (empty($lead_data['lead_type']) || empty($lead_data['original_id'])) {
+            error_log("Erreur: Données manquantes - lead_type: " . ($lead_data['lead_type'] ?? 'N/A') . ", original_id: " . ($lead_data['original_id'] ?? 'N/A'));
             return new WP_Error('invalid_data', 'Données manquantes');
         }
+        
+        // ✅ DEBUG : Vérifier le lead_type avant insertion
+        error_log("Lead type à insérer: " . $lead_data['lead_type']);
+        error_log("Original ID: " . $lead_data['original_id']);
         
         $result = $wpdb->insert(
             $this->leads_table,
@@ -175,15 +189,46 @@ class Unified_Leads_Manager {
         );
         
         if ($result === false) {
+            error_log("Erreur DB: " . $wpdb->last_error);
             return new WP_Error('db_error', 'Erreur lors de l\'ajout du lead');
         }
         
         $lead_id = $wpdb->insert_id;
+        error_log("Lead créé avec succès, ID: " . $lead_id . ", Type: " . $lead_data['lead_type']);
         
         // Ajouter une action de création
         $this->add_action($lead_id, 'creation', 'Lead créé depuis ' . $lead_data['lead_type']);
         
         return $lead_id;
+    }
+    
+    /**
+     * ✅ CORRECTION : Corriger automatiquement tous les leads mal classés
+     */
+    public function fix_misclassified_leads() {
+        global $wpdb;
+        
+        error_log("🔧 CORRECTION: Début de la correction automatique des leads mal classés");
+        
+        // Trouver tous les leads de type 'lead_vendeur' avec form_id = 2
+        $misclassified_leads = $wpdb->get_results("
+            SELECT id, original_id, user_id 
+            FROM {$this->leads_table} 
+            WHERE lead_type = 'lead_vendeur' 
+            AND JSON_EXTRACT(data_originale, '$.form_id') = 2
+        ");
+        
+        $corrected_count = 0;
+        foreach ($misclassified_leads as $lead) {
+            $result = $this->update_lead($lead->id, array('lead_type' => 'carte_succession'));
+            if (!is_wp_error($result)) {
+                $corrected_count++;
+                error_log("🔧 CORRECTION: Lead ID {$lead->id} corrigé vers 'carte_succession'");
+            }
+        }
+        
+        error_log("🔧 CORRECTION: {$corrected_count} leads corrigés automatiquement");
+        return $corrected_count;
     }
     
     /**
@@ -691,11 +736,23 @@ class Unified_Leads_Manager {
             return;
         }
         
+        $lead_type = sanitize_text_field($_POST['lead_type'] ?? '');
+        $original_id = sanitize_text_field($_POST['original_id'] ?? '');
+        $data_originale = $_POST['data_originale'] ?? array();
+        
+        // ✅ SOLUTION SIMPLE : Utiliser le lead_type fourni directement
+        if (empty($lead_type)) {
+            $lead_type = 'carte_succession'; // Par défaut pour les cartes de succession
+        }
+        
         $lead_data = array(
-            'lead_type' => sanitize_text_field($_POST['lead_type'] ?? ''),
-            'original_id' => sanitize_text_field($_POST['original_id'] ?? ''),
-            'data_originale' => $_POST['data_originale'] ?? array()
+            'lead_type' => $lead_type,
+            'original_id' => $original_id,
+            'data_originale' => $data_originale
         );
+        
+        error_log("🔧 AJAX add_lead - Lead type: " . $lead_type);
+        error_log("🔧 AJAX add_lead - Original ID: " . $original_id);
         
         $result = $this->add_lead($lead_data);
         
@@ -703,6 +760,30 @@ class Unified_Leads_Manager {
             wp_send_json_error($result->get_error_message());
         } else {
             wp_send_json_success(array('lead_id' => $result));
+        }
+    }
+    
+    /**
+     * ✅ CORRECTION : AJAX pour corriger automatiquement les leads mal classés
+     */
+    public function ajax_fix_misclassified_leads() {
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Permissions insuffisantes');
+            return;
+        }
+        
+        $corrected_count = $this->fix_misclassified_leads();
+        
+        if ($corrected_count > 0) {
+            wp_send_json_success(array(
+                'message' => "Correction automatique terminée : {$corrected_count} leads corrigés",
+                'corrected_count' => $corrected_count
+            ));
+        } else {
+            wp_send_json_success(array(
+                'message' => 'Aucun lead mal classé trouvé',
+                'corrected_count' => 0
+            ));
         }
     }
     
@@ -1104,6 +1185,26 @@ class Unified_Leads_Manager {
             if (strpos($column_definition, 'lead_vendeur') === false) {
                 $wpdb->query("ALTER TABLE {$this->leads_table} MODIFY COLUMN lead_type ENUM('sci', 'dpe', 'lead_vendeur') NOT NULL");
                 error_log("Table unified_leads mise à jour pour supporter lead_vendeur");
+            }
+        }
+    }
+    
+    /**
+     * ✅ NOUVEAU : Mettre à jour la table pour supporter carte_succession
+     */
+    private function update_table_for_carte_succession() {
+        global $wpdb;
+        
+        // Vérifier si la colonne lead_type supporte déjà carte_succession
+        $column_info = $wpdb->get_results("SHOW COLUMNS FROM {$this->leads_table} LIKE 'lead_type'");
+        
+        if (!empty($column_info)) {
+            $column_definition = $column_info[0]->Type;
+            
+            // Si carte_succession n'est pas dans l'enum, l'ajouter
+            if (strpos($column_definition, 'carte_succession') === false) {
+                $wpdb->query("ALTER TABLE {$this->leads_table} MODIFY COLUMN lead_type ENUM('sci', 'dpe', 'lead_vendeur', 'carte_succession') NOT NULL");
+                error_log("Table unified_leads mise à jour pour supporter carte_succession");
             }
         }
     }

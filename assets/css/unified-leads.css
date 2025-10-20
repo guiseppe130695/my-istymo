@@ -721,6 +721,30 @@ ease !important;
     border-color: #d32f2f;
 }
 
+.my-istymo-action-btn.fix-lead-type {
+    background: #fff3cd;
+    border-color: #ffeaa7;
+    color: #856404;
+}
+
+.my-istymo-action-btn.fix-lead-type:hover {
+    background: #ffeaa7;
+    border-color: #fdcb6e;
+    color: #6c5ce7;
+}
+
+.my-istymo-btn-warning {
+    background: #fff3cd;
+    border-color: #ffeaa7;
+    color: #856404;
+}
+
+.my-istymo-btn-warning:hover {
+    background: #ffeaa7;
+    border-color: #fdcb6e;
+    color: #6c5ce7;
+}
+
 /* Notifications ultra simples */
 .my-istymo-notification {
     position: fixed;

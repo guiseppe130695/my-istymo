@@ -1258,7 +1258,7 @@ jQuery(document).ready(function($) {
     }
     
     // Variable pour s'assurer que les gestionnaires ne sont attachés qu'une fois
-    let eventHandlersInitialized = false;
+    var eventHandlersInitialized = false;
     
     /**
      * Initialise les actions sur les lignes
@@ -1324,8 +1324,96 @@ jQuery(document).ready(function($) {
                 changeStatus(leadId, currentStatus); // Fallback
             }
         });
+        
+        // Gestion des clics sur les boutons de correction de type
+        $(document).on('click', '.fix-lead-type', function(e) {
+            e.preventDefault();
+            const leadId = $(this).data('lead-id');
+            const newType = $(this).data('new-type');
+            fixLeadType(leadId, newType);
+        });
+        
+        // Gestion du bouton de correction en masse
+        $(document).on('click', '#fix-misclassified-leads', function(e) {
+            e.preventDefault();
+            fixAllMisclassifiedLeads();
+        });
     }
     
+    /**
+     * Corrige automatiquement tous les leads mal catégorisés
+     */
+    function fixAllMisclassifiedLeads() {
+        if (!confirm('Êtes-vous sûr de vouloir corriger automatiquement tous les leads mal catégorisés ?\n\nCette action va rechercher tous les leads de type "Lead Vendeur" avec form_id = 2 et les reclasser comme "Carte de Succession".')) {
+            return;
+        }
+        
+        const $button = $('#fix-misclassified-leads');
+        const originalText = $button.html();
+        
+        $button.prop('disabled', true);
+        $button.html('<i class="fas fa-spinner fa-spin"></i> Correction en cours...');
+        
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'fix_all_misclassified_leads',
+                nonce: myIstymoAjax.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    showMessage(response.data.message, 'success');
+                    // Recharger la page pour voir les changements
+                    setTimeout(function() {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    showMessage('Erreur: ' + (response.data || 'Impossible de corriger les leads'), 'error');
+                }
+            },
+            error: function() {
+                showMessage('Erreur de connexion', 'error');
+            },
+            complete: function() {
+                $button.prop('disabled', false);
+                $button.html(originalText);
+            }
+        });
+    }
+
+    /**
+     * Corrige le type d'un lead
+     */
+    function fixLeadType(leadId, newType) {
+        if (!confirm(`Êtes-vous sûr de vouloir corriger le type de ce lead vers "${newType}" ?`)) {
+            return;
+        }
+        
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'fix_lead_type',
+                lead_id: leadId,
+                new_type: newType,
+                nonce: myIstymoAjax.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    showMessage('Type de lead corrigé avec succès', 'success');
+                    // Recharger la page pour voir les changements
+                    location.reload();
+                } else {
+                    showMessage('Erreur: ' + (response.data || 'Impossible de corriger le type'), 'error');
+                }
+            },
+            error: function() {
+                showMessage('Erreur de connexion', 'error');
+            }
+        });
+    }
+
     /**
      * Modifie un lead
      */
@@ -1874,6 +1962,45 @@ jQuery(document).ready(function($) {
             }
         });
     }
+    
+    // ✅ CORRECTION : Gestion du bouton de correction des leads mal classés
+    $(document).on('click', '#fix-misclassified-leads', function(e) {
+        e.preventDefault();
+        
+        if (!confirm('Êtes-vous sûr de vouloir corriger automatiquement tous les leads mal classés ?\n\nCette action va rechercher tous les leads de type "Lead Vendeur" avec form_id = 2 et les reclasser comme "Carte de Succession".')) {
+            return;
+        }
+        
+        const $button = $(this);
+        const originalText = $button.html();
+        
+        $button.prop('disabled', true);
+        $button.html('<i class="fas fa-spinner fa-spin"></i> Correction en cours...');
+        
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'fix_misclassified_leads',
+                nonce: myIstymoAjax.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert(response.data.message);
+                    location.reload();
+                } else {
+                    alert('Erreur: ' + (response.data || 'Impossible de corriger les leads'));
+                }
+            },
+            error: function() {
+                alert('Erreur de connexion');
+            },
+            complete: function() {
+                $button.prop('disabled', false);
+                $button.html(originalText);
+            }
+        });
+    });
     
     // Fonctions supprimées - déjà définies plus haut
     

@@ -101,7 +101,7 @@ class Simple_Favorites_Handler {
             $leads = $leads_manager->get_leads($user_id);
             
             foreach ($leads as $lead) {
-                if ($lead->lead_type === 'lead_vendeur' && $lead->original_id == $entry_id) {
+                if ($lead->lead_type === 'carte_succession' && $lead->original_id == $entry_id) {
                     $leads_manager->delete_lead($lead->id, true);
                     break;
                 }
@@ -201,7 +201,7 @@ class Simple_Favorites_Handler {
             
             $lead_data = array(
                 'user_id' => $user_id,
-                'lead_type' => 'lead_vendeur',
+                'lead_type' => 'carte_succession',
                 'original_id' => $entry_id,
                 'form_id' => $form_id,
                 'status' => 'nouveau',
