@@ -984,7 +984,6 @@ ease !important;
 .my-istymo-info-row {
     display: grid;
     grid-template-columns: 140px 1fr;
-    gap: 15px;
     padding: 15px;
     border-bottom: 1px solid #f1f3f4;
     align-items: center;
@@ -1617,6 +1616,7 @@ ease !important;
     border-radius: 12px;
     overflow: hidden;
     border: 1px solid #e5e7eb;
+    padding: 20px;
 }
 
 .my-istymo-card-header {
@@ -2512,6 +2512,42 @@ ease !important;
         font-size: 14px;
         width: 14px;
         height: 14px;
+    }
+}
+
+/* ========================================
+   SOUS-SECTIONS POUR CARTES DE SUCCESSION
+   ======================================== */
+
+/* Styles pour les sous-sections des cartes de succession */
+.my-istymo-info-subsection {
+    margin-bottom: 20px;
+    padding: 16px;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+}
+
+.my-istymo-info-subsection h6 {
+    color: #495057;
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Responsive pour les sous-sections */
+@media (max-width: 768px) {
+    .my-istymo-info-subsection {
+        padding: 12px;
+        margin-bottom: 16px;
+    }
+    
+    .my-istymo-info-subsection h6 {
+        font-size: 13px;
+        margin-bottom: 8px;
     }
 }
 

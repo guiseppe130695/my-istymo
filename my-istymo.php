@@ -603,9 +603,6 @@ function lead_vendeur_users_page() {
     $config_manager = lead_vendeur_config_manager();
     $config = $config_manager->get_config();
     
-    // ✅ DEBUG : Afficher la configuration utilisée
-    error_log("Lead Vendeur Users - Config: " . print_r($config, true));
-    error_log("Lead Vendeur Users - Form ID: " . $config['gravity_form_id']);
     
     if (empty($config['gravity_form_id'])) {
         echo '<div class="wrap">';
@@ -763,7 +760,6 @@ function lead_vendeur_users_page() {
        // ✅ NOUVEAU : Fonction pour la page Lead Vendeur
        function lead_vendeur_page() {
            // Debug: Vérifier que la fonction est appelée
-           error_log('Lead Vendeur: Fonction lead_vendeur_page() appelée');
            
            // Vérifier si l'utilisateur est connecté
            if (!is_user_logged_in()) {
@@ -1009,7 +1005,6 @@ function lead_vendeur_users_page() {
        // ✅ NOUVEAU : Fonction pour la page Carte de Succession
        function carte_succession_page() {
            // Debug: Vérifier que la fonction est appelée
-           error_log('Carte de Succession: Fonction carte_succession_page() appelée');
            
            // Vérifier si l'utilisateur est connecté
            if (!is_user_logged_in()) {
@@ -2794,7 +2789,6 @@ add_action('wp_ajax_my_istymo_test_ajax', 'my_istymo_ajax_test');
 add_action('wp_ajax_nopriv_my_istymo_test_ajax', 'my_istymo_ajax_test');
 
 function my_istymo_ajax_test() {
-    error_log('=== TEST AJAX APPELÉ ===');
     wp_send_json_success(['message' => 'Test AJAX réussi!', 'timestamp' => current_time('mysql')]);
 }
 // Hooks AJAX supprimés - fonctionnalité simplifiée
@@ -2908,30 +2902,7 @@ function my_istymo_ajax_update_lead_from_modal() {
     }
 }
 
-// ✅ Handler pour la suppression de leads
-add_action('wp_ajax_delete_unified_lead', 'my_istymo_ajax_delete_unified_lead');
-add_action('wp_ajax_nopriv_delete_unified_lead', 'my_istymo_ajax_delete_unified_lead');
 
-// ✅ Fonction de suppression de lead
-function my_istymo_ajax_delete_unified_lead() {
-    check_ajax_referer('my_istymo_nonce', 'nonce');
-    
-    $lead_id = intval($_POST['lead_id']);
-    
-    if (!$lead_id) {
-        wp_send_json_error('ID du lead manquant');
-        return;
-    }
-    
-    $leads_manager = Unified_Leads_Manager::get_instance();
-    $result = $leads_manager->delete_lead($lead_id);
-    
-    if (is_wp_error($result)) {
-        wp_send_json_error($result->get_error_message());
-    } else {
-        wp_send_json_success('Lead supprimé avec succès');
-    }
-}
 
 // ✅ Fonctions AJAX pour les actions
 function my_istymo_ajax_add_lead_action() {
@@ -3010,14 +2981,10 @@ function my_istymo_ajax_get_lead_action() {
 }
 
 function my_istymo_ajax_change_lead_status() {
-    error_log('🔄 my_istymo_ajax_change_lead_status appelée');
-    
     check_ajax_referer('my_istymo_nonce', 'nonce');
     
     $lead_id = intval($_POST['lead_id']);
     $new_status = sanitize_text_field($_POST['new_status']);
-    
-    error_log("📋 Données reçues - Lead ID: $lead_id, Nouveau statut: $new_status");
     
     $leads_manager = Unified_Leads_Manager::get_instance();
     $workflow_manager = Lead_Workflow::get_instance();
@@ -3025,28 +2992,22 @@ function my_istymo_ajax_change_lead_status() {
     // Valider la transition
     $lead = $leads_manager->get_lead($lead_id);
     if (!$lead) {
-        error_log("❌ Lead introuvable: $lead_id");
         wp_send_json_error('Lead introuvable');
     }
     
-    error_log("✅ Lead trouvé - Statut actuel: " . $lead->status);
     
     $validation = $workflow_manager->validate_transition($lead->status, $new_status, ['id' => $lead_id]);
     if (is_wp_error($validation)) {
-        error_log("❌ Validation échouée: " . $validation->get_error_message());
         wp_send_json_error($validation->get_error_message());
     }
     
-    error_log("✅ Validation réussie");
     
     // Effectuer le changement
     $result = $leads_manager->update_lead($lead_id, ['status' => $new_status]);
     
     if (is_wp_error($result)) {
-        error_log("❌ Erreur lors de la mise à jour: " . $result->get_error_message());
         wp_send_json_error($result->get_error_message());
     } else {
-        error_log("✅ Statut mis à jour avec succès");
         wp_send_json_success();
     }
 }
@@ -3685,10 +3646,11 @@ function my_istymo_leads_shortcode($atts) {
     );
     
     // Charger les styles et scripts de manière persistante
-    wp_enqueue_style('unified-leads-css', plugin_dir_url(__FILE__) . 'assets/css/unified-leads.css', array('font-awesome'), '1.0.0');
+    // Version 1.0.1 - Affichage complet des cartes de succession
+    wp_enqueue_style('unified-leads-css', plugin_dir_url(__FILE__) . 'assets/css/unified-leads.css', array('font-awesome'), '1.0.2');
     wp_enqueue_style('lead-edit-modal-css', plugin_dir_url(__FILE__) . 'assets/css/lead-edit-modal.css', array('font-awesome'), '1.0.0');
     wp_enqueue_style('lead-vendeur-sections-style', plugin_dir_url(__FILE__) . 'assets/css/lead-vendeur-sections.css', array(), '1.0.0');
-    wp_enqueue_script('unified-leads-admin', plugin_dir_url(__FILE__) . 'assets/js/unified-leads-admin.js', array('jquery'), '1.0.0', true);
+    wp_enqueue_script('unified-leads-admin', plugin_dir_url(__FILE__) . 'assets/js/unified-leads-admin.js', array('jquery'), '1.0.3', true);
     wp_enqueue_script('lead-actions', plugin_dir_url(__FILE__) . 'assets/js/lead-actions.js', array('jquery', 'jquery-ui-tooltip'), '1.0.0', true);
     wp_enqueue_script('lead-workflow', plugin_dir_url(__FILE__) . 'assets/js/lead-workflow.js', array('jquery'), '1.0.0', true);
     
@@ -4331,12 +4293,12 @@ function my_istymo_enqueue_shortcode_styles() {
         );
         
         // Charger les styles de manière globale
-        wp_enqueue_style('unified-leads-css', plugin_dir_url(__FILE__) . 'assets/css/unified-leads.css', array('font-awesome'), '1.0.0');
+        wp_enqueue_style('unified-leads-css', plugin_dir_url(__FILE__) . 'assets/css/unified-leads.css', array('font-awesome'), '1.0.2');
         wp_enqueue_style('lead-edit-modal-css', plugin_dir_url(__FILE__) . 'assets/css/lead-edit-modal.css', array('font-awesome'), '1.0.0');
         wp_enqueue_style('lead-vendeur-sections-style', plugin_dir_url(__FILE__) . 'assets/css/lead-vendeur-sections.css', array(), '1.0.0');
         
         // Charger les scripts
-        wp_enqueue_script('unified-leads-admin', plugin_dir_url(__FILE__) . 'assets/js/unified-leads-admin.js', array('jquery'), '1.0.0', true);
+        wp_enqueue_script('unified-leads-admin', plugin_dir_url(__FILE__) . 'assets/js/unified-leads-admin.js', array('jquery'), '1.0.3', true);
         wp_enqueue_script('lead-actions', plugin_dir_url(__FILE__) . 'assets/js/lead-actions.js', array('jquery', 'jquery-ui-tooltip'), '1.0.0', true);
         wp_enqueue_script('lead-workflow', plugin_dir_url(__FILE__) . 'assets/js/lead-workflow.js', array('jquery'), '1.0.0', true);
         

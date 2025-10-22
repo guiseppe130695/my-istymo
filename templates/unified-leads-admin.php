@@ -160,9 +160,6 @@ function unified_leads_admin_page($context = array()) {
                                 <i class="fas fa-filter"></i> Filtrer
                             </button>
                             
-                            <button type="button" id="fix-misclassified-leads" class="my-istymo-btn my-istymo-btn-warning" title="Corriger automatiquement tous les leads mal catégorisés">
-                                <i class="fas fa-wrench"></i> Corriger les types
-                            </button>
                             <?php if (!empty($_GET['lead_type']) || !empty($_GET['status']) || !empty($_GET['priorite']) || !empty($_GET['date_from']) || !empty($_GET['date_to']) || !empty($filters['lead_type']) || !empty($filters['status']) || !empty($filters['priorite'])): ?>
                             <?php if ($context['is_shortcode']): ?>
                             <a href="<?php echo remove_query_arg(array('lead_type', 'status', 'priorite', 'date_from', 'date_to', 'paged')); ?>" class="my-istymo-filter-reset-btn">
@@ -401,11 +398,6 @@ function unified_leads_admin_page($context = array()) {
                                             <button class="my-istymo-action-btn view-lead" data-lead-id="<?php echo $lead->id; ?>" onclick="openLeadDetailModal(<?php echo $lead->id; ?>); return false;" title="Voir les détails">
                                                 <i class="fas fa-eye"></i> Voir
                                             </button>
-                                            <?php if ($lead->lead_type === 'lead_vendeur' && isset($lead->data_originale['form_id']) && $lead->data_originale['form_id'] == 2): ?>
-                                            <button class="my-istymo-action-btn fix-lead-type" data-lead-id="<?php echo $lead->id; ?>" data-new-type="carte_succession" title="Corriger le type (devrait être Carte de Succession)">
-                                                <i class="fas fa-wrench"></i> Corriger
-                                            </button>
-                                            <?php endif; ?>
                                             <button class="my-istymo-action-btn delete-lead" data-lead-id="<?php echo $lead->id; ?>" onclick="deleteLead(<?php echo $lead->id; ?>); return false;" title="Supprimer">
                                                 <i class="fas fa-trash"></i> Supprimer
                                             </button>
@@ -579,17 +571,10 @@ function unified_leads_admin_page($context = array()) {
         var isShortcode = <?php echo $context['is_shortcode'] ? 'true' : 'false'; ?>;
         var currentPage = <?php echo max(1, intval($_GET['paged'] ?? 1)); ?>;
         
-        console.log('=== CONFIGURATION AJAX FILTRES ===');
-        console.log('AJAX URL:', ajaxUrl);
-        console.log('Nonce:', nonce);
-        console.log('unifiedLeadsAjax disponible:', typeof unifiedLeadsAjax !== 'undefined');
+        // Configuration AJAX des filtres
         
         // Fonction pour filtrer les leads via AJAX
         function filterLeads(page = 1) {
-            console.log('=== FILTRAGE LEADS ===');
-            console.log('Page:', page);
-            console.log('AJAX URL:', ajaxUrl);
-            console.log('Nonce:', nonce);
             
             var formData = {
                 action: 'filter_unified_leads',
@@ -963,15 +948,9 @@ function unified_leads_admin_page($context = array()) {
                         (leadData.lead_type === 'dpe' ? 'DPE' : 
                         (leadData.lead_type === 'lead_vendeur' ? 'Lead Vendeur' : 'Carte de Succession'));
         
-        // Pour les cartes de succession, afficher l'adresse complète dans le titre
+        // Pour les cartes de succession, afficher "Informations générales"
         if (leadData.lead_type === 'carte_succession') {
-            var adresse_parts = [];
-            if (data['4.1']) adresse_parts.push(data['4.1']);
-            if (data['4.3']) adresse_parts.push(data['4.3']);
-            if (data['4.5']) adresse_parts.push(data['4.5']);
-            if (adresse_parts.length > 0) {
-                typeLabel = adresse_parts.join(', ');
-            }
+            typeLabel = 'générales';
         }
         html += '<h4><span class="dashicons dashicons-info"></span> Informations ' + typeLabel + '</h4>';
         html += '</div>';
@@ -1250,86 +1229,141 @@ function unified_leads_admin_page($context = array()) {
                 
                 html += '</div>'; // Fin section Lead Vendeur
             } else if (leadData.lead_type === 'carte_succession') {
-                // Section Carte de Succession - Données Gravity Forms
+                // Section Carte de Succession - Affichage des données disponibles
                 html += '<div class="my-istymo-info-section">';
                 html += '<h5>Informations Carte de Succession</h5>';
                 
-                // Type d'habitation (champ 52)
-                if (data['52']) {
+                // Fonction helper pour afficher un champ avec label personnalisé
+                function addFieldIfExists(html, data, fieldKey, label, isDate = false) {
+                    if (data[fieldKey] && data[fieldKey].trim() !== '') {
                     html += '<div class="my-istymo-info-row">';
-                    html += '<span class="my-istymo-info-label">Type d\'habitation :</span>';
-                    html += '<span class="my-istymo-info-value">' + data['52'] + '</span>';
+                        html += '<span class="my-istymo-info-label">' + label + ' :</span>';
+                        if (isDate && data[fieldKey]) {
+                            try {
+                                html += '<span class="my-istymo-info-value">' + new Date(data[fieldKey]).toLocaleDateString('fr-FR') + '</span>';
+                            } catch (e) {
+                                html += '<span class="my-istymo-info-value">' + data[fieldKey] + '</span>';
+                            }
+                        } else {
+                            html += '<span class="my-istymo-info-value">' + data[fieldKey] + '</span>';
+                        }
                     html += '</div>';
-                }
-                
-                // Adresse complète (champs 4.1, 4.3, 4.5)
-                var adresse_parts = [];
-                if (data['4.1']) adresse_parts.push(data['4.1']);
-                if (data['4.3']) adresse_parts.push(data['4.3']);
-                if (data['4.5']) adresse_parts.push(data['4.5']);
-                
-                if (adresse_parts.length > 0) {
-                    html += '<div class="my-istymo-info-row">';
-                    html += '<span class="my-istymo-info-label">Adresse :</span>';
-                    html += '<span class="my-istymo-info-value">' + adresse_parts.join(', ') + '</span>';
-                    html += '</div>';
-                }
-                
-                // Identité du défunt (champs 51.3, 51.6)
-                var identite_parts = [];
-                if (data['51.3']) identite_parts.push(data['51.3']);
-                if (data['51.6']) identite_parts.push(data['51.6']);
-                
-                if (identite_parts.length > 0) {
-                    html += '<div class="my-istymo-info-row">';
-                    html += '<span class="my-istymo-info-label">Identité du défunt :</span>';
-                    html += '<span class="my-istymo-info-value">' + identite_parts.join(' ') + '</span>';
-                    html += '</div>';
-                }
-                
-                // Date de décès (champ 50)
-                if (data['50']) {
-                    html += '<div class="my-istymo-info-row">';
-                    html += '<span class="my-istymo-info-label">Date de décès :</span>';
-                    html += '<span class="my-istymo-info-value">' + new Date(data['50']).toLocaleDateString('fr-FR') + '</span>';
-                    html += '</div>';
-                }
-                
-                // Descendants (champs 6.1 à 6.6)
-                var descendants = [];
-                for (var i = 1; i <= 6; i++) {
-                    if (data['6.' + i]) {
-                        descendants.push(data['6.' + i]);
                     }
-                }
-                if (descendants.length > 0) {
-                    html += '<div class="my-istymo-info-row">';
-                    html += '<span class="my-istymo-info-label">Descendants :</span>';
-                    html += '<span class="my-istymo-info-value">' + descendants.join(', ') + '</span>';
-                    html += '</div>';
+                    return html;
                 }
                 
-                // Autres descendants (champs 8.1 à 8.6)
-                var autres_descendants = [];
+                // === AFFICHAGE DE TOUS LES CHAMPS DISPONIBLES ===
+                html += '<div class="my-istymo-info-subsection">';
+                html += '<h6>Tous les champs disponibles</h6>';
+                
+                // Afficher tous les champs disponibles
+                for (var fieldKey in data) {
+                    if (data.hasOwnProperty(fieldKey) && 
+                        data[fieldKey] && 
+                        data[fieldKey].trim() !== '' &&
+                        fieldKey !== 'id' && 
+                        fieldKey !== 'date_created' && 
+                        fieldKey !== 'created_by') {
+                        
+                    html += '<div class="my-istymo-info-row">';
+                        html += '<span class="my-istymo-info-label">' + fieldKey + ' :</span>';
+                        html += '<span class="my-istymo-info-value">' + data[fieldKey] + '</span>';
+                    html += '</div>';
+                }
+                }
+                html += '</div>';
+                
+                // === INFORMATIONS DE CONTACT ===
+                html += '<div class="my-istymo-info-subsection">';
+                html += '<h6><i class="fas fa-phone"></i> Informations de Contact</h6>';
+                html = addFieldIfExists(html, data, '1', 'Nom');
+                html = addFieldIfExists(html, data, '2', 'Prénom');
+                html = addFieldIfExists(html, data, '3', 'Téléphone');
+                html = addFieldIfExists(html, data, '4', 'Email');
+                    html += '</div>';
+                
+                // === ADRESSE ===
+                html += '<div class="my-istymo-info-subsection">';
+                html += '<h6><i class="fas fa-home"></i> Adresse</h6>';
+                html = addFieldIfExists(html, data, '4.1', 'Adresse');
+                html = addFieldIfExists(html, data, '4.3', 'Ville');
+                html = addFieldIfExists(html, data, '4.5', 'Code postal');
+                html += '</div>';
+                
+                // === INFORMATIONS SUR LE DÉFUNT ===
+                html += '<div class="my-istymo-info-subsection">';
+                html += '<h6><i class="fas fa-user"></i> Informations sur le Défunt</h6>';
+                html = addFieldIfExists(html, data, '51.3', 'Nom du défunt');
+                html = addFieldIfExists(html, data, '51.6', 'Prénom du défunt');
+                html = addFieldIfExists(html, data, '50', 'Date de décès', true);
+                html = addFieldIfExists(html, data, '51.1', 'Lieu de décès');
+                html = addFieldIfExists(html, data, '51.2', 'Cause du décès');
+                html += '</div>';
+                
+                // === INFORMATIONS SUR LE BIEN ===
+                html += '<div class="my-istymo-info-subsection">';
+                html += '<h6><i class="fas fa-building"></i> Informations sur le Bien</h6>';
+                html = addFieldIfExists(html, data, '52', 'Type d\'habitation');
+                html = addFieldIfExists(html, data, '53', 'Commentaire sur le bien');
+                html += '</div>';
+                
+                // === DESCENDANTS ===
+                html += '<div class="my-istymo-info-subsection">';
+                html += '<h6>👨‍👩‍👧‍👦 Descendants</h6>';
                 for (var i = 1; i <= 6; i++) {
-                    if (data['8.' + i]) {
-                        autres_descendants.push(data['8.' + i]);
+                    html = addFieldIfExists(html, data, '6.' + i, 'Descendant ' + i);
                     }
-                }
-                if (autres_descendants.length > 0) {
-                    html += '<div class="my-istymo-info-row">';
-                    html += '<span class="my-istymo-info-label">Autres descendants :</span>';
-                    html += '<span class="my-istymo-info-value">' + autres_descendants.join(', ') + '</span>';
                     html += '</div>';
-                }
                 
-                // Commentaire (champ 53)
-                if (data['53']) {
+                // === AUTRES DESCENDANTS ===
+                html += '<div class="my-istymo-info-subsection">';
+                html += '<h6>👥 Autres Descendants</h6>';
+                for (var i = 1; i <= 6; i++) {
+                    html = addFieldIfExists(html, data, '8.' + i, 'Autre descendant ' + i);
+                    }
+                    html += '</div>';
+                
+                // === INFORMATIONS NOTARIALES ===
+                html += '<div class="my-istymo-info-subsection">';
+                html += '<h6>⚖️ Informations Notariales</h6>';
+                html = addFieldIfExists(html, data, '9', 'Notaire');
+                html = addFieldIfExists(html, data, '10', 'Étude notariale');
+                html = addFieldIfExists(html, data, '11', 'Numéro de dossier');
+                html += '</div>';
+                
+                // === BIENS ET PATRIMOINE ===
+                html += '<div class="my-istymo-info-subsection">';
+                html += '<h6>💰 Patrimoine</h6>';
+                html = addFieldIfExists(html, data, '12', 'Biens immobiliers');
+                html = addFieldIfExists(html, data, '13', 'Biens mobiliers');
+                html = addFieldIfExists(html, data, '14', 'Comptes bancaires');
+                html = addFieldIfExists(html, data, '15', 'Assurance vie');
+                html = addFieldIfExists(html, data, '16', 'Dettes');
+                html += '</div>';
+                
+                // === INFORMATIONS COMPLÉMENTAIRES ===
+                html += '<div class="my-istymo-info-subsection">';
+                html += '<h6>📋 Informations Complémentaires</h6>';
+                
+                // Parcourir tous les autres champs disponibles
+                var displayedFields = ['1', '2', '3', '4', '4.1', '4.3', '4.5', '50', '51.1', '51.2', '51.3', '51.6', '52', '53', '6.1', '6.2', '6.3', '6.4', '6.5', '6.6', '8.1', '8.2', '8.3', '8.4', '8.5', '8.6', '9', '10', '11', '12', '13', '14', '15', '16'];
+                
+                for (var fieldKey in data) {
+                    if (data.hasOwnProperty(fieldKey) && 
+                        data[fieldKey] && 
+                        data[fieldKey].trim() !== '' && 
+                        !displayedFields.includes(fieldKey) &&
+                        fieldKey !== 'id' && 
+                        fieldKey !== 'date_created' && 
+                        fieldKey !== 'created_by') {
+                        
                     html += '<div class="my-istymo-info-row">';
-                    html += '<span class="my-istymo-info-label">Commentaire :</span>';
-                    html += '<span class="my-istymo-info-value">' + data['53'] + '</span>';
+                        html += '<span class="my-istymo-info-label">Champ ' + fieldKey + ' :</span>';
+                        html += '<span class="my-istymo-info-value">' + data[fieldKey] + '</span>';
                     html += '</div>';
                 }
+                }
+                html += '</div>';
                 
                 html += '</div>'; // Fin section Carte de Succession
             }

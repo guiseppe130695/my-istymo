@@ -252,11 +252,9 @@
 }
 
 .lead-details-info-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 0;
-    border-bottom: 1px solid #f3f4f6;
+    margin-bottom: 8px;
+    padding: 8px;
+    background: #fff;
 }
 
 .lead-details-info-label {

@@ -35,7 +35,6 @@ class Unified_Leads_Manager {
         add_action('wp_ajax_update_lead_status', array($this, 'ajax_update_status'));
         add_action('wp_ajax_update_lead_priority', array($this, 'ajax_update_priority'));
         add_action('wp_ajax_add_lead_note', array($this, 'ajax_add_note'));
-        add_action('wp_ajax_fix_misclassified_leads', array($this, 'ajax_fix_misclassified_leads'));
         
     }
     
@@ -189,12 +188,10 @@ class Unified_Leads_Manager {
         );
         
         if ($result === false) {
-            error_log("Erreur DB: " . $wpdb->last_error);
             return new WP_Error('db_error', 'Erreur lors de l\'ajout du lead');
         }
         
         $lead_id = $wpdb->insert_id;
-        error_log("Lead créé avec succès, ID: " . $lead_id . ", Type: " . $lead_data['lead_type']);
         
         // Ajouter une action de création
         $this->add_action($lead_id, 'creation', 'Lead créé depuis ' . $lead_data['lead_type']);
@@ -202,34 +199,6 @@ class Unified_Leads_Manager {
         return $lead_id;
     }
     
-    /**
-     * ✅ CORRECTION : Corriger automatiquement tous les leads mal classés
-     */
-    public function fix_misclassified_leads() {
-        global $wpdb;
-        
-        error_log("🔧 CORRECTION: Début de la correction automatique des leads mal classés");
-        
-        // Trouver tous les leads de type 'lead_vendeur' avec form_id = 2
-        $misclassified_leads = $wpdb->get_results("
-            SELECT id, original_id, user_id 
-            FROM {$this->leads_table} 
-            WHERE lead_type = 'lead_vendeur' 
-            AND JSON_EXTRACT(data_originale, '$.form_id') = 2
-        ");
-        
-        $corrected_count = 0;
-        foreach ($misclassified_leads as $lead) {
-            $result = $this->update_lead($lead->id, array('lead_type' => 'carte_succession'));
-            if (!is_wp_error($result)) {
-                $corrected_count++;
-                error_log("🔧 CORRECTION: Lead ID {$lead->id} corrigé vers 'carte_succession'");
-            }
-        }
-        
-        error_log("🔧 CORRECTION: {$corrected_count} leads corrigés automatiquement");
-        return $corrected_count;
-    }
     
     /**
      * Récupère les leads d'un utilisateur
@@ -451,8 +420,6 @@ class Unified_Leads_Manager {
             return new WP_Error('not_logged_in', 'Utilisateur non connecté');
         }
         
-        error_log("🗑️ Tentative de suppression du lead ID: {$lead_id}, skip_favori_removal: " . ($skip_favori_removal ? 'true' : 'false'));
-        
         // Récupérer les informations du lead avant suppression
         $lead = $wpdb->get_row($wpdb->prepare(
             "SELECT * FROM {$this->leads_table} WHERE id = %d AND user_id = %d",
@@ -460,11 +427,9 @@ class Unified_Leads_Manager {
         ));
         
         if (!$lead) {
-            error_log("❌ Lead non trouvé: ID {$lead_id}, User {$user_id}");
-            return new WP_Error('not_found', 'Lead non trouvé');
+            // Le lead n'existe plus - considérer comme déjà supprimé
+            return true;
         }
-        
-        error_log("📋 Lead trouvé: Type {$lead->lead_type}, Original ID {$lead->original_id}");
         
         // Supprimer le lead unifié
         $result = $wpdb->delete(
@@ -477,23 +442,16 @@ class Unified_Leads_Manager {
         );
         
         if ($result === false) {
-            error_log("❌ Erreur lors de la suppression du lead: " . $wpdb->last_error);
             return new WP_Error('db_error', 'Erreur lors de la suppression');
         }
         
-        error_log("✅ Lead supprimé avec succès");
-        
         // ✅ AUTOMATISATION : Supprimer automatiquement le favori correspondant (sauf si skip_favori_removal = true)
         if (!$skip_favori_removal) {
-            error_log("🔄 Suppression automatique du favori original...");
             try {
                 $this->remove_original_favori($lead->lead_type, $lead->original_id, $user_id);
             } catch (Exception $e) {
                 // Ignorer les erreurs de suppression du favori - le lead principal est déjà supprimé
-                error_log("⚠️ Erreur lors de la suppression du favori original (ignorée): " . $e->getMessage());
             }
-        } else {
-            error_log("⏭️ Suppression du favori original ignorée (skip_favori_removal = true)");
         }
         
         return true;
@@ -808,10 +766,9 @@ class Unified_Leads_Manager {
                 return;
             }
             
-            // Vérifier que le lead existe avant de tenter de le supprimer
-            $existing_lead = $this->get_lead($lead_id);
-            if (!$existing_lead) {
-                wp_send_json_error('Lead non trouvé');
+            // Vérifier que l'utilisateur est connecté
+            if (!is_user_logged_in()) {
+                wp_send_json_error('Utilisateur non connecté');
                 return;
             }
             
@@ -823,10 +780,8 @@ class Unified_Leads_Manager {
                 wp_send_json_success('Lead supprimé avec succès');
             }
         } catch (Exception $e) {
-            error_log("Unified Leads AJAX - Exception lors de la suppression: " . $e->getMessage());
             wp_send_json_error('Erreur interne du serveur');
         } catch (Error $e) {
-            error_log("Unified Leads AJAX - Error lors de la suppression: " . $e->getMessage());
             wp_send_json_error('Erreur interne du serveur');
         }
     }

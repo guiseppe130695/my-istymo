@@ -23,37 +23,20 @@ jQuery(document).ready(function($) {
     function openLeadDetailModal(leadId) {
         // Protection contre les appels multiples
         if (modalOpening) {
-            console.log('Modal déjà en cours d\'ouverture, ignoré:', leadId);
             return;
         }
         
         modalOpening = true;
         
-        console.log('=== OUVERTURE MODAL LEAD ===');
-        console.log('Lead ID:', leadId);
-        console.log('Type de leadId:', typeof leadId);
-        
-        // Vérifications préliminaires
-        console.log('jQuery disponible:', typeof $ !== 'undefined');
-        console.log('unifiedLeadsAjax disponible:', typeof unifiedLeadsAjax !== 'undefined');
-        
-        if (typeof unifiedLeadsAjax !== 'undefined') {
-            console.log('AJAX URL:', unifiedLeadsAjax.ajaxurl);
-            console.log('Nonce:', unifiedLeadsAjax.nonce);
-        } else {
-            console.error('unifiedLeadsAjax non défini!');
-            console.log('Variables globales disponibles:', Object.keys(window).filter(k => k.includes('Ajax') || k.includes('ajax')));
+        if (typeof unifiedLeadsAjax === 'undefined') {
             alert('Erreur: Variables AJAX non disponibles. Vérifiez que le script est bien chargé.');
             return;
         }
         
         // Vérifier le modal
         const modal = $('#lead-detail-modal');
-        console.log('Modal trouvé:', modal.length > 0);
         
         if (modal.length === 0) {
-            console.error('Modal #lead-detail-modal non trouvé dans le DOM');
-            console.log('Modals disponibles:', $('[id*="modal"]').map(function() { return this.id; }).get());
             alert('Erreur: Modal non trouvé. Le template modal n\'est peut-être pas chargé.');
             return;
         }
@@ -62,14 +45,22 @@ jQuery(document).ready(function($) {
         modal.removeClass('my-istymo-hidden').addClass('my-istymo-show');
         modal.show();
         
+        // Empêcher la fermeture immédiate du modal
+        setTimeout(function() {
+            // Modal prêt pour le contenu
+        }, 100);
+        
         // Ajouter un gestionnaire d'événement pour l'overlay (une seule fois)
         modal.off('click.lead-detail').on('click.lead-detail', '.my-istymo-modal-overlay', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Clic sur overlay - fermeture du modal');
-            if (!modalClosing) {
-                closeLeadDetailModal();
-            }
+            // console.log('Clic sur overlay - fermeture du modal');
+            // Délai pour éviter la fermeture immédiate
+            setTimeout(function() {
+                if (!modalClosing) {
+                    closeLeadDetailModal();
+                }
+            }, 200);
         });
         
         // Empêcher la fermeture du modal quand on clique sur le contenu
@@ -81,17 +72,17 @@ jQuery(document).ready(function($) {
         $(document).off('keydown.lead-detail').on('keydown.lead-detail', function(e) {
             if (e.key === 'Escape' && modal.hasClass('my-istymo-show')) {
                 e.preventDefault();
-                console.log('Touche Escape - fermeture du modal');
+                // console.log('Touche Escape - fermeture du modal');
                 if (!modalClosing) {
                     closeLeadDetailModal();
                 }
             }
         });
         
-        console.log('Modal affiché');
+        // console.log('Modal affiché');
         
         // Test AJAX simple d'abord
-        console.log('=== DÉBUT REQUÊTE AJAX ===');
+        // console.log('=== DÉBUT REQUÊTE AJAX ===');
         
         $.ajax({
             url: unifiedLeadsAjax.ajaxurl,
@@ -103,24 +94,12 @@ jQuery(document).ready(function($) {
                 nonce: unifiedLeadsAjax.nonce
             },
             beforeSend: function(xhr) {
-                console.log('Envoi de la requête...');
-                console.log('URL:', unifiedLeadsAjax.ajaxurl);
-                console.log('Data:', {
-                    action: 'my_istymo_get_lead_details',
-                    lead_id: leadId,
-                    nonce: unifiedLeadsAjax.nonce
-                });
                 
                 $('#lead-detail-content').html('<div style="text-align: center; padding: 20px;"><p><span class="dashicons dashicons-update" style="animation: spin 1s linear infinite; margin-right: 8px;"></span>Chargement des détails...</p></div>');
             },
             success: function(response, textStatus, xhr) {
-                console.log('=== RÉPONSE AJAX REÇUE ===');
-                console.log('Status:', textStatus);
-                console.log('Response:', response);
-                console.log('Type de response:', typeof response);
                 
                 if (response && response.success) {
-                    console.log('✅ Succès - Données reçues:', response.data);
                     
                     // Mettre à jour le titre du modal
                     var leadType = response.data.lead_type || 'lead';
@@ -136,6 +115,9 @@ jQuery(document).ready(function($) {
                     } else if (leadType === 'lead_vendeur') {
                         typeIcon = '<i class="fas fa-store"></i>';
                         typeLabel = 'Lead Vendeur';
+                    } else if (leadType === 'carte_succession') {
+                        typeIcon = '<i class="fas fa-map"></i>';
+                        typeLabel = 'Carte de Succession';
                     } else {
                         typeIcon = '<i class="fas fa-users"></i>';
                         typeLabel = leadType.toUpperCase();
@@ -157,8 +139,12 @@ jQuery(document).ready(function($) {
                     // Charger le contenu
                     $('#lead-detail-content').html(htmlContent);
                     
+                    // Vérifier que le modal est toujours ouvert
+                    setTimeout(function() {
+                        // Vérification du modal
+                    }, 500);
+                    
                 } else {
-                    console.log('❌ Échec - Message:', response ? response.data : 'Pas de réponse');
                     $('#lead-detail-content').html('<div style="color: red; padding: 20px;"><p>❌ Erreur: ' + (response && response.data ? response.data : 'Impossible de charger les détails') + '</p></div>');
                 }
                 
@@ -166,16 +152,8 @@ jQuery(document).ready(function($) {
                 modalOpening = false;
             },
             error: function(xhr, status, error) {
-                console.log('=== ERREUR AJAX ===');
-                console.error('Status:', status);
-                console.error('Error:', error);
-                console.error('XHR Status:', xhr.status);
-                console.error('XHR StatusText:', xhr.statusText);
-                
                 // Réinitialiser le flag
                 modalOpening = false;
-                console.error('Response Text:', xhr.responseText);
-                console.error('Content-Type:', xhr.getResponseHeader('Content-Type'));
                 
                 var errorMsg = '<div style="color: red; padding: 20px; font-family: monospace;">';
                 errorMsg += '<h4>❌ Erreur de communication avec le serveur</h4>';
@@ -201,7 +179,7 @@ jQuery(document).ready(function($) {
      * Fonction globale pour fermer le modal de détail
      */
     function closeLeadDetailModal() {
-        console.log('Fermeture du modal');
+        // console.log('Fermeture du modal');
         const modal = $('#lead-detail-modal');
         modal.removeClass('my-istymo-show').addClass('my-istymo-hidden');
         modal.hide();
@@ -217,33 +195,33 @@ jQuery(document).ready(function($) {
     function deleteLead(leadId) {
         // Protection globale contre les suppressions multiples
         if (deleteInProgress) {
-            console.log('Suppression déjà en cours, ignoré:', leadId);
+            // console.log('Suppression déjà en cours, ignoré:', leadId);
             return;
         }
         
         // Vérifier si ce lead est déjà en cours de suppression
         if (deletingLeads.has(leadId)) {
-            console.log('Lead déjà en cours de suppression:', leadId);
+            // console.log('Lead déjà en cours de suppression:', leadId);
             return;
         }
         
         // Protection supplémentaire : vérifier si une requête AJAX est déjà en cours
         if ($.active && $.active > 0) {
-            console.log('Requête AJAX déjà en cours, ignoré:', leadId);
+            // console.log('Requête AJAX déjà en cours, ignoré:', leadId);
             return;
         }
         
         // Vérifier si le bouton est déjà désactivé (protection supplémentaire)
         const deleteButton = $('.delete-lead[data-lead-id="' + leadId + '"]');
         if (deleteButton.prop('disabled')) {
-            console.log('Bouton de suppression déjà désactivé pour le lead:', leadId);
+            // console.log('Bouton de suppression déjà désactivé pour le lead:', leadId);
             return;
         }
         
         // Vérifier si la ligne existe encore dans le tableau
         const tableRow = $('tr[data-lead-id="' + leadId + '"]');
         if (tableRow.length === 0) {
-            console.log('Ligne du tableau non trouvée pour le lead:', leadId);
+            // console.log('Ligne du tableau non trouvée pour le lead:', leadId);
             return;
         }
         
@@ -251,11 +229,11 @@ jQuery(document).ready(function($) {
         deleteInProgress = true;
         deletingLeads.add(leadId);
         
-            console.log('Deleting lead ID:', leadId);
+            // console.log('Deleting lead ID:', leadId);
             
             // Vérifier que les variables AJAX sont disponibles
             if (typeof unifiedLeadsAjax === 'undefined') {
-                console.error('unifiedLeadsAjax not defined');
+                // console.error('unifiedLeadsAjax not defined');
                 alert('Erreur: Variables AJAX non disponibles');
             deletingLeads.delete(leadId);
             deleteInProgress = false;
@@ -275,7 +253,7 @@ jQuery(document).ready(function($) {
                     $('.delete-lead[data-lead-id="' + leadId + '"]').prop('disabled', true);
                 },
                 success: function(response) {
-                    console.log('Delete Response:', response);
+                    // console.log('Delete Response:', response);
                     if (response && response.success) {
                         // Supprimer la ligne du tableau
                         $('tr[data-lead-id="' + leadId + '"]').fadeOut(300, function() {
@@ -287,14 +265,14 @@ jQuery(document).ready(function($) {
                     } else {
                         // Ne pas afficher d'erreur si le lead a déjà été supprimé
                         if (response && response.data && response.data.includes('Lead non trouvé')) {
-                            console.log('Lead déjà supprimé, suppression de la ligne du tableau');
+                            // Lead déjà supprimé, supprimer la ligne du tableau
                             $('tr[data-lead-id="' + leadId + '"]').fadeOut(300, function() {
                                 $(this).remove();
                             });
-                    } else {
-                        alert('Erreur lors de la suppression: ' + (response && response.data ? response.data : 'Erreur inconnue'));
-                        $('.delete-lead[data-lead-id="' + leadId + '"]').prop('disabled', false);
-                    }
+                        } else {
+                            alert('Erreur lors de la suppression: ' + (response && response.data ? response.data : 'Erreur inconnue'));
+                            $('.delete-lead[data-lead-id="' + leadId + '"]').prop('disabled', false);
+                        }
                     }
                     
                     // Retirer le lead de la liste des suppressions en cours
@@ -302,7 +280,6 @@ jQuery(document).ready(function($) {
                     deleteInProgress = false;
                 },
                 error: function(xhr, status, error) {
-                    console.error('Delete Error:', xhr, status, error);
                     alert('Erreur de communication avec le serveur: ' + error);
                     $('.delete-lead[data-lead-id="' + leadId + '"]').prop('disabled', false);
                     
@@ -317,10 +294,10 @@ jQuery(document).ready(function($) {
      * Fonction de test de connexion AJAX
      */
     function testAjaxConnection() {
-        console.log('=== TEST CONNEXION AJAX ===');
+        // console.log('=== TEST CONNEXION AJAX ===');
         
         if (typeof unifiedLeadsAjax === 'undefined') {
-            console.error('unifiedLeadsAjax non disponible');
+            // console.error('unifiedLeadsAjax non disponible');
             alert('Variables AJAX non disponibles');
             return;
         }
@@ -333,12 +310,12 @@ jQuery(document).ready(function($) {
                 nonce: unifiedLeadsAjax.nonce
             },
             success: function(response) {
-                console.log('✅ Test AJAX réussi:', response);
+                // console.log('✅ Test AJAX réussi:', response);
                 alert('Test AJAX réussi! Vérifiez la console pour les détails.');
             },
             error: function(xhr, status, error) {
-                console.error('❌ Test AJAX échoué:', status, error);
-                console.error('Response:', xhr.responseText);
+                // console.error('❌ Test AJAX échoué:', status, error);
+                // console.error('Response:', xhr.responseText);
                 alert('Test AJAX échoué. Vérifiez la console pour les détails.');
             }
         });
@@ -409,8 +386,11 @@ jQuery(document).ready(function($) {
         html += '<i class="fas fa-info-circle"></i> ';
         if (leadData.lead_type === 'lead_vendeur') {
             html += 'Informations liées au bien';
+        } else if (leadData.lead_type === 'carte_succession') {
+            // Pour les cartes de succession, afficher "Informations générales"
+            html += 'Informations générales';
         } else {
-        html += 'Informations ' + (leadData.lead_type === 'sci' ? 'SCI' : 'DPE');
+            html += 'Informations ' + (leadData.lead_type === 'sci' ? 'SCI' : 'DPE');
         }
         html += '</h4>';
         
@@ -425,6 +405,8 @@ jQuery(document).ready(function($) {
                 html += generateDPEInfo(originalData);
             } else if (leadData.lead_type === 'lead_vendeur') {
                 html += generateLeadVendeurInfo(originalData);
+            } else if (leadData.lead_type === 'carte_succession') {
+                html += generateCarteSuccessionInfo(originalData);
             }
         }
         
@@ -869,9 +851,9 @@ jQuery(document).ready(function($) {
         
         // ===== SECTION ANALYSER LE BIEN (SEULEMENT SI SITE WEB DISPONIBLE) =====
         if (data['64']) { // Champ 64 = Site Web
-            console.log('🔍 Site Web trouvé:', data['64']);
+            // console.log('🔍 Site Web trouvé:', data['64']);
             var escapedUrl = escapeHtml(data['64']);
-            console.log('🔍 URL échappée:', escapedUrl);
+            // console.log('🔍 URL échappée:', escapedUrl);
             
             html += '<div class="my-istymo-section my-istymo-analyze-section">';
             html += '<h5 class="my-istymo-section-title"><i class="fas fa-chart-line"></i> Analyser le bien</h5>';
@@ -882,9 +864,167 @@ jQuery(document).ready(function($) {
             html += '</div>';
             html += '</div>'; // Fin section analyser le bien
         } else {
-            console.log('🔍 Aucun site web trouvé (champ 64 vide)');
+            // console.log('🔍 Aucun site web trouvé (champ 64 vide)');
         }
         
+        html += '</div>';
+        return html;
+    }
+    
+    /**
+     * Génère les informations Carte de Succession
+     */
+    function generateCarteSuccessionInfo(data) {
+        var html = '<div class="my-istymo-carte-succession-info">';
+        
+        // === INFORMATIONS DE CONTACT ===
+        html += '<div class="my-istymo-info-subsection">';
+        html += '<h6><i class="fas fa-phone"></i> Informations de Contact</h6>';
+        
+        // Nom (champ 1)
+        if (data['1']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label">Nom :</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['1']) + '</span>';
+            html += '</div>';
+        }
+        
+        // Prénom (champ 2)
+        if (data['2']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label">Prénom :</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['2']) + '</span>';
+            html += '</div>';
+        }
+        
+        // Téléphone (champ 3)
+        if (data['3']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label">Téléphone :</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['3']) + '</span>';
+            html += '</div>';
+        }
+        
+        // Email (champ 4)
+        if (data['4']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label">Email :</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['4']) + '</span>';
+            html += '</div>';
+        }
+        html += '</div>';
+        
+        // === ADRESSE ===
+        html += '<div class="my-istymo-info-subsection">';
+        html += '<h6><i class="fas fa-home"></i> Adresse</h6>';
+        
+        // Adresse (champ 4.1)
+        if (data['4.1']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label">Adresse :</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['4.1']) + '</span>';
+            html += '</div>';
+        }
+        
+        // Ville (champ 4.3)
+        if (data['4.3']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label">Ville :</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['4.3']) + '</span>';
+            html += '</div>';
+        }
+        
+        // Code postal (champ 4.5)
+        if (data['4.5']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label">Code postal :</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['4.5']) + '</span>';
+            html += '</div>';
+        }
+        html += '</div>';
+        
+        // === INFORMATIONS SUR LE DÉFUNT ===
+        html += '<div class="my-istymo-info-subsection">';
+        html += '<h6><i class="fas fa-user"></i> Informations sur le Défunt</h6>';
+        
+        // Nom du défunt (champ 51.3)
+        if (data['51.3']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label">Nom du défunt :</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['51.3']) + '</span>';
+            html += '</div>';
+        }
+        
+        // Prénom du défunt (champ 51.6)
+        if (data['51.6']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label">Prénom du défunt :</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['51.6']) + '</span>';
+            html += '</div>';
+        }
+        
+        // Date de décès (champ 50)
+        if (data['50']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label">Date de décès :</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['50']) + '</span>';
+            html += '</div>';
+        }
+        
+        // Lieu de décès (champ 51.1)
+        if (data['51.1']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label">Lieu de décès :</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['51.1']) + '</span>';
+            html += '</div>';
+        }
+        
+        // Cause du décès (champ 51.2)
+        if (data['51.2']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label">Cause du décès :</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['51.2']) + '</span>';
+            html += '</div>';
+        }
+        html += '</div>';
+        
+        // === INFORMATIONS SUR LE BIEN ===
+        html += '<div class="my-istymo-info-subsection">';
+        html += '<h6><i class="fas fa-building"></i> Informations sur le Bien</h6>';
+        
+        // Type d'habitation (champ 52)
+        if (data['52']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label">Type d\'habitation :</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['52']) + '</span>';
+            html += '</div>';
+        }
+        
+        // Surface habitable (champ 29)
+        if (data['29']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label">Surface habitable :</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['29']) + ' m²</span>';
+            html += '</div>';
+        }
+        
+        // Surface du terrain (champ 30)
+        if (data['30']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label">Surface du terrain :</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['30']) + ' m²</span>';
+            html += '</div>';
+        }
+        
+        // Année de construction (champ 23)
+        if (data['23']) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label">Année de construction :</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data['23']) + '</span>';
+            html += '</div>';
+        }
+        
+        html += '</div>';
         html += '</div>';
         return html;
     }
@@ -893,10 +1033,10 @@ jQuery(document).ready(function($) {
      * Fonction pour ouvrir le rapport d'analyse du bien
      */
     function openPropertyReport(websiteUrl) {
-        console.log('🚀 openPropertyReport appelée avec URL:', websiteUrl);
-        console.log('🚀 Type d\'URL:', typeof websiteUrl);
-        console.log('🚀 URL vide?', !websiteUrl);
-        console.log('🚀 URL trim vide?', websiteUrl && websiteUrl.trim() === '');
+        // console.log('🚀 openPropertyReport appelée avec URL:', websiteUrl);
+        // console.log('🚀 Type d\'URL:', typeof websiteUrl);
+        // console.log('🚀 URL vide?', !websiteUrl);
+        // console.log('🚀 URL trim vide?', websiteUrl && websiteUrl.trim() === '');
         
         // Vérifier si l'URL est valide
         if (websiteUrl && websiteUrl.trim() !== '') {
@@ -905,22 +1045,22 @@ jQuery(document).ready(function($) {
             // Ajouter http:// si l'URL ne commence pas par http:// ou https://
             if (!websiteUrl.startsWith('http://') && !websiteUrl.startsWith('https://')) {
                 websiteUrl = 'http://' + websiteUrl;
-                console.log('🚀 URL modifiée de', originalUrl, 'vers', websiteUrl);
+                // console.log('🚀 URL modifiée de', originalUrl, 'vers', websiteUrl);
             }
             
-            console.log('🚀 Tentative d\'ouverture de l\'URL:', websiteUrl);
+            // console.log('🚀 Tentative d\'ouverture de l\'URL:', websiteUrl);
             
             // Ouvrir l'URL dans un nouvel onglet
             var newWindow = window.open(websiteUrl, '_blank');
             
             if (newWindow) {
-                console.log('✅ Nouvel onglet ouvert avec succès');
+                // console.log('✅ Nouvel onglet ouvert avec succès');
             } else {
-                console.error('❌ Échec de l\'ouverture du nouvel onglet (peut-être bloqué par le navigateur)');
+                // console.error('❌ Échec de l\'ouverture du nouvel onglet (peut-être bloqué par le navigateur)');
                 alert('Impossible d\'ouvrir le lien. Vérifiez que les popups ne sont pas bloqués.');
             }
         } else {
-            console.log('❌ URL vide ou invalide');
+            // console.log('❌ URL vide ou invalide');
             alert('URL du site web non disponible pour ce bien.');
         }
     }
@@ -1266,7 +1406,7 @@ jQuery(document).ready(function($) {
     function initRowActions() {
         // S'assurer que les gestionnaires ne sont attachés qu'une seule fois
         if (eventHandlersInitialized) {
-            console.log('Gestionnaires d\'événements déjà initialisés, ignoré');
+            // console.log('Gestionnaires d\'événements déjà initialisés, ignoré');
             return;
         }
         
@@ -1288,7 +1428,7 @@ jQuery(document).ready(function($) {
             const leadId = $btn.data('lead-id');
             const action = $btn.data('action') || $btn.attr('class').split(' ').find(cls => cls.includes('lead'));
             
-            console.log('Action clicked:', action, 'Lead ID:', leadId);
+            // console.log('Action clicked:', action, 'Lead ID:', leadId);
             
             if (action === 'delete-lead' || $btn.hasClass('delete-lead')) {
                 deleteLead(leadId);
@@ -1418,7 +1558,7 @@ jQuery(document).ready(function($) {
      * Modifie un lead
      */
     function editLead(leadId) {
-        console.log('Édition du lead:', leadId);
+        // console.log('Édition du lead:', leadId);
         
         // Charger les détails du lead
         $.ajax({
@@ -1430,7 +1570,7 @@ jQuery(document).ready(function($) {
                 nonce: unifiedLeadsAjax.nonce
             },
             success: function(response) {
-                console.log('Réponse des détails:', response);
+                // console.log('Réponse des détails:', response);
                 
                 if (response.success) {
                     const lead = response.data;
@@ -1446,12 +1586,12 @@ jQuery(document).ready(function($) {
                     $('#edit-lead-modal').removeClass('my-istymo-hidden').addClass('my-istymo-show');
                     $('#edit-lead-modal').show();
                 } else {
-                    console.error(' Erreur lors du chargement des détails:', response.data);
+                    // console.error(' Erreur lors du chargement des détails:', response.data);
                     alert('Erreur lors du chargement des détails : ' + (response.data || 'Erreur inconnue'));
                 }
             },
             error: function(xhr, status, error) {
-                console.error(' Erreur AJAX:', {xhr: xhr, status: status, error: error});
+                // console.error(' Erreur AJAX:', {xhr: xhr, status: status, error: error});
                 alert('Erreur lors de la communication avec le serveur');
             }
         });
@@ -1463,7 +1603,7 @@ jQuery(document).ready(function($) {
      *  PHASE 3 : Ajoute une action à un lead
      */
     function addAction(leadId) {
-        console.log('📝 Ajout d\'action pour le lead:', leadId);
+        // console.log('📝 Ajout d\'action pour le lead:', leadId);
         
         // Remplir l'ID du lead dans le formulaire
         $('#action-lead-id').val(leadId);
@@ -1476,7 +1616,7 @@ jQuery(document).ready(function($) {
      *  PHASE 3 : Change le statut d'un lead
      */
     function changeStatus(leadId, currentStatus) {
-        console.log(' Changement de statut pour le lead:', leadId, 'Statut actuel:', currentStatus);
+        // console.log(' Changement de statut pour le lead:', leadId, 'Statut actuel:', currentStatus);
         
         // Remplir les champs du formulaire
         $('#status-lead-id').val(leadId);
@@ -1491,7 +1631,7 @@ jQuery(document).ready(function($) {
      */
     function deleteLead(leadId) {
         // Supprimer le lead
-            console.log(' Suppression du lead:', leadId);
+            // console.log(' Suppression du lead:', leadId);
             
             $.ajax({
                 url: unifiedLeadsAjax.ajaxurl,
@@ -1502,20 +1642,20 @@ jQuery(document).ready(function($) {
                     nonce: unifiedLeadsAjax.nonce
                 },
                 success: function(response) {
-                    console.log(' Réponse de suppression:', response);
+                    // console.log(' Réponse de suppression:', response);
                     
                     if (response.success) {
-                        console.log(' Lead supprimé avec succès');
+                        // console.log(' Lead supprimé avec succès');
                         // Recharger la page pour mettre à jour la liste
                         location.reload();
                     } else {
-                        console.error(' Erreur lors de la suppression:', response.data);
+                        // console.error(' Erreur lors de la suppression:', response.data);
                         alert('Erreur lors de la suppression : ' + (response.data || 'Erreur inconnue'));
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.error(' Erreur AJAX:', {xhr: xhr, status: status, error: error});
-                    console.error(' Réponse du serveur:', xhr.responseText);
+                    // console.error(' Erreur AJAX:', {xhr: xhr, status: status, error: error});
+                    // console.error(' Réponse du serveur:', xhr.responseText);
                     
                     // Essayer de parser la réponse pour voir s'il y a des détails
                     try {
@@ -1570,17 +1710,17 @@ jQuery(document).ready(function($) {
             nonce: unifiedLeadsAjax.nonce
         };
         
-        console.log(' Envoi des données d\'édition:', formData);
+        // console.log(' Envoi des données d\'édition:', formData);
         
         $.ajax({
             url: unifiedLeadsAjax.ajaxurl,
             type: 'POST',
             data: formData,
             success: function(response) {
-                console.log(' Réponse de mise à jour:', response);
+                // console.log(' Réponse de mise à jour:', response);
                 
                 if (response.success) {
-                    console.log(' Lead mis à jour avec succès');
+                    // console.log(' Lead mis à jour avec succès');
                     alert('Lead mis à jour avec succès');
                     
                     // Fermer le modal
@@ -1589,12 +1729,12 @@ jQuery(document).ready(function($) {
                     // Recharger la page pour mettre à jour la liste
                     location.reload();
                 } else {
-                    console.error(' Erreur lors de la mise à jour:', response.data);
+                    // console.error(' Erreur lors de la mise à jour:', response.data);
                     alert('Erreur lors de la mise à jour : ' + (response.data || 'Erreur inconnue'));
                 }
             },
             error: function(xhr, status, error) {
-                console.error(' Erreur AJAX:', {xhr: xhr, status: status, error: error});
+                // console.error(' Erreur AJAX:', {xhr: xhr, status: status, error: error});
                 alert('Erreur lors de la communication avec le serveur');
             }
         });
@@ -1737,7 +1877,7 @@ jQuery(document).ready(function($) {
         formData.append('action', 'my_istymo_add_lead_action');
         formData.append('nonce', unifiedLeadsAjax.nonce);
         
-        console.log('📝 Soumission d\'action:', Object.fromEntries(formData));
+        // console.log('📝 Soumission d\'action:', Object.fromEntries(formData));
         
         $.ajax({
             url: unifiedLeadsAjax.ajaxurl,
@@ -1746,22 +1886,22 @@ jQuery(document).ready(function($) {
             processData: false,
             contentType: false,
             success: function(response) {
-                console.log(' Réponse ajout action:', response);
+                // console.log(' Réponse ajout action:', response);
                 
                 if (response.success) {
-                    console.log(' Action ajoutée avec succès');
+                    // console.log(' Action ajoutée avec succès');
                     $('#add-action-modal').hide();
                     $('#add-action-form')[0].reset();
                     showNotification('Action ajoutée avec succès', 'success');
                     // Recharger la page pour mettre à jour l'affichage
                     setTimeout(() => location.reload(), 1000);
                 } else {
-                    console.error(' Erreur lors de l\'ajout de l\'action:', response.data);
+                    // console.error(' Erreur lors de l\'ajout de l\'action:', response.data);
                     alert('Erreur lors de l\'ajout de l\'action : ' + (response.data || 'Erreur inconnue'));
                 }
             },
             error: function(xhr, status, error) {
-                console.error(' Erreur AJAX ajout action:', {xhr: xhr, status: status, error: error});
+                // console.error(' Erreur AJAX ajout action:', {xhr: xhr, status: status, error: error});
                 alert('Erreur lors de la communication avec le serveur');
             }
         });
@@ -1777,7 +1917,7 @@ jQuery(document).ready(function($) {
         formData.append('action', 'my_istymo_change_lead_status');
         formData.append('nonce', unifiedLeadsAjax.nonce);
         
-        console.log(' Soumission changement statut:', Object.fromEntries(formData));
+        // console.log(' Soumission changement statut:', Object.fromEntries(formData));
         
         $.ajax({
             url: unifiedLeadsAjax.ajaxurl,
@@ -1786,10 +1926,10 @@ jQuery(document).ready(function($) {
             processData: false,
             contentType: false,
             success: function(response) {
-                console.log(' Réponse changement statut:', response);
+                // console.log(' Réponse changement statut:', response);
                 
                 if (response.success) {
-                    console.log(' Statut changé avec succès');
+                    // console.log(' Statut changé avec succès');
                     if (window.leadActionsManager) {
                         window.leadActionsManager.closeAllModals();
                     } else {
@@ -1800,12 +1940,12 @@ jQuery(document).ready(function($) {
                     // Recharger la page pour mettre à jour l'affichage
                     setTimeout(() => location.reload(), 1000);
                 } else {
-                    console.error(' Erreur lors du changement de statut:', response.data);
+                    // console.error(' Erreur lors du changement de statut:', response.data);
                     alert('Erreur lors du changement de statut : ' + (response.data || 'Erreur inconnue'));
                 }
             },
             error: function(xhr, status, error) {
-                console.error(' Erreur AJAX changement statut:', {xhr: xhr, status: status, error: error});
+                // console.error(' Erreur AJAX changement statut:', {xhr: xhr, status: status, error: error});
                 alert('Erreur lors de la communication avec le serveur');
             }
         });
@@ -1829,11 +1969,11 @@ jQuery(document).ready(function($) {
      * Fermer le modal de détails du lead
      */
     window.closeLeadDetailModal = function() {
-        console.log('=== FERMETURE MODAL LEAD ===');
+        // console.log('=== FERMETURE MODAL LEAD ===');
         
         // Protection contre les fermetures multiples
         if (modalClosing) {
-            console.log('Modal déjà en cours de fermeture, ignoré');
+            // console.log('Modal déjà en cours de fermeture, ignoré');
             return;
         }
         
@@ -1848,7 +1988,7 @@ jQuery(document).ready(function($) {
             if (modal.length > 0) {
                 modal.removeClass('my-istymo-show').addClass('my-istymo-hidden');
                 modal.hide();
-                console.log('Modal fermé avec fallback');
+                // console.log('Modal fermé avec fallback');
             }
         }
         
@@ -1873,7 +2013,7 @@ jQuery(document).ready(function($) {
         formData.append('action', 'my_istymo_update_lead');
         formData.append('nonce', unifiedLeadsAjax.nonce);
         
-        console.log(' Soumission édition lead:', Object.fromEntries(formData));
+        // console.log(' Soumission édition lead:', Object.fromEntries(formData));
         
         $.ajax({
             url: unifiedLeadsAjax.ajaxurl,
@@ -1882,21 +2022,21 @@ jQuery(document).ready(function($) {
             processData: false,
             contentType: false,
             success: function(response) {
-                console.log(' Réponse édition lead:', response);
+                // console.log(' Réponse édition lead:', response);
                 
                 if (response.success) {
-                    console.log(' Lead modifié avec succès');
+                    // console.log(' Lead modifié avec succès');
                     closeEditLeadModal();
                     showNotification('Lead modifié avec succès', 'success');
                     // Recharger la page pour mettre à jour l'affichage
                     setTimeout(() => location.reload(), 1000);
                 } else {
-                    console.error(' Erreur lors de la modification:', response.data);
+                    // console.error(' Erreur lors de la modification:', response.data);
                     alert('Erreur lors de la modification : ' + (response.data || 'Erreur inconnue'));
                 }
             },
             error: function(xhr, status, error) {
-                console.error(' Erreur AJAX édition lead:', {xhr: xhr, status: status, error: error});
+                // console.error(' Erreur AJAX édition lead:', {xhr: xhr, status: status, error: error});
                 alert('Erreur lors de la communication avec le serveur');
             }
         });
@@ -1926,7 +2066,7 @@ jQuery(document).ready(function($) {
     function initLazyLoading() {
         if ($('.leads-table tbody tr').length > 100) {
             // Implémenter le lazy loading si nécessaire
-            console.log('Beaucoup de leads détectés, lazy loading recommandé');
+            // console.log('Beaucoup de leads détectés, lazy loading recommandé');
         }
     }
     
@@ -1936,10 +2076,10 @@ jQuery(document).ready(function($) {
      * Fonction de test de connexion AJAX
      */
     function testAjaxConnection() {
-        console.log('=== TEST CONNEXION AJAX ===');
+        // console.log('=== TEST CONNEXION AJAX ===');
         
         if (typeof unifiedLeadsAjax === 'undefined') {
-            console.error('unifiedLeadsAjax non disponible');
+            // console.error('unifiedLeadsAjax non disponible');
             alert('Variables AJAX non disponibles');
             return;
         }
@@ -1952,55 +2092,17 @@ jQuery(document).ready(function($) {
                 nonce: unifiedLeadsAjax.nonce
             },
             success: function(response) {
-                console.log('✅ Test AJAX réussi:', response);
+                // console.log('✅ Test AJAX réussi:', response);
                 alert('Test AJAX réussi! Vérifiez la console pour les détails.');
             },
             error: function(xhr, status, error) {
-                console.error('❌ Test AJAX échoué:', status, error);
-                console.error('Response:', xhr.responseText);
+                // console.error('❌ Test AJAX échoué:', status, error);
+                // console.error('Response:', xhr.responseText);
                 alert('Test AJAX échoué. Vérifiez la console pour les détails.');
             }
         });
     }
     
-    // ✅ CORRECTION : Gestion du bouton de correction des leads mal classés
-    $(document).on('click', '#fix-misclassified-leads', function(e) {
-        e.preventDefault();
-        
-        if (!confirm('Êtes-vous sûr de vouloir corriger automatiquement tous les leads mal classés ?\n\nCette action va rechercher tous les leads de type "Lead Vendeur" avec form_id = 2 et les reclasser comme "Carte de Succession".')) {
-            return;
-        }
-        
-        const $button = $(this);
-        const originalText = $button.html();
-        
-        $button.prop('disabled', true);
-        $button.html('<i class="fas fa-spinner fa-spin"></i> Correction en cours...');
-        
-        $.ajax({
-            url: ajaxurl,
-            type: 'POST',
-            data: {
-                action: 'fix_misclassified_leads',
-                nonce: myIstymoAjax.nonce
-            },
-            success: function(response) {
-                if (response.success) {
-                    alert(response.data.message);
-                    location.reload();
-                } else {
-                    alert('Erreur: ' + (response.data || 'Impossible de corriger les leads'));
-                }
-            },
-            error: function() {
-                alert('Erreur de connexion');
-            },
-            complete: function() {
-                $button.prop('disabled', false);
-                $button.html(originalText);
-            }
-        });
-    });
     
     // Fonctions supprimées - déjà définies plus haut
     
