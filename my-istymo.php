@@ -133,9 +133,13 @@ require_once plugin_dir_path(__FILE__) . 'includes/lead-workflow.php';
 require_once plugin_dir_path(__FILE__) . 'includes/favoris-handler.php';
 require_once plugin_dir_path(__FILE__) . 'includes/dpe-favoris-handler.php';
 
-// ✅ NOUVEAU : Inclure les gestionnaires Lead Vendeur
-require_once plugin_dir_path(__FILE__) . 'includes/lead-vendeur-config-manager.php';
-require_once plugin_dir_path(__FILE__) . 'includes/lead-vendeur-favoris-handler.php';
+       // ✅ NOUVEAU : Inclure les gestionnaires Lead Vendeur
+       require_once plugin_dir_path(__FILE__) . 'includes/lead-vendeur-config-manager.php';
+       require_once plugin_dir_path(__FILE__) . 'includes/lead-vendeur-favoris-handler.php';
+       
+       // ✅ NOUVEAU : Inclure les gestionnaires Lead Parrainage
+       require_once plugin_dir_path(__FILE__) . 'includes/lead-parrainage-config-manager.php';
+       require_once plugin_dir_path(__FILE__) . 'includes/lead-parrainage-favoris-handler.php';
 
 // ✅ NOUVEAU : Inclure les gestionnaires Carte de Succession
 require_once plugin_dir_path(__FILE__) . 'includes/carte-succession-config-manager.php';
@@ -305,6 +309,26 @@ function sci_ajouter_menu() {
            'lead_parrainage_page',
            'dashicons-groups',
            -6
+       );
+       
+       // ✅ NOUVEAU : Sous-menu Configuration Lead Parrainage
+       add_submenu_page(
+           'lead-parrainage',
+           'Configuration Lead Parrainage',
+           'Configuration',
+           'manage_options',
+           'lead-parrainage-config',
+           'lead_parrainage_config_page'
+       );
+       
+       // ✅ NOUVEAU : Sous-menu Utilisateurs Lead Parrainage
+       add_submenu_page(
+           'lead-parrainage',
+           'Utilisateurs Lead Parrainage',
+           'Utilisateurs',
+           'manage_options',
+           'lead-parrainage-users',
+           'lead_parrainage_users_page'
        );
 }
 
@@ -1807,16 +1831,557 @@ function lead_vendeur_users_page() {
                return;
            }
            
+           // Charger les gestionnaires
+           $config_manager = lead_parrainage_config_manager();
+           $favoris_handler = lead_parrainage_favoris_handler();
+           
+           // Vérifier si Gravity Forms est actif
+           if (!$config_manager->is_gravity_forms_active()) {
+               echo '<div class="wrap">';
+               echo '<h1>🤝 Lead Parrainage</h1>';
+               echo '<div class="notice notice-error"><p><strong>Gravity Forms n\'est pas actif !</strong> Veuillez installer et activer Gravity Forms pour utiliser cette fonctionnalité.</p></div>';
+               echo '</div>';
+               return;
+           }
+           
+           $config = $config_manager->get_config();
+           
+           // Si aucun formulaire configuré, afficher un message
+           if (empty($config['gravity_form_id']) || !isset($config['gravity_form_id'])) {
+               echo '<div class="wrap">';
+               echo '<h1>🤝 Lead Parrainage</h1>';
+               echo '<div class="notice notice-warning"><p><strong>Configuration requise !</strong> Veuillez d\'abord configurer le formulaire Gravity Forms dans la <a href="' . admin_url('admin.php?page=lead-parrainage-config') . '">page de configuration</a>.</p></div>';
+               echo '</div>';
+               return;
+           }
+           
+           // Gestion de la pagination AJAX
+           $current_page = 1; // Page par défaut pour le chargement initial
+           $per_page = 20; // Nombre d'entrées par page
+           
+           // Récupérer les entrées du formulaire avec pagination
+           $entries = $config_manager->get_form_entries_paginated(
+               $config['gravity_form_id'],
+               $current_page,
+               $per_page,
+               get_current_user_id()
+           );
+           
+           // Compter le total d'entrées
+           $total_entries = $config_manager->get_form_entries_count_for_user(
+               $config['gravity_form_id'],
+               get_current_user_id()
+           );
+           
+           // Calculer le nombre total de pages
+           $total_pages = ceil($total_entries / $per_page);
+           
+           // Récupérer les champs du formulaire
+           $form_fields = $config_manager->get_form_fields($config['gravity_form_id']);
+           
+           // Récupérer les favoris de l'utilisateur
+           $user_favorites = $favoris_handler->get_user_favorites(get_current_user_id(), $config['gravity_form_id']);
+           
+           // Enqueue des scripts et styles
+           wp_enqueue_script('jquery');
+           wp_enqueue_script('lead-parrainage-js', plugin_dir_url(__FILE__) . 'assets/js/lead-parrainage.js', array('jquery'), '1.0.0', true);
+           wp_enqueue_style('lead-parrainage-css', plugin_dir_url(__FILE__) . 'assets/css/lead-parrainage.css', array(), '1.0.0');
+           
+           // Localiser les variables JavaScript
+           wp_localize_script('lead-parrainage-js', 'leadParrainageAjax', array(
+               'ajax_url' => admin_url('admin-ajax.php'),
+               'nonce' => wp_create_nonce('lead_parrainage_nonce'),
+               'form_id' => $config['gravity_form_id'],
+               'per_page' => $per_page
+           ));
+           
+           // Localiser les variables pour les favoris
+           wp_localize_script('lead-parrainage-js', 'simpleFavoritesAjax', array(
+               'ajax_url' => admin_url('admin-ajax.php'),
+               'nonce' => wp_create_nonce('simple_favorites_nonce')
+           ));
+           
            echo '<div class="wrap">';
            echo '<h1>🤝 Lead Parrainage</h1>';
+           
+           // Container principal
            echo '<div class="my-istymo-container">';
+           
+           // Tableau des leads
            echo '<div class="my-istymo-card">';
-           echo '<h2>👥 Gestion des Leads Parrainage</h2>';
-           echo '<p>Cette section sera dédiée à la gestion des leads générés par le système de parrainage.</p>';
-           echo '<p><em>Contenu à développer...</em></p>';
+           echo '<h2>📋 Liste des Leads Parrainage</h2>';
+           
+           if (empty($entries)) {
+               echo '<p>Aucun lead parrainage trouvé.</p>';
+           } else {
+               echo '<div class="lead-parrainage-table-container">';
+               echo '<table class="wp-list-table widefat fixed striped">';
+               echo '<thead>';
+               echo '<tr>';
+               echo '<th style="width: 40px;">Favori</th>';
+               
+               // Afficher les champs configurés
+               if (!empty($config['display_fields'])) {
+                   foreach ($config['display_fields'] as $field_id) {
+                       if (isset($form_fields[$field_id])) {
+                           echo '<th>' . esc_html($form_fields[$field_id]['label']) . '</th>';
+                       }
+                   }
+               }
+               
+               echo '<th>Adresse</th>';
+               echo '<th>Date</th>';
+               echo '<th style="width: 100px;">Actions</th>';
+               echo '</tr>';
+               echo '</thead>';
+               echo '<tbody id="lead-parrainage-table-body">';
+               
+               // Générer le HTML des lignes (sera remplacé par AJAX)
+               foreach ($entries as $entry) {
+                   $is_favorite = in_array($entry['id'], $user_favorites);
+                   echo '<tr class="lead-parrainage-row' . ($is_favorite ? ' favori-row' : '') . '">';
+                   echo '<td>';
+                   echo '<button class="favorite-btn' . ($is_favorite ? ' favori-active' : '') . '" data-entry-id="' . $entry['id'] . '">';
+                   echo $is_favorite ? '★' : '☆';
+                   echo '</button>';
+                   echo '</td>';
+                   
+                   // Afficher les champs configurés
+                   if (!empty($config['display_fields'])) {
+                       foreach ($config['display_fields'] as $field_id) {
+                           $field_value = isset($entry[$field_id]) ? $entry[$field_id] : '';
+                           
+                           // ✅ MODIFIÉ : Ne pas afficher les champs d'adresse individuels (4.1, 4.3, 4.5)
+                           if ($field_id === '4.1' || $field_id === '4.3' || $field_id === '4.5') {
+                               // Ignorer ces champs car ils seront affichés dans la colonne Adresse
+                               continue;
+                           } else {
+                               echo '<td>' . esc_html($field_value) . '</td>';
+                           }
+                       }
+                   }
+                   
+                   // ✅ NOUVEAU : Ajouter une colonne d'adresse complète si les champs d'adresse existent
+                   $rue = isset($entry['4.1']) ? trim($entry['4.1']) : '';
+                   $ville = isset($entry['4.3']) ? trim($entry['4.3']) : '';
+                   $code_postal = isset($entry['4.5']) ? trim($entry['4.5']) : '';
+                   
+                   if ($rue || $ville || $code_postal) {
+                       $adresse_complete = trim($rue . ' ' . $code_postal . ' ' . $ville);
+                       echo '<td title="Rue: ' . esc_attr($rue) . ' | Ville: ' . esc_attr($ville) . ' | CP: ' . esc_attr($code_postal) . '">' . esc_html($adresse_complete) . '</td>';
+                   }
+                   
+                   echo '<td>' . date('d/m/Y H:i', strtotime($entry['date_created'])) . '</td>';
+                   echo '<td>';
+                   echo '<button class="button button-primary view-lead-details" data-entry-id="' . $entry['id'] . '">Voir</button>';
+                   echo '</td>';
+                   echo '</tr>';
+               }
+               
+               echo '</tbody>';
+               echo '</table>';
+               
+               // Pagination
+               if ($total_pages > 1) {
+                   echo '<div id="lead-parrainage-pagination-info"></div>';
+                   echo '<div id="lead-parrainage-pagination-container">';
+                   echo '<div class="pagination">';
+                   
+                   // Bouton précédent
+                   if ($current_page > 1) {
+                       echo '<button class="pagination-btn" data-page="' . ($current_page - 1) . '">« Précédent</button>';
+                   }
+                   
+                   // Numéros de pages
+                   $start_page = max(1, $current_page - 2);
+                   $end_page = min($total_pages, $current_page + 2);
+                   
+                   for ($i = $start_page; $i <= $end_page; $i++) {
+                       $class = ($i == $current_page) ? 'pagination-number current' : 'pagination-number';
+                       echo '<button class="' . $class . '" data-page="' . $i . '">' . $i . '</button>';
+                   }
+                   
+                   // Bouton suivant
+                   if ($current_page < $total_pages) {
+                       echo '<button class="pagination-btn" data-page="' . ($current_page + 1) . '">Suivant »</button>';
+                   }
+                   
+                   echo '</div>';
+                   echo '</div>';
+               }
+               
+               echo '</div>';
+           }
+           
            echo '</div>';
            echo '</div>';
            echo '</div>';
+           
+           // ✅ NOUVEAU : Section de débogage des données
+           echo '<div class="my-istymo-card">';
+           echo '<h2>🔧 Section de Débogage</h2>';
+           echo '<div class="debug-section">';
+           echo '<h3>📊 Informations de Configuration</h3>';
+           echo '<div class="debug-grid">';
+           echo '<div class="debug-item">';
+           echo '<label>Formulaire ID :</label>';
+           echo '<span class="debug-value">' . (isset($config['gravity_form_id']) ? $config['gravity_form_id'] : 'Non configuré') . '</span>';
+           echo '</div>';
+           echo '<div class="debug-item">';
+           echo '<label>Champs affichés :</label>';
+           echo '<span class="debug-value">' . (isset($config['display_fields']) ? count($config['display_fields']) : 0) . ' champ(s)</span>';
+           echo '</div>';
+           echo '<div class="debug-item">';
+           echo '<label>Champ titre :</label>';
+           echo '<span class="debug-value">' . (isset($config['title_field']) ? $config['title_field'] : 'Non défini') . '</span>';
+           echo '</div>';
+           echo '<div class="debug-item">';
+           echo '<label>Champ description :</label>';
+           echo '<span class="debug-value">' . (isset($config['description_field']) ? $config['description_field'] : 'Non défini') . '</span>';
+           echo '</div>';
+           echo '<div class="debug-item">';
+           echo '<label>Gravity Forms actif :</label>';
+           echo '<span class="debug-value ' . ($config_manager->is_gravity_forms_active() ? 'debug-success' : 'debug-error') . '">' . ($config_manager->is_gravity_forms_active() ? 'Oui' : 'Non') . '</span>';
+           echo '</div>';
+           echo '<div class="debug-item">';
+           echo '<label>Configuration complète :</label>';
+           echo '<span class="debug-value ' . ($config_manager->is_configured() ? 'debug-success' : 'debug-warning') . '">' . ($config_manager->is_configured() ? 'Oui' : 'Non') . '</span>';
+           echo '</div>';
+           echo '</div>';
+           
+           echo '<h3>👤 Informations Utilisateur</h3>';
+           echo '<div class="debug-grid">';
+           echo '<div class="debug-item">';
+           echo '<label>ID Utilisateur :</label>';
+           echo '<span class="debug-value">' . get_current_user_id() . '</span>';
+           echo '</div>';
+           echo '<div class="debug-item">';
+           echo '<label>Nom utilisateur :</label>';
+           echo '<span class="debug-value">' . wp_get_current_user()->display_name . '</span>';
+           echo '</div>';
+           echo '<div class="debug-item">';
+           echo '<label>Rôle :</label>';
+           echo '<span class="debug-value">' . implode(', ', wp_get_current_user()->roles) . '</span>';
+           echo '</div>';
+           echo '<div class="debug-item">';
+           echo '<label>Est admin :</label>';
+           echo '<span class="debug-value ' . (current_user_can('administrator') ? 'debug-success' : 'debug-info') . '">' . (current_user_can('administrator') ? 'Oui' : 'Non') . '</span>';
+           echo '</div>';
+           echo '</div>';
+           
+           echo '<h3>📈 Statistiques des Données</h3>';
+           echo '<div class="debug-grid">';
+           echo '<div class="debug-item">';
+           echo '<label>Total entrées :</label>';
+           echo '<span class="debug-value">' . $total_entries . '</span>';
+           echo '</div>';
+           echo '<div class="debug-item">';
+           echo '<label>Entrées affichées :</label>';
+           echo '<span class="debug-value">' . count($entries) . '</span>';
+           echo '</div>';
+           echo '<div class="debug-item">';
+           echo '<label>Pages totales :</label>';
+           echo '<span class="debug-value">' . $total_pages . '</span>';
+           echo '</div>';
+           echo '<div class="debug-item">';
+           echo '<label>Favoris utilisateur :</label>';
+           echo '<span class="debug-value">' . count($user_favorites) . '</span>';
+           echo '</div>';
+           echo '<div class="debug-item">';
+           echo '<label>Champs formulaire :</label>';
+           echo '<span class="debug-value">' . count($form_fields) . '</span>';
+           echo '</div>';
+           echo '<div class="debug-item">';
+           echo '<label>Page actuelle :</label>';
+           echo '<span class="debug-value">' . $current_page . '</span>';
+           echo '</div>';
+           echo '</div>';
+           
+           echo '<h3>🔍 Données Brutes (Développement)</h3>';
+           echo '<div class="debug-raw-data">';
+           echo '<button class="button button-secondary" id="toggle-raw-data">Afficher/Masquer les données brutes</button>';
+           echo '<div id="raw-data-content" style="display: none;">';
+           echo '<h4>Configuration :</h4>';
+           echo '<pre>' . print_r($config, true) . '</pre>';
+           echo '<h4>Champs du formulaire :</h4>';
+           echo '<pre>' . print_r($form_fields, true) . '</pre>';
+           echo '<h4>Favoris utilisateur :</h4>';
+           echo '<pre>' . print_r($user_favorites, true) . '</pre>';
+           echo '<h4>Première entrée (exemple) :</h4>';
+           if (!empty($entries)) {
+               echo '<pre>' . print_r($entries[0], true) . '</pre>';
+           } else {
+               echo '<p>Aucune entrée disponible</p>';
+           }
+           echo '</div>';
+           echo '</div>';
+           
+           echo '<h3>🛠️ Actions de Débogage</h3>';
+           echo '<div class="debug-actions">';
+           echo '<button class="button button-secondary" onclick="leadParrainage.refresh()">Actualiser les données</button>';
+           $console_log_js = "console.log('Config:', " . json_encode($config) . ", 'Form Fields:', " . json_encode($form_fields) . ", 'User Favorites:', " . json_encode($user_favorites) . ");";
+           echo '<button class="button button-secondary" onclick="' . $console_log_js . '">Log dans la console</button>';
+           $alert_js = "alert('Total entrées: " . $total_entries . "\\nFavoris: " . count($user_favorites) . "\\nChamps: " . count($form_fields) . "');";
+           echo '<button class="button button-secondary" onclick="' . $alert_js . '">Afficher résumé</button>';
+           echo '</div>';
+           echo '</div>';
+           echo '</div>';
+           
+           // JavaScript pour la section de débogage
+           $config_json = json_encode($config);
+           $form_fields_json = json_encode($form_fields);
+           $user_favorites_json = json_encode($user_favorites);
+           
+           echo '<script>
+           jQuery(document).ready(function($) {
+               // Toggle des données brutes
+               $("#toggle-raw-data").on("click", function() {
+                   $("#raw-data-content").slideToggle();
+                   var buttonText = $("#raw-data-content").is(":visible") ? "Masquer les données brutes" : "Afficher les données brutes";
+                   $(this).text(buttonText);
+               });
+               
+               // Log des données dans la console au chargement
+               console.log("=== LEAD PARRAINAGE DEBUG ===");
+               console.log("Configuration:", ' . $config_json . ');
+               console.log("Form Fields:", ' . $form_fields_json . ');
+               console.log("User Favorites:", ' . $user_favorites_json . ');
+               console.log("Total Entries:", ' . $total_entries . ');
+               console.log("Current Page:", ' . $current_page . ');
+               console.log("Total Pages:", ' . $total_pages . ');
+               console.log("=============================");
+           });
+           </script>';
+           
+           // CSS pour les statistiques
+           echo '<style>
+           .stats-grid {
+               display: grid;
+               grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+               gap: 20px;
+               margin: 20px 0;
+           }
+           .stat-item {
+               text-align: center;
+               padding: 20px;
+               background: #f8f9fa;
+               border-radius: 8px;
+               border: 1px solid #e9ecef;
+           }
+           .stat-number {
+               display: block;
+               font-size: 2em;
+               font-weight: bold;
+               color: #0073aa;
+               margin-bottom: 5px;
+           }
+           .stat-label {
+               color: #666;
+               font-size: 0.9em;
+           }
+           .favori-row {
+               background-color: #fff3cd !important;
+           }
+           .favorite-btn {
+               background: none;
+               border: none;
+               font-size: 1.2em;
+               cursor: pointer;
+               color: #ccc;
+               transition: color 0.3s;
+           }
+           .favorite-btn:hover {
+               color: #ffc107;
+           }
+           .favorite-btn.favori-active {
+               color: #ffc107;
+           }
+           .favorite-btn.loading {
+               opacity: 0.5;
+               cursor: not-allowed;
+           }
+           .pagination {
+               display: flex;
+               justify-content: center;
+               gap: 5px;
+               margin: 20px 0;
+           }
+           .pagination-btn, .pagination-number {
+               padding: 8px 12px;
+               border: 1px solid #ddd;
+               background: #fff;
+               cursor: pointer;
+               text-decoration: none;
+               color: #0073aa;
+           }
+           .pagination-btn:hover, .pagination-number:hover {
+               background: #f1f1f1;
+           }
+           .pagination-number.current {
+               background: #0073aa;
+               color: #fff;
+               border-color: #0073aa;
+           }
+           .pagination-btn.disabled {
+               opacity: 0.5;
+               cursor: not-allowed;
+           }
+           .loading-spinner {
+               border: 3px solid #f3f3f3;
+               border-top: 3px solid #0073aa;
+               border-radius: 50%;
+               width: 30px;
+               height: 30px;
+               animation: spin 1s linear infinite;
+               margin: 0 auto;
+           }
+           @keyframes spin {
+               0% { transform: rotate(0deg); }
+               100% { transform: rotate(360deg); }
+           }
+           
+           /* === STYLES POUR LA SECTION DE DÉBOGAGE === */
+           .debug-section {
+               margin: 20px 0;
+           }
+           
+           .debug-section h3 {
+               margin: 20px 0 15px 0;
+               color: #333;
+               border-bottom: 2px solid #0073aa;
+               padding-bottom: 5px;
+               font-size: 1.1em;
+           }
+           
+           .debug-grid {
+               display: grid;
+               grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+               gap: 15px;
+               margin: 15px 0;
+           }
+           
+           .debug-item {
+               display: flex;
+               flex-direction: column;
+               padding: 12px;
+               background: #f8f9fa;
+               border-radius: 6px;
+               border-left: 4px solid #0073aa;
+               transition: all 0.2s ease;
+           }
+           
+           .debug-item:hover {
+               background: #e9ecef;
+               transform: translateY(-1px);
+               box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+           }
+           
+           .debug-item label {
+               font-weight: bold;
+               color: #666;
+               margin-bottom: 5px;
+               font-size: 0.9em;
+               text-transform: uppercase;
+               letter-spacing: 0.5px;
+           }
+           
+           .debug-value {
+               color: #333;
+               font-weight: 500;
+               word-break: break-word;
+               font-size: 1em;
+           }
+           
+           .debug-success {
+               color: #46b450 !important;
+               font-weight: bold;
+           }
+           
+           .debug-error {
+               color: #dc3232 !important;
+               font-weight: bold;
+           }
+           
+           .debug-warning {
+               color: #ffb900 !important;
+               font-weight: bold;
+           }
+           
+           .debug-info {
+               color: #0073aa !important;
+               font-weight: bold;
+           }
+           
+           .debug-raw-data {
+               margin: 20px 0;
+               padding: 15px;
+               background: #f1f1f1;
+               border-radius: 6px;
+               border: 1px solid #ddd;
+           }
+           
+           .debug-raw-data pre {
+               background: #2d3748;
+               color: #e2e8f0;
+               padding: 15px;
+               border-radius: 4px;
+               overflow-x: auto;
+               font-size: 12px;
+               line-height: 1.4;
+               margin: 10px 0;
+               max-height: 300px;
+               overflow-y: auto;
+           }
+           
+           .debug-raw-data h4 {
+               margin: 15px 0 10px 0;
+               color: #333;
+               font-size: 1em;
+           }
+           
+           .debug-actions {
+               display: flex;
+               gap: 10px;
+               flex-wrap: wrap;
+               margin: 20px 0;
+               padding: 15px;
+               background: #f8f9fa;
+               border-radius: 6px;
+               border: 1px solid #e9ecef;
+           }
+           
+           .debug-actions .button {
+               margin: 0;
+               font-size: 13px;
+               padding: 8px 12px;
+           }
+           
+           /* Responsive pour le débogage */
+           @media (max-width: 768px) {
+               .debug-grid {
+                   grid-template-columns: 1fr;
+                   gap: 10px;
+               }
+               
+               .debug-item {
+                   padding: 10px;
+               }
+               
+               .debug-actions {
+                   flex-direction: column;
+               }
+               
+               .debug-actions .button {
+                   width: 100%;
+                   margin-bottom: 5px;
+               }
+               
+               .debug-raw-data pre {
+                   font-size: 11px;
+                   max-height: 200px;
+               }
+           }
+           </style>';
        }
        
        // ✅ PHASE 2 : Inclure la page de configuration des leads unifiés
@@ -1824,6 +2389,12 @@ function lead_vendeur_users_page() {
        
        // ✅ NOUVEAU : Inclure la page de configuration Lead Vendeur
        require_once plugin_dir_path(__FILE__) . 'templates/lead-vendeur-config.php';
+       
+       // ✅ NOUVEAU : Inclure la page de configuration Lead Parrainage
+       require_once plugin_dir_path(__FILE__) . 'templates/lead-parrainage-config.php';
+       
+       // ✅ NOUVEAU : Inclure la page des utilisateurs Lead Parrainage
+       require_once plugin_dir_path(__FILE__) . 'templates/lead-parrainage-users.php';
 
 // --- Affichage du panneau d'administration SCI ---
 function sci_afficher_panel() {
@@ -2819,6 +3390,13 @@ add_action('wp_ajax_lead_vendeur_toggle_favori', 'lead_vendeur_ajax_toggle_favor
 add_action('wp_ajax_lead_vendeur_get_entry_details', 'lead_vendeur_ajax_get_entry_details');
 add_action('wp_ajax_lead_vendeur_pagination', 'lead_vendeur_ajax_pagination');
 add_action('wp_ajax_get_lead_vendeur_nonce', 'get_lead_vendeur_nonce_ajax');
+
+// ✅ NOUVEAU : Handlers AJAX pour Lead Parrainage
+add_action('wp_ajax_lead_parrainage_toggle_favori', 'lead_parrainage_ajax_toggle_favori');
+add_action('wp_ajax_lead_parrainage_get_entry_details', 'lead_parrainage_ajax_get_entry_details');
+add_action('wp_ajax_lead_parrainage_pagination', 'lead_parrainage_ajax_pagination');
+add_action('wp_ajax_lead_parrainage_get_user_leads', 'lead_parrainage_ajax_get_user_leads');
+add_action('wp_ajax_get_lead_parrainage_nonce', 'get_lead_parrainage_nonce_ajax');
 
 // ✅ RESTAURÉ : Handlers AJAX pour Carte de Succession
 add_action('wp_ajax_carte_succession_toggle_favori', 'carte_succession_ajax_toggle_favori');
@@ -5497,6 +6075,705 @@ function carte_succession_ajax_get_entry_details() {
     $details_html = ob_get_clean();
     
     wp_send_json_success($details_html);
+}
+
+// ✅ NOUVEAU : Fonctions AJAX pour Lead Parrainage
+
+/**
+ * AJAX : Basculer un favori Lead Parrainage
+ */
+function lead_parrainage_ajax_toggle_favori() {
+    if (!wp_verify_nonce($_POST['nonce'], 'lead_parrainage_nonce')) {
+        wp_die('Nonce invalide');
+    }
+    
+    if (!is_user_logged_in()) {
+        wp_send_json_error('Utilisateur non connecté');
+    }
+    
+    $user_id = get_current_user_id();
+    $entry_id = intval($_POST['entry_id']);
+    $form_id = intval($_POST['form_id']);
+    
+    if (!$entry_id || !$form_id) {
+        wp_send_json_error('Paramètres invalides');
+    }
+    
+    $favoris_handler = lead_parrainage_favoris_handler();
+    $result = $favoris_handler->toggle_favorite($user_id, $entry_id, $form_id);
+    
+    if ($result) {
+        wp_send_json_success(array(
+            'action' => $result,
+            'is_favorite' => $result === 'added'
+        ));
+    } else {
+        wp_send_json_error('Erreur lors de la mise à jour du favori');
+    }
+}
+
+/**
+ * AJAX : Récupérer les détails d'une entrée Lead Parrainage
+ */
+function lead_parrainage_ajax_get_entry_details() {
+    if (!wp_verify_nonce($_POST['nonce'], 'lead_parrainage_nonce')) {
+        wp_die('Nonce invalide');
+    }
+    
+    if (!is_user_logged_in()) {
+        wp_send_json_error('Utilisateur non connecté');
+    }
+    
+    $entry_id = intval($_POST['entry_id']);
+    if (!$entry_id) {
+        wp_send_json_error('ID d\'entrée invalide');
+    }
+    
+    $config_manager = lead_parrainage_config_manager();
+    $config = $config_manager->get_config();
+    
+    if (empty($config['gravity_form_id'])) {
+        wp_send_json_error('Formulaire non configuré');
+    }
+    
+    // Récupérer l'entrée via Gravity Forms
+    if (!class_exists('GFAPI')) {
+        wp_send_json_error('Gravity Forms non disponible');
+    }
+    
+    $entry = GFAPI::get_entry($entry_id);
+    if (is_wp_error($entry)) {
+        wp_send_json_error('Entrée non trouvée');
+    }
+    
+    // Récupérer les champs du formulaire
+    $form_fields = $config_manager->get_form_fields($config['gravity_form_id']);
+    
+    ob_start();
+    ?>
+    <div class="lead-details-header">
+        <div class="lead-details-header-content">
+            <div class="lead-details-icon">
+                <i class="fas fa-handshake"></i>
+            </div>
+            <div class="lead-details-title-section">
+                <h3>Détails du Lead Parrainage #<?php echo $entry_id; ?></h3>
+                <div class="lead-details-meta">
+                    <span class="lead-details-subtitle">Informations complètes</span>
+                    <span class="lead-details-date">Créé le <?php echo date('d/m/Y à H:i', strtotime($entry['date_created'])); ?></span>
+                </div>
+            </div>
+        </div>
+        <button class="lead-details-modal-close">&times;</button>
+    </div>
+    
+    <div class="lead-details-content">
+        <div class="lead-details-grid">
+            <!-- Colonne gauche -->
+            <div class="lead-details-column">
+                <div class="lead-details-info-section">
+                    <div class="lead-details-section-header">
+                        <i class="fas fa-info-circle"></i>
+                        <h3>Informations générales</h3>
+                    </div>
+                    <div class="lead-details-info-grid">
+                        <div class="lead-details-info-item">
+                            <div class="lead-details-info-label">Type de lead</div>
+                            <div class="lead-details-info-value">Lead Parrainage</div>
+                        </div>
+                        <div class="lead-details-info-item">
+                            <div class="lead-details-info-label">ID</div>
+                            <div class="lead-details-info-value"><?php echo $entry_id; ?></div>
+                        </div>
+                        <div class="lead-details-info-item">
+                            <div class="lead-details-info-label">Date de création</div>
+                            <div class="lead-details-info-value"><?php echo date('d/m/Y H:i', strtotime($entry['date_created'])); ?></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Colonne droite -->
+            <div class="lead-details-column">
+                <?php if (!empty($form_fields)): ?>
+                <div class="lead-details-info-section">
+                    <div class="lead-details-section-header">
+                        <i class="fas fa-user"></i>
+                        <h3>Informations du parrain</h3>
+                    </div>
+                    <div class="lead-details-info-grid">
+                        <?php 
+                        $displayed_fields = 0;
+                        foreach ($form_fields as $field_id => $field): 
+                            if (isset($entry[$field_id]) && !empty($entry[$field_id]) && $displayed_fields < 6):
+                                $displayed_fields++;
+                        ?>
+                        <div class="lead-details-info-item">
+                            <div class="lead-details-info-label"><?php echo esc_html($field['label']); ?></div>
+                            <div class="lead-details-info-value">
+                                <?php 
+                                // Vérifier si c'est un champ téléphone
+                                if (is_phone_field($field['label'], $entry[$field_id])) {
+                                    $formatted_phone = format_phone_for_dialing($entry[$field_id]);
+                                    echo '<a href="tel:' . esc_attr($formatted_phone) . '" class="phone-link" title="Appeler directement">';
+                                    echo '<i class="fas fa-phone" style="margin-right: 5px; color: #007cba;"></i>';
+                                    echo esc_html($entry[$field_id]);
+                                    echo '</a>';
+                                } else {
+                                    echo esc_html($entry[$field_id]);
+                                }
+                                ?>
+                            </div>
+                        </div>
+                        <?php 
+                            endif;
+                        endforeach; 
+                        ?>
+                        <?php if ($displayed_fields == 0): ?>
+                        <div class="lead-details-info-item">
+                            <div class="lead-details-info-label">Informations</div>
+                            <div class="lead-details-info-value"><span class="empty-value">Aucune information du parrain disponible</span></div>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <?php if (!empty($form_fields) && count($form_fields) > 6): ?>
+                <div class="lead-details-info-section">
+                    <div class="lead-details-section-header">
+                        <i class="fas fa-users"></i>
+                        <h3>Informations supplémentaires</h3>
+                    </div>
+                    <div class="lead-details-info-grid">
+                        <?php 
+                        $displayed_fields = 0;
+                        foreach ($form_fields as $field_id => $field): 
+                            if (isset($entry[$field_id]) && !empty($entry[$field_id]) && $displayed_fields >= 6):
+                                $displayed_fields++;
+                        ?>
+                        <div class="lead-details-info-item">
+                            <div class="lead-details-info-label"><?php echo esc_html($field['label']); ?></div>
+                            <div class="lead-details-info-value">
+                                <?php 
+                                // Vérifier si c'est un champ téléphone
+                                if (is_phone_field($field['label'], $entry[$field_id])) {
+                                    $formatted_phone = format_phone_for_dialing($entry[$field_id]);
+                                    echo '<a href="tel:' . esc_attr($formatted_phone) . '" class="phone-link" title="Appeler directement">';
+                                    echo '<i class="fas fa-phone" style="margin-right: 5px; color: #007cba;"></i>';
+                                    echo esc_html($entry[$field_id]);
+                                    echo '</a>';
+                                } else {
+                                    echo esc_html($entry[$field_id]);
+                                }
+                                ?>
+                            </div>
+                        </div>
+                        <?php 
+                            endif;
+                        endforeach; 
+                        ?>
+                        <?php if ($displayed_fields < 6): ?>
+                        <div class="lead-details-info-item">
+                            <div class="lead-details-info-label">Informations</div>
+                            <div class="lead-details-info-value"><span class="empty-value">Aucune information supplémentaire</span></div>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+    
+    <style>
+    .lead-details-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 30px;
+        border-bottom: 1px solid #e1e1e1;
+        background: #fff;
+    }
+    
+    .lead-details-header-content {
+        display: flex;
+        align-items: flex-start;
+        gap: 20px;
+    }
+    
+    .lead-details-icon {
+        width: 50px;
+        height: 50px;
+        background: #0073aa;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 20px;
+    }
+    
+    .lead-details-title-section h3 {
+        margin: 0 0 10px 0;
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+    }
+    
+    .lead-details-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .lead-details-subtitle {
+        color: #666;
+        font-size: 14px;
+    }
+    
+    .lead-details-date {
+        color: #999;
+        font-size: 13px;
+    }
+    
+    .lead-details-modal-close {
+        background: #dc3232;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        cursor: pointer;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .lead-details-modal-close:hover {
+        background: #a00;
+    }
+    
+    .lead-details-content {
+        padding: 30px;
+        background: #f8f9fa;
+    }
+    
+    .lead-details-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+    }
+    
+    .lead-details-column {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .lead-details-info-section {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .lead-details-section-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #0073aa;
+    }
+    
+    .lead-details-section-header i {
+        color: #0073aa;
+        font-size: 16px;
+    }
+    
+    .lead-details-section-header h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: bold;
+        color: #333;
+    }
+    
+    .lead-details-info-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .lead-details-info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .lead-details-info-item:last-child {
+        border-bottom: none;
+    }
+    
+    .lead-details-info-label {
+        font-weight: 500;
+        color: #666;
+        font-size: 14px;
+    }
+    
+    .lead-details-info-value {
+        font-weight: 400;
+        color: #333;
+        text-align: right;
+        max-width: 60%;
+        word-break: break-word;
+    }
+    
+    .empty-value {
+        color: #999;
+        font-style: italic;
+    }
+    
+    .phone-link {
+        color: #007cba;
+        text-decoration: none;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        transition: color 0.2s ease;
+    }
+    
+    .phone-link:hover {
+        color: #005a87;
+        text-decoration: underline;
+    }
+    
+    .phone-link i {
+        margin-right: 5px;
+    }
+    
+    .badge {
+        display: inline-block;
+        padding: 4px 8px;
+        font-size: 12px;
+        font-weight: bold;
+        line-height: 1;
+        color: #fff;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: baseline;
+        border-radius: 3px;
+    }
+    
+    .badge-success {
+        background-color: #46b450;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .lead-details-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        .lead-details-header {
+            padding: 20px;
+        }
+        
+        .lead-details-content {
+            padding: 20px;
+        }
+        
+        .lead-details-info-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+        }
+        
+        .lead-details-info-value {
+            text-align: left;
+            max-width: 100%;
+        }
+    }
+    </style>
+    <?php
+    
+    $details_html = ob_get_clean();
+    wp_send_json_success($details_html);
+}
+
+/**
+ * AJAX : Pagination Lead Parrainage
+ */
+function lead_parrainage_ajax_pagination() {
+    if (!wp_verify_nonce($_POST['nonce'], 'lead_parrainage_nonce')) {
+        wp_die('Nonce invalide');
+    }
+    
+    if (!is_user_logged_in()) {
+        wp_send_json_error('Utilisateur non connecté');
+    }
+    
+    $page = intval($_POST['page']);
+    $per_page = intval($_POST['per_page']);
+    
+    if ($page < 1) $page = 1;
+    if ($per_page < 1) $per_page = 20;
+    
+    $config_manager = lead_parrainage_config_manager();
+    $favoris_handler = lead_parrainage_favoris_handler();
+    $config = $config_manager->get_config();
+    
+    if (empty($config['gravity_form_id'])) {
+        wp_send_json_error('Formulaire non configuré');
+    }
+    
+    // Récupérer les entrées
+    $entries = $config_manager->get_form_entries_paginated(
+        $config['gravity_form_id'],
+        $page,
+        $per_page,
+        get_current_user_id()
+    );
+    
+    // Compter le total
+    $total_entries = $config_manager->get_form_entries_count_for_user(
+        $config['gravity_form_id'],
+        get_current_user_id()
+    );
+    
+    $total_pages = ceil($total_entries / $per_page);
+    
+    // Récupérer les favoris
+    $user_favorites = $favoris_handler->get_user_favorites(get_current_user_id(), $config['gravity_form_id']);
+    
+    // Récupérer les champs
+    $form_fields = $config_manager->get_form_fields($config['gravity_form_id']);
+    
+    // Générer le HTML du tableau
+    ob_start();
+    if (empty($entries)) {
+        echo '<tr><td colspan="100%" style="text-align: center; padding: 20px;">Aucun lead parrainage trouvé.</td></tr>';
+    } else {
+        foreach ($entries as $entry) {
+            $is_favorite = in_array($entry['id'], $user_favorites);
+            echo '<tr class="lead-parrainage-row' . ($is_favorite ? ' favori-row' : '') . '">';
+            echo '<td>';
+            echo '<button class="favorite-btn' . ($is_favorite ? ' favori-active' : '') . '" data-entry-id="' . $entry['id'] . '">';
+            echo $is_favorite ? '★' : '☆';
+            echo '</button>';
+            echo '</td>';
+            
+            // Afficher les champs configurés
+            if (!empty($config['display_fields'])) {
+                foreach ($config['display_fields'] as $field_id) {
+                    $field_value = isset($entry[$field_id]) ? $entry[$field_id] : '';
+                    
+                    // ✅ MODIFIÉ : Ne pas afficher les champs d'adresse individuels (4.1, 4.3, 4.5)
+                    if ($field_id === '4.1' || $field_id === '4.3' || $field_id === '4.5') {
+                        // Ignorer ces champs car ils seront affichés dans la colonne Adresse
+                        continue;
+                    } else {
+                        echo '<td>' . esc_html($field_value) . '</td>';
+                    }
+                }
+            }
+            
+            // ✅ NOUVEAU : Ajouter une colonne d'adresse complète si les champs d'adresse existent
+            $rue = isset($entry['4.1']) ? trim($entry['4.1']) : '';
+            $ville = isset($entry['4.3']) ? trim($entry['4.3']) : '';
+            $code_postal = isset($entry['4.5']) ? trim($entry['4.5']) : '';
+            
+            if ($rue || $ville || $code_postal) {
+                $adresse_complete = trim($rue . ' ' . $code_postal . ' ' . $ville);
+                echo '<td title="Rue: ' . esc_attr($rue) . ' | Ville: ' . esc_attr($ville) . ' | CP: ' . esc_attr($code_postal) . '">' . esc_html($adresse_complete) . '</td>';
+            } else {
+                echo '<td></td>';
+            }
+            
+            echo '<td>' . date('d/m/Y H:i', strtotime($entry['date_created'])) . '</td>';
+            echo '<td>';
+            echo '<button class="button button-primary view-lead-details" data-entry-id="' . $entry['id'] . '">Voir</button>';
+            echo '</td>';
+            echo '</tr>';
+        }
+    }
+    $table_html = ob_get_clean();
+    
+    // Générer le HTML de pagination
+    ob_start();
+    if ($total_pages > 1) {
+        echo '<div class="pagination">';
+        
+        // Bouton précédent
+        if ($page > 1) {
+            echo '<button class="pagination-btn" data-page="' . ($page - 1) . '">« Précédent</button>';
+        }
+        
+        // Numéros de pages
+        $start_page = max(1, $page - 2);
+        $end_page = min($total_pages, $page + 2);
+        
+        for ($i = $start_page; $i <= $end_page; $i++) {
+            $class = ($i == $page) ? 'pagination-number current' : 'pagination-number';
+            echo '<button class="' . $class . '" data-page="' . $i . '">' . $i . '</button>';
+        }
+        
+        // Bouton suivant
+        if ($page < $total_pages) {
+            echo '<button class="pagination-btn" data-page="' . ($page + 1) . '">Suivant »</button>';
+        }
+        
+        echo '</div>';
+    }
+    $pagination_html = ob_get_clean();
+    
+    // Informations de pagination
+    $pagination_info = array(
+        'current_page' => $page,
+        'total_pages' => $total_pages,
+        'total_entries' => $total_entries,
+        'start_entry' => (($page - 1) * $per_page) + 1,
+        'end_entry' => min($page * $per_page, $total_entries)
+    );
+    
+    wp_send_json_success(array(
+        'table_html' => $table_html,
+        'pagination_html' => $pagination_html,
+        'pagination_info' => $pagination_info
+    ));
+}
+
+/**
+ * AJAX : Récupérer les leads d'un utilisateur
+ */
+function lead_parrainage_ajax_get_user_leads() {
+    if (!wp_verify_nonce($_POST['nonce'], 'lead_parrainage_nonce')) {
+        wp_die('Nonce invalide');
+    }
+    
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error('Permissions insuffisantes');
+    }
+    
+    $user_id = intval($_POST['user_id']);
+    if (!$user_id) {
+        wp_send_json_error('ID utilisateur invalide');
+    }
+    
+    $config_manager = lead_parrainage_config_manager();
+    $config = $config_manager->get_config();
+    
+    if (empty($config['gravity_form_id'])) {
+        wp_send_json_error('Formulaire non configuré');
+    }
+    
+    // Récupérer les entrées de l'utilisateur
+    $entries = $config_manager->get_form_entries_paginated(
+        $config['gravity_form_id'],
+        1,
+        50, // Limite pour l'affichage modal
+        $user_id
+    );
+    
+    $user = get_user_by('ID', $user_id);
+    $form_fields = $config_manager->get_form_fields($config['gravity_form_id']);
+    
+    ob_start();
+    ?>
+    <div class="user-leads-header">
+        <h3>🤝 Leads Parrainage de <?php echo esc_html($user->display_name); ?></h3>
+        <button class="user-leads-modal-close">&times;</button>
+    </div>
+    
+    <div class="user-leads-content">
+        <?php if (empty($entries)): ?>
+            <p>Aucun lead parrainage trouvé pour cet utilisateur.</p>
+        <?php else: ?>
+            <div class="user-leads-table">
+                <table class="wp-list-table widefat fixed striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <?php if (!empty($config['display_fields'])): ?>
+                                <?php foreach ($config['display_fields'] as $field_id): ?>
+                                    <?php if (isset($form_fields[$field_id])): ?>
+                                        <th><?php echo esc_html($form_fields[$field_id]['label']); ?></th>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($entries as $entry): ?>
+                            <tr>
+                                <td><?php echo $entry['id']; ?></td>
+                                <?php if (!empty($config['display_fields'])): ?>
+                                    <?php foreach ($config['display_fields'] as $field_id): ?>
+                                        <td><?php echo esc_html(isset($entry[$field_id]) ? $entry[$field_id] : ''); ?></td>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                                <td><?php echo date('d/m/Y H:i', strtotime($entry['date_created'])); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+    </div>
+    
+    <style>
+    .user-leads-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        border-bottom: 1px solid #e1e1e1;
+        background: #f8f9fa;
+    }
+    
+    .user-leads-content {
+        padding: 20px;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+    
+    .user-leads-table {
+        overflow-x: auto;
+    }
+    
+    .user-leads-table table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .user-leads-table th,
+    .user-leads-table td {
+        padding: 8px 12px;
+        text-align: left;
+        border-bottom: 1px solid #e1e1e1;
+    }
+    
+    .user-leads-table th {
+        background: #f8f9fa;
+        font-weight: 600;
+    }
+    </style>
+    <?php
+    
+    $content_html = ob_get_clean();
+    wp_send_json_success($content_html);
+}
+
+/**
+ * AJAX : Récupérer le nonce Lead Parrainage
+ */
+function get_lead_parrainage_nonce_ajax() {
+    wp_send_json_success(wp_create_nonce('lead_parrainage_nonce'));
 }
 
 
