@@ -28,13 +28,29 @@ class Unified_Leads_Manager {
         
         // AJAX handlers pour la gestion des leads
         add_action('wp_ajax_add_unified_lead', array($this, 'ajax_add_lead'));
+        add_action('wp_ajax_nopriv_add_unified_lead', array($this, 'ajax_add_lead'));
         add_action('wp_ajax_remove_unified_lead', array($this, 'ajax_remove_lead'));
+        add_action('wp_ajax_nopriv_remove_unified_lead', array($this, 'ajax_remove_lead'));
         add_action('wp_ajax_delete_unified_lead', array($this, 'ajax_remove_lead')); // Alias pour compatibilité
+        add_action('wp_ajax_nopriv_delete_unified_lead', array($this, 'ajax_remove_lead'));
         add_action('wp_ajax_get_unified_leads', array($this, 'ajax_get_leads'));
+        add_action('wp_ajax_nopriv_get_unified_leads', array($this, 'ajax_get_leads'));
         add_action('wp_ajax_filter_unified_leads', array($this, 'ajax_filter_leads'));
+        add_action('wp_ajax_nopriv_filter_unified_leads', array($this, 'ajax_filter_leads'));
         add_action('wp_ajax_update_lead_status', array($this, 'ajax_update_status'));
+        add_action('wp_ajax_nopriv_update_lead_status', array($this, 'ajax_update_status'));
         add_action('wp_ajax_update_lead_priority', array($this, 'ajax_update_priority'));
+        add_action('wp_ajax_nopriv_update_lead_priority', array($this, 'ajax_update_priority'));
         add_action('wp_ajax_add_lead_note', array($this, 'ajax_add_note'));
+        add_action('wp_ajax_nopriv_add_lead_note', array($this, 'ajax_add_note'));
+        
+        // Action de test AJAX
+        add_action('wp_ajax_my_istymo_test_ajax', array($this, 'ajax_test_connection'));
+        add_action('wp_ajax_nopriv_my_istymo_test_ajax', array($this, 'ajax_test_connection'));
+        
+        // Log pour debug
+        error_log('My Istymo: Actions AJAX enregistrées - User ID: ' . get_current_user_id());
+        error_log('My Istymo: Instance créée - Actions AJAX: ' . (has_action('wp_ajax_my_istymo_test_ajax') ? 'OUI' : 'NON'));
         
     }
     
@@ -925,6 +941,23 @@ class Unified_Leads_Manager {
     }
     
     /**
+     * AJAX: Test de connexion
+     */
+    public function ajax_test_connection() {
+        // Log pour debug
+        error_log('My Istymo: Test AJAX appelé - User ID: ' . get_current_user_id());
+        
+        wp_send_json_success(array(
+            'message' => 'Connexion AJAX fonctionnelle',
+            'timestamp' => current_time('mysql'),
+            'user_id' => get_current_user_id(),
+            'is_admin' => current_user_can('manage_options'),
+            'server_time' => time(),
+            'wp_version' => get_bloginfo('version')
+        ));
+    }
+    
+    /**
      * Rendre une ligne de lead pour le tableau
      */
     private function render_lead_row($lead) {
@@ -946,6 +979,52 @@ class Unified_Leads_Manager {
                 $code_postal = $lead->data_originale['code_postal'] ?? '';
                 $location = $ville . ($code_postal ? ' (' . $code_postal . ')' : '');
                 $category = 'Lead SCI';
+            } elseif ($lead->lead_type === 'lead_vendeur') {
+                // Données Lead Vendeur depuis Gravity Forms
+                $adresse_parts = array();
+                if (!empty($lead->data_originale['4.1'])) {
+                    $adresse_parts[] = $lead->data_originale['4.1'];
+                }
+                if (!empty($lead->data_originale['4.3'])) {
+                    $adresse_parts[] = $lead->data_originale['4.3'];
+                }
+                if (!empty($lead->data_originale['4.5'])) {
+                    $adresse_parts[] = $lead->data_originale['4.5'];
+                }
+                $company_name = implode(', ', $adresse_parts) ?: 'Lead Vendeur';
+                $ville = $lead->data_originale['4.3'] ?? '';
+                $code_postal = $lead->data_originale['4.5'] ?? '';
+                $location = $ville . ($code_postal ? ' (' . $code_postal . ')' : '');
+                $category = 'Lead Vendeur';
+            } elseif ($lead->lead_type === 'carte_succession') {
+                // Données Carte de Succession depuis Gravity Forms
+                $adresse_parts = array();
+                if (!empty($lead->data_originale['4.1'])) {
+                    $adresse_parts[] = $lead->data_originale['4.1'];
+                }
+                if (!empty($lead->data_originale['4.3'])) {
+                    $adresse_parts[] = $lead->data_originale['4.3'];
+                }
+                if (!empty($lead->data_originale['4.5'])) {
+                    $adresse_parts[] = $lead->data_originale['4.5'];
+                }
+                $company_name = implode(', ', $adresse_parts) ?: 'Carte de Succession';
+                $ville = $lead->data_originale['4.3'] ?? '';
+                $code_postal = $lead->data_originale['4.5'] ?? '';
+                $location = $ville . ($code_postal ? ' (' . $code_postal . ')' : '');
+                $category = 'Carte de Succession';
+            } elseif ($lead->lead_type === 'lead_parrainage') {
+                $company_name = $lead->data_originale['1'] ?? 'Lead Parrainage';
+                $location = $lead->data_originale['3'] ?? '';
+                $category = 'Lead Parrainage';
+            } elseif ($lead->lead_type === 'unknown') {
+                $company_name = 'Lead non identifié';
+                $location = 'Non déterminé';
+                $category = 'Non identifié';
+            } else {
+                $company_name = 'Lead #' . $lead->id;
+                $location = 'Non déterminé';
+                $category = 'Non identifié';
             }
         }
         
@@ -959,6 +1038,14 @@ class Unified_Leads_Manager {
         echo '<div class="my-istymo-company-icon">';
         if ($lead->lead_type === 'dpe') {
             echo '<span class="my-istymo-icon my-istymo-icon-house">🏠</span>';
+        } elseif ($lead->lead_type === 'lead_vendeur') {
+            echo '<span class="my-istymo-icon my-istymo-icon-vendor">🏪</span>';
+        } elseif ($lead->lead_type === 'carte_succession') {
+            echo '<span class="my-istymo-icon my-istymo-icon-succession">⚰️</span>';
+        } elseif ($lead->lead_type === 'lead_parrainage') {
+            echo '<span class="my-istymo-icon my-istymo-icon-parrainage">🤝</span>';
+        } elseif ($lead->lead_type === 'unknown') {
+            echo '<span class="my-istymo-icon my-istymo-icon-unknown">❓</span>';
         } else {
             echo '<span class="my-istymo-icon my-istymo-icon-building">🏢</span>';
         }

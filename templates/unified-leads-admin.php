@@ -115,6 +115,8 @@ function unified_leads_admin_page($context = array()) {
                             <option value="dpe" <?php selected($current_lead_type, 'dpe'); ?>>DPE</option>
                             <option value="lead_vendeur" <?php selected($current_lead_type, 'lead_vendeur'); ?>>Lead Vendeur</option>
                             <option value="carte_succession" <?php selected($current_lead_type, 'carte_succession'); ?>>Carte de Succession</option>
+                            <option value="lead_parrainage" <?php selected($current_lead_type, 'lead_parrainage'); ?>>Lead Parrainage</option>
+                            <option value="unknown" <?php selected($current_lead_type, 'unknown'); ?>>Non identifié</option>
                         </select>
                     </div>
                     
@@ -300,6 +302,24 @@ function unified_leads_admin_page($context = array()) {
                                     } elseif ($lead->lead_type === 'unknown') {
                                         // Données non identifiées
                                         $company_name = 'Lead non identifié';
+                                        $domain = 'unknown.com';
+                                        $location = 'Non déterminé';
+                                        $category = 'Non identifié';
+                                    } elseif ($lead->lead_type === 'sci') {
+                                        // Données SCI
+                                        $company_name = $lead->data_originale['denomination'] ?? 'SCI';
+                                        $domain = 'sci.com';
+                                        $location = $lead->data_originale['ville'] ?? '';
+                                        $category = 'SCI';
+                                    } elseif ($lead->lead_type === 'dpe') {
+                                        // Données DPE
+                                        $company_name = $lead->data_originale['adresse'] ?? 'DPE';
+                                        $domain = 'dpe.com';
+                                        $location = $lead->data_originale['ville'] ?? '';
+                                        $category = 'Lead DPE';
+                                    } else {
+                                        // Type non reconnu
+                                        $company_name = 'Lead #' . $lead->id;
                                         $domain = 'unknown.com';
                                         $location = 'Non déterminé';
                                         $category = 'Non identifié';
@@ -549,7 +569,7 @@ function unified_leads_admin_page($context = array()) {
         wp_enqueue_style('lead-edit-modal-css', plugin_dir_url(__FILE__) . '../assets/css/lead-edit-modal.css', array(), '1.0.0');
     }
     if (!wp_script_is('unified-leads-admin', 'enqueued')) {
-        wp_enqueue_script('unified-leads-admin', plugin_dir_url(__FILE__) . '../assets/js/unified-leads-admin.js', array('jquery'), '1.0.0', true);
+        wp_enqueue_script('unified-leads-admin', plugin_dir_url(__FILE__) . '../assets/js/unified-leads-admin.js', array('jquery'), '1.0.1', true);
     }
     
     // ✅ PHASE 3 : Charger les scripts pour les actions et workflow
@@ -583,26 +603,83 @@ function unified_leads_admin_page($context = array()) {
         ));
     }
     
-    // Script pour les filtres AJAX (admin et shortcode)
+        // Script pour les filtres AJAX (admin et shortcode) - Version 1.0.1
         ?>
         <script>
         jQuery(document).ready(function($) {
         // Variables AJAX - utiliser les variables globales si disponibles, sinon fallback
-        var ajaxUrl = (typeof unifiedLeadsAjax !== 'undefined' && unifiedLeadsAjax.ajaxurl) ? unifiedLeadsAjax.ajaxurl : '<?php echo admin_url('admin-ajax.php'); ?>';
-        var nonce = (typeof unifiedLeadsAjax !== 'undefined' && unifiedLeadsAjax.nonce) ? unifiedLeadsAjax.nonce : '<?php echo wp_create_nonce('my_istymo_nonce'); ?>';
+        var ajaxUrl = '<?php echo admin_url('admin-ajax.php'); ?>';
+        var nonce = '<?php echo wp_create_nonce('my_istymo_nonce'); ?>';
+        
+        // Vérification de la disponibilité des variables AJAX
+        if (typeof unifiedLeadsAjax !== 'undefined') {
+            if (unifiedLeadsAjax.ajaxurl) {
+                ajaxUrl = unifiedLeadsAjax.ajaxurl;
+            }
+            if (unifiedLeadsAjax.nonce) {
+                nonce = unifiedLeadsAjax.nonce;
+            }
+        }
+        
+        console.log('🚀 My Istymo AJAX - Version 1.0.1 (Fetch API)');
+        console.log('AJAX Configuration:', {ajaxUrl: ajaxUrl, nonce: nonce});
+        console.log('Current URL:', window.location.href);
+        console.log('WordPress AJAX URL:', '<?php echo admin_url('admin-ajax.php'); ?>');
+        console.log('Is HTTPS:', window.location.protocol === 'https:');
+        
         var isShortcode = <?php echo $context['is_shortcode'] ? 'true' : 'false'; ?>;
         var currentPage = <?php echo max(1, intval($_GET['paged'] ?? 1)); ?>;
         
+        // Test de connexion AJAX au chargement
+        function testAjaxConnection() {
+            console.log('🔍 Début du test AJAX...');
+            console.log('URL cible:', ajaxUrl);
+            console.log('Nonce:', nonce);
+            
+            // Test avec fetch API d'abord
+            fetch(ajaxUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'action=my_istymo_test_ajax&nonce=' + encodeURIComponent(nonce)
+            })
+            .then(response => {
+                console.log('✅ Fetch API réussi, status:', response.status);
+                return response.text();
+            })
+            .then(data => {
+                console.log('✅ Fetch API data:', data);
+            })
+            .catch(error => {
+                console.error('❌ Fetch API échoué:', error);
+            });
+            
+            // Test avec jQuery AJAX (désactivé car timeout)
+            console.log('⚠️ jQuery AJAX désactivé car timeout détecté');
+        }
+        
+        // Vérifier que l'instance Unified_Leads_Manager est bien créée
+        console.log('🔍 Vérification de l\'instance Unified_Leads_Manager...');
+        
+        // Test direct de l'URL AJAX
+        console.log('🔍 Test direct de l\'URL AJAX...');
+        $.get(ajaxUrl, {action: 'my_istymo_test_ajax'})
+            .done(function(data) {
+                console.log('✅ Test direct réussi:', data);
+            })
+            .fail(function(xhr, status, error) {
+                console.error('❌ Test direct échoué:', {status: status, error: error, xhr: xhr});
+            });
+        
+        // Lancer le test de connexion
+        testAjaxConnection();
+        
         // Configuration AJAX des filtres
         
-        // Fonction pour filtrer les leads via AJAX
+        // Fonction pour filtrer les leads via AJAX (utilise Fetch API)
         function filterLeads(page = 1) {
-            
-            var formData = {
-                action: 'filter_unified_leads',
-                nonce: nonce,
-                paged: page
-            };
+            console.log('🔍 filterLeads appelé - Version 1.0.1 (Fetch API)');
             
             // Récupérer les valeurs des filtres
             var leadType = $('select[name="lead_type"]').val();
@@ -613,56 +690,53 @@ function unified_leads_admin_page($context = array()) {
             
             console.log('Filtres:', {leadType, status, priorite, dateFrom, dateTo});
             
-            if (leadType) formData.lead_type = leadType;
-            if (status) formData.status = status;
-            if (priorite) formData.priorite = priorite;
-            if (dateFrom) formData.date_from = dateFrom;
-            if (dateTo) formData.date_to = dateTo;
+            // Construire les données de la requête
+            var formData = new FormData();
+            formData.append('action', 'filter_unified_leads');
+            formData.append('nonce', nonce);
+            formData.append('paged', page);
+            
+            if (leadType) formData.append('lead_type', leadType);
+            if (status) formData.append('status', status);
+            if (priorite) formData.append('priorite', priorite);
+            if (dateFrom) formData.append('date_from', dateFrom);
+            if (dateTo) formData.append('date_to', dateTo);
             
             // Afficher un indicateur de chargement
             $('.my-istymo-modern-table').html('<div class="my-istymo-loading"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>');
             
-            $.ajax({
-                url: ajaxUrl,
-                type: 'POST',
-                data: formData,
-                timeout: 10000, // Timeout de 10 secondes
-                success: function(response) {
-                    console.log('Réponse AJAX reçue:', response);
-                    if (response.success) {
-                        // Mettre à jour le tableau
-                        $('.my-istymo-modern-table').html(response.data.html);
-                        
-                        // Ne pas mettre à jour l'URL pour garder une URL propre
-                        // Les filtres sont gérés uniquement en mémoire via AJAX
-                        
-                        // Réinitialiser les gestionnaires d'événements
-                        initTableEventHandlers();
-                        
-                        console.log('✅ Filtres appliqués avec succès');
-                    } else {
-                        console.error('❌ Erreur lors du filtrage:', response.data);
-                        $('.my-istymo-modern-table').html('<div class="my-istymo-error"><i class="fas fa-exclamation-triangle"></i> Erreur lors du filtrage des leads: ' + (response.data || 'Erreur inconnue') + '</div>');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('❌ Erreur AJAX:', {xhr: xhr, status: status, error: error});
-                    console.error('Response Text:', xhr.responseText);
-                    console.error('Status Code:', xhr.status);
-                    
-                    var errorMessage = 'Erreur de connexion';
-                    if (xhr.status === 0) {
-                        errorMessage = 'Erreur de connexion - Vérifiez votre connexion internet';
-                    } else if (xhr.status === 404) {
-                        errorMessage = 'Action AJAX non trouvée - Vérifiez la configuration';
-                    } else if (xhr.status === 500) {
-                        errorMessage = 'Erreur serveur - Vérifiez les logs';
-                    } else if (status === 'timeout') {
-                        errorMessage = 'Timeout - La requête a pris trop de temps';
-                    }
-                    
-                    $('.my-istymo-modern-table').html('<div class="my-istymo-error"><i class="fas fa-exclamation-triangle"></i> ' + errorMessage + '</div>');
+            // Utiliser Fetch API au lieu de jQuery AJAX
+            console.log('🚀 Utilisation de Fetch API pour les filtres');
+            fetch(ajaxUrl, {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                console.log('✅ Fetch API response status:', response.status);
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status);
                 }
+                return response.json();
+            })
+            .then(data => {
+                console.log('✅ Réponse AJAX reçue:', data);
+                if (data.success) {
+                    // Mettre à jour le tableau
+                    $('.my-istymo-modern-table').html(data.data.html);
+                    
+                    // Réinitialiser les gestionnaires d'événements
+                    initTableEventHandlers();
+                    
+                    console.log('✅ Filtres appliqués avec succès');
+                } else {
+                    console.error('❌ Erreur lors du filtrage:', data.data);
+                    $('.my-istymo-modern-table').html('<div class="my-istymo-error"><i class="fas fa-exclamation-triangle"></i> Erreur lors du filtrage des leads: ' + (data.data || 'Erreur inconnue') + '</div>');
+                }
+            })
+            .catch(error => {
+                console.error('❌ Erreur Fetch API:', error);
+                $('.my-istymo-modern-table').html('<div class="my-istymo-error"><i class="fas fa-exclamation-triangle"></i> Erreur de connexion: ' + error.message + '</div>');
             });
         }
         
