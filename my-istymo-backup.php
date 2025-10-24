@@ -4638,23 +4638,23 @@ function lead_vendeur_ajax_get_entry_details() {
                     
                     foreach ($contact_fields as $field_id => $field_label) {
                         $value = isset($entry[$field_id]) ? $entry[$field_id] : '';
-                        echo '<div class="lead-details-info-item">';
-                        echo '<div class="lead-details-info-label">' . esc_html($field_label) . '</div>';
-                        echo '<div class="lead-details-info-value">';
                         
+                        // Ne afficher que les champs avec des données
                         if (!empty($value)) {
+                            echo '<div class="lead-details-info-item">';
+                            echo '<div class="lead-details-info-label">' . esc_html($field_label) . '</div>';
+                            echo '<div class="lead-details-info-value">';
+                            
                             // Rendre le téléphone cliquable
                             if ($field_id == '45') {
                                 echo '<a href="tel:' . esc_attr($value) . '" class="phone-link">' . esc_html($value) . '</a>';
                             } else {
                                 echo esc_html($value);
                             }
-                        } else {
-                            echo '<span class="empty-value">Non renseigné</span>';
+                            
+                            echo '</div>';
+                            echo '</div>';
                         }
-                        
-                        echo '</div>';
-                        echo '</div>';
                     }
                     ?>
                 </div>
