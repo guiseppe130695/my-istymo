@@ -86,7 +86,6 @@
                             
                             // ✅ SIMPLIFICATION : Seulement les favoris locaux, pas de leads unifiés
                             $toggle.removeClass("loading");
-                            showMessage("Carte de succession ajoutée aux favoris", "success");
                         } else {
                             $toggle.removeClass("loading");
                             showMessage("Erreur lors de l'ajout aux favoris", "error");
@@ -271,12 +270,10 @@
                         $toggle.addClass("favori-active");
                         $toggle.html('★');
                         $row.addClass("favori-row");
-                        showMessage("Carte de succession ajoutée aux favoris", "success");
                     } else {
                         $toggle.removeClass("favori-active");
                         $toggle.html('☆');
                         $row.removeClass("favori-row");
-                        showMessage("Carte de succession retirée des favoris", "success");
                     }
                 } else {
                     showMessage("Erreur: " + response.data, "error");

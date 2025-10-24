@@ -76,12 +76,10 @@
                             $toggle.addClass("favori-active");
                             $toggle.html('★'); // Étoile pleine
                             $row.addClass("favori-row");
-                            showMessage("Lead ajouté aux favoris", "success");
                         } else {
                             $toggle.removeClass("favori-active");
                             $toggle.html('☆'); // Étoile vide
                             $row.removeClass("favori-row");
-                            showMessage("Lead retiré des favoris", "success");
                         }
                     } else {
                         showMessage("Erreur: " + response.data, "error");

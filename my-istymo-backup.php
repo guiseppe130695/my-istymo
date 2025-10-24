@@ -3930,9 +3930,6 @@ function my_istymo_leads_vendeur_shortcode($atts) {
         background-color: #f8f9fa;
     }
     
-    .lead-vendeur-row.favori-row {
-        background-color: #fff3cd;
-    }
     
     .notice {
         padding: 12px;

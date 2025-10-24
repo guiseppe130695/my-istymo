@@ -105,11 +105,6 @@
     background-color: #f8f9fa;
 }
 
-.carte-succession-row.favori-row {
-    background-color: #fff3cd;
-    border-left: 4px solid #ffc107;
-}
-
 .actions-column {
     text-align: center;
     white-space: nowrap;

@@ -2179,9 +2179,6 @@ function lead_vendeur_users_page() {
                color: #666;
                font-size: 0.9em;
            }
-           .favori-row {
-               background-color: #fff3cd !important;
-           }
            .favorite-btn {
                background: none;
                border: none;
@@ -4473,9 +4470,6 @@ function my_istymo_leads_vendeur_shortcode($atts) {
         background-color: #f8f9fa;
     }
     
-    .lead-vendeur-row.favori-row {
-        background-color: #fff3cd;
-    }
     
     .notice {
         padding: 12px;
