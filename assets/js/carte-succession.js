@@ -64,7 +64,6 @@
                 $toggle.html("☆");
                 $toggle.attr("title", "Ajouter aux favoris");
                 $row.removeClass("favori-row");
-                showMessage("Carte de succession retirée des favoris", "success");
             } else {
                 // Ajouter aux favoris locaux ET aux leads unifiés
                 $.ajax({

@@ -879,8 +879,8 @@ function lead_vendeur_users_page() {
            // En-têtes du tableau
            echo '<thead><tr>';
            echo '<th class="favori-column"><i class="fas fa-heart"></i></th>';
-                           echo '<th><i class="fas fa-city"></i> Ville</th>';
                echo '<th><i class="fas fa-building"></i> Type</th>';
+                           echo '<th><i class="fas fa-city"></i> Ville</th>';
                echo '<th><i class="fas fa-phone"></i> Téléphone</th>';
                echo '<th><i class="fas fa-calendar"></i> Date</th>';
                echo '<th></th>';
@@ -3370,6 +3370,9 @@ add_action('wp_ajax_my_istymo_update_lead', 'my_istymo_ajax_update_lead');
 add_action('wp_ajax_my_istymo_update_lead_from_modal', 'my_istymo_ajax_update_lead_from_modal');
 add_action('wp_ajax_nopriv_my_istymo_update_lead_from_modal', 'my_istymo_ajax_update_lead_from_modal');
 
+// ✅ NOUVEAU : Handler AJAX pour corriger les leads mal classés
+add_action('wp_ajax_fix_misclassified_leads', 'my_istymo_ajax_fix_misclassified_leads');
+
 // ✅ NOUVEAU : Initialisation de la table des favoris
 add_action('init', 'simple_favorites_init_table');
 
@@ -4394,8 +4397,8 @@ function my_istymo_leads_vendeur_shortcode($atts) {
         // En-têtes du tableau
         echo '<thead><tr>';
         echo '<th class="favori-column"><i class="fas fa-heart"></i></th>';
-        echo '<th><i class="fas fa-city"></i> Ville</th>';
         echo '<th><i class="fas fa-building"></i> Type</th>';
+        echo '<th><i class="fas fa-city"></i> Ville</th>';
         echo '<th><i class="fas fa-phone"></i> Téléphone</th>';
         echo '<th><i class="fas fa-calendar"></i> Date</th>';
         echo '<th></th>';
@@ -5312,14 +5315,7 @@ function lead_vendeur_ajax_pagination() {
             echo '</button>';
             echo '</td>';
             
-            // ✅ Colonne Ville (champ 4.3)
-            if (isset($entry['4.3']) && !empty($entry['4.3'])) {
-                echo '<td>' . esc_html($entry['4.3']) . '</td>';
-            } else {
-                echo '<td>-</td>'; // Cellule vide si pas de ville
-            }
-            
-            // ✅ NOUVEAU : Colonne Type (récupérer depuis les champs configurés)
+            // ✅ Colonne Type (récupérer depuis les champs configurés)
             $type_value = '';
             if (!empty($config['display_fields'])) {
                 foreach ($config['display_fields'] as $field_id) {
@@ -5334,6 +5330,13 @@ function lead_vendeur_ajax_pagination() {
                 }
             }
             echo '<td>' . esc_html($type_value ?: '-') . '</td>';
+            
+            // ✅ Colonne Ville (champ 4.3)
+            if (isset($entry['4.3']) && !empty($entry['4.3'])) {
+                echo '<td>' . esc_html($entry['4.3']) . '</td>';
+            } else {
+                echo '<td>-</td>'; // Cellule vide si pas de ville
+            }
             
             // ✅ NOUVEAU : Colonne Téléphone (récupérer depuis les champs configurés)
             $phone_value = '';
@@ -6768,6 +6771,69 @@ function lead_parrainage_ajax_get_user_leads() {
  */
 function get_lead_parrainage_nonce_ajax() {
     wp_send_json_success(wp_create_nonce('lead_parrainage_nonce'));
+}
+
+/**
+ * ✅ NOUVEAU : AJAX pour corriger les leads mal classés
+ */
+function my_istymo_ajax_fix_misclassified_leads() {
+    // Vérifier les permissions
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error('Permissions insuffisantes');
+        return;
+    }
+    
+    // Vérifier le nonce
+    if (!wp_verify_nonce($_POST['nonce'] ?? '', 'my_istymo_nonce')) {
+        wp_send_json_error('Nonce invalide');
+        return;
+    }
+    
+    global $wpdb;
+    $leads_table = $wpdb->prefix . 'my_istymo_unified_leads';
+    $corrected_count = 0;
+    
+    // Récupérer tous les leads mal classés (carte_succession mais qui devraient être lead_vendeur)
+    $misclassified_leads = $wpdb->get_results("
+        SELECT * FROM {$leads_table} 
+        WHERE lead_type = 'carte_succession' 
+        AND data_originale LIKE '%vendeur%'
+        OR data_originale LIKE '%bien%'
+        OR data_originale LIKE '%propriété%'
+        OR data_originale LIKE '%vente%'
+    ");
+    
+    foreach ($misclassified_leads as $lead) {
+        $data_originale = json_decode($lead->data_originale, true);
+        
+        // Analyser les données pour déterminer le vrai type
+        $data_string = json_encode($data_originale);
+        
+        if (strpos($data_string, 'vendeur') !== false || 
+            strpos($data_string, 'bien') !== false ||
+            strpos($data_string, 'propriété') !== false ||
+            strpos($data_string, 'vente') !== false) {
+            
+            // Corriger le type
+            $result = $wpdb->update(
+                $leads_table,
+                array('lead_type' => 'lead_vendeur'),
+                array('id' => $lead->id),
+                array('%s'),
+                array('%d')
+            );
+            
+            if ($result !== false) {
+                $corrected_count++;
+                error_log("Lead ID {$lead->id} corrigé: carte_succession -> lead_vendeur");
+            }
+        }
+    }
+    
+    wp_send_json_success(array(
+        'message' => "Correction terminée : {$corrected_count} leads corrigés",
+        'corrected_count' => $corrected_count
+    ));
 }
 
 

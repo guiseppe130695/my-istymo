@@ -389,6 +389,10 @@ jQuery(document).ready(function($) {
         } else if (leadData.lead_type === 'carte_succession') {
             // Pour les cartes de succession, afficher "Informations générales"
             html += 'Informations générales';
+        } else if (leadData.lead_type === 'lead_parrainage') {
+            html += 'Informations de parrainage';
+        } else if (leadData.lead_type === 'unknown') {
+            html += 'Informations non identifiées';
         } else {
             html += 'Informations ' + (leadData.lead_type === 'sci' ? 'SCI' : 'DPE');
         }
@@ -407,6 +411,10 @@ jQuery(document).ready(function($) {
                 html += generateLeadVendeurInfo(originalData);
             } else if (leadData.lead_type === 'carte_succession') {
                 html += generateCarteSuccessionInfo(originalData);
+            } else if (leadData.lead_type === 'lead_parrainage') {
+                html += generateLeadParrainageInfo(originalData);
+            } else if (leadData.lead_type === 'unknown') {
+                html += generateUnknownInfo(originalData);
             }
         }
         
@@ -1484,7 +1492,7 @@ jQuery(document).ready(function($) {
      * Corrige automatiquement tous les leads mal catégorisés
      */
     function fixAllMisclassifiedLeads() {
-        if (!confirm('Êtes-vous sûr de vouloir corriger automatiquement tous les leads mal catégorisés ?\n\nCette action va rechercher tous les leads de type "Lead Vendeur" avec form_id = 2 et les reclasser comme "Carte de Succession".')) {
+        if (!confirm('Êtes-vous sûr de vouloir corriger automatiquement tous les leads mal catégorisés ?\n\nCette action va rechercher tous les leads mal classés et les reclasser correctement.')) {
             return;
         }
         
@@ -1495,25 +1503,25 @@ jQuery(document).ready(function($) {
         $button.html('<i class="fas fa-spinner fa-spin"></i> Correction en cours...');
         
         $.ajax({
-            url: ajaxurl,
+            url: unifiedLeadsAjax.ajaxurl,
             type: 'POST',
             data: {
-                action: 'fix_all_misclassified_leads',
-                nonce: myIstymoAjax.nonce
+                action: 'fix_misclassified_leads',
+                nonce: unifiedLeadsAjax.nonce
             },
             success: function(response) {
                 if (response.success) {
-                    showMessage(response.data.message, 'success');
+                    showNotification(response.data.message, 'success');
                     // Recharger la page pour voir les changements
                     setTimeout(function() {
                         location.reload();
                     }, 2000);
                 } else {
-                    showMessage('Erreur: ' + (response.data || 'Impossible de corriger les leads'), 'error');
+                    showNotification('Erreur: ' + (response.data || 'Impossible de corriger les leads'), 'error');
                 }
             },
             error: function() {
-                showMessage('Erreur de connexion', 'error');
+                showNotification('Erreur de connexion', 'error');
             },
             complete: function() {
                 $button.prop('disabled', false);
@@ -1521,6 +1529,12 @@ jQuery(document).ready(function($) {
             }
         });
     }
+    
+    // ✅ NOUVEAU : Gestionnaire pour le bouton de correction
+    $(document).on('click', '#fix-misclassified-leads', function(e) {
+        e.preventDefault();
+        fixAllMisclassifiedLeads();
+    });
 
     /**
      * Corrige le type d'un lead
@@ -2105,5 +2119,46 @@ jQuery(document).ready(function($) {
     
     
     // Fonctions supprimées - déjà définies plus haut
+    
+    /**
+     * ✅ NOUVEAU : Générer les informations pour Lead Parrainage
+     */
+    function generateLeadParrainageInfo(data) {
+        let html = '<div class="my-istymo-info-grid">';
+        
+        // Informations de base
+        if (data['1']) html += '<div class="my-istymo-info-item"><strong>Nom:</strong> ' + data['1'] + '</div>';
+        if (data['2']) html += '<div class="my-istymo-info-item"><strong>Email:</strong> ' + data['2'] + '</div>';
+        if (data['3']) html += '<div class="my-istymo-info-item"><strong>Téléphone:</strong> ' + data['3'] + '</div>';
+        
+        // Informations de parrainage
+        if (data['4']) html += '<div class="my-istymo-info-item"><strong>Type de parrainage:</strong> ' + data['4'] + '</div>';
+        if (data['5']) html += '<div class="my-istymo-info-item"><strong>Référent:</strong> ' + data['5'] + '</div>';
+        
+        html += '</div>';
+        return html;
+    }
+    
+    /**
+     * ✅ NOUVEAU : Générer les informations pour les leads non identifiés
+     */
+    function generateUnknownInfo(data) {
+        let html = '<div class="my-istymo-info-grid">';
+        html += '<div class="my-istymo-info-item"><strong>⚠️ Type non identifié</strong></div>';
+        html += '<div class="my-istymo-info-item"><em>Ce lead n\'a pas pu être automatiquement catégorisé.</em></div>';
+        
+        // Afficher les données disponibles
+        if (data && typeof data === 'object') {
+            html += '<div class="my-istymo-info-item"><strong>Données disponibles:</strong></div>';
+            for (let key in data) {
+                if (data[key] && data[key] !== '') {
+                    html += '<div class="my-istymo-info-item"><strong>Champ ' + key + ':</strong> ' + data[key] + '</div>';
+                }
+            }
+        }
+        
+        html += '</div>';
+        return html;
+    }
     
 });

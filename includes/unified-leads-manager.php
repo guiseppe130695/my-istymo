@@ -698,9 +698,15 @@ class Unified_Leads_Manager {
         $original_id = sanitize_text_field($_POST['original_id'] ?? '');
         $data_originale = $_POST['data_originale'] ?? array();
         
-        // ✅ SOLUTION SIMPLE : Utiliser le lead_type fourni directement
+        // ✅ CORRECTION : Ne pas forcer carte_succession par défaut
         if (empty($lead_type)) {
-            $lead_type = 'carte_succession'; // Par défaut pour les cartes de succession
+            // Essayer de déterminer le type depuis les données
+            $lead_type = $this->detect_lead_type_from_data($data_originale, $original_id);
+            
+            // Si toujours vide, marquer comme unknown
+            if (empty($lead_type)) {
+                $lead_type = 'unknown';
+            }
         }
         
         $lead_data = array(
@@ -709,7 +715,7 @@ class Unified_Leads_Manager {
             'data_originale' => $data_originale
         );
         
-        error_log("🔧 AJAX add_lead - Lead type: " . $lead_type);
+        error_log("🔧 AJAX add_lead - Lead type détecté: " . $lead_type);
         error_log("🔧 AJAX add_lead - Original ID: " . $original_id);
         
         $result = $this->add_lead($lead_data);
@@ -1158,10 +1164,95 @@ class Unified_Leads_Manager {
             
             // Si carte_succession n'est pas dans l'enum, l'ajouter
             if (strpos($column_definition, 'carte_succession') === false) {
-                $wpdb->query("ALTER TABLE {$this->leads_table} MODIFY COLUMN lead_type ENUM('sci', 'dpe', 'lead_vendeur', 'carte_succession') NOT NULL");
+                $wpdb->query("ALTER TABLE {$this->leads_table} MODIFY COLUMN lead_type ENUM('sci', 'dpe', 'lead_vendeur', 'carte_succession', 'lead_parrainage', 'unknown') NOT NULL");
                 error_log("Table unified_leads mise à jour pour supporter carte_succession");
             }
         }
+    }
+    
+    /**
+     * ✅ NOUVEAU : Détecter automatiquement le type de lead depuis les données
+     */
+    private function detect_lead_type_from_data($data_originale, $original_id) {
+        // Si les données sont vides, retourner unknown
+        if (empty($data_originale)) {
+            return 'unknown';
+        }
+        
+        // Analyser les données pour déterminer le type
+        if (is_array($data_originale)) {
+            // Vérifier les champs spécifiques pour identifier le type
+            $data_string = json_encode($data_originale);
+            
+            // Détecter Lead Vendeur par des mots-clés spécifiques
+            if (strpos($data_string, 'vendeur') !== false || 
+                strpos($data_string, 'bien') !== false ||
+                strpos($data_string, 'propriété') !== false) {
+                return 'lead_vendeur';
+            }
+            
+            // Détecter Lead Parrainage
+            if (strpos($data_string, 'parrainage') !== false ||
+                strpos($data_string, 'parrain') !== false) {
+                return 'lead_parrainage';
+            }
+            
+            // Détecter Carte de Succession
+            if (strpos($data_string, 'succession') !== false ||
+                strpos($data_string, 'décès') !== false ||
+                strpos($data_string, 'héritage') !== false) {
+                return 'carte_succession';
+            }
+        }
+        
+        // Essayer de déterminer par l'ID ou le contexte
+        if (!empty($original_id)) {
+            // Vérifier dans quelle table/formulaire l'ID existe
+            if (class_exists('GFAPI')) {
+                $entry = GFAPI::get_entry($original_id);
+                if (!is_wp_error($entry)) {
+                    $form_id = $entry['form_id'];
+                    
+                    // Déterminer le type selon le formulaire
+                    if ($this->is_lead_vendeur_form($form_id)) {
+                        return 'lead_vendeur';
+                    } elseif ($this->is_lead_parrainage_form($form_id)) {
+                        return 'lead_parrainage';
+                    } elseif ($this->is_carte_succession_form($form_id)) {
+                        return 'carte_succession';
+                    }
+                }
+            }
+        }
+        
+        return 'unknown';
+    }
+    
+    /**
+     * ✅ NOUVEAU : Vérifier si un formulaire est un formulaire Lead Vendeur
+     */
+    private function is_lead_vendeur_form($form_id) {
+        // Logique pour identifier les formulaires Lead Vendeur
+        // À adapter selon votre configuration
+        return false; // À implémenter selon vos besoins
+    }
+    
+    /**
+     * ✅ NOUVEAU : Vérifier si un formulaire est un formulaire Lead Parrainage
+     */
+    private function is_lead_parrainage_form($form_id) {
+        // Logique pour identifier les formulaires Lead Parrainage
+        // À adapter selon votre configuration
+        return false; // À implémenter selon vos besoins
+    }
+    
+    /**
+     * ✅ NOUVEAU : Vérifier si un formulaire est un formulaire Carte de Succession
+     */
+    private function is_carte_succession_form($form_id) {
+        // Logique pour identifier les formulaires Carte de Succession
+        // À adapter selon votre configuration
+        return false; // À implémenter selon vos besoins
     }
 }
 

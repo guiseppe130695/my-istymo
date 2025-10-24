@@ -199,9 +199,12 @@ class Simple_Favorites_Handler {
             
             $leads_manager = Unified_Leads_Manager::get_instance();
             
+            // ✅ CORRECTION : Détecter automatiquement le type de lead
+            $detected_type = $this->detect_lead_type_from_context($entry_data, $entry_id);
+            
             $lead_data = array(
                 'user_id' => $user_id,
-                'lead_type' => 'carte_succession',
+                'lead_type' => $detected_type,
                 'original_id' => $entry_id,
                 'form_id' => $form_id,
                 'status' => 'nouveau',
@@ -252,6 +255,86 @@ class Simple_Favorites_Handler {
         }
         
         return implode("\n", $notes);
+    }
+    
+    /**
+     * ✅ NOUVEAU : Détecter le type de lead depuis le contexte
+     */
+    private function detect_lead_type_from_context($entry_data, $entry_id) {
+        // Analyser les données pour déterminer le type
+        if (is_array($entry_data)) {
+            $data_string = json_encode($entry_data);
+            
+            // Détecter Lead Vendeur par des mots-clés spécifiques
+            if (strpos($data_string, 'vendeur') !== false || 
+                strpos($data_string, 'bien') !== false ||
+                strpos($data_string, 'propriété') !== false ||
+                strpos($data_string, 'vente') !== false) {
+                return 'lead_vendeur';
+            }
+            
+            // Détecter Lead Parrainage
+            if (strpos($data_string, 'parrainage') !== false ||
+                strpos($data_string, 'parrain') !== false) {
+                return 'lead_parrainage';
+            }
+            
+            // Détecter Carte de Succession
+            if (strpos($data_string, 'succession') !== false ||
+                strpos($data_string, 'décès') !== false ||
+                strpos($data_string, 'héritage') !== false) {
+                return 'carte_succession';
+            }
+        }
+        
+        // Essayer de déterminer par l'ID ou le contexte
+        if (!empty($entry_id)) {
+            // Vérifier dans quelle table/formulaire l'ID existe
+            if (class_exists('GFAPI')) {
+                $entry = GFAPI::get_entry($entry_id);
+                if (!is_wp_error($entry)) {
+                    $form_id = $entry['form_id'];
+                    
+                    // Déterminer le type selon le formulaire
+                    if ($this->is_lead_vendeur_form($form_id)) {
+                        return 'lead_vendeur';
+                    } elseif ($this->is_lead_parrainage_form($form_id)) {
+                        return 'lead_parrainage';
+                    } elseif ($this->is_carte_succession_form($form_id)) {
+                        return 'carte_succession';
+                    }
+                }
+            }
+        }
+        
+        return 'unknown';
+    }
+    
+    /**
+     * ✅ NOUVEAU : Vérifier si un formulaire est un formulaire Lead Vendeur
+     */
+    private function is_lead_vendeur_form($form_id) {
+        // Logique pour identifier les formulaires Lead Vendeur
+        // À adapter selon votre configuration
+        return false; // À implémenter selon vos besoins
+    }
+    
+    /**
+     * ✅ NOUVEAU : Vérifier si un formulaire est un formulaire Lead Parrainage
+     */
+    private function is_lead_parrainage_form($form_id) {
+        // Logique pour identifier les formulaires Lead Parrainage
+        // À adapter selon votre configuration
+        return false; // À implémenter selon vos besoins
+    }
+    
+    /**
+     * ✅ NOUVEAU : Vérifier si un formulaire est un formulaire Carte de Succession
+     */
+    private function is_carte_succession_form($form_id) {
+        // Logique pour identifier les formulaires Carte de Succession
+        // À adapter selon votre configuration
+        return false; // À implémenter selon vos besoins
     }
 }
 

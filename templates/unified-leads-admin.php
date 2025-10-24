@@ -80,6 +80,12 @@ function unified_leads_admin_page($context = array()) {
         <?php if (!$context['is_shortcode']): ?>
         <div class="notice notice-info">
             <p><strong>Interface de Gestion</strong> - Gérez vos leads avec filtres, actions en lot et suivi des statuts.</p>
+            <p>
+                <button type="button" id="fix-misclassified-leads" class="button button-secondary">
+                    <i class="fas fa-tools"></i> Corriger les leads mal classés
+                </button>
+                <span class="description">Corrige automatiquement les leads qui ont été mal catégorisés.</span>
+            </p>
         </div>
         <?php endif; ?>
         
@@ -285,6 +291,18 @@ function unified_leads_admin_page($context = array()) {
                                         $location = $ville . ($code_postal ? ' (' . $code_postal . ')' : '');
                                         
                                         $category = 'Carte de Succession';
+                                    } elseif ($lead->lead_type === 'lead_parrainage') {
+                                        // Données Lead Parrainage
+                                        $company_name = $lead->data_originale['1'] ?? 'Lead Parrainage';
+                                        $domain = 'parrainage.com';
+                                        $location = $lead->data_originale['3'] ?? '';
+                                        $category = 'Lead Parrainage';
+                                    } elseif ($lead->lead_type === 'unknown') {
+                                        // Données non identifiées
+                                        $company_name = 'Lead non identifié';
+                                        $domain = 'unknown.com';
+                                        $location = 'Non déterminé';
+                                        $category = 'Non identifié';
                                     }
                                 }
                             ?>
@@ -301,6 +319,10 @@ function unified_leads_admin_page($context = array()) {
                                                     <span class="my-istymo-icon my-istymo-icon-vendor">🏪</span>
                                                 <?php elseif ($lead->lead_type === 'carte_succession'): ?>
                                                     <span class="my-istymo-icon my-istymo-icon-succession">⚰️</span>
+                                                <?php elseif ($lead->lead_type === 'lead_parrainage'): ?>
+                                                    <span class="my-istymo-icon my-istymo-icon-parrainage">🤝</span>
+                                                <?php elseif ($lead->lead_type === 'unknown'): ?>
+                                                    <span class="my-istymo-icon my-istymo-icon-unknown">❓</span>
                                                 <?php else: ?>
                                                     <span class="my-istymo-icon my-istymo-icon-building">🏢</span>
                                                 <?php endif; ?>
