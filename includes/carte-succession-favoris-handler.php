@@ -217,37 +217,8 @@ class Carte_Succession_Favoris_Handler {
      * Formater les notes de la carte de succession de manière lisible
      */
     private function format_carte_succession_notes($extracted_data) {
-        $notes = array();
-        
-        // Informations de contact
-        if (!empty($extracted_data['contact_info'])) {
-            $notes[] = "=== CONTACT ===";
-            foreach ($extracted_data['contact_info'] as $key => $value) {
-                if (!empty($value)) {
-                    $label = ucfirst(str_replace('_', ' ', $key));
-                    $notes[] = "$label: $value";
-                }
-            }
-        }
-        
-        // Informations sur la succession
-        if (!empty($extracted_data['succession_info'])) {
-            $notes[] = "\n=== SUCCESSION ===";
-            foreach ($extracted_data['succession_info'] as $key => $value) {
-                if (!empty($value)) {
-                    $label = ucfirst(str_replace('_', ' ', $key));
-                    $notes[] = "$label: $value";
-                }
-            }
-        }
-        
-        // Commentaire original
-        if (!empty($extracted_data['notes'])) {
-            $notes[] = "\n=== COMMENTAIRE ===";
-            $notes[] = $extracted_data['notes'];
-        }
-        
-        return implode("\n", $notes);
+        // Retourner une chaîne vide par défaut pour les notes
+        return '';
     }
     
     /**

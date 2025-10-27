@@ -115,8 +115,6 @@ function unified_leads_admin_page($context = array()) {
                             <option value="dpe" <?php selected($current_lead_type, 'dpe'); ?>>DPE</option>
                             <option value="lead_vendeur" <?php selected($current_lead_type, 'lead_vendeur'); ?>>Lead Vendeur</option>
                             <option value="carte_succession" <?php selected($current_lead_type, 'carte_succession'); ?>>Carte de Succession</option>
-                            <option value="lead_parrainage" <?php selected($current_lead_type, 'lead_parrainage'); ?>>Lead Parrainage</option>
-                            <option value="unknown" <?php selected($current_lead_type, 'unknown'); ?>>Non identifié</option>
                         </select>
                     </div>
                     

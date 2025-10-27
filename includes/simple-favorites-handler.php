@@ -228,33 +228,8 @@ class Simple_Favorites_Handler {
      * Formater les notes pour Lead Vendeur
      */
     private function format_lead_vendeur_notes($entry_data) {
-        if (empty($entry_data) || !is_array($entry_data)) {
-            return '';
-        }
-        
-        $notes = array();
-        
-        // Extraire les informations importantes
-        if (!empty($entry_data['1'])) { // Nom
-            $notes[] = 'Nom: ' . $entry_data['1'];
-        }
-        if (!empty($entry_data['2'])) { // Email
-            $notes[] = 'Email: ' . $entry_data['2'];
-        }
-        if (!empty($entry_data['3'])) { // Téléphone
-            $notes[] = 'Téléphone: ' . $entry_data['3'];
-        }
-        if (!empty($entry_data['4'])) { // Adresse du bien
-            $notes[] = 'Adresse: ' . $entry_data['4'];
-        }
-        if (!empty($entry_data['5'])) { // Type de bien
-            $notes[] = 'Type: ' . $entry_data['5'];
-        }
-        if (!empty($entry_data['6'])) { // Prix
-            $notes[] = 'Prix: ' . $entry_data['6'];
-        }
-        
-        return implode("\n", $notes);
+        // Retourner une chaîne vide par défaut pour les notes
+        return '';
     }
     
     /**
