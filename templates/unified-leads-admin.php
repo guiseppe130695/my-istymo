@@ -726,6 +726,9 @@ function unified_leads_admin_page($context = array()) {
                     // Réinitialiser les gestionnaires d'événements
                     initTableEventHandlers();
                     
+                    // Mettre à jour l'URL avec les filtres actuels pour la persistance
+                    updateUrlWithFilters(leadType, status, priorite, dateFrom, dateTo, page);
+                    
                     console.log('✅ Filtres appliqués avec succès');
                 } else {
                     console.error('❌ Erreur lors du filtrage:', data.data);
@@ -738,6 +741,70 @@ function unified_leads_admin_page($context = array()) {
             });
         }
         
+        // Fonction pour mettre à jour l'URL avec les filtres actuels
+        function updateUrlWithFilters(leadType, status, priorite, dateFrom, dateTo, page) {
+            // Récupérer les paramètres existants de l'URL
+            var urlParams = new URLSearchParams(window.location.search);
+            
+            // Supprimer les anciens paramètres de filtres pour éviter les doublons
+            urlParams.delete('lead_type');
+            urlParams.delete('status');
+            urlParams.delete('priorite');
+            urlParams.delete('date_from');
+            urlParams.delete('date_to');
+            urlParams.delete('paged');
+            
+            // Ajouter les nouveaux paramètres de filtres
+            if (leadType) urlParams.set('lead_type', leadType);
+            if (status) urlParams.set('status', status);
+            if (priorite) urlParams.set('priorite', priorite);
+            if (dateFrom) urlParams.set('date_from', dateFrom);
+            if (dateTo) urlParams.set('date_to', dateTo);
+            if (page && page > 1) urlParams.set('paged', page);
+            
+            // Construire la nouvelle URL en préservant le chemin de base
+            var baseUrl = window.location.pathname;
+            var newUrl = baseUrl;
+            
+            if (urlParams.toString()) {
+                newUrl += '?' + urlParams.toString();
+            }
+            
+            // Mettre à jour l'URL sans recharger la page
+            window.history.pushState({}, '', newUrl);
+            
+            console.log('🔗 URL mise à jour avec les filtres:', newUrl);
+        }
+        
+        // Fonction pour initialiser les filtres depuis l'URL
+        function initializeFiltersFromUrl() {
+            var urlParams = new URLSearchParams(window.location.search);
+            
+            // Récupérer les paramètres de l'URL
+            var leadType = urlParams.get('lead_type');
+            var status = urlParams.get('status');
+            var priorite = urlParams.get('priorite');
+            var dateFrom = urlParams.get('date_from');
+            var dateTo = urlParams.get('date_to');
+            var page = urlParams.get('paged');
+            
+            // Appliquer les valeurs aux champs du formulaire
+            if (leadType) $('select[name="lead_type"]').val(leadType);
+            if (status) $('select[name="status"]').val(status);
+            if (priorite) $('select[name="priorite"]').val(priorite);
+            if (dateFrom) $('input[name="date_from"]').val(dateFrom);
+            if (dateTo) $('input[name="date_to"]').val(dateTo);
+            
+            // Définir la page courante
+            if (page) {
+                currentPage = parseInt(page);
+            }
+            
+            console.log('🔄 Filtres initialisés depuis l\'URL:', {leadType, status, priorite, dateFrom, dateTo, page});
+        }
+        
+        // Initialiser les filtres depuis l'URL au chargement de la page
+        initializeFiltersFromUrl();
         
         // Gestionnaire pour la soumission du formulaire de filtres
         $('.my-istymo-inline-filters').on('submit', function(e) {
@@ -953,7 +1020,13 @@ function unified_leads_admin_page($context = array()) {
                         
                         // Recharger le tableau pour refléter les changements
                         setTimeout(function() {
-                            location.reload();
+                            // Utiliser filterLeads pour préserver les filtres actuels
+                            if (typeof filterLeads === 'function') {
+                                filterLeads(1);
+                            } else {
+                                // Fallback : recharger la page si filterLeads n'est pas disponible
+                                location.reload();
+                            }
                         }, 2000);
                         
                     } else {
@@ -1550,7 +1623,13 @@ function unified_leads_admin_page($context = array()) {
                     closeLeadDetailModal();
                     
                     // Recharger la liste des leads pour afficher les modifications
-                    loadLeads();
+                    // Utiliser filterLeads pour préserver les filtres actuels
+                    if (typeof filterLeads === 'function') {
+                        filterLeads(1);
+                    } else {
+                        // Fallback : recharger la page si filterLeads n'est pas disponible
+                        location.reload();
+                    }
                 } else {
                     showToastNotification('Erreur lors de la sauvegarde: ' + (response && response.data ? response.data : 'Erreur inconnue'), 'error');
                 }

@@ -1164,13 +1164,15 @@ jQuery(document).ready(function($) {
                     // Une seule notification combinée
                     showNotification('Modifications sauvegardées avec succès !', 'success');
                     
-                    // Recharger immédiatement avec un paramètre pour éviter le cache
+                    // Recharger les données du tableau sans changer l'URL
                     setTimeout(function() {
-                        // Ajouter un paramètre timestamp pour éviter le cache
-                        var currentUrl = window.location.href;
-                        var separator = currentUrl.includes('?') ? '&' : '?';
-                        var newUrl = currentUrl + separator + 'refresh=' + Date.now();
-                        window.location.href = newUrl;
+                        // Appeler filterLeads pour recharger les données avec les filtres actuels
+                        if (typeof filterLeads === 'function') {
+                            filterLeads(1);
+                        } else {
+                            // Fallback : recharger la page si filterLeads n'est pas disponible
+                            location.reload();
+                        }
                     }, 1000);
                 } else {
                     showNotification('Erreur lors de la sauvegarde: ' + (response.data || 'Erreur inconnue'), 'error');
