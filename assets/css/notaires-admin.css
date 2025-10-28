@@ -1,0 +1,791 @@
+/**
+ * Styles CSS pour l'Annuaire Notarial
+ * 
+ * @package My_Istymo
+ * @subpackage Notaires
+ * @version 1.0
+ * @author Brio Guiseppe
+ */
+
+/* ========================================
+   CONTAINER PRINCIPAL
+   ======================================== */
+
+.notaires-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.notaires-container h1 {
+    color: #333;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* ========================================
+   BOÎTES D'INFORMATION
+   ======================================== */
+
+.my-istymo-info-box {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.my-istymo-info-box h3 {
+    margin: 0 0 15px 0;
+    color: #495057;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.my-istymo-info-box p {
+    margin: 8px 0;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.my-istymo-info-box strong {
+    color: #495057;
+    font-weight: 600;
+}
+
+/* ========================================
+   SECTION FILTRES
+   ======================================== */
+
+.my-istymo-filters-section {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 25px;
+    margin: 20px 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.my-istymo-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: end;
+}
+
+.my-istymo-filter-group {
+    display: flex;
+    flex-direction: column;
+    min-width: 180px;
+    flex: 1;
+}
+
+.my-istymo-filter-group label {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #495057;
+    font-size: 14px;
+}
+
+.my-istymo-filter-group select,
+.my-istymo-filter-group input[type="text"] {
+    padding: 10px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.my-istymo-filter-group select:focus,
+.my-istymo-filter-group input[type="text"]:focus {
+    border-color: #007cba;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 124, 186, 0.25);
+}
+
+.my-istymo-filter-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.my-istymo-filter-actions .button {
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.my-istymo-filter-actions .button-primary {
+    background: #007cba;
+    border-color: #007cba;
+}
+
+.my-istymo-filter-actions .button-primary:hover {
+    background: #005a87;
+    border-color: #005a87;
+}
+
+/* ========================================
+   SECTION ACTIONS
+   ======================================== */
+
+.my-istymo-actions-section {
+    margin: 25px 0;
+}
+
+.my-istymo-action-buttons {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.my-istymo-action-buttons .button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    font-size: 14px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.my-istymo-action-buttons .button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.my-istymo-action-buttons .button-secondary {
+    background: #6c757d;
+    border-color: #6c757d;
+    color: #fff;
+}
+
+.my-istymo-action-buttons .button-secondary:hover {
+    background: #545b62;
+    border-color: #545b62;
+    color: #fff;
+}
+
+/* ========================================
+   TABLEAU DES NOTAIRES
+   ======================================== */
+
+.my-istymo-table-section {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.my-istymo-modern-table {
+    overflow-x: auto;
+}
+
+.my-istymo-modern-table table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+}
+
+.my-istymo-modern-table th {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    color: #495057;
+    font-weight: 600;
+    padding: 15px 12px;
+    text-align: left;
+    border-bottom: 2px solid #dee2e6;
+    font-size: 14px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.my-istymo-modern-table td {
+    padding: 12px;
+    border-bottom: 1px solid #f1f3f4;
+    vertical-align: middle;
+    font-size: 14px;
+}
+
+.my-istymo-modern-table tr:hover {
+    background: #f8f9fa;
+}
+
+.my-istymo-modern-table tr:nth-child(even) {
+    background: #fafbfc;
+}
+
+.my-istymo-modern-table tr:nth-child(even):hover {
+    background: #f1f3f4;
+}
+
+/* ========================================
+   BOUTONS FAVORIS
+   ======================================== */
+
+.favorite-cell {
+    text-align: center;
+}
+
+.favorite-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.favorite-toggle:hover {
+    background: #f8f9fa;
+    transform: scale(1.1);
+}
+
+.favorite-toggle.favorited .dashicons {
+    color: #ffb900;
+    animation: pulse 0.3s ease;
+}
+
+.favorite-toggle .dashicons {
+    font-size: 18px;
+    transition: color 0.2s ease;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+/* ========================================
+   LIENS ET BOUTONS D'ACTION
+   ======================================== */
+
+.phone-link, 
+.email-link, 
+.website-link {
+    color: #007cba;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.phone-link:hover, 
+.email-link:hover, 
+.website-link:hover {
+    color: #005a87;
+    text-decoration: underline;
+}
+
+.view-details {
+    background: #28a745;
+    border-color: #28a745;
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.view-details:hover {
+    background: #218838;
+    border-color: #1e7e34;
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+/* ========================================
+   PAGINATION
+   ======================================== */
+
+.my-istymo-pagination {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 25px 0;
+    flex-wrap: wrap;
+    padding: 20px;
+    background: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+}
+
+.my-istymo-pagination .button {
+    padding: 8px 12px;
+    font-size: 14px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.my-istymo-pagination .button-primary {
+    background: #007cba;
+    border-color: #007cba;
+    color: #fff;
+}
+
+.pagination-info {
+    margin-left: auto;
+    font-style: italic;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+/* ========================================
+   ÉTAT VIDE
+   ======================================== */
+
+.my-istymo-empty-state {
+    text-align: center;
+    padding: 60px 40px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.my-istymo-empty-state h3 {
+    color: #6c757d;
+    margin: 0 0 15px 0;
+    font-size: 24px;
+}
+
+.my-istymo-empty-state p {
+    color: #6c757d;
+    margin: 0 0 25px 0;
+    font-size: 16px;
+}
+
+/* ========================================
+   MODAL DÉTAILS NOTAIRE
+   ======================================== */
+
+.my-istymo-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+}
+
+.my-istymo-modal-content {
+    background: #fff;
+    border-radius: 12px;
+    max-width: 700px;
+    max-height: 85vh;
+    overflow-y: auto;
+    width: 90%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.my-istymo-modal-header {
+    padding: 25px 30px 20px;
+    border-bottom: 2px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px 12px 0 0;
+}
+
+.my-istymo-modal-header h2 {
+    margin: 0;
+    color: #495057;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.my-istymo-modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: #6c757d;
+    padding: 5px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.my-istymo-modal-close:hover {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.my-istymo-modal-body {
+    padding: 30px;
+}
+
+/* ========================================
+   DÉTAILS NOTAIRE
+   ======================================== */
+
+.notaire-details {
+    max-width: 100%;
+}
+
+.notaire-details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.notaire-details-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 28px;
+    font-weight: 600;
+}
+
+.status-badge {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-actif {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.status-inactif {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.status-suspendu {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.details-section {
+    margin-bottom: 30px;
+}
+
+.details-section h4 {
+    margin: 0 0 20px 0;
+    color: #495057;
+    font-size: 18px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #007cba;
+}
+
+.detail-item label {
+    font-weight: 600;
+    color: #6c757d;
+    margin-bottom: 8px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-item span {
+    color: #333;
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+.detail-item a {
+    color: #007cba;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.detail-item a:hover {
+    color: #005a87;
+    text-decoration: underline;
+}
+
+.notaire-details-actions {
+    margin-top: 30px;
+    padding-top: 25px;
+    border-top: 2px solid #e9ecef;
+    text-align: center;
+}
+
+.notaire-details-actions .button {
+    padding: 15px 30px;
+    font-size: 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.notaire-details-actions .button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+/* ========================================
+   CHARGEMENT
+   ======================================== */
+
+.loading {
+    text-align: center;
+    padding: 40px;
+    color: #6c757d;
+}
+
+.loading .dashicons {
+    animation: spin 1s linear infinite;
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 1200px) {
+    .notaires-container {
+        margin: 0 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .my-istymo-filter-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .my-istymo-filter-group {
+        min-width: 100%;
+    }
+    
+    .my-istymo-filter-actions {
+        justify-content: center;
+        margin-top: 20px;
+    }
+    
+    .my-istymo-action-buttons {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .my-istymo-action-buttons .button {
+        justify-content: center;
+    }
+    
+    .my-istymo-pagination {
+        justify-content: center;
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .pagination-info {
+        margin-left: 0;
+        text-align: center;
+        order: -1;
+    }
+    
+    .my-istymo-modern-table {
+        font-size: 13px;
+    }
+    
+    .my-istymo-modern-table th,
+    .my-istymo-modern-table td {
+        padding: 8px 6px;
+    }
+    
+    .my-istymo-modal-content {
+        width: 95%;
+        margin: 20px;
+    }
+    
+    .my-istymo-modal-header {
+        padding: 20px;
+    }
+    
+    .my-istymo-modal-body {
+        padding: 20px;
+    }
+    
+    .notaire-details-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .details-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .detail-item {
+        padding: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .notaires-container h1 {
+        font-size: 24px;
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .my-istymo-info-box {
+        padding: 15px;
+    }
+    
+    .my-istymo-filters-section {
+        padding: 20px;
+    }
+    
+    .my-istymo-modern-table th,
+    .my-istymo-modern-table td {
+        padding: 6px 4px;
+        font-size: 12px;
+    }
+    
+    .favorite-toggle {
+        padding: 6px;
+    }
+    
+    .favorite-toggle .dashicons {
+        font-size: 16px;
+    }
+    
+    .view-details {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+}
+
+/* ========================================
+   ANIMATIONS ET TRANSITIONS
+   ======================================== */
+
+.my-istymo-modern-table tr {
+    transition: background-color 0.2s ease;
+}
+
+.favorite-toggle {
+    transition: all 0.2s ease;
+}
+
+.button {
+    transition: all 0.2s ease;
+}
+
+.detail-item {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.detail-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* ========================================
+   ACCESSIBILITÉ
+   ======================================== */
+
+.favorite-toggle:focus,
+.view-details:focus,
+.my-istymo-modal-close:focus {
+    outline: 2px solid #007cba;
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ========================================
+   PRINT STYLES
+   ======================================== */
+
+@media print {
+    .my-istymo-filters-section,
+    .my-istymo-actions-section,
+    .my-istymo-pagination,
+    .favorite-toggle,
+    .view-details {
+        display: none !important;
+    }
+    
+    .my-istymo-modern-table {
+        border: 1px solid #000;
+    }
+    
+    .my-istymo-modern-table th,
+    .my-istymo-modern-table td {
+        border: 1px solid #000;
+        padding: 8px;
+    }
+    
+    .notaires-container {
+        max-width: none;
+        margin: 0;
+    }
+}
+

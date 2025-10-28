@@ -100,6 +100,61 @@ function my_istymo_log($message, $context = 'general') {
     file_put_contents($log_file, $log_entry, FILE_APPEND | LOCK_EX);
 }
 
+// ✅ NOUVEAU : Fonction de création des tables pour l'Annuaire Notarial
+function create_notaires_tables() {
+    global $wpdb;
+    
+    $charset_collate = $wpdb->get_charset_collate();
+    
+    // Table principale des notaires
+    $table_notaires = $wpdb->prefix . 'my_istymo_notaires';
+    $sql_notaires = "CREATE TABLE $table_notaires (
+        id INT NOT NULL AUTO_INCREMENT,
+        nom_office VARCHAR(255) NOT NULL,
+        telephone_office VARCHAR(20),
+        langues_parlees TEXT,
+        site_internet VARCHAR(255),
+        email_office VARCHAR(255),
+        adresse TEXT,
+        code_postal VARCHAR(10) NOT NULL,
+        ville VARCHAR(100) NOT NULL,
+        nom_notaire VARCHAR(255),
+        statut_notaire VARCHAR(50) DEFAULT 'actif',
+        url_office VARCHAR(255),
+        page_source VARCHAR(255),
+        date_extraction DATETIME,
+        date_import DATETIME DEFAULT CURRENT_TIMESTAMP,
+        date_modification DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        INDEX idx_code_postal (code_postal),
+        INDEX idx_ville (ville),
+        INDEX idx_statut (statut_notaire),
+        INDEX idx_nom_office (nom_office)
+    ) $charset_collate;";
+    
+    // Table des favoris notaires
+    $table_favoris = $wpdb->prefix . 'my_istymo_notaires_favoris';
+    $sql_favoris = "CREATE TABLE $table_favoris (
+        id INT NOT NULL AUTO_INCREMENT,
+        user_id INT NOT NULL,
+        notaire_id INT NOT NULL,
+        date_ajout DATETIME DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        UNIQUE KEY unique_user_notaire (user_id, notaire_id),
+        FOREIGN KEY (notaire_id) REFERENCES $table_notaires(id) ON DELETE CASCADE
+    ) $charset_collate;";
+    
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql_notaires);
+    dbDelta($sql_favoris);
+    
+    // Log de création des tables
+    my_istymo_log('Tables Annuaire Notarial créées avec succès', 'notaires');
+}
+
+// Hook d'activation pour créer les tables
+register_activation_hook(__FILE__, 'create_notaires_tables');
+
 // ✅ ALIAS pour compatibilité avec le code existant
 if (!function_exists('lettre_laposte_log')) {
     function lettre_laposte_log($message) {
@@ -118,6 +173,12 @@ require_once plugin_dir_path(__FILE__) . 'includes/template-loader.php';
 require_once plugin_dir_path(__FILE__) . 'includes/dpe-config-manager.php';
 require_once plugin_dir_path(__FILE__) . 'includes/dpe-handler.php';
 require_once plugin_dir_path(__FILE__) . 'includes/dpe-shortcodes.php';
+
+// ✅ NOUVEAU : Inclure les fichiers Annuaire Notarial
+require_once plugin_dir_path(__FILE__) . 'includes/notaires-manager.php';
+require_once plugin_dir_path(__FILE__) . 'includes/notaires-import-handler.php';
+require_once plugin_dir_path(__FILE__) . 'includes/notaires-favoris-handler.php';
+require_once plugin_dir_path(__FILE__) . 'templates/notaires-admin.php';
 
 // ✅ PHASE 1 : Système unifié de gestion des leads (AVANT les favoris)
 require_once plugin_dir_path(__FILE__) . 'includes/unified-leads-manager.php';
@@ -215,6 +276,26 @@ function sci_ajouter_menu() {
         'read',
         'dpe-favoris',
         'dpe_favoris_page'
+    );
+    
+    // ✅ NOUVEAU : Menu Annuaire Notarial
+    add_menu_page(
+        'Annuaire Notarial',
+        'Notaires',
+        'read',
+        'notaires-panel',
+        'notaires_afficher_panel',
+        'dashicons-admin-users',
+        -4
+    );
+
+    add_submenu_page(
+        'notaires-panel',
+        'Import CSV',
+        'Import CSV',
+        'manage_options',
+        'notaires-import',
+        'notaires_import_page'
     );
     
            // ✅ PHASE 2 : Menu principal pour le système unifié de gestion des leads
@@ -6834,6 +6915,501 @@ function my_istymo_ajax_fix_misclassified_leads() {
         'message' => "Correction terminée : {$corrected_count} leads corrigés",
         'corrected_count' => $corrected_count
     ));
+}
+
+// ========================================
+// ✅ NOUVEAU : ACTIONS AJAX ANNUAIRE NOTARIAL
+// ========================================
+
+/**
+ * AJAX : Filtrer les notaires
+ */
+add_action('wp_ajax_filter_notaires', 'my_istymo_ajax_filter_notaires');
+function my_istymo_ajax_filter_notaires() {
+    // Vérifier le nonce
+    if (!wp_verify_nonce($_POST['nonce'] ?? '', 'my_istymo_notaires_nonce')) {
+        wp_send_json_error('Nonce invalide');
+        return;
+    }
+    
+    // Vérifier que l'utilisateur est connecté
+    if (!is_user_logged_in()) {
+        wp_send_json_error('Utilisateur non connecté');
+        return;
+    }
+    
+    $user_id = get_current_user_id();
+    $codes_postaux = sci_get_user_postal_codes($user_id);
+    
+    if (empty($codes_postaux)) {
+        wp_send_json_error('Codes postaux non configurés');
+        return;
+    }
+    
+    // Récupérer les filtres
+    $filters = [];
+    if (!empty($_POST['ville'])) $filters['ville'] = sanitize_text_field($_POST['ville']);
+    if (!empty($_POST['langue'])) $filters['langue'] = sanitize_text_field($_POST['langue']);
+    if (!empty($_POST['statut'])) $filters['statut'] = sanitize_text_field($_POST['statut']);
+    if (!empty($_POST['search'])) $filters['search'] = sanitize_text_field($_POST['search']);
+    
+    // Pagination
+    $page = max(1, intval($_POST['paged'] ?? 1));
+    $per_page = 20;
+    
+    // Récupérer les notaires
+    $notaires_manager = Notaires_Manager::get_instance();
+    $notaires = $notaires_manager->get_notaires_by_postal_codes($codes_postaux, $filters, $per_page, $page);
+    $total_notaires = $notaires_manager->get_notaires_count($codes_postaux, $filters);
+    $total_pages = ceil($total_notaires / $per_page);
+    
+    // Générer le HTML du tableau
+    ob_start();
+    if (!empty($notaires)) {
+        ?>
+        <table class="wp-list-table widefat fixed striped">
+            <thead>
+                <tr>
+                    <th width="5%">Favori</th>
+                    <th width="20%">Office</th>
+                    <th width="15%">Notaire</th>
+                    <th width="15%">Adresse</th>
+                    <th width="10%">Code Postal</th>
+                    <th width="10%">Ville</th>
+                    <th width="10%">Téléphone</th>
+                    <th width="10%">Email</th>
+                    <th width="5%">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($notaires as $notaire): ?>
+                    <tr data-notaire-id="<?php echo $notaire->id; ?>">
+                        <td class="favorite-cell">
+                            <button type="button" class="favorite-toggle <?php echo $notaire->is_favorite ? 'favorited' : ''; ?>" 
+                                    data-notaire-id="<?php echo $notaire->id; ?>"
+                                    title="<?php echo $notaire->is_favorite ? 'Supprimer des favoris' : 'Ajouter aux favoris'; ?>">
+                                <span class="dashicons dashicons-star-<?php echo $notaire->is_favorite ? 'filled' : 'empty'; ?>"></span>
+                            </button>
+                        </td>
+                        <td>
+                            <strong><?php echo esc_html($notaire->nom_office); ?></strong>
+                            <?php if ($notaire->site_internet): ?>
+                                <br><a href="<?php echo esc_url($notaire->site_internet); ?>" target="_blank" class="website-link">
+                                    <span class="dashicons dashicons-external"></span> Site web
+                                </a>
+                            <?php endif; ?>
+                        </td>
+                        <td><?php echo esc_html($notaire->nom_notaire); ?></td>
+                        <td><?php echo esc_html($notaire->adresse); ?></td>
+                        <td><?php echo esc_html($notaire->code_postal); ?></td>
+                        <td><?php echo esc_html($notaire->ville); ?></td>
+                        <td>
+                            <?php if ($notaire->telephone_office): ?>
+                                <a href="tel:<?php echo esc_attr($notaire->telephone_office); ?>" class="phone-link">
+                                    <?php echo esc_html($notaire->telephone_office); ?>
+                                </a>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php if ($notaire->email_office): ?>
+                                <a href="mailto:<?php echo esc_attr($notaire->email_office); ?>" class="email-link">
+                                    <?php echo esc_html($notaire->email_office); ?>
+                                </a>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <button type="button" class="button button-small view-details" 
+                                    data-notaire-id="<?php echo $notaire->id; ?>"
+                                    title="Voir les détails">
+                                <span class="dashicons dashicons-visibility"></span>
+                            </button>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+        <?php
+    } else {
+        ?>
+        <div class="my-istymo-empty-state">
+            <h3>Aucun notaire trouvé</h3>
+            <p>Il n'y a aucun notaire disponible dans votre zone géographique avec les filtres appliqués.</p>
+        </div>
+        <?php
+    }
+    
+    $table_html = ob_get_clean();
+    
+    wp_send_json_success(array(
+        'html' => $table_html,
+        'total' => $total_notaires,
+        'page' => $page,
+        'total_pages' => $total_pages
+    ));
+}
+
+/**
+ * AJAX : Basculer l'état favori d'un notaire
+ */
+add_action('wp_ajax_toggle_notaire_favorite', 'my_istymo_ajax_toggle_notaire_favorite');
+function my_istymo_ajax_toggle_notaire_favorite() {
+    // Vérifier le nonce
+    if (!wp_verify_nonce($_POST['nonce'] ?? '', 'my_istymo_notaires_nonce')) {
+        wp_send_json_error('Nonce invalide');
+        return;
+    }
+    
+    // Vérifier que l'utilisateur est connecté
+    if (!is_user_logged_in()) {
+        wp_send_json_error('Utilisateur non connecté');
+        return;
+    }
+    
+    $user_id = get_current_user_id();
+    $notaire_id = intval($_POST['notaire_id'] ?? 0);
+    
+    if (!$notaire_id) {
+        wp_send_json_error('ID notaire manquant');
+        return;
+    }
+    
+    $favoris_handler = Notaires_Favoris_Handler::get_instance();
+    $result = $favoris_handler->toggle_favorite($user_id, $notaire_id);
+    
+    if ($result['success']) {
+        wp_send_json_success($result);
+    } else {
+        wp_send_json_error($result['message']);
+    }
+}
+
+/**
+ * AJAX : Récupérer les détails d'un notaire
+ */
+add_action('wp_ajax_get_notaire_details', 'my_istymo_ajax_get_notaire_details');
+function my_istymo_ajax_get_notaire_details() {
+    // Vérifier le nonce
+    if (!wp_verify_nonce($_POST['nonce'] ?? '', 'my_istymo_notaires_nonce')) {
+        wp_send_json_error('Nonce invalide');
+        return;
+    }
+    
+    // Vérifier que l'utilisateur est connecté
+    if (!is_user_logged_in()) {
+        wp_send_json_error('Utilisateur non connecté');
+        return;
+    }
+    
+    $notaire_id = intval($_POST['notaire_id'] ?? 0);
+    
+    if (!$notaire_id) {
+        wp_send_json_error('ID notaire manquant');
+        return;
+    }
+    
+    $notaires_manager = Notaires_Manager::get_instance();
+    $notaire = $notaires_manager->get_notaire_by_id($notaire_id);
+    
+    if (!$notaire) {
+        wp_send_json_error('Notaire non trouvé');
+        return;
+    }
+    
+    // Générer le HTML des détails
+    ob_start();
+    ?>
+    <div class="notaire-details">
+        <div class="notaire-details-header">
+            <h3><?php echo esc_html($notaire->nom_office); ?></h3>
+            <div class="notaire-status">
+                <span class="status-badge status-<?php echo esc_attr($notaire->statut_notaire); ?>">
+                    <?php echo esc_html(ucfirst($notaire->statut_notaire)); ?>
+                </span>
+            </div>
+        </div>
+        
+        <div class="notaire-details-content">
+            <div class="details-section">
+                <h4>📋 Informations générales</h4>
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <label>Nom du notaire :</label>
+                        <span><?php echo esc_html($notaire->nom_notaire); ?></span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Adresse :</label>
+                        <span><?php echo esc_html($notaire->adresse); ?></span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Code postal :</label>
+                        <span><?php echo esc_html($notaire->code_postal); ?></span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Ville :</label>
+                        <span><?php echo esc_html($notaire->ville); ?></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="details-section">
+                <h4>📞 Contact</h4>
+                <div class="details-grid">
+                    <?php if ($notaire->telephone_office): ?>
+                    <div class="detail-item">
+                        <label>Téléphone :</label>
+                        <span><a href="tel:<?php echo esc_attr($notaire->telephone_office); ?>"><?php echo esc_html($notaire->telephone_office); ?></a></span>
+                    </div>
+                    <?php endif; ?>
+                    
+                    <?php if ($notaire->email_office): ?>
+                    <div class="detail-item">
+                        <label>Email :</label>
+                        <span><a href="mailto:<?php echo esc_attr($notaire->email_office); ?>"><?php echo esc_html($notaire->email_office); ?></a></span>
+                    </div>
+                    <?php endif; ?>
+                    
+                    <?php if ($notaire->site_internet): ?>
+                    <div class="detail-item">
+                        <label>Site web :</label>
+                        <span><a href="<?php echo esc_url($notaire->site_internet); ?>" target="_blank"><?php echo esc_html($notaire->site_internet); ?></a></span>
+                    </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+            
+            <?php if ($notaire->langues_parlees): ?>
+            <div class="details-section">
+                <h4>🌍 Langues parlées</h4>
+                <p><?php echo esc_html($notaire->langues_parlees); ?></p>
+            </div>
+            <?php endif; ?>
+            
+            <?php if ($notaire->url_office): ?>
+            <div class="details-section">
+                <h4>🔗 Liens utiles</h4>
+                <p><a href="<?php echo esc_url($notaire->url_office); ?>" target="_blank">Page officielle</a></p>
+            </div>
+            <?php endif; ?>
+            
+            <?php if ($notaire->page_source): ?>
+            <div class="details-section">
+                <h4>📄 Source</h4>
+                <p><?php echo esc_html($notaire->page_source); ?></p>
+            </div>
+            <?php endif; ?>
+            
+            <?php if ($notaire->date_extraction): ?>
+            <div class="details-section">
+                <h4>📅 Informations techniques</h4>
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <label>Date d'extraction :</label>
+                        <span><?php echo date('d/m/Y', strtotime($notaire->date_extraction)); ?></span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Dernière mise à jour :</label>
+                        <span><?php echo date('d/m/Y H:i', strtotime($notaire->date_modification)); ?></span>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
+        </div>
+        
+        <div class="notaire-details-actions">
+            <button type="button" class="button button-primary favorite-toggle <?php echo $notaire->is_favorite ? 'favorited' : ''; ?>" 
+                    data-notaire-id="<?php echo $notaire->id; ?>">
+                <span class="dashicons dashicons-star-<?php echo $notaire->is_favorite ? 'filled' : 'empty'; ?>"></span>
+                <?php echo $notaire->is_favorite ? 'Supprimer des favoris' : 'Ajouter aux favoris'; ?>
+            </button>
+        </div>
+    </div>
+    
+    <style>
+    .notaire-details {
+        max-width: 600px;
+    }
+    
+    .notaire-details-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #e1e1e1;
+    }
+    
+    .notaire-details-header h3 {
+        margin: 0;
+        color: #333;
+    }
+    
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+    
+    .status-actif {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .status-inactif {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .status-suspendu {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .details-section {
+        margin-bottom: 25px;
+    }
+    
+    .details-section h4 {
+        margin: 0 0 15px 0;
+        color: #555;
+        font-size: 16px;
+    }
+    
+    .details-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+    
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .detail-item label {
+        font-weight: bold;
+        color: #666;
+        margin-bottom: 5px;
+        font-size: 13px;
+    }
+    
+    .detail-item span {
+        color: #333;
+    }
+    
+    .detail-item a {
+        color: #0073aa;
+        text-decoration: none;
+    }
+    
+    .detail-item a:hover {
+        text-decoration: underline;
+    }
+    
+    .notaire-details-actions {
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 1px solid #e1e1e1;
+        text-align: center;
+    }
+    
+    @media (max-width: 600px) {
+        .details-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    </style>
+    <?php
+    
+    $details_html = ob_get_clean();
+    
+    wp_send_json_success(array(
+        'html' => $details_html
+    ));
+}
+
+/**
+ * AJAX : Récupérer le nombre de favoris
+ */
+add_action('wp_ajax_get_favorites_count', 'my_istymo_ajax_get_favorites_count');
+function my_istymo_ajax_get_favorites_count() {
+    // Vérifier le nonce
+    if (!wp_verify_nonce($_POST['nonce'] ?? '', 'my_istymo_notaires_nonce')) {
+        wp_send_json_error('Nonce invalide');
+        return;
+    }
+    
+    // Vérifier que l'utilisateur est connecté
+    if (!is_user_logged_in()) {
+        wp_send_json_error('Utilisateur non connecté');
+        return;
+    }
+    
+    $user_id = get_current_user_id();
+    $favoris_handler = Notaires_Favoris_Handler::get_instance();
+    $stats = $favoris_handler->get_favorites_stats($user_id);
+    
+    wp_send_json_success(array(
+        'count' => $stats['total_favorites']
+    ));
+}
+
+/**
+ * AJAX : Exporter les favoris en CSV
+ */
+add_action('wp_ajax_export_notaires_favorites', 'my_istymo_ajax_export_notaires_favorites');
+function my_istymo_ajax_export_notaires_favorites() {
+    // Vérifier le nonce
+    if (!wp_verify_nonce($_POST['nonce'] ?? '', 'my_istymo_notaires_nonce')) {
+        wp_send_json_error('Nonce invalide');
+        return;
+    }
+    
+    // Vérifier que l'utilisateur est connecté
+    if (!is_user_logged_in()) {
+        wp_send_json_error('Utilisateur non connecté');
+        return;
+    }
+    
+    $user_id = get_current_user_id();
+    $filters = [];
+    
+    // Appliquer les filtres si fournis
+    if (!empty($_POST['filters'])) {
+        $filters = json_decode(stripslashes($_POST['filters']), true);
+    }
+    
+    $favoris_handler = Notaires_Favoris_Handler::get_instance();
+    $result = $favoris_handler->export_favorites_csv($user_id, $filters);
+    
+    if ($result['success']) {
+        wp_send_json_success($result);
+    } else {
+        wp_send_json_error($result['csv_content']);
+    }
+}
+
+/**
+ * AJAX : Import CSV des notaires
+ */
+add_action('wp_ajax_import_notaires_csv', 'my_istymo_ajax_import_notaires_csv');
+function my_istymo_ajax_import_notaires_csv() {
+    // Vérifier les permissions
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error('Permissions insuffisantes');
+        return;
+    }
+    
+    // Vérifier le nonce
+    if (!wp_verify_nonce($_POST['nonce'] ?? '', 'my_istymo_notaires_nonce')) {
+        wp_send_json_error('Nonce invalide');
+        return;
+    }
+    
+    // Cette action sera utilisée pour l'import en arrière-plan
+    // Pour l'instant, on retourne une erreur car l'import se fait via le formulaire
+    wp_send_json_error('Import CSV non disponible via AJAX pour le moment');
 }
 
 
