@@ -732,3 +732,5 @@ const notificationStyles = `
 // Injecter les styles
 document.head.insertAdjacentHTML('beforeend', notificationStyles);
 
+
+
