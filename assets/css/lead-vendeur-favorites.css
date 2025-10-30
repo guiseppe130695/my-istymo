@@ -155,7 +155,7 @@ button.favori-toggle.loading {
 
 .lead-vendeur-table th:nth-child(6), /* Actions */
 .lead-vendeur-table td:nth-child(6) {
-    width: 35% !important;
+    width: 40% !important;
     min-width: 200px !important;
     text-align: center !important;
 }
