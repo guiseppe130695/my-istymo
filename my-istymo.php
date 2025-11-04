@@ -5253,18 +5253,67 @@ function lead_vendeur_ajax_get_entry_details() {
                 <div class="lead-details-info-grid">
                     <?php
                     // Afficher les champs de contact spécifiques
-                    $contact_fields = array(
-                        '42' => 'Pourquoi réaliser l\'estimation ?',
-                        '44' => 'Civilité', 
-                        '45' => 'Téléphone',
-                        '46' => 'E-mail'
-                    );
+                    // IDs des champs de contact à afficher
+                    $contact_field_ids = array('42', '44', '45', '46');
                     
-                    foreach ($contact_fields as $field_id => $field_label) {
-                        $value = isset($entry[$field_id]) ? $entry[$field_id] : '';
+                    foreach ($contact_field_ids as $field_id) {
+                        // Récupérer la valeur du champ de différentes manières possibles
+                        $value = '';
+                        
+                        // Vérifier le type de champ pour un traitement spécial
+                        $field_type = '';
+                        if (isset($form_fields[$field_id]) && isset($form_fields[$field_id]['type'])) {
+                            $field_type = $form_fields[$field_id]['type'];
+                        }
+                        
+                        // Si c'est un champ name, récupérer les sous-champs
+                        if ($field_type === 'name') {
+                            $name_parts = array();
+                            // Sous-champs possibles pour un champ name: prefix, first, middle, last, suffix
+                            $name_subfields = array('44.1', '44.2', '44.3', '44.4', '44.6');
+                            foreach ($name_subfields as $subfield_id) {
+                                if (isset($entry[$subfield_id]) && !empty(trim($entry[$subfield_id]))) {
+                                    $name_parts[] = trim($entry[$subfield_id]);
+                                }
+                            }
+                            if (!empty($name_parts)) {
+                                $value = implode(' ', $name_parts);
+                            }
+                        } else {
+                            // Méthode 1: Récupération directe depuis l'entrée
+                            if (isset($entry[$field_id])) {
+                                $value = $entry[$field_id];
+                            }
+                        }
+                        
+                        // Nettoyer la valeur
+                        if (is_array($value)) {
+                            $value = implode(', ', array_filter($value));
+                        }
+                        $value = trim($value);
                         
                         // Ne afficher que les champs avec des données
                         if (!empty($value)) {
+                            // Récupérer le label réel du champ depuis la configuration
+                            $field_label = '';
+                            if (isset($form_fields[$field_id]) && isset($form_fields[$field_id]['label'])) {
+                                $field_label = $form_fields[$field_id]['label'];
+                            } else {
+                                // Fallback vers les labels par défaut si non trouvé
+                                $default_labels = array(
+                                    '42' => 'Pourquoi réaliser l\'estimation ?',
+                                    '44' => 'Nom et Prénom',
+                                    '45' => 'Téléphone',
+                                    '46' => 'E-mail'
+                                );
+                                $field_label = isset($default_labels[$field_id]) ? $default_labels[$field_id] : 'Champ ' . $field_id;
+                            }
+                            
+                            // Pour le champ 44, utiliser toujours "Nom et Prénom" comme label
+                            if ($field_id == '44') {
+                                $field_label = 'Nom et Prénom';
+                            }
+                            
                             echo '<div class="lead-details-info-item">';
                             echo '<div class="lead-details-info-label">' . esc_html($field_label) . '</div>';
                             echo '<div class="lead-details-info-value">';
@@ -6973,9 +7022,7 @@ function my_istymo_ajax_filter_notaires() {
                     <th width="5%">Favori</th>
                     <th width="20%">Office</th>
                     <th width="15%">Notaire</th>
-                    <th width="15%">Adresse</th>
-                    <th width="10%">Code Postal</th>
-                    <th width="10%">Ville</th>
+                    <th width="20%">Adresse</th>
                     <th width="10%">Téléphone</th>
                     <th width="10%">Email</th>
                     <th width="5%">Actions</th>
@@ -7000,9 +7047,23 @@ function my_istymo_ajax_filter_notaires() {
                             <?php endif; ?>
                         </td>
                         <td><?php echo esc_html($notaire->nom_notaire); ?></td>
-                        <td><?php echo esc_html($notaire->adresse); ?></td>
-                        <td><?php echo esc_html($notaire->code_postal); ?></td>
-                        <td><?php echo esc_html($notaire->ville); ?></td>
+                        <td>
+                            <?php
+                            // Construire l'adresse complète
+                            $adresse_complete = [];
+                            if (!empty($notaire->adresse)) {
+                                $adresse_complete[] = trim($notaire->adresse);
+                            }
+                            if (!empty($notaire->code_postal) && !empty($notaire->ville)) {
+                                $adresse_complete[] = trim($notaire->code_postal) . ' ' . trim($notaire->ville);
+                            } elseif (!empty($notaire->code_postal)) {
+                                $adresse_complete[] = trim($notaire->code_postal);
+                            } elseif (!empty($notaire->ville)) {
+                                $adresse_complete[] = trim($notaire->ville);
+                            }
+                            echo esc_html(implode(', ', $adresse_complete));
+                            ?>
+                        </td>
                         <td>
                             <?php if ($notaire->telephone_office): ?>
                                 <a href="tel:<?php echo esc_attr($notaire->telephone_office); ?>" class="phone-link">

@@ -427,12 +427,43 @@ class Notaires_Manager {
     public function truncate_notaires() {
         global $wpdb;
         
-        $result = $wpdb->query("TRUNCATE TABLE {$this->table_notaires}");
+        // Vérifier que la table existe
+        $table_exists = $wpdb->get_var("SHOW TABLES LIKE '{$this->table_notaires}'");
+        if (!$table_exists) {
+            my_istymo_log("La table {$this->table_notaires} n'existe pas", 'notaires');
+            // Créer la table si elle n'existe pas
+            if (function_exists('create_notaires_tables')) {
+                create_notaires_tables();
+            } else {
+                return false;
+            }
+        }
+        
+        // Désactiver temporairement les vérifications de clés étrangères
+        $wpdb->query('SET FOREIGN_KEY_CHECKS = 0');
+        
+        // Utiliser DELETE au lieu de TRUNCATE car TRUNCATE ne fonctionne pas avec les clés étrangères
+        // même si elles sont en ON DELETE CASCADE
+        $result = $wpdb->query("DELETE FROM {$this->table_notaires}");
+        
+        // Réactiver les vérifications de clés étrangères
+        $wpdb->query('SET FOREIGN_KEY_CHECKS = 1');
+        
+        // Si DELETE a échoué, essayer TRUNCATE (peut fonctionner si pas de contraintes actives)
+        if ($result === false) {
+            $wpdb->query('SET FOREIGN_KEY_CHECKS = 0');
+            $result = $wpdb->query("TRUNCATE TABLE {$this->table_notaires}");
+            $wpdb->query('SET FOREIGN_KEY_CHECKS = 1');
+        }
         
         if ($result === false) {
-            my_istymo_log('Erreur lors du vidage de la table notaires', 'notaires');
+            $error = $wpdb->last_error;
+            my_istymo_log("Erreur lors du vidage de la table notaires : {$error}", 'notaires');
             return false;
         }
+        
+        // Réinitialiser l'auto-increment
+        $wpdb->query("ALTER TABLE {$this->table_notaires} AUTO_INCREMENT = 1");
         
         my_istymo_log('Table notaires vidée avec succès', 'notaires');
         return true;

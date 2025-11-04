@@ -177,9 +177,7 @@ function notaires_afficher_panel() {
                                 <th width="5%">Favori</th>
                                 <th width="20%">Office</th>
                                 <th width="15%">Notaire</th>
-                                <th width="15%">Adresse</th>
-                                <th width="10%">Code Postal</th>
-                                <th width="10%">Ville</th>
+                                <th width="20%">Adresse</th>
                                 <th width="10%">Téléphone</th>
                                 <th width="10%">Email</th>
                                 <th width="5%">Actions</th>
@@ -204,9 +202,23 @@ function notaires_afficher_panel() {
                                         <?php endif; ?>
                                     </td>
                                     <td><?php echo esc_html($notaire->nom_notaire); ?></td>
-                                    <td><?php echo esc_html($notaire->adresse); ?></td>
-                                    <td><?php echo esc_html($notaire->code_postal); ?></td>
-                                    <td><?php echo esc_html($notaire->ville); ?></td>
+                                    <td>
+                                        <?php
+                                        // Construire l'adresse complète
+                                        $adresse_complete = [];
+                                        if (!empty($notaire->adresse)) {
+                                            $adresse_complete[] = trim($notaire->adresse);
+                                        }
+                                        if (!empty($notaire->code_postal) && !empty($notaire->ville)) {
+                                            $adresse_complete[] = trim($notaire->code_postal) . ' ' . trim($notaire->ville);
+                                        } elseif (!empty($notaire->code_postal)) {
+                                            $adresse_complete[] = trim($notaire->code_postal);
+                                        } elseif (!empty($notaire->ville)) {
+                                            $adresse_complete[] = trim($notaire->ville);
+                                        }
+                                        echo esc_html(implode(', ', $adresse_complete));
+                                        ?>
+                                    </td>
                                     <td>
                                         <?php if ($notaire->telephone_office): ?>
                                             <a href="tel:<?php echo esc_attr($notaire->telephone_office); ?>" class="phone-link">
@@ -656,7 +668,7 @@ function notaires_import_page() {
                 <li><strong>Format :</strong> Fichier CSV avec encodage UTF-8</li>
                 <li><strong>Colonnes requises :</strong> nom_office, telephone_office, langues_parlees, site_internet, email_office, adresse, code_postal, ville, nom_notaire, statut_notaire, url_office, page_source, date_extraction</li>
                 <li><strong>Remplacement :</strong> L'import remplace complètement les données existantes</li>
-                <li><strong>Limite :</strong> Taille maximale de 10 MB</li>
+                <li><strong>Limite :</strong> Taille maximale de 50 MB</li>
             </ul>
         </div>
         
@@ -672,16 +684,23 @@ function notaires_import_page() {
             <div class="my-istymo-import-options">
                 <h3>Options d'import</h3>
                 <label>
-                    <input type="checkbox" name="preview_only" value="1" checked>
+                    <input type="checkbox" name="preview_only" value="1" id="preview_only_checkbox">
                     Mode prévisualisation (recommandé pour le premier import)
                 </label>
-                <p class="description">En mode prévisualisation, les données ne seront pas importées en base</p>
+                <p class="description">En mode prévisualisation, seules les 10 premières lignes seront analysées et aucune donnée ne sera importée en base.</p>
+                <p class="description" style="color: #d63638; font-weight: bold;">
+                    ⚠️ Pour importer toutes les données, décochez cette case avant de valider.
+                </p>
             </div>
             
             <div class="my-istymo-import-actions">
                 <button type="submit" name="import_csv" class="button button-primary button-large">
                     <span class="dashicons dashicons-upload"></span> Importer le fichier CSV
                 </button>
+                <p class="description" style="margin-top: 10px;">
+                    <strong>Note :</strong> Pour les fichiers volumineux (plus de 1000 lignes), le traitement peut prendre plusieurs minutes. 
+                    Ne fermez pas cette page pendant l'import.
+                </p>
             </div>
         </form>
         
@@ -746,23 +765,51 @@ function handle_csv_upload() {
         'data' => null
     ];
     
+    // Augmenter les limites PHP pour gérer les gros fichiers
+    @set_time_limit(0); // Pas de limite de temps
+    @ini_set('max_execution_time', '0');
+    
+    // Augmenter la limite de mémoire
+    $current_memory = ini_get('memory_limit');
+    if (wp_is_ini_value_changeable('memory_limit')) {
+        $memory_in_bytes = wp_convert_hr_to_bytes($current_memory);
+        if ($memory_in_bytes < 512 * 1024 * 1024) { // Si moins de 512MB
+            @ini_set('memory_limit', '512M');
+        }
+    }
+    
     // Vérifier qu'un fichier a été uploadé
     if (!isset($_FILES['csv_file']) || $_FILES['csv_file']['error'] !== UPLOAD_ERR_OK) {
-        $result['message'] = 'Aucun fichier uploadé ou erreur lors de l\'upload';
+        $error_messages = [
+            UPLOAD_ERR_INI_SIZE => 'Le fichier dépasse la limite de upload_max_filesize dans php.ini',
+            UPLOAD_ERR_FORM_SIZE => 'Le fichier dépasse la limite de MAX_FILE_SIZE dans le formulaire HTML',
+            UPLOAD_ERR_PARTIAL => 'Le fichier n\'a été que partiellement uploadé',
+            UPLOAD_ERR_NO_FILE => 'Aucun fichier n\'a été uploadé',
+            UPLOAD_ERR_NO_TMP_DIR => 'Dossier temporaire manquant',
+            UPLOAD_ERR_CANT_WRITE => 'Échec de l\'écriture du fichier sur le disque',
+            UPLOAD_ERR_EXTENSION => 'Une extension PHP a arrêté l\'upload du fichier',
+        ];
+        
+        $error_code = $_FILES['csv_file']['error'] ?? UPLOAD_ERR_NO_FILE;
+        $result['message'] = $error_messages[$error_code] ?? 'Erreur lors de l\'upload du fichier (code: ' . $error_code . ')';
         return $result;
     }
     
     $file = $_FILES['csv_file'];
     
     // Vérifier le type de fichier
-    if ($file['type'] !== 'text/csv' && pathinfo($file['name'], PATHINFO_EXTENSION) !== 'csv') {
-        $result['message'] = 'Le fichier doit être au format CSV';
+    $allowed_types = ['text/csv', 'text/plain', 'application/csv', 'application/vnd.ms-excel'];
+    $file_extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    
+    if (!in_array($file['type'], $allowed_types) && $file_extension !== 'csv') {
+        $result['message'] = 'Le fichier doit être au format CSV (type détecté: ' . $file['type'] . ')';
         return $result;
     }
     
-    // Vérifier la taille du fichier (10 MB max)
-    if ($file['size'] > 10 * 1024 * 1024) {
-        $result['message'] = 'Le fichier est trop volumineux (maximum 10 MB)';
+    // Vérifier la taille du fichier (50 MB max au lieu de 10 MB)
+    $max_file_size = 50 * 1024 * 1024; // 50 MB
+    if ($file['size'] > $max_file_size) {
+        $result['message'] = 'Le fichier est trop volumineux (maximum 50 MB, votre fichier: ' . round($file['size'] / 1024 / 1024, 2) . ' MB)';
         return $result;
     }
     
@@ -774,10 +821,16 @@ function handle_csv_upload() {
         wp_mkdir_p($temp_dir);
     }
     
-    $temp_file = $temp_dir . 'notaires_import_' . time() . '.csv';
+    $temp_file = $temp_dir . 'notaires_import_' . time() . '_' . wp_generate_password(8, false) . '.csv';
     
     if (!move_uploaded_file($file['tmp_name'], $temp_file)) {
-        $result['message'] = 'Erreur lors du déplacement du fichier';
+        $result['message'] = 'Erreur lors du déplacement du fichier vers le dossier temporaire';
+        return $result;
+    }
+    
+    // Vérifier que le fichier existe et est lisible
+    if (!file_exists($temp_file) || !is_readable($temp_file)) {
+        $result['message'] = 'Le fichier uploadé n\'est pas accessible';
         return $result;
     }
     
@@ -787,31 +840,89 @@ function handle_csv_upload() {
     // Mode prévisualisation ou import réel
     $preview_only = isset($_POST['preview_only']);
     
-    if ($preview_only) {
-        // Mode prévisualisation
-        $validation = $import_handler->validate_csv_structure($temp_file);
-        $parsing = $import_handler->parse_csv_data($temp_file, 10); // Limiter à 10 lignes pour la prévisualisation
-        
-        $result['success'] = true;
-        $result['message'] = 'Prévisualisation réussie';
-        $result['data'] = [
-            'validation' => $validation,
-            'parsing' => $parsing,
-            'preview_only' => true
-        ];
-    } else {
-        // Import réel
-        $import_result = $import_handler->process_csv_file($temp_file);
-        
-        $result['success'] = $import_result['success'];
-        $result['message'] = $import_result['success'] ? 'Import réussi' : 'Échec de l\'import';
-        $result['data'] = $import_result;
+    try {
+        if ($preview_only) {
+            // Mode prévisualisation
+            $validation = $import_handler->validate_csv_structure($temp_file);
+            
+            if (!$validation['valid']) {
+                $result['message'] = 'Structure du fichier CSV invalide: ' . implode(', ', $validation['errors']);
+                $result['data'] = ['validation' => $validation];
+                @unlink($temp_file);
+                return $result;
+            }
+            
+            $parsing = $import_handler->parse_csv_data($temp_file, 10); // Limiter à 10 lignes pour la prévisualisation
+            
+            // Compter le nombre total de lignes dans le fichier
+            $total_lines = count_csv_lines($temp_file);
+            $estimated_data_lines = max(0, $total_lines - 1); // -1 pour l'en-tête
+            
+            $result['success'] = true;
+            $result['message'] = 'Prévisualisation réussie';
+            $result['data'] = [
+                'validation' => $validation,
+                'parsing' => $parsing,
+                'preview_only' => true,
+                'file_size' => filesize($temp_file),
+                'file_lines_estimated' => $total_lines,
+                'estimated_data_lines' => $estimated_data_lines,
+                'preview_note' => "Seules les 10 premières lignes sont analysées en mode prévisualisation. Le fichier contient environ {$estimated_data_lines} lignes de données."
+            ];
+        } else {
+            // Import réel - avec gestion d'erreurs améliorée
+            my_istymo_log("Début de l'import CSV - Fichier: {$temp_file}, Taille: " . filesize($temp_file) . " bytes", 'notaires');
+            
+            $import_result = $import_handler->process_csv_file($temp_file);
+            
+            $result['success'] = $import_result['success'];
+            
+            if ($import_result['success']) {
+                $imported_count = $import_result['import']['imported_count'] ?? 0;
+                $total_rows = $import_result['parsing']['total_rows'] ?? 0;
+                $result['message'] = sprintf(
+                    'Import réussi : %d notaires importés sur %d lignes traitées',
+                    $imported_count,
+                    $total_rows
+                );
+                my_istymo_log("Import réussi: {$imported_count} notaires importés", 'notaires');
+            } else {
+                $errors = $import_result['errors'] ?? [];
+                $result['message'] = 'Échec de l\'import: ' . implode('; ', array_slice($errors, 0, 3));
+                if (count($errors) > 3) {
+                    $result['message'] .= ' (et ' . (count($errors) - 3) . ' autres erreurs)';
+                }
+                my_istymo_log("Échec de l'import: " . implode('; ', $errors), 'notaires');
+            }
+            
+            $result['data'] = $import_result;
+        }
+    } catch (Exception $e) {
+        $result['message'] = 'Erreur lors du traitement du fichier: ' . $e->getMessage();
+        my_istymo_log("Exception lors de l'import: " . $e->getMessage(), 'notaires');
     }
     
     // Supprimer le fichier temporaire
-    unlink($temp_file);
+    if (file_exists($temp_file)) {
+        @unlink($temp_file);
+    }
     
     return $result;
+}
+
+/**
+ * Compte approximativement le nombre de lignes d'un fichier CSV
+ */
+function count_csv_lines($file_path) {
+    $count = 0;
+    $handle = fopen($file_path, 'r');
+    if ($handle) {
+        while (($line = fgets($handle)) !== false) {
+            $count++;
+        }
+        fclose($handle);
+    }
+    return $count;
 }
 
 /**
@@ -823,7 +934,16 @@ function display_import_result($result) {
         echo '<p><strong>✅ ' . esc_html($result['message']) . '</strong></p>';
         
         if ($result['data']['preview_only']) {
-            echo '<p>Mode prévisualisation activé - Aucune donnée n\'a été importée en base.</p>';
+            echo '<p><strong>Mode prévisualisation activé</strong> - Aucune donnée n\'a été importée en base.</p>';
+            if (isset($result['data']['estimated_data_lines']) && $result['data']['estimated_data_lines'] > 10) {
+                echo '<div style="background: #fff3cd; border-left: 4px solid #ffb900; padding: 12px; margin: 10px 0;">';
+                echo '<p style="margin: 0;"><strong>ℹ️ Information importante :</strong></p>';
+                echo '<p style="margin: 5px 0 0 0;">Votre fichier contient environ <strong>' . $result['data']['estimated_data_lines'] . ' lignes de données</strong>, ';
+                echo 'mais le mode prévisualisation n\'analyse que les 10 premières lignes.</p>';
+                echo '<p style="margin: 10px 0 0 0;">Pour importer <strong>toutes</strong> les données (' . $result['data']['estimated_data_lines'] . ' lignes), ';
+                echo 'vous devez <strong>décocher "Mode prévisualisation"</strong> lors de l\'import.</p>';
+                echo '</div>';
+            }
         }
         
         echo '</div>';
@@ -844,23 +964,65 @@ function display_import_result($result) {
             echo '<div class="notice notice-info">';
             echo '<h4>📊 Parsing des données :</h4>';
             echo '<ul>';
-            echo '<li>Lignes totales : ' . $result['data']['parsing']['total_rows'] . '</li>';
-            echo '<li>Lignes valides : ' . $result['data']['parsing']['valid_rows'] . '</li>';
-            echo '<li>Lignes invalides : ' . $result['data']['parsing']['invalid_rows'] . '</li>';
+            echo '<li>Lignes totales analysées : <strong>' . $result['data']['parsing']['total_rows'] . '</strong></li>';
+            echo '<li>Lignes valides : <strong>' . $result['data']['parsing']['valid_rows'] . '</strong></li>';
+            echo '<li>Lignes invalides : <strong>' . $result['data']['parsing']['invalid_rows'] . '</strong></li>';
+            if (isset($result['data']['preview_note'])) {
+                echo '<li style="color: #d63638; font-weight: bold;">⚠️ ' . esc_html($result['data']['preview_note']) . '</li>';
+            }
+            if (isset($result['data']['estimated_data_lines'])) {
+                echo '<li>📁 Lignes de données estimées dans le fichier complet : <strong>' . $result['data']['estimated_data_lines'] . '</strong></li>';
+            }
             echo '</ul>';
             echo '</div>';
         }
         
-        if (!$result['data']['preview_only'] && $result['data']['import']) {
+        if (!$result['data']['preview_only'] && isset($result['data']['import'])) {
             echo '<div class="notice notice-success">';
             echo '<h4>💾 Import en base :</h4>';
-            echo '<p>Notaires importés : ' . $result['data']['import']['imported_count'] . '</p>';
+            echo '<ul>';
+            echo '<li>Notaires importés : <strong>' . ($result['data']['import']['imported_count'] ?? 0) . '</strong></li>';
+            if (isset($result['data']['total_time'])) {
+                echo '<li>Temps de traitement : <strong>' . round($result['data']['total_time'], 2) . ' secondes</strong></li>';
+            }
+            echo '</ul>';
+            echo '</div>';
+        }
+        
+        // Afficher les warnings s'il y en a
+        if (!empty($result['data']['warnings'])) {
+            echo '<div class="notice notice-warning">';
+            echo '<h4>⚠️ Avertissements :</h4>';
+            echo '<ul>';
+            foreach (array_slice($result['data']['warnings'], 0, 10) as $warning) {
+                echo '<li>' . esc_html($warning) . '</li>';
+            }
+            if (count($result['data']['warnings']) > 10) {
+                echo '<li><em>... et ' . (count($result['data']['warnings']) - 10) . ' autres avertissements</em></li>';
+            }
+            echo '</ul>';
             echo '</div>';
         }
         
     } else {
         echo '<div class="notice notice-error is-dismissible">';
         echo '<p><strong>❌ ' . esc_html($result['message']) . '</strong></p>';
+        
+        // Afficher les erreurs détaillées si disponibles
+        if (!empty($result['data']['errors'])) {
+            echo '<details style="margin-top: 10px;">';
+            echo '<summary style="cursor: pointer; font-weight: bold;">Voir les détails des erreurs</summary>';
+            echo '<ul style="margin-top: 10px;">';
+            foreach (array_slice($result['data']['errors'], 0, 20) as $error) {
+                echo '<li>' . esc_html($error) . '</li>';
+            }
+            if (count($result['data']['errors']) > 20) {
+                echo '<li><em>... et ' . (count($result['data']['errors']) - 20) . ' autres erreurs</em></li>';
+            }
+            echo '</ul>';
+            echo '</details>';
+        }
+        
         echo '</div>';
     }
 }

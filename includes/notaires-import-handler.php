@@ -82,8 +82,20 @@ class Notaires_Import_Handler {
             return $result;
         }
         
+        // Détecter et supprimer le BOM UTF-8 si présent
+        $bom = fread($handle, 3);
+        if ($bom !== "\xEF\xBB\xBF") {
+            // Pas de BOM, remettre le pointeur au début
+            rewind($handle);
+        }
+        
+        // Détecter le délimiteur
+        $delimiter = $this->detect_csv_delimiter($file_path);
+        $enclosure = '"';
+        $escape = '\\';
+        
         // Lire la première ligne (en-têtes)
-        $headers = fgetcsv($handle);
+        $headers = fgetcsv($handle, 0, $delimiter, $enclosure, $escape);
         fclose($handle);
         
         if (!$headers) {
@@ -154,10 +166,25 @@ class Notaires_Import_Handler {
             return $result;
         }
         
+        // Détecter et supprimer le BOM UTF-8 si présent
+        $bom = fread($handle, 3);
+        if ($bom !== "\xEF\xBB\xBF") {
+            // Pas de BOM, remettre le pointeur au début
+            rewind($handle);
+        }
+        
+        // Configurer les paramètres pour fgetcsv pour une meilleure compatibilité
+        // Détecter automatiquement le délimiteur
+        $delimiter = $this->detect_csv_delimiter($file_path);
+        
+        // Paramètres pour fgetcsv : longueur 0 = lire toute la ligne, délimiteur, enclosure (guillemets doubles), escape (\)
+        $enclosure = '"';
+        $escape = '\\';
+        
         // Lire les en-têtes
-        $headers = fgetcsv($handle);
-        if (!$headers) {
-            $result['errors'][] = 'Le fichier CSV est vide';
+        $headers = fgetcsv($handle, 0, $delimiter, $enclosure, $escape);
+        if (!$headers || empty($headers)) {
+            $result['errors'][] = 'Le fichier CSV est vide ou corrompu';
             fclose($handle);
             return $result;
         }
@@ -166,12 +193,44 @@ class Notaires_Import_Handler {
         $headers = array_map('trim', $headers);
         $headers = array_map('strtolower', $headers);
         
+        // Log pour debug
+        my_istymo_log("Headers détectés : " . implode(', ', $headers), 'notaires');
+        my_istymo_log("Délimiteur détecté : " . $delimiter, 'notaires');
+        
         $row_number = 1; // Commencer à 1 car on a déjà lu les en-têtes
         
-        while (($row = fgetcsv($handle)) !== false) {
+        // Lire toutes les lignes jusqu'à la fin du fichier
+        while (!feof($handle)) {
+            $row = fgetcsv($handle, 0, $delimiter, $enclosure, $escape);
+            
+            // Vérifier si on a atteint la fin du fichier
+            if ($row === false && feof($handle)) {
+                break;
+            }
+            
+            // Ignorer les lignes vides ou null
+            if ($row === false || $row === null) {
+                continue;
+            }
+            
+            // Ignorer les lignes qui ne contiennent qu'une valeur vide
+            if (count($row) === 1 && empty(trim($row[0]))) {
+                continue;
+            }
+            
+            // Vérifier que le nombre de colonnes correspond aux en-têtes
+            if (count($row) !== count($headers)) {
+                $result['warnings'][] = "Ligne {$row_number} : nombre de colonnes incorrect (" . count($row) . " au lieu de " . count($headers) . ")";
+                // Continuer quand même si la différence n'est pas trop importante
+                if (abs(count($row) - count($headers)) > 2) {
+                    $result['invalid_rows']++;
+                    continue;
+                }
+            }
+            
             $row_number++;
             
-            // Limite de traitement
+            // Limite de traitement (vérifier avant de traiter)
             if ($limit > 0 && $row_number > $limit) {
                 break;
             }
@@ -186,7 +245,17 @@ class Notaires_Import_Handler {
                 $result['valid_rows']++;
             } else {
                 $result['invalid_rows']++;
-                $result['errors'] = array_merge($result['errors'], $cleaned_row['errors']);
+                if (!empty($cleaned_row['errors'])) {
+                    // Limiter le nombre d'erreurs stockées pour éviter de saturer la mémoire
+                    if (count($result['errors']) < 100) {
+                        $result['errors'] = array_merge($result['errors'], $cleaned_row['errors']);
+                    }
+                }
+            }
+            
+            // Log périodique pour suivre la progression
+            if ($row_number % 1000 === 0) {
+                my_istymo_log("Parsing en cours : {$row_number} lignes traitées, {$result['valid_rows']} valides", 'notaires');
             }
         }
         
@@ -196,11 +265,63 @@ class Notaires_Import_Handler {
         
         if ($result['success']) {
             my_istymo_log("CSV parsé avec succès : {$result['valid_rows']} lignes valides sur {$result['total_rows']}", 'notaires');
+            if ($result['invalid_rows'] > 0) {
+                my_istymo_log("Attention : {$result['invalid_rows']} lignes invalides détectées", 'notaires');
+            }
         } else {
-            my_istymo_log("Échec du parsing CSV : aucune ligne valide trouvée", 'notaires');
+            my_istymo_log("Échec du parsing CSV : aucune ligne valide trouvée sur {$result['total_rows']} lignes traitées", 'notaires');
+            if (!empty($result['errors'])) {
+                my_istymo_log("Premières erreurs : " . implode('; ', array_slice($result['errors'], 0, 5)), 'notaires');
+            }
         }
         
         return $result;
+    }
+    
+    /**
+     * Détecte automatiquement le délimiteur CSV
+     * 
+     * @param string $file_path Chemin vers le fichier CSV
+     * @return string Délimiteur détecté (virgule par défaut)
+     */
+    private function detect_csv_delimiter($file_path) {
+        $delimiters = [',', ';', "\t", '|'];
+        $delimiter_counts = [];
+        
+        // Lire les premières lignes pour détecter le délimiteur
+        $handle = fopen($file_path, 'r');
+        if (!$handle) {
+            return ','; // Délimiteur par défaut
+        }
+        
+        $first_lines = [];
+        for ($i = 0; $i < 5 && !feof($handle); $i++) {
+            $line = fgets($handle);
+            if ($line !== false) {
+                $first_lines[] = $line;
+            }
+        }
+        fclose($handle);
+        
+        // Compter les occurrences de chaque délimiteur
+        foreach ($delimiters as $delimiter) {
+            $delimiter_counts[$delimiter] = 0;
+            foreach ($first_lines as $line) {
+                $delimiter_counts[$delimiter] += substr_count($line, $delimiter);
+            }
+        }
+        
+        // Retourner le délimiteur le plus fréquent
+        $detected_delimiter = ',';
+        $max_count = 0;
+        foreach ($delimiter_counts as $delimiter => $count) {
+            if ($count > $max_count) {
+                $max_count = $count;
+                $detected_delimiter = $delimiter;
+            }
+        }
+        
+        return $detected_delimiter;
     }
     
     /**
@@ -221,7 +342,12 @@ class Notaires_Import_Handler {
         // Créer un tableau associatif
         $row_data = [];
         for ($i = 0; $i < count($headers); $i++) {
-            $row_data[$headers[$i]] = isset($row[$i]) ? trim($row[$i]) : '';
+            $value = isset($row[$i]) ? $row[$i] : '';
+            // Nettoyer les guillemets et espaces en trop
+            $value = trim($value);
+            // Supprimer les guillemets simples/doubles au début et à la fin si présents
+            $value = trim($value, "'\"");
+            $row_data[$headers[$i]] = $value;
         }
         
         // Nettoyer chaque champ
@@ -288,7 +414,10 @@ class Notaires_Import_Handler {
      */
     private function clean_text($text) {
         $text = trim($text);
-        $text = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+        // Supprimer les guillemets simples/doubles au début et à la fin
+        $text = trim($text, "'\"");
+        // Encoder pour éviter les injections XSS mais préserver les caractères UTF-8
+        $text = htmlspecialchars($text, ENT_QUOTES, 'UTF-8', false);
         return $text;
     }
     
@@ -306,6 +435,8 @@ class Notaires_Import_Handler {
      */
     private function clean_url($url) {
         $url = trim($url);
+        // Supprimer les guillemets simples/doubles
+        $url = trim($url, "'\"");
         if (!empty($url) && !preg_match('/^https?:\/\//', $url)) {
             $url = 'http://' . $url;
         }
@@ -317,7 +448,11 @@ class Notaires_Import_Handler {
      */
     private function clean_email($email) {
         $email = trim($email);
-        return filter_var($email, FILTER_SANITIZE_EMAIL);
+        // Supprimer les guillemets simples/doubles
+        $email = trim($email, "'\"");
+        // Nettoyer l'email
+        $email = filter_var($email, FILTER_SANITIZE_EMAIL);
+        return $email;
     }
     
     /**
@@ -394,16 +529,27 @@ class Notaires_Import_Handler {
         // Importer les nouvelles données par lots
         $batch_size = 100;
         $batches = array_chunk($notaires_data, $batch_size);
+        $total_batches = count($batches);
         
-        foreach ($batches as $batch) {
+        my_istymo_log("Début de l'import par lots : {$total_batches} lots à traiter", 'notaires');
+        
+        foreach ($batches as $batch_index => $batch) {
+            $batch_number = $batch_index + 1;
             $imported = $notaires_manager->bulk_insert_notaires($batch);
             
             if ($imported === false) {
-                $result['errors'][] = 'Erreur lors de l\'import d\'un lot de données';
+                $result['errors'][] = "Erreur lors de l'import du lot {$batch_number}/{$total_batches}";
+                my_istymo_log("Erreur lors de l'import du lot {$batch_number}/{$total_batches}", 'notaires');
                 continue;
             }
             
             $result['imported_count'] += $imported;
+            
+            // Libérer la mémoire périodiquement pour les gros fichiers
+            if ($batch_number % 10 === 0) {
+                gc_collect_cycles(); // Force le garbage collector
+                my_istymo_log("Lot {$batch_number}/{$total_batches} traité : {$result['imported_count']} notaires importés jusqu'à présent", 'notaires');
+            }
         }
         
         $result['success'] = $result['imported_count'] > 0;
@@ -435,7 +581,13 @@ class Notaires_Import_Handler {
             'warnings' => []
         ];
         
+        // Augmenter les limites pour les gros fichiers
+        @set_time_limit(0);
+        @ini_set('max_execution_time', '0');
+        
         $start_time = microtime(true);
+        $file_size = file_exists($file_path) ? filesize($file_path) : 0;
+        my_istymo_log("Début du traitement du fichier CSV : " . round($file_size / 1024 / 1024, 2) . " MB", 'notaires');
         
         // Étape 1 : Validation de la structure
         $result['validation'] = $this->validate_csv_structure($file_path);
