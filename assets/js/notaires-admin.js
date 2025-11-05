@@ -62,7 +62,7 @@
         // Gestionnaire pour voir les détails
         $(document).on('click', '.view-details', handleViewDetails);
         
-        // Gestionnaire pour fermer les modals
+        // Gestionnaire pour fermer les modals (uniquement pour les modals notaires)
         $(document).on('click', '.my-istymo-modal-close, .my-istymo-modal', handleModalClose);
         
         // Gestionnaire pour les liens de contact
@@ -203,6 +203,11 @@
                 if (response.success) {
                     content.html(response.data.html);
                     
+                    // Mettre à jour le titre du modal avec le nom du notaire si disponible
+                    if (response.data.notaire_nom) {
+                        $('#notaire-modal-title').text(response.data.notaire_nom);
+                    }
+                    
                     // Réinitialiser les gestionnaires d'événements dans le modal
                     initModalEventHandlers();
                 } else {
@@ -228,8 +233,12 @@
      * Gère la fermeture des modals
      */
     function handleModalClose(e) {
-        if (e.target === this) {
-            $('.my-istymo-modal').hide();
+        // Fermer uniquement les modals notaires (pas les modals lead vendeur)
+        if (e.target === this || $(e.target).hasClass('my-istymo-modal-close')) {
+            // Vérifier que c'est bien un modal notaire
+            if ($(e.target).closest('.my-istymo-modal').length > 0) {
+                $('.my-istymo-modal').hide();
+            }
         }
     }
     
@@ -731,6 +740,7 @@ const notificationStyles = `
 
 // Injecter les styles
 document.head.insertAdjacentHTML('beforeend', notificationStyles);
+
 
 
 

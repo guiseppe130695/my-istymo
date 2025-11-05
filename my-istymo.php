@@ -7016,16 +7016,15 @@ function my_istymo_ajax_filter_notaires() {
     ob_start();
     if (!empty($notaires)) {
         ?>
-        <table class="wp-list-table widefat fixed striped">
+        <table class="wp-list-table widefat fixed striped" style="width: 100%;">
             <thead>
                 <tr>
-                    <th width="5%">Favori</th>
-                    <th width="20%">Office</th>
-                    <th width="15%">Notaire</th>
-                    <th width="20%">Adresse</th>
-                    <th width="10%">Téléphone</th>
-                    <th width="10%">Email</th>
-                    <th width="5%">Actions</th>
+                    <th width="5%"><i class="fas fa-heart"></i></th>
+                    <th width="25%"><i class="fas fa-building"></i> Office</th>
+                    <th width="20%"><i class="fas fa-user-tie"></i> Notaire</th>
+                    <th width="25%"><i class="fas fa-map-marker-alt"></i> Adresse</th>
+                    <th width="15%"><i class="fas fa-phone"></i> Téléphone</th>
+                    <th width="10%"><i class="fas fa-cogs"></i> Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -7072,17 +7071,10 @@ function my_istymo_ajax_filter_notaires() {
                             <?php endif; ?>
                         </td>
                         <td>
-                            <?php if ($notaire->email_office): ?>
-                                <a href="mailto:<?php echo esc_attr($notaire->email_office); ?>" class="email-link">
-                                    <?php echo esc_html($notaire->email_office); ?>
-                                </a>
-                            <?php endif; ?>
-                        </td>
-                        <td>
-                            <button type="button" class="button button-small view-details" 
+                            <button type="button" class="button button-small view-details view-notaire-details button-primary" 
                                     data-notaire-id="<?php echo $notaire->id; ?>"
                                     title="Voir les détails">
-                                <span class="dashicons dashicons-visibility"></span>
+                                <i class="fas fa-eye" style="margin-right: 5px;"></i> Voir détails
                             </button>
                         </td>
                     </tr>
@@ -7179,129 +7171,157 @@ function my_istymo_ajax_get_notaire_details() {
     // Générer le HTML des détails
     ob_start();
     ?>
-    <div class="notaire-details">
-        <div class="notaire-details-header">
-            <h3><?php echo esc_html($notaire->nom_office); ?></h3>
-            <div class="notaire-status">
-                <span class="status-badge status-<?php echo esc_attr($notaire->statut_notaire); ?>">
-                    <?php echo esc_html(ucfirst($notaire->statut_notaire)); ?>
-                </span>
+    <div class="lead-details-main-content">
+        <div class="lead-details-left-column">
+            <div class="lead-details-info-section">
+                <div class="lead-details-section-header">
+                    <i class="fas fa-info-circle"></i>
+                    <h3>Informations générales</h3>
+                </div>
+                <div class="lead-details-info-grid">
+                    <div class="lead-details-info-item">
+                        <div class="lead-details-info-label">Nom de l'office</div>
+                        <div class="lead-details-info-value">
+                            <?php echo esc_html($notaire->nom_office); ?>
+                        </div>
+                    </div>
+                    
+                    <?php if ($notaire->adresse): ?>
+                    <div class="lead-details-info-item">
+                        <div class="lead-details-info-label">Adresse</div>
+                        <div class="lead-details-info-value">
+                            <?php echo esc_html($notaire->adresse); ?>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+                    
+                    <?php if ($notaire->code_postal): ?>
+                    <div class="lead-details-info-item">
+                        <div class="lead-details-info-label">Code postal</div>
+                        <div class="lead-details-info-value">
+                            <?php echo esc_html($notaire->code_postal); ?>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+                    
+                    <?php if ($notaire->ville): ?>
+                    <div class="lead-details-info-item">
+                        <div class="lead-details-info-label">Ville</div>
+                        <div class="lead-details-info-value">
+                            <?php echo esc_html($notaire->ville); ?>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+                    
+                    <?php if ($notaire->langues_parlees): ?>
+                    <div class="lead-details-info-item">
+                        <div class="lead-details-info-label">Langues parlées</div>
+                        <div class="lead-details-info-value">
+                            <?php echo esc_html($notaire->langues_parlees); ?>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
         
-        <div class="notaire-details-content">
-            <div class="details-section">
-                <h4>📋 Informations générales</h4>
-                <div class="details-grid">
-                    <div class="detail-item">
-                        <label>Nom du notaire :</label>
-                        <span><?php echo esc_html($notaire->nom_notaire); ?></span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Adresse :</label>
-                        <span><?php echo esc_html($notaire->adresse); ?></span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Code postal :</label>
-                        <span><?php echo esc_html($notaire->code_postal); ?></span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Ville :</label>
-                        <span><?php echo esc_html($notaire->ville); ?></span>
-                    </div>
+        <div class="lead-details-right-column">
+            <div class="lead-details-info-section">
+                <div class="lead-details-section-header">
+                    <i class="fas fa-user"></i>
+                    <h3>Informations de contact</h3>
                 </div>
-            </div>
-            
-            <div class="details-section">
-                <h4>📞 Contact</h4>
-                <div class="details-grid">
+                <div class="lead-details-info-grid">
+                    <?php if ($notaire->nom_notaire): ?>
+                    <div class="lead-details-info-item">
+                        <div class="lead-details-info-label">Nom du notaire</div>
+                        <div class="lead-details-info-value">
+                            <?php echo esc_html($notaire->nom_notaire); ?>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+                    
                     <?php if ($notaire->telephone_office): ?>
-                    <div class="detail-item">
-                        <label>Téléphone :</label>
-                        <span><a href="tel:<?php echo esc_attr($notaire->telephone_office); ?>"><?php echo esc_html($notaire->telephone_office); ?></a></span>
+                    <div class="lead-details-info-item">
+                        <div class="lead-details-info-label">Téléphone</div>
+                        <div class="lead-details-info-value">
+                            <a href="tel:<?php echo esc_attr($notaire->telephone_office); ?>" class="phone-link">
+                                <?php echo esc_html($notaire->telephone_office); ?>
+                            </a>
+                        </div>
                     </div>
                     <?php endif; ?>
                     
                     <?php if ($notaire->email_office): ?>
-                    <div class="detail-item">
-                        <label>Email :</label>
-                        <span><a href="mailto:<?php echo esc_attr($notaire->email_office); ?>"><?php echo esc_html($notaire->email_office); ?></a></span>
+                    <div class="lead-details-info-item">
+                        <div class="lead-details-info-label">Email</div>
+                        <div class="lead-details-info-value">
+                            <a href="mailto:<?php echo esc_attr($notaire->email_office); ?>">
+                                <?php echo esc_html($notaire->email_office); ?>
+                            </a>
+                        </div>
                     </div>
                     <?php endif; ?>
                     
                     <?php if ($notaire->site_internet): ?>
-                    <div class="detail-item">
-                        <label>Site web :</label>
-                        <span><a href="<?php echo esc_url($notaire->site_internet); ?>" target="_blank"><?php echo esc_html($notaire->site_internet); ?></a></span>
+                    <div class="lead-details-info-item">
+                        <div class="lead-details-info-label">Site web</div>
+                        <div class="lead-details-info-value">
+                            <a href="<?php echo esc_url($notaire->site_internet); ?>" target="_blank">
+                                <?php echo esc_html($notaire->site_internet); ?>
+                            </a>
+                        </div>
                     </div>
                     <?php endif; ?>
+                    
                 </div>
             </div>
-            
-            <?php if ($notaire->langues_parlees): ?>
-            <div class="details-section">
-                <h4>🌍 Langues parlées</h4>
-                <p><?php echo esc_html($notaire->langues_parlees); ?></p>
-            </div>
-            <?php endif; ?>
             
             <?php if ($notaire->url_office): ?>
-            <div class="details-section">
-                <h4>🔗 Liens utiles</h4>
-                <p><a href="<?php echo esc_url($notaire->url_office); ?>" target="_blank">Page officielle</a></p>
+            <div class="notaire-official-page-section">
+                <button type="button" class="button button-primary notaire-visit-page-btn" 
+                        onclick="window.open('<?php echo esc_url($notaire->url_office); ?>', '_blank')"
+                        title="Visiter la page officielle">
+                    <i class="fas fa-external-link-alt"></i> Visiter la page officielle
+                </button>
             </div>
             <?php endif; ?>
-            
-            <?php if ($notaire->page_source): ?>
-            <div class="details-section">
-                <h4>📄 Source</h4>
-                <p><?php echo esc_html($notaire->page_source); ?></p>
-            </div>
-            <?php endif; ?>
-            
-            <?php if ($notaire->date_extraction): ?>
-            <div class="details-section">
-                <h4>📅 Informations techniques</h4>
-                <div class="details-grid">
-                    <div class="detail-item">
-                        <label>Date d'extraction :</label>
-                        <span><?php echo date('d/m/Y', strtotime($notaire->date_extraction)); ?></span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Dernière mise à jour :</label>
-                        <span><?php echo date('d/m/Y H:i', strtotime($notaire->date_modification)); ?></span>
-                    </div>
-                </div>
-            </div>
-            <?php endif; ?>
-        </div>
-        
-        <div class="notaire-details-actions">
-            <button type="button" class="button button-primary favorite-toggle <?php echo $notaire->is_favorite ? 'favorited' : ''; ?>" 
-                    data-notaire-id="<?php echo $notaire->id; ?>">
-                <span class="dashicons dashicons-star-<?php echo $notaire->is_favorite ? 'filled' : 'empty'; ?>"></span>
-                <?php echo $notaire->is_favorite ? 'Supprimer des favoris' : 'Ajouter aux favoris'; ?>
-            </button>
         </div>
     </div>
     
     <style>
-    .notaire-details {
-        max-width: 600px;
+    /* Styles pour le popup notaire - Utilise les mêmes classes que lead vendeur */
+    .notaire-official-page-section {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #e9ecef;
     }
     
-    .notaire-details-header {
+    .notaire-visit-page-btn {
+        width: 100%;
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        margin-bottom: 20px;
-        padding-bottom: 15px;
-        border-bottom: 2px solid #e1e1e1;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        background: #007cba;
+        border-color: #007cba;
+        color: #fff;
     }
     
-    .notaire-details-header h3 {
-        margin: 0;
-        color: #333;
+    .notaire-visit-page-btn:hover {
+        background: #005a87;
+        border-color: #005a87;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 124, 186, 0.4);
+    }
+    
+    .notaire-visit-page-btn i {
+        font-size: 14px;
     }
     
     .status-badge {
@@ -7368,16 +7388,14 @@ function my_istymo_ajax_get_notaire_details() {
         text-decoration: underline;
     }
     
-    .notaire-details-actions {
-        margin-top: 25px;
-        padding-top: 20px;
-        border-top: 1px solid #e1e1e1;
-        text-align: center;
-    }
-    
-    @media (max-width: 600px) {
-        .details-grid {
-            grid-template-columns: 1fr;
+    @media (max-width: 768px) {
+        .lead-details-main-content {
+            flex-direction: column;
+        }
+        
+        .lead-details-left-column,
+        .lead-details-right-column {
+            width: 100%;
         }
     }
     </style>

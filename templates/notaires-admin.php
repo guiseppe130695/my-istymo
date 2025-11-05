@@ -16,8 +16,17 @@ if (!defined('ABSPATH')) {
  * Fonction principale pour afficher la page des notaires
  */
 function notaires_afficher_panel() {
+    // Enqueue Font Awesome pour les icônes
+    wp_enqueue_style(
+        'font-awesome',
+        'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+        array(),
+        '6.4.0'
+    );
+    
     // Enqueue des assets
-    wp_enqueue_style('notaires-admin-css', plugin_dir_url(__FILE__) . '../assets/css/notaires-admin.css', array(), '1.0');
+    wp_enqueue_style('notaires-admin-css', plugin_dir_url(__FILE__) . '../assets/css/notaires-admin.css', array('font-awesome'), '1.1');
+    wp_enqueue_style('lead-vendeur-popup-style', plugin_dir_url(__FILE__) . '../assets/css/lead-vendeur-popup.css', array(), '1.0.1');
     wp_enqueue_script('notaires-admin-js', plugin_dir_url(__FILE__) . '../assets/js/notaires-admin.js', array('jquery'), '1.0', true);
     
     // Localiser les variables JavaScript
@@ -93,14 +102,14 @@ function notaires_afficher_panel() {
         
         <!-- Filtres -->
         <div class="my-istymo-filters-section">
-            <form method="GET" class="my-istymo-inline-filters">
+            <form method="GET" id="notaires-search-form" class="my-istymo-inline-filters search-form">
                 <input type="hidden" name="page" value="notaires-panel">
                 
-                <div class="my-istymo-filter-row">
-                    <div class="my-istymo-filter-group">
-                        <label for="ville">Ville :</label>
+                <div class="my-istymo-filter-row form-row">
+                    <div class="my-istymo-filter-group form-field">
+                        <label for="ville"><i class="fas fa-map-marker-alt"></i> Ville :</label>
                         <select name="ville" id="ville">
-                            <option value="">Toutes les villes</option>
+                            <option value="">— Choisir une ville —</option>
                             <?php foreach ($available_cities as $city): ?>
                                 <option value="<?php echo esc_attr($city); ?>" <?php selected($filters['ville'] ?? '', $city); ?>>
                                     <?php echo esc_html($city); ?>
@@ -109,10 +118,10 @@ function notaires_afficher_panel() {
                         </select>
                     </div>
                     
-                    <div class="my-istymo-filter-group">
-                        <label for="langue">Langue :</label>
+                    <div class="my-istymo-filter-group form-field">
+                        <label for="langue"><i class="fas fa-language"></i> Langue :</label>
                         <select name="langue" id="langue">
-                            <option value="">Toutes les langues</option>
+                            <option value="">— Toutes les langues —</option>
                             <?php foreach ($available_languages as $language): ?>
                                 <option value="<?php echo esc_attr($language); ?>" <?php selected($filters['langue'] ?? '', $language); ?>>
                                     <?php echo esc_html($language); ?>
@@ -121,23 +130,25 @@ function notaires_afficher_panel() {
                         </select>
                     </div>
                     
-                    <div class="my-istymo-filter-group">
-                        <label for="statut">Statut :</label>
+                    <div class="my-istymo-filter-group form-field">
+                        <label for="statut"><i class="fas fa-info-circle"></i> Statut :</label>
                         <select name="statut" id="statut">
-                            <option value="">Tous les statuts</option>
+                            <option value="">— Tous les statuts —</option>
                             <option value="actif" <?php selected($filters['statut'] ?? '', 'actif'); ?>>Actif</option>
                             <option value="inactif" <?php selected($filters['statut'] ?? '', 'inactif'); ?>>Inactif</option>
                             <option value="suspendu" <?php selected($filters['statut'] ?? '', 'suspendu'); ?>>Suspendu</option>
                         </select>
                     </div>
                     
-                    <div class="my-istymo-filter-group">
-                        <label for="search">Recherche :</label>
-                        <input type="text" name="search" id="search" value="<?php echo esc_attr($filters['search'] ?? ''); ?>" placeholder="Nom office, notaire, ville...">
+                    <div class="my-istymo-filter-group form-field">
+                        <label for="search"><i class="fas fa-search"></i> Recherche par adresse :</label>
+                        <input type="text" name="search" id="search" value="<?php echo esc_attr($filters['search'] ?? ''); ?>" placeholder="Ex: rue de la paix, avenue victor hugo...">
                     </div>
                     
                     <div class="my-istymo-filter-actions">
-                        <button type="submit" class="button button-primary">Filtrer</button>
+                        <button type="submit" id="search-btn" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Rechercher les notaires
+                        </button>
                         <a href="<?php echo admin_url('admin.php?page=notaires-panel'); ?>" class="button">Réinitialiser</a>
                     </div>
                 </div>
@@ -171,16 +182,15 @@ function notaires_afficher_panel() {
                 </div>
             <?php else: ?>
                 <div class="my-istymo-modern-table">
-                    <table class="wp-list-table widefat fixed striped">
+                    <table class="wp-list-table widefat fixed striped" style="width: 100%;">
                         <thead>
                             <tr>
-                                <th width="5%">Favori</th>
-                                <th width="20%">Office</th>
-                                <th width="15%">Notaire</th>
-                                <th width="20%">Adresse</th>
-                                <th width="10%">Téléphone</th>
-                                <th width="10%">Email</th>
-                                <th width="5%">Actions</th>
+                                <th width="5%"><i class="fas fa-heart"></i></th>
+                                <th width="25%"><i class="fas fa-building"></i> Office</th>
+                                <th width="20%"><i class="fas fa-user-tie"></i> Notaire</th>
+                                <th width="25%"><i class="fas fa-map-marker-alt"></i> Adresse</th>
+                                <th width="15%"><i class="fas fa-phone"></i> Téléphone</th>
+                                <th width="10%"><i class="fas fa-cogs"></i> Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -227,17 +237,10 @@ function notaires_afficher_panel() {
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <?php if ($notaire->email_office): ?>
-                                            <a href="mailto:<?php echo esc_attr($notaire->email_office); ?>" class="email-link">
-                                                <?php echo esc_html($notaire->email_office); ?>
-                                            </a>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <button type="button" class="button button-small view-details" 
+                                        <button type="button" class="button button-small view-details view-notaire-details button-primary" 
                                                 data-notaire-id="<?php echo $notaire->id; ?>"
                                                 title="Voir les détails">
-                                            <span class="dashicons dashicons-visibility"></span>
+                                            <i class="fas fa-eye" style="margin-right: 5px;"></i> Voir détails
                                         </button>
                                     </td>
                                 </tr>
@@ -297,9 +300,20 @@ function notaires_afficher_panel() {
     <!-- Modal pour les détails du notaire -->
     <div id="notaire-detail-modal" class="my-istymo-modal" style="display: none;">
         <div class="my-istymo-modal-content">
-            <div class="my-istymo-modal-header">
-                <h2>Détails du notaire</h2>
-                <button type="button" class="my-istymo-modal-close">&times;</button>
+            <div class="lead-details-modal-header">
+                <div class="lead-details-header-left">
+                    <div class="lead-details-icon">
+                        <i class="fas fa-gavel"></i>
+                    </div>
+                    <div class="lead-details-title-section">
+                        <h2 id="notaire-modal-title">Détails du notaire</h2>
+                        <p class="lead-details-subtitle">Informations complètes</p>
+                        <p class="lead-details-date" id="notaire-modal-date" style="display: none;"></p>
+                    </div>
+                </div>
+                <div class="lead-details-header-right">
+                    <span class="lead-details-modal-close">&times;</span>
+                </div>
             </div>
             <div class="my-istymo-modal-body" id="notaire-detail-content">
                 <!-- Contenu chargé dynamiquement -->
@@ -364,9 +378,9 @@ function notaires_afficher_panel() {
             showNotaireDetails(notaireId);
         });
         
-        // Fermer le modal
-        $('.my-istymo-modal-close, .my-istymo-modal').on('click', function(e) {
-            if (e.target === this) {
+        // Fermer le modal - Gérer les deux classes de bouton de fermeture
+        $('.my-istymo-modal-close, .lead-details-modal-close, .my-istymo-modal').on('click', function(e) {
+            if (e.target === this || $(e.target).hasClass('my-istymo-modal-close') || $(e.target).hasClass('lead-details-modal-close')) {
                 $('#notaire-detail-modal').hide();
             }
         });
@@ -387,6 +401,11 @@ function notaires_afficher_panel() {
                 success: function(response) {
                     if (response.success) {
                         $('#notaire-detail-content').html(response.data.html);
+                        
+                        // Mettre à jour le titre du modal avec le nom du notaire si disponible
+                        if (response.data.notaire_nom) {
+                            $('#notaire-modal-title').text(response.data.notaire_nom);
+                        }
                     } else {
                         $('#notaire-detail-content').html('<p>Erreur lors du chargement des détails</p>');
                     }
@@ -638,6 +657,7 @@ function notaires_afficher_panel() {
 function notaires_import_page() {
     // Enqueue des assets
     wp_enqueue_style('notaires-admin-css', plugin_dir_url(__FILE__) . '../assets/css/notaires-admin.css', array(), '1.0');
+    wp_enqueue_style('lead-vendeur-popup-style', plugin_dir_url(__FILE__) . '../assets/css/lead-vendeur-popup.css', array(), '1.0.1');
     wp_enqueue_script('notaires-admin-js', plugin_dir_url(__FILE__) . '../assets/js/notaires-admin.js', array('jquery'), '1.0', true);
     
     // Localiser les variables JavaScript

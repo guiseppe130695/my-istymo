@@ -184,10 +184,29 @@
 
         console.log('Variables AJAX disponibles:', leadVendeurAjax);
 
+        // Supprimer tout modal existant avant d'en créer un nouveau
+        $('.lead-details-modal').remove();
+        
         // Afficher un modal de chargement
         var $modal = $('<div class="lead-details-modal"><div class="lead-details-modal-content"><div class="loading-container"><div class="spinner"></div><p>Chargement des détails...</p></div></div></div>');
         $('body').append($modal);
-        console.log('Modal ajouté au DOM');
+        
+        // Forcer l'affichage avec des styles inline
+        $modal.css({
+            'display': 'flex',
+            'z-index': '100000',
+            'visibility': 'visible',
+            'opacity': '1',
+            'position': 'fixed',
+            'top': '0',
+            'left': '0',
+            'width': '100%',
+            'height': '100%'
+        });
+        
+        console.log('Modal ajouté au DOM', $modal.length);
+        console.log('Modal visible:', $modal.is(':visible'));
+        console.log('Modal CSS:', $modal.css('display'), $modal.css('z-index'));
 
         $.ajax({
             url: leadVendeurAjax.ajax_url,

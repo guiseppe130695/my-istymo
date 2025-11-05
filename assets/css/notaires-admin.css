@@ -12,8 +12,8 @@
    ======================================== */
 
 .notaires-container {
-    max-width: 1200px;
-    margin: 0 auto;
+    max-width: 100%;
+    margin: 10px;
 }
 
 .notaires-container h1 {
@@ -61,64 +61,166 @@
    SECTION FILTRES
    ======================================== */
 
+/* ✅ NOUVEAU : Styles copiés du formulaire DPE */
 .my-istymo-filters-section {
-    background: #fff;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    padding: 25px;
-    margin: 20px 0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    background: #f8f9fa !important;
+    border: 1px solid #e9ecef !important;
+    border-radius: 8px !important;
+    padding: 20px !important;
+    margin: 20px 0 !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
 }
 
-.my-istymo-filter-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    align-items: end;
+/* Style du formulaire - identique au DPE */
+#notaires-search-form.search-form,
+.my-istymo-inline-filters.search-form {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
 }
 
-.my-istymo-filter-group {
-    display: flex;
-    flex-direction: column;
-    min-width: 180px;
-    flex: 1;
+/* Style de la ligne de formulaire - identique au DPE */
+.my-istymo-filter-row.form-row,
+.form-row {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 15px !important;
+    align-items: end !important;
+    margin-bottom: 0 !important;
 }
 
-.my-istymo-filter-group label {
-    font-weight: 600;
-    margin-bottom: 8px;
-    color: #495057;
-    font-size: 14px;
+/* Style des champs - identique au DPE */
+.my-istymo-filter-group.form-field,
+.form-field {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 5px !important;
+    flex: 1 !important;
+    max-width: 225px !important;
+    min-width: 200px !important;
 }
 
-.my-istymo-filter-group select,
-.my-istymo-filter-group input[type="text"] {
-    padding: 10px 12px;
-    border: 1px solid #ced4da;
-    border-radius: 6px;
-    font-size: 14px;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+/* Style des labels - identique au DPE */
+.my-istymo-filter-group.form-field label,
+.form-field label {
+    display: block !important;
+    margin-bottom: 5px !important;
+    font-weight: 600 !important;
+    color: #333 !important;
+    font-size: 14px !important;
 }
 
-.my-istymo-filter-group select:focus,
-.my-istymo-filter-group input[type="text"]:focus {
-    border-color: #007cba;
-    outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(0, 124, 186, 0.25);
+/* Icônes dans les labels */
+.my-istymo-filter-group.form-field label i,
+.form-field label i {
+    margin-right: 6px !important;
+    color: #333 !important;
+    font-size: 14px !important;
 }
 
+/* Style des champs select et input - identique au DPE */
+.my-istymo-filter-group.form-field select,
+.my-istymo-filter-group.form-field input[type="text"],
+.form-field select,
+.form-field input[type="text"] {
+    padding: 10px !important;
+    border: 1px solid #ddd !important;
+    border-radius: 4px !important;
+    font-size: 14px !important;
+    min-width: 200px !important;
+    background: white !important;
+    color: #333 !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    outline: none !important;
+    box-shadow: none !important;
+    height: 42px !important;
+    line-height: 1.4 !important;
+    vertical-align: middle !important;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+.my-istymo-filter-group.form-field select:focus,
+.my-istymo-filter-group.form-field input[type="text"]:focus,
+.form-field select:focus,
+.form-field input[type="text"]:focus {
+    border-color: #0073aa !important;
+    box-shadow: 0 0 0 2px rgba(0, 115, 170, 0.2) !important;
+    outline: none !important;
+}
+
+/* Style du bouton de recherche - identique au DPE */
+#notaires-search-form #search-btn,
+#search-btn.btn.btn-primary,
+.my-istymo-filter-actions #search-btn.btn.btn-primary {
+    margin-left: 0 !important;
+    background: linear-gradient(135deg, #0073aa 0%, #005a87 100%) !important;
+    color: white !important;
+    border: none !important;
+    padding: 10px 24px !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    font-weight: 600 !important;
+    font-size: 16px !important;
+    transition: all 0.3s ease !important;
+    outline: none !important;
+    box-shadow: none !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    line-height: 1.4 !important;
+    vertical-align: middle !important;
+    height: 42px !important;
+    box-sizing: border-box !important;
+}
+
+#notaires-search-form #search-btn:hover,
+#search-btn.btn.btn-primary:hover,
+.my-istymo-filter-actions #search-btn.btn.btn-primary:hover {
+    background: linear-gradient(135deg, #005a87 0%, #004a6b 100%) !important;
+    transform: translateY(-1px) !important;
+    color: white !important;
+    text-decoration: none !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+}
+
+#notaires-search-form #search-btn:active,
+#search-btn.btn.btn-primary:active,
+.my-istymo-filter-actions #search-btn.btn.btn-primary:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2) !important;
+}
+
+#notaires-search-form #search-btn:disabled,
+#search-btn.btn.btn-primary:disabled,
+.my-istymo-filter-actions #search-btn.btn.btn-primary:disabled {
+    background: #ccc !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    color: #666 !important;
+}
+
+/* Style des actions de filtre */
 .my-istymo-filter-actions {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    margin-top: 10px;
+    display: flex !important;
+    gap: 12px !important;
+    align-items: center !important;
+    margin-top: 0 !important;
+    align-self: flex-end !important;
 }
 
 .my-istymo-filter-actions .button {
-    padding: 10px 20px;
-    font-size: 14px;
-    border-radius: 6px;
-    transition: all 0.2s ease;
+    padding: 10px 20px !important;
+    font-size: 14px !important;
+    border-radius: 6px !important;
+    transition: all 0.2s ease !important;
+    height: 42px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    box-sizing: border-box !important;
 }
 
 .my-istymo-filter-actions .button-primary {
@@ -190,9 +292,37 @@
 }
 
 .my-istymo-modern-table table {
-    width: 100%;
+    width: 100% !important;
     border-collapse: collapse;
     margin: 0;
+    table-layout: auto;
+}
+
+/* Header tableau - Style identique au lead vendeur */
+.my-istymo-modern-table thead tr {
+    display: table-row !important;
+}
+
+.my-istymo-modern-table thead tr th {
+    background: #efeded8a !important;
+    color: #000 !important;
+    padding: 12px 8px !important;
+    font-weight: 400 !important;
+    font-size: 14px !important;
+    border: none !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+    display: table-cell !important;
+    writing-mode: horizontal-tb !important;
+    text-align: left !important;
+}
+
+/* Styles pour les icônes dans le header - Style identique au lead vendeur */
+.my-istymo-modern-table thead tr th i {
+    margin-right: 6px !important;
+    color: #000 !important;
+    font-size: 14px !important;
 }
 
 .my-istymo-modern-table th {
@@ -402,6 +532,74 @@
     }
 }
 
+/* Header modal - Style identique au lead vendeur */
+.lead-details-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 25px;
+    border-bottom: 1px solid #e9ecef;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px 12px 0 0;
+}
+
+.lead-details-header-left {
+    display: flex;
+    align-items: center;
+}
+
+.lead-details-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+}
+
+.lead-details-icon i {
+    color: #000;
+    font-size: 20px;
+}
+
+.lead-details-title-section h2 {
+    margin: 0;
+    color: #333;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.lead-details-subtitle {
+    margin: 5px 0 0 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.lead-details-date {
+    margin: 5px 0 0 0;
+    color: #888;
+    font-size: 12px;
+}
+
+.lead-details-header-right {
+    display: flex;
+    align-items: center;
+}
+
+.lead-details-modal-close {
+    font-size: 28px;
+    color: #999;
+    cursor: pointer;
+    transition: color 0.3s;
+    line-height: 1;
+}
+
+.lead-details-modal-close:hover {
+    color: #333;
+}
+
+/* Ancien style pour compatibilité - peut être supprimé si tout utilise le nouveau */
 .my-istymo-modal-header {
     padding: 25px 30px 20px;
     border-bottom: 2px solid #e9ecef;
@@ -442,8 +640,8 @@
     color: #495057;
 }
 
-.my-istymo-modal-body {
-    padding: 30px;
+.lead-details-main-content {
+    padding: 0px!important;
 }
 
 /* ========================================
@@ -789,8 +987,31 @@
     }
 }
 
+/* ✅ NOUVEAU : Styles pour le bouton "Voir détails" - Style identique au lead vendeur */
+button.view-notaire-details.button.button-primary {
+    background: #e3f2fd !important;
+    border-color: #2196f3 !important;
+    color: #1976d2 !important;
+    padding: 6px 12px !important;
+    border-radius: 4px !important;
+    font-size: 12px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    transition: all 0.3s ease !important;
+}
 
+button.view-notaire-details.button.button-primary:hover {
+    background: #bbdefb !important;
+    border-color: #1976d2 !important;
+    color: #1976d2 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3) !important;
+}
 
+button.view-notaire-details.button.button-primary i {
+    font-size: 12px !important;
+    margin-right: 5px !important;
+}
 
 
 
