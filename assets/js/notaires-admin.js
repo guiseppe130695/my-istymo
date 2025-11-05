@@ -59,6 +59,52 @@
         // Gestionnaire pour les favoris
         $(document).on('click', '.favorite-toggle', handleFavoriteToggle);
         
+        // ✅ NOUVEAU : Écouter les suppressions depuis unified leads
+        window.addEventListener('unifiedLeadDeleted', function(event) {
+            var detail = event.detail;
+            
+            // Si c'est un notaire qui a été supprimé, mettre à jour l'interface
+            if (detail.lead_type === 'notaire' && detail.original_id) {
+                var notaireId = detail.original_id;
+                
+                // Mettre à jour le bouton favori correspondant
+                $('.favorite-toggle[data-notaire-id="' + notaireId + '"]')
+                    .removeClass('favorited')
+                    .find('.dashicons')
+                    .removeClass('dashicons-star-filled')
+                    .addClass('dashicons-star-empty')
+                    .closest('.favorite-toggle')
+                    .attr('title', 'Ajouter aux favoris');
+                
+                // Mettre à jour le compteur
+                if (typeof updateFavoritesCount === 'function') {
+                    updateFavoritesCount();
+                }
+            }
+        });
+        
+        // ✅ NOUVEAU : Écouter les ajouts depuis unified leads (si applicable)
+        window.addEventListener('unifiedLeadAdded', function(event) {
+            var detail = event.detail;
+            
+            if (detail.lead_type === 'notaire' && detail.original_id) {
+                var notaireId = detail.original_id;
+                
+                // Mettre à jour le bouton favori
+                $('.favorite-toggle[data-notaire-id="' + notaireId + '"]')
+                    .addClass('favorited')
+                    .find('.dashicons')
+                    .removeClass('dashicons-star-empty')
+                    .addClass('dashicons-star-filled')
+                    .closest('.favorite-toggle')
+                    .attr('title', 'Supprimer des favoris');
+                
+                if (typeof updateFavoritesCount === 'function') {
+                    updateFavoritesCount();
+                }
+            }
+        });
+        
         // Gestionnaire pour voir les détails
         $(document).on('click', '.view-details', handleViewDetails);
         
@@ -124,6 +170,17 @@
                     // Animation de succès
                     button.addClass('success-animation');
                     setTimeout(() => button.removeClass('success-animation'), 1000);
+                    
+                    // ✅ NOUVEAU : Notifier l'interface unified leads si elle est ouverte
+                    if (typeof window.dispatchEvent !== 'undefined') {
+                        window.dispatchEvent(new CustomEvent('notaireFavoriteChanged', {
+                            detail: {
+                                notaire_id: notaireId,
+                                is_favorite: response.data.is_favorite,
+                                action: response.data.is_favorite ? 'added' : 'removed'
+                            }
+                        }));
+                    }
                 } else {
                     showNotification('Erreur : ' + response.data.message, 'error');
                     button.html(originalContent);

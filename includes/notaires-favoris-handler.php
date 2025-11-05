@@ -187,11 +187,19 @@ class Notaires_Favoris_Handler {
         
         // Calculer la pagination
         $total = count($filtered_favorites);
-        $total_pages = ceil($total / $per_page);
         
-        // Appliquer la pagination
-        $offset = ($page - 1) * $per_page;
-        $paginated_favorites = array_slice($filtered_favorites, $offset, $per_page);
+        // Protection contre division par zéro
+        if ($per_page <= 0) {
+            // Si per_page est 0 ou négatif, retourner tous les résultats sans pagination
+            $total_pages = 1;
+            $paginated_favorites = $filtered_favorites;
+        } else {
+            $total_pages = ceil($total / $per_page);
+            
+            // Appliquer la pagination
+            $offset = ($page - 1) * $per_page;
+            $paginated_favorites = array_slice($filtered_favorites, $offset, $per_page);
+        }
         
         $result['success'] = true;
         $result['data'] = $paginated_favorites;

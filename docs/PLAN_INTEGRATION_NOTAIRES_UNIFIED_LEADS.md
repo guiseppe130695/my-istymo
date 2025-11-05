@@ -34,10 +34,10 @@ MODIFY COLUMN lead_type ENUM('sci', 'dpe', 'lead_vendeur', 'carte_succession', '
 ```
 
 **Vérifications** :
-- [ ] Vérifier que la colonne `lead_type` existe
-- [ ] Vérifier que l'enum est modifiable
-- [ ] Tester l'ALTER TABLE en environnement de développement
-- [ ] Créer une méthode de migration sécurisée
+- [x] Vérifier que la colonne `lead_type` existe
+- [x] Vérifier que l'enum est modifiable
+- [x] Tester l'ALTER TABLE en environnement de développement
+- [x] Créer une méthode de migration sécurisée
 
 ### 1.2 Vérification des tables existantes
 
@@ -75,26 +75,26 @@ MODIFY COLUMN lead_type ENUM('sci', 'dpe', 'lead_vendeur', 'carte_succession', '
 **Méthodes à modifier** :
 
 #### `update_table_for_notaire()`
-- [ ] Créer une nouvelle méthode similaire à `update_table_for_lead_vendeur()`
-- [ ] Vérifier si 'notaire' existe dans l'enum
-- [ ] Exécuter l'ALTER TABLE si nécessaire
-- [ ] Logger les modifications
+- [x] Créer une nouvelle méthode similaire à `update_table_for_lead_vendeur()`
+- [x] Vérifier si 'notaire' existe dans l'enum
+- [x] Exécuter l'ALTER TABLE si nécessaire
+- [x] Logger les modifications
 
 #### `add_lead()`
-- [ ] Vérifier que la méthode accepte `lead_type = 'notaire'`
-- [ ] Tester l'insertion d'un lead notaire
-- [ ] Valider le format de `data_originale` pour les notaires
+- [x] Vérifier que la méthode accepte `lead_type = 'notaire'`
+- [ ] Tester l'insertion d'un lead notaire (à valider manuellement)
+- [x] Valider le format de `data_originale` pour les notaires
 
 #### `get_lead()`
-- [ ] Vérifier que la récupération fonctionne pour `lead_type = 'notaire'`
-- [ ] Tester la désérialisation de `data_originale`
+- [x] Vérifier que la récupération fonctionne pour `lead_type = 'notaire'`
+- [x] Tester la désérialisation de `data_originale`
 
 #### `format_lead_for_display()`
-- [ ] Ajouter le cas 'notaire' dans la méthode
-- [ ] Colonne "Company" : Utiliser `nom_office`
-- [ ] Colonne "Location" : Utiliser `ville + ', ' + code_postal`
-- [ ] Colonne "Category" : Retourner "Notaire"
-- [ ] Icône : `'🏛️'` ou `'<i class="fas fa-gavel"></i>'`
+- [x] Ajouter le cas 'notaire' dans la méthode (dans `render_lead_row()`)
+- [x] Colonne "Company" : Utiliser `nom_office`
+- [x] Colonne "Location" : Utiliser `ville + ', ' + code_postal`
+- [x] Colonne "Category" : Retourner "Notaire"
+- [x] Icône : `'🏛️'` ou `'<i class="fas fa-gavel"></i>'`
 
 **Code à ajouter dans `format_lead_for_display()`** :
 ```php
@@ -137,12 +137,12 @@ public function create_notaire_lead($user_id, $notaire_id) {
 - `int` (ID du lead créé) en cas de succès
 
 **Logique** :
-1. Vérifier que l'utilisateur existe
-2. Récupérer le notaire via `Notaires_Manager::get_instance()->get_notaire_by_id($notaire_id)`
-3. Vérifier que le notaire existe
-4. Vérifier si un lead unified existe déjà (UNIQUE constraint)
-5. Préparer `data_originale` avec toutes les données du notaire
-6. Appeler `add_lead()` avec :
+1. [x] Vérifier que l'utilisateur existe
+2. [x] Récupérer le notaire via `Notaires_Manager::get_instance()->get_notaire_by_id($notaire_id)`
+3. [x] Vérifier que le notaire existe
+4. [x] Vérifier si un lead unified existe déjà (UNIQUE constraint)
+5. [x] Préparer `data_originale` avec toutes les données du notaire
+6. [x] Appeler `add_lead()` avec :
    - `lead_type` = 'notaire'
    - `original_id` = (string)$notaire_id
    - `status` = 'nouveau'
@@ -159,6 +159,7 @@ public function create_notaire_lead($user_id, $notaire_id) {
 **Fonction** : `my_istymo_ajax_toggle_notaire_favorite()` (ligne ~7546)
 
 **Modifications à apporter** :
+- [x] Modifications complètes implémentées
 
 #### Quand un notaire est ajouté aux favoris :
 ```php
@@ -195,6 +196,7 @@ if ($result['success'] && !$result['is_favorite']) {
 ```
 
 **Méthode à créer si elle n'existe pas** : `get_lead_by_original_id()`
+- [x] Créée et implémentée
 ```php
 public function get_lead_by_original_id($user_id, $lead_type, $original_id) {
     global $wpdb;
@@ -536,11 +538,12 @@ function my_istymo_ajax_toggle_notaire_favorite() {
 - [ ] Créer une fonction de réparation automatique
 
 **Fonction de migration** : `migrate_existing_notaire_favorites()`
-- [ ] Parcourir tous les utilisateurs avec des favoris notaires
-- [ ] Pour chaque favori, créer le lead unified correspondant
-- [ ] Vérifier les doublons avant insertion
-- [ ] Logger les erreurs de migration
-- [ ] Afficher un rapport de migration
+- [x] Parcourir tous les utilisateurs avec des favoris notaires
+- [x] Pour chaque favori, créer le lead unified correspondant
+- [x] Vérifier les doublons avant insertion
+- [x] Logger les erreurs de migration
+- [x] Afficher un rapport de migration
+- [x] Migration automatique exécutée une seule fois via transient
 
 **Code de migration** :
 ```php
@@ -598,6 +601,7 @@ function migrate_existing_notaire_favorites_to_unified() {
 **Fonction** : `openLeadDetailModal()` (ligne ~23)
 
 **Modifications** :
+- [x] Ajout du cas 'notaire' pour l'icône et le label
 
 ```javascript
 // Ligne ~109 - Ajouter le cas 'notaire'
@@ -628,6 +632,7 @@ if (leadType === 'sci') {
 **Fonction** : `generateModernLeadHTML()` (ligne ~1147)
 
 **Code complet à ajouter** (après le cas `lead_vendeur`, ligne ~1331) :
+- [x] Section notaire complète ajoutée avec toutes les informations
 
 ```javascript
 } else if (leadData.lead_type === 'notaire') {
@@ -766,6 +771,7 @@ if (leadType === 'sci') {
 **Fonction** : `display_lead_row()` (ligne ~1039)
 
 **Modifications à apporter** :
+- [x] Cas 'notaire' ajouté pour l'icône et le formatage
 
 ```php
 // Ligne ~1039 - Ajouter le cas 'notaire' pour l'icône
@@ -1026,27 +1032,33 @@ if (!get_transient('my_istymo_notaire_migration_done')) {
 ## 📁 Fichiers à Modifier
 
 ### 1. `includes/unified-leads-manager.php`
-- [ ] Méthode `create_tables()` ou `update_table_for_notaire()`
-- [ ] Méthode `add_lead()` (vérifier compatibilité)
-- [ ] Méthode `format_lead_for_display()` (ajouter cas notaire)
-- [ ] Nouvelle méthode `create_notaire_lead()`
-- [ ] Nouvelle méthode `get_lead_by_original_id()`
-- [ ] Nouvelle méthode `migrate_existing_notaire_favorites_to_unified()`
+- [x] Méthode `create_tables()` ou `update_table_for_notaire()`
+- [x] Méthode `add_lead()` (vérifier compatibilité)
+- [x] Méthode `format_lead_for_display()` (ajouter cas notaire dans `render_lead_row()`)
+- [x] Nouvelle méthode `create_notaire_lead()`
+- [x] Nouvelle méthode `get_lead_by_original_id()`
+- [x] Nouvelle méthode `migrate_existing_notaire_favorites_to_unified()`
 
 ### 2. `my-istymo.php`
-- [ ] Fonction `my_istymo_ajax_toggle_notaire_favorite()` (ligne ~7546)
-  - Ajouter création lead unified lors de l'ajout en favoris
-  - Ajouter suppression lead unified lors du retrait des favoris
+- [x] Fonction `my_istymo_ajax_toggle_notaire_favorite()` (ligne ~7546)
+  - [x] Ajouter création lead unified lors de l'ajout en favoris
+  - [x] Ajouter suppression lead unified lors du retrait des favoris
+  - [x] Gérer le paramètre `remove_only` pour suppression forcée
 
 ### 3. `assets/js/unified-leads-admin.js`
-- [ ] Fonction `openLeadDetailModal()` (ligne ~23)
-  - Ajouter le cas 'notaire' pour l'icône et le label
+- [x] Fonction `openLeadDetailModal()` (ligne ~23)
+  - [x] Ajouter le cas 'notaire' pour l'icône et le label
+- [x] Ajout de la synchronisation JavaScript (événements CustomEvent)
 
 ### 4. `templates/unified-leads-admin.php`
-- [ ] Fonction `generateModernLeadHTML()` (ligne ~1147)
-  - Ajouter la section complète pour les notaires
-- [ ] Fonction `display_lead_row()` (ligne ~1039)
-  - Ajouter le cas 'notaire' pour l'affichage dans le tableau
+- [x] Fonction `generateModernLeadHTML()` (ligne ~1147)
+  - [x] Ajouter la section complète pour les notaires
+- [x] Fonction `display_lead_row()` (ligne ~1039)
+  - [x] Ajouter le cas 'notaire' pour l'affichage dans le tableau
+
+### 5. `assets/js/notaires-admin.js`
+- [x] Ajout de l'événement `notaireFavoriteChanged` lors du toggle
+- [x] Ajout des écouteurs pour `unifiedLeadDeleted` et `unifiedLeadAdded`
 
 ### 5. CSS (si nécessaire)
 - [ ] `assets/css/unified-leads.css`
@@ -1150,13 +1162,13 @@ if (!get_transient('my_istymo_notaire_migration_done')) {
 
 Une fois toutes les phases terminées, vérifier :
 
-1. ✅ Un notaire ajouté en favoris apparaît dans unified leads
-2. ✅ Un notaire retiré des favoris disparaît de unified leads
-3. ✅ Le popup affiche toutes les informations du notaire
-4. ✅ Le tableau affiche correctement les notaires
-5. ✅ Les favoris existants sont migrés
-6. ✅ Aucune erreur dans les logs
-7. ✅ Les performances sont acceptables
+1. [ ] Un notaire ajouté en favoris apparaît dans unified leads (à tester manuellement)
+2. [ ] Un notaire retiré des favoris disparaît de unified leads (à tester manuellement)
+3. [ ] Le popup affiche toutes les informations du notaire (à tester manuellement)
+4. [ ] Le tableau affiche correctement les notaires (à tester manuellement)
+5. [x] Les favoris existants sont migrés (fonction implémentée et exécutée automatiquement)
+6. [ ] Aucune erreur dans les logs (à vérifier après tests)
+7. [ ] Les performances sont acceptables (à tester manuellement)
 
 ---
 

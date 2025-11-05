@@ -66,7 +66,7 @@ class Unified_Leads_Manager {
         $leads_sql = "CREATE TABLE IF NOT EXISTS {$this->leads_table} (
             id bigint(20) NOT NULL AUTO_INCREMENT,
             user_id bigint(20) NOT NULL,
-            lead_type enum('sci', 'dpe', 'lead_vendeur', 'carte_succession') NOT NULL,
+            lead_type enum('sci', 'dpe', 'lead_vendeur', 'carte_succession', 'notaire') NOT NULL,
             original_id varchar(255) NOT NULL,
             status varchar(50) DEFAULT 'nouveau',
             priorite varchar(20) DEFAULT 'normale',
@@ -113,9 +113,31 @@ class Unified_Leads_Manager {
         // ✅ NOUVEAU : Mettre à jour la table pour supporter carte_succession
         $this->update_table_for_carte_succession();
         
+        // ✅ NOUVEAU : Mettre à jour la table pour supporter notaire
+        $this->update_table_for_notaire();
+        
         // Vérifier et ajouter les colonnes manquantes
         $this->ensure_date_prochaine_action_column();
         $this->ensure_prochaine_action_column();
+        
+        // ✅ NOUVEAU : Migration des favoris notaires existants (une seule fois)
+        if (!get_transient('my_istymo_notaire_migration_done')) {
+            $migration_result = $this->migrate_existing_notaire_favorites_to_unified();
+            
+            if ($migration_result['created'] > 0 || $migration_result['errors'] > 0) {
+                my_istymo_log(
+                    sprintf(
+                        'Migration notaires: %d créés, %d erreurs, %d ignorés',
+                        $migration_result['created'],
+                        $migration_result['errors'],
+                        $migration_result['skipped']
+                    ),
+                    'unified_leads'
+                );
+            }
+            
+            set_transient('my_istymo_notaire_migration_done', true, DAY_IN_SECONDS * 365);
+        }
         
         my_istymo_log('Tables unifiées créées avec succès', 'unified_leads');
     }
@@ -531,6 +553,23 @@ class Unified_Leads_Manager {
                 } else {
                     error_log("Favori Lead Vendeur supprimé automatiquement pour Entry ID: " . $original_id);
                 }
+            } elseif ($lead_type === 'notaire') {
+                // ✅ NOUVEAU : Supprimer le favori notaire en base
+                $notaires_favoris_table = $wpdb->prefix . 'my_istymo_notaires_favoris';
+                $result = $wpdb->delete(
+                    $notaires_favoris_table,
+                    array(
+                        'user_id' => $user_id,
+                        'notaire_id' => intval($original_id)
+                    ),
+                    array('%d', '%d')
+                );
+                
+                if ($result === false) {
+                    error_log("Erreur lors de la suppression automatique du favori notaire: " . $wpdb->last_error);
+                } else {
+                    error_log("Favori notaire supprimé automatiquement pour Notaire ID: " . $original_id);
+                }
             }
         } catch (Exception $e) {
             error_log("Exception lors de la suppression automatique du favori original: " . $e->getMessage());
@@ -702,6 +741,170 @@ class Unified_Leads_Manager {
     }
     
     /**
+     * ✅ NOUVEAU : Migre les favoris notaires existants vers unified leads
+     * 
+     * @return array Statistiques de migration
+     */
+    public function migrate_existing_notaire_favorites_to_unified() {
+        global $wpdb;
+        
+        $table_favoris = $wpdb->prefix . 'my_istymo_notaires_favoris';
+        
+        // Vérifier si la table existe
+        $table_exists = $wpdb->get_var("SHOW TABLES LIKE '{$table_favoris}'");
+        if (!$table_exists) {
+            my_istymo_log('Table favoris notaires non trouvée, migration ignorée', 'unified_leads');
+            return array(
+                'created' => 0,
+                'errors' => 0,
+                'skipped' => 0,
+                'total' => 0
+            );
+        }
+        
+        $favoris = $wpdb->get_results("SELECT DISTINCT user_id, notaire_id FROM {$table_favoris}");
+        
+        $created = 0;
+        $errors = 0;
+        $skipped = 0;
+        
+        foreach ($favoris as $favori) {
+            // Vérifier si le lead existe déjà
+            $existing = $this->get_lead_by_original_id(
+                $favori->user_id, 
+                'notaire', 
+                (string)$favori->notaire_id
+            );
+            
+            if ($existing) {
+                $skipped++;
+                continue;
+            }
+            
+            // Créer le lead
+            $result = $this->create_notaire_lead($favori->user_id, $favori->notaire_id);
+            
+            if (is_wp_error($result)) {
+                $errors++;
+                my_istymo_log('Erreur migration notaire ' . $favori->notaire_id . ': ' . $result->get_error_message(), 'notaires');
+            } else {
+                $created++;
+            }
+        }
+        
+        return array(
+            'created' => $created,
+            'errors' => $errors,
+            'skipped' => $skipped,
+            'total' => count($favoris)
+        );
+    }
+    
+    /**
+     * ✅ NOUVEAU : Créer un lead unified pour un notaire
+     * 
+     * @param int $user_id ID de l'utilisateur
+     * @param int $notaire_id ID du notaire
+     * @return int|WP_Error ID du lead créé ou erreur
+     */
+    public function create_notaire_lead($user_id, $notaire_id) {
+        // Vérifier que l'utilisateur existe
+        if (!$user_id || !get_userdata($user_id)) {
+            return new WP_Error('invalid_user', 'Utilisateur invalide');
+        }
+        
+        // Récupérer le notaire
+        $notaires_manager = Notaires_Manager::get_instance();
+        $notaire = $notaires_manager->get_notaire_by_id($notaire_id);
+        
+        if (!$notaire) {
+            return new WP_Error('notaire_not_found', 'Notaire non trouvé');
+        }
+        
+        // Vérifier si un lead unified existe déjà
+        $existing = $this->get_lead_by_original_id($user_id, 'notaire', (string)$notaire_id);
+        
+        if ($existing) {
+            // Le lead existe déjà, retourner son ID
+            return $existing->id;
+        }
+        
+        // Préparer data_originale
+        $data_originale = array(
+            'id' => $notaire->id,
+            'nom_office' => $notaire->nom_office ?? '',
+            'nom_notaire' => $notaire->nom_notaire ?? '',
+            'telephone_office' => $notaire->telephone_office ?? '',
+            'email_office' => $notaire->email_office ?? '',
+            'site_internet' => $notaire->site_internet ?? '',
+            'adresse' => $notaire->adresse ?? '',
+            'code_postal' => $notaire->code_postal ?? '',
+            'ville' => $notaire->ville ?? '',
+            'langues_parlees' => $notaire->langues_parlees ?? '',
+            'statut_notaire' => $notaire->statut_notaire ?? 'actif',
+            'url_office' => $notaire->url_office ?? '',
+            'date_import' => $notaire->date_import ?? '',
+            'date_modification' => $notaire->date_modification ?? ''
+        );
+        
+        // Créer le lead
+        $lead_data = array(
+            'lead_type' => 'notaire',
+            'original_id' => (string)$notaire_id,
+            'status' => 'nouveau',
+            'priorite' => 'normale',
+            'notes' => '',
+            'data_originale' => $data_originale
+        );
+        
+        // Utiliser add_lead mais avec user_id spécifié
+        global $wpdb;
+        
+        $result = $wpdb->insert(
+            $this->leads_table,
+            array(
+                'user_id' => $user_id,
+                'lead_type' => 'notaire',
+                'original_id' => (string)$notaire_id,
+                'status' => 'nouveau',
+                'priorite' => 'normale',
+                'notes' => '',
+                'data_originale' => wp_json_encode($data_originale, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+            ),
+            array('%d', '%s', '%s', '%s', '%s', '%s', '%s')
+        );
+        
+        if ($result === false) {
+            return new WP_Error('db_error', 'Erreur lors de la création du lead notaire');
+        }
+        
+        $lead_id = $wpdb->insert_id;
+        
+        // Ajouter une action de création
+        $this->add_action($lead_id, 'creation', 'Lead notaire créé depuis favoris');
+        
+        return $lead_id;
+    }
+    
+    /**
+     * ✅ NOUVEAU : Récupérer un lead par original_id
+     * 
+     * @param int $user_id ID de l'utilisateur
+     * @param string $lead_type Type de lead
+     * @param string $original_id ID original
+     * @return object|null Lead ou null
+     */
+    public function get_lead_by_original_id($user_id, $lead_type, $original_id) {
+        global $wpdb;
+        
+        return $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM {$this->leads_table} 
+             WHERE user_id = %d AND lead_type = %s AND original_id = %s",
+            $user_id, $lead_type, $original_id
+        ));
+    }
+    
+    /**
      * AJAX: Ajouter un lead
      */
     public function ajax_add_lead() {
@@ -794,12 +997,23 @@ class Unified_Leads_Manager {
                 return;
             }
             
+            // Récupérer les informations du lead avant suppression
+            $lead = $this->get_lead($lead_id);
+            
             $result = $this->delete_lead($lead_id);
             
             if (is_wp_error($result)) {
                 wp_send_json_error($result->get_error_message());
             } else {
-                wp_send_json_success('Lead supprimé avec succès');
+                // Retourner les données du lead pour la synchronisation JavaScript
+                wp_send_json_success(array(
+                    'message' => 'Lead supprimé avec succès',
+                    'lead' => $lead ? array(
+                        'lead_id' => $lead->id,
+                        'lead_type' => $lead->lead_type,
+                        'original_id' => $lead->original_id
+                    ) : null
+                ));
             }
         } catch (Exception $e) {
             wp_send_json_error('Erreur interne du serveur');
@@ -1013,6 +1227,20 @@ class Unified_Leads_Manager {
                 $code_postal = $lead->data_originale['4.5'] ?? '';
                 $location = $ville . ($code_postal ? ' (' . $code_postal . ')' : '');
                 $category = 'Carte de Succession';
+            } elseif ($lead->lead_type === 'notaire') {
+                $company_name = $lead->data_originale['nom_office'] ?? 'Notaire #' . $lead->original_id;
+                $ville = $lead->data_originale['ville'] ?? '';
+                $code_postal = $lead->data_originale['code_postal'] ?? '';
+                if ($ville && $code_postal) {
+                    $location = $ville . ', ' . $code_postal;
+                } elseif ($ville) {
+                    $location = $ville;
+                } elseif ($code_postal) {
+                    $location = $code_postal;
+                } else {
+                    $location = '';
+                }
+                $category = 'Notaire';
             } elseif ($lead->lead_type === 'lead_parrainage') {
                 $company_name = $lead->data_originale['1'] ?? 'Lead Parrainage';
                 $location = $lead->data_originale['3'] ?? '';
@@ -1042,13 +1270,15 @@ class Unified_Leads_Manager {
             echo '<span class="my-istymo-icon my-istymo-icon-vendor">🏪</span>';
         } elseif ($lead->lead_type === 'carte_succession') {
             echo '<span class="my-istymo-icon my-istymo-icon-succession">⚰️</span>';
-        } elseif ($lead->lead_type === 'lead_parrainage') {
-            echo '<span class="my-istymo-icon my-istymo-icon-parrainage">🤝</span>';
-        } elseif ($lead->lead_type === 'unknown') {
-            echo '<span class="my-istymo-icon my-istymo-icon-unknown">❓</span>';
-        } else {
-            echo '<span class="my-istymo-icon my-istymo-icon-building">🏢</span>';
-        }
+            } elseif ($lead->lead_type === 'notaire') {
+                echo '<span class="my-istymo-icon my-istymo-icon-notaire">🏛️</span>';
+            } elseif ($lead->lead_type === 'lead_parrainage') {
+                echo '<span class="my-istymo-icon my-istymo-icon-parrainage">🤝</span>';
+            } elseif ($lead->lead_type === 'unknown') {
+                echo '<span class="my-istymo-icon my-istymo-icon-unknown">❓</span>';
+            } else {
+                echo '<span class="my-istymo-icon my-istymo-icon-building">🏢</span>';
+            }
         echo '</div>';
         echo '<div class="my-istymo-company-info">';
         echo '<div class="my-istymo-company-name">' . esc_html($company_name ?: 'Lead #' . $lead->id) . '</div>';
@@ -1253,6 +1483,26 @@ class Unified_Leads_Manager {
             if (strpos($column_definition, 'carte_succession') === false) {
                 $wpdb->query("ALTER TABLE {$this->leads_table} MODIFY COLUMN lead_type ENUM('sci', 'dpe', 'lead_vendeur', 'carte_succession', 'lead_parrainage', 'unknown') NOT NULL");
                 error_log("Table unified_leads mise à jour pour supporter carte_succession");
+            }
+        }
+    }
+    
+    /**
+     * ✅ NOUVEAU : Mettre à jour la table pour supporter notaire
+     */
+    private function update_table_for_notaire() {
+        global $wpdb;
+        
+        // Vérifier si la colonne lead_type supporte déjà notaire
+        $column_info = $wpdb->get_results("SHOW COLUMNS FROM {$this->leads_table} LIKE 'lead_type'");
+        
+        if (!empty($column_info)) {
+            $column_definition = $column_info[0]->Type;
+            
+            // Si notaire n'est pas dans l'enum, l'ajouter
+            if (strpos($column_definition, 'notaire') === false) {
+                $wpdb->query("ALTER TABLE {$this->leads_table} MODIFY COLUMN lead_type ENUM('sci', 'dpe', 'lead_vendeur', 'carte_succession', 'notaire', 'lead_parrainage', 'unknown') NOT NULL");
+                my_istymo_log("Table unified_leads mise à jour pour supporter notaire", 'unified_leads');
             }
         }
     }

@@ -11,6 +11,31 @@ jQuery(document).ready(function($) {
     // S'assurer que le modal est caché au chargement initial
     $('#lead-detail-modal').addClass('my-istymo-hidden').removeClass('my-istymo-show').hide();
     
+    // ✅ NOUVEAU : Écouter les changements de favoris depuis l'interface notaires
+    window.addEventListener('notaireFavoriteChanged', function(event) {
+        var detail = event.detail;
+        
+        if (detail.action === 'added') {
+            // Rafraîchir la table pour afficher le nouveau lead
+            // Optionnel : refreshUnifiedLeadsTable();
+            // Ou ajouter dynamiquement la ligne
+        } else if (detail.action === 'removed') {
+            // Supprimer la ligne correspondante
+            var leadRow = $('tr[data-lead-type="notaire"][data-original-id="' + detail.notaire_id + '"]');
+            if (leadRow.length > 0) {
+                var leadId = leadRow.data('lead-id');
+                if (leadId) {
+                    leadRow.fadeOut(300, function() {
+                        $(this).remove();
+                        if (typeof updateLeadsCount === 'function') {
+                            updateLeadsCount();
+                        }
+                    });
+                }
+            }
+        }
+    });
+    
     // ===== DÉFINITION DES FONCTIONS GLOBALES =====
     
     /**
@@ -118,6 +143,9 @@ jQuery(document).ready(function($) {
                     } else if (leadType === 'carte_succession') {
                         typeIcon = '<i class="fas fa-map"></i>';
                         typeLabel = 'Carte de Succession';
+                    } else if (leadType === 'notaire') {
+                        typeIcon = '<i class="fas fa-gavel"></i>';
+                        typeLabel = 'Notaire';
                     } else {
                         typeIcon = '<i class="fas fa-users"></i>';
                         typeLabel = leadType.toUpperCase();
@@ -255,10 +283,51 @@ jQuery(document).ready(function($) {
                 success: function(response) {
                     // console.log('Delete Response:', response);
                     if (response && response.success) {
+                        // Récupérer les informations du lead avant suppression
+                        var leadData = response.data && response.data.lead ? response.data.lead : {};
+                        
+                        // ✅ NOUVEAU : Si c'est un lead notaire, supprimer aussi le favori
+                        if (leadData.lead_type === 'notaire' && leadData.original_id) {
+                            // Supprimer le favori notaire correspondant
+                            $.ajax({
+                                url: typeof notairesAjax !== 'undefined' ? notairesAjax.ajaxurl : unifiedLeadsAjax.ajaxurl,
+                                type: 'POST',
+                                data: {
+                                    action: 'toggle_notaire_favorite',
+                                    notaire_id: leadData.original_id,
+                                    remove_only: true,
+                                    nonce: typeof notairesAjax !== 'undefined' ? notairesAjax.nonce : unifiedLeadsAjax.nonce
+                                },
+                                success: function(favoriteResponse) {
+                                    // Logger pour debug
+                                    if (typeof console !== 'undefined' && console.log) {
+                                        console.log('Favori notaire supprimé:', favoriteResponse);
+                                    }
+                                },
+                                error: function() {
+                                    if (typeof console !== 'undefined' && console.error) {
+                                        console.error('Erreur lors de la suppression du favori notaire');
+                                    }
+                                }
+                            });
+                        }
+                        
                         // Supprimer la ligne du tableau
                         $('tr[data-lead-id="' + leadId + '"]').fadeOut(300, function() {
                             $(this).remove();
+                            updateLeadsCount();
                         });
+                        
+                        // ✅ NOUVEAU : Notifier l'interface notaires si elle est ouverte
+                        if (typeof window.dispatchEvent !== 'undefined') {
+                            window.dispatchEvent(new CustomEvent('unifiedLeadDeleted', {
+                                detail: {
+                                    lead_id: leadId,
+                                    lead_type: leadData.lead_type,
+                                    original_id: leadData.original_id
+                                }
+                            }));
+                        }
                         
                         // Afficher un message de succès
                         showNotification('Lead supprimé avec succès', 'success');
@@ -411,6 +480,8 @@ jQuery(document).ready(function($) {
                 html += generateLeadVendeurInfo(originalData);
             } else if (leadData.lead_type === 'carte_succession') {
                 html += generateCarteSuccessionInfo(originalData);
+            } else if (leadData.lead_type === 'notaire') {
+                html += generateNotaireInfo(originalData);
             } else if (leadData.lead_type === 'lead_parrainage') {
                 html += generateLeadParrainageInfo(originalData);
             } else if (leadData.lead_type === 'unknown') {
@@ -624,6 +695,139 @@ jQuery(document).ready(function($) {
         html += '</div>';
         
         html += '</div>';
+        return html;
+    }
+    
+    /**
+     * Génère les informations Notaire
+     */
+    function generateNotaireInfo(data) {
+        var html = '<div class="my-istymo-notaire-info">';
+        
+        // Section Informations Notaire
+        html += '<div class="my-istymo-info-subsection">';
+        html += '<h6><i class="fas fa-gavel"></i> Informations Notaire</h6>';
+        
+        // Nom de l'office
+        if (data.nom_office) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label">Office</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data.nom_office) + '</span>';
+            html += '</div>';
+        }
+        
+        // Nom du notaire
+        if (data.nom_notaire) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label">Notaire</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data.nom_notaire) + '</span>';
+            html += '</div>';
+        }
+        
+        // Adresse complète
+        var adresseParts = [];
+        if (data.adresse) {
+            adresseParts.push(data.adresse.trim());
+        }
+        if (data.code_postal && data.ville) {
+            adresseParts.push(data.code_postal.trim() + ' ' + data.ville.trim());
+        } else if (data.code_postal) {
+            adresseParts.push(data.code_postal.trim());
+        } else if (data.ville) {
+            adresseParts.push(data.ville.trim());
+        }
+        
+        if (adresseParts.length > 0) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-map-marker-alt"></i> Adresse</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(adresseParts.join(', ')) + '</span>';
+            html += '</div>';
+        }
+        
+        html += '</div>'; // Fin section informations
+        
+        // Section Contact
+        html += '<div class="my-istymo-info-subsection">';
+        html += '<h6><i class="fas fa-phone"></i> Contact</h6>';
+        
+        // Téléphone
+        if (data.telephone_office) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-phone"></i> Téléphone</span>';
+            html += '<span class="my-istymo-info-value">';
+            html += '<a href="tel:' + escapeHtml(data.telephone_office) + '" class="my-istymo-link">';
+            html += escapeHtml(data.telephone_office);
+            html += '</a>';
+            html += '</span>';
+            html += '</div>';
+        }
+        
+        // Email
+        if (data.email_office) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-envelope"></i> Email</span>';
+            html += '<span class="my-istymo-info-value">';
+            html += '<a href="mailto:' + escapeHtml(data.email_office) + '" class="my-istymo-link">';
+            html += escapeHtml(data.email_office);
+            html += '</a>';
+            html += '</span>';
+            html += '</div>';
+        }
+        
+        // Site internet
+        if (data.site_internet) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-globe"></i> Site web</span>';
+            html += '<span class="my-istymo-info-value">';
+            var siteUrl = data.site_internet;
+            if (!siteUrl.startsWith('http://') && !siteUrl.startsWith('https://')) {
+                siteUrl = 'https://' + siteUrl;
+            }
+            html += '<a href="' + escapeHtml(siteUrl) + '" target="_blank" rel="noopener" class="my-istymo-link">';
+            html += '<i class="fas fa-external-link-alt"></i> ' + escapeHtml(data.site_internet);
+            html += '</a>';
+            html += '</span>';
+            html += '</div>';
+        }
+        
+        html += '</div>'; // Fin section contact
+        
+        // Section Informations complémentaires
+        html += '<div class="my-istymo-info-subsection">';
+        html += '<h6><i class="fas fa-info-circle"></i> Informations complémentaires</h6>';
+        
+        // Langues parlées
+        if (data.langues_parlees) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-language"></i> Langues parlées</span>';
+            html += '<span class="my-istymo-info-value">' + escapeHtml(data.langues_parlees) + '</span>';
+            html += '</div>';
+        }
+        
+        // Statut
+        if (data.statut_notaire) {
+            html += '<div class="my-istymo-info-row">';
+            html += '<span class="my-istymo-info-label"><i class="fas fa-check-circle"></i> Statut</span>';
+            html += '<span class="my-istymo-info-value">';
+            var statutClass = data.statut_notaire.toLowerCase();
+            var statutBadgeClass = '';
+            if (statutClass === 'actif') {
+                statutBadgeClass = 'my-istymo-status-success';
+            } else if (statutClass === 'inactif') {
+                statutBadgeClass = 'my-istymo-status-danger';
+            } else if (statutClass === 'suspendu') {
+                statutBadgeClass = 'my-istymo-status-warning';
+            }
+            html += '<span class="my-istymo-status-badge ' + statutBadgeClass + '">';
+            html += escapeHtml(data.statut_notaire);
+            html += '</span>';
+            html += '</span>';
+            html += '</div>';
+        }
+        
+        html += '</div>'; // Fin section complémentaires
+        
+        html += '</div>'; // Fin notaire-info
         return html;
     }
     

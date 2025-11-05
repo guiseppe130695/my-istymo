@@ -7558,6 +7558,7 @@ function my_istymo_ajax_toggle_notaire_favorite() {
     
     $user_id = get_current_user_id();
     $notaire_id = intval($_POST['notaire_id'] ?? 0);
+    $remove_only = isset($_POST['remove_only']) && $_POST['remove_only'] === 'true';
     
     if (!$notaire_id) {
         wp_send_json_error('ID notaire manquant');
@@ -7565,9 +7566,56 @@ function my_istymo_ajax_toggle_notaire_favorite() {
     }
     
     $favoris_handler = Notaires_Favoris_Handler::get_instance();
+    
+    // Si remove_only est true, supprimer directement sans toggle
+    if ($remove_only) {
+        $result = $favoris_handler->remove_from_favorites($user_id, $notaire_id);
+        
+        if ($result['success']) {
+            // Supprimer aussi le lead unified
+            $leads_manager = Unified_Leads_Manager::get_instance();
+            $lead = $leads_manager->get_lead_by_original_id($user_id, 'notaire', (string)$notaire_id);
+            
+            if ($lead) {
+                $leads_manager->delete_lead($lead->id, true); // skip_favori_removal = true pour éviter la boucle
+            }
+            
+            wp_send_json_success(array(
+                'is_favorite' => false,
+                'action' => 'removed'
+            ));
+        } else {
+            wp_send_json_error($result['message']);
+        }
+        return;
+    }
+    
+    // Sinon, comportement normal (toggle)
     $result = $favoris_handler->toggle_favorite($user_id, $notaire_id);
     
     if ($result['success']) {
+        $leads_manager = Unified_Leads_Manager::get_instance();
+        
+        // Si ajouté en favoris, créer le lead unified
+        if ($result['is_favorite']) {
+            $lead_result = $leads_manager->create_notaire_lead($user_id, $notaire_id);
+            
+            if (is_wp_error($lead_result)) {
+                // Logger l'erreur mais ne pas faire échouer l'ajout en favoris
+                my_istymo_log('Erreur création lead unified pour notaire: ' . $lead_result->get_error_message(), 'notaires');
+            }
+        } else {
+            // Si retiré des favoris, supprimer le lead unified
+            $lead = $leads_manager->get_lead_by_original_id($user_id, 'notaire', (string)$notaire_id);
+            
+            if ($lead) {
+                $delete_result = $leads_manager->delete_lead($lead->id, true); // skip_favori_removal = true pour éviter la boucle
+                if (is_wp_error($delete_result)) {
+                    my_istymo_log('Erreur suppression lead unified pour notaire: ' . $delete_result->get_error_message(), 'notaires');
+                }
+            }
+        }
+        
         wp_send_json_success($result);
     } else {
         wp_send_json_error($result['message']);
