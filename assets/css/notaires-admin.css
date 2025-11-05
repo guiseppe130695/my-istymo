@@ -362,6 +362,38 @@ b, strong {
     background: #f1f3f4;
 }
 
+/* Limiter l'affichage des colonnes Office et Adresse à une seule ligne */
+.my-istymo-modern-table tbody tr td:nth-child(2),
+.my-istymo-modern-table tbody tr td:nth-child(4) {
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.my-istymo-modern-table tbody tr td:nth-child(2) strong {
+    display: inline-block;
+    max-width: calc(100% - 100px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: top;
+}
+
+/* Afficher le lien "Site web" sur la même ligne */
+.my-istymo-modern-table tbody tr td:nth-child(2) .website-link {
+    display: inline-block;
+    margin-left: 8px;
+    white-space: nowrap;
+    vertical-align: top;
+}
+
+.my-istymo-modern-table tbody tr td:nth-child(4) {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 /* ========================================
    BOUTONS FAVORIS
    ======================================== */
