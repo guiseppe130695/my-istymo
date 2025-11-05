@@ -57,6 +57,11 @@
     font-weight: 600;
 }
 
+b, strong {
+    font-weight: 500;
+    color: #333 !important;
+}
+
 /* ========================================
    SECTION FILTRES
    ======================================== */
@@ -661,6 +666,10 @@
     border-bottom: 2px solid #e9ecef;
 }
 
+.lead-details-main-content {
+    padding: 25px !important;
+}
+
 .notaire-details-header h3 {
     margin: 0;
     color: #333;
@@ -782,6 +791,12 @@
     text-align: center;
     padding: 40px;
     color: #6c757d;
+}
+
+.loading::before,
+.loading::after {
+    display: none !important;
+    content: none !important;
 }
 
 .loading .dashicons {
@@ -990,7 +1005,7 @@
 /* ✅ NOUVEAU : Styles pour le bouton "Voir détails" - Style identique au lead vendeur */
 button.view-notaire-details.button.button-primary {
     background: #e3f2fd !important;
-    border-color: #2196f3 !important;
+    border: 1px solid #2196f3 !important;
     color: #1976d2 !important;
     padding: 6px 12px !important;
     border-radius: 4px !important;

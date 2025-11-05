@@ -4817,6 +4817,9 @@ add_shortcode('my_istymo_carte_succession', 'my_istymo_carte_succession_shortcod
 // ✅ NOUVEAU : Shortcode pour afficher les favoris
 add_shortcode('my_istymo_favorites', 'my_istymo_favorites_shortcode');
 
+// ✅ Shortcode pour afficher l'annuaire notarial
+add_shortcode('my_istymo_notaires', 'my_istymo_notaires_shortcode');
+
 /**
  * Shortcode pour afficher les favoris de l'utilisateur
  */
@@ -4933,13 +4936,433 @@ function my_istymo_favorites_shortcode($atts) {
     
     return ob_get_clean();
 }
+
+/**
+ * Shortcode pour afficher l'annuaire notarial sur le frontend
+ */
+function my_istymo_notaires_shortcode($atts) {
+    // Vérifier que l'utilisateur est connecté
+    if (!is_user_logged_in()) {
+        return '<div class="my-istymo-notaires-notice"><p>Vous devez être connecté pour accéder à l\'annuaire notarial.</p></div>';
+    }
+    
+    // Enqueue Font Awesome pour les icônes
+    wp_enqueue_style(
+        'font-awesome',
+        'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+        array(),
+        '6.4.0'
+    );
+    
+    // Enqueue des assets
+    wp_enqueue_style('notaires-admin-css', plugin_dir_url(__FILE__) . 'assets/css/notaires-admin.css', array('font-awesome'), '1.1');
+    wp_enqueue_style('lead-vendeur-popup-style', plugin_dir_url(__FILE__) . 'assets/css/lead-vendeur-popup.css', array(), '1.0.1');
+    wp_enqueue_script('notaires-admin-js', plugin_dir_url(__FILE__) . 'assets/js/notaires-admin.js', array('jquery'), '1.0', true);
+    
+    // Localiser les variables JavaScript
+    wp_localize_script('notaires-admin-js', 'notairesAjax', array(
+        'ajaxurl' => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('my_istymo_notaires_nonce')
+    ));
+    
+    $current_user = wp_get_current_user();
+    $user_id = $current_user->ID;
+    
+    // Récupérer les codes postaux de l'utilisateur
+    $codes_postaux = sci_get_user_postal_codes($user_id);
+    
+    if (empty($codes_postaux)) {
+        ob_start();
+        ?>
+        <div class="my-istymo-notaires-container">
+            <div class="my-istymo-notices notice notice-warning">
+                <p><strong>Configuration requise :</strong> Veuillez configurer vos codes postaux dans votre profil pour accéder à l'annuaire notarial.</p>
+                <p><a href="<?php echo esc_url(admin_url('profile.php')); ?>" class="button button-primary">Configurer mes codes postaux</a></p>
+            </div>
+        </div>
+        <?php
+        return ob_get_clean();
+    }
+    
+    // Récupérer les filtres depuis l'URL
+    $filters = [];
+    if (!empty($_GET['ville'])) $filters['ville'] = sanitize_text_field($_GET['ville']);
+    if (!empty($_GET['search'])) $filters['search'] = sanitize_text_field($_GET['search']);
+    
+    // Pagination
+    $page = max(1, intval($_GET['paged'] ?? 1));
+    $per_page = 20;
+    
+    // Récupérer les notaires
+    $notaires_manager = Notaires_Manager::get_instance();
+    $notaires = $notaires_manager->get_notaires_by_postal_codes($codes_postaux, $filters, $per_page, $page);
+    $total_notaires = $notaires_manager->get_notaires_count($codes_postaux, $filters);
+    $total_pages = ceil($total_notaires / $per_page);
+    
+    // Récupérer les options pour les filtres
+    $available_cities = $notaires_manager->get_available_cities($codes_postaux);
+    
+    // Récupérer les favoris de l'utilisateur
+    $favoris_handler = Notaires_Favoris_Handler::get_instance();
+    $favorites_stats = $favoris_handler->get_favorites_stats($user_id);
+    
+    // Construire l'URL de base pour la pagination (utiliser l'URL de la page actuelle)
+    $current_url = remove_query_arg('paged');
+    if (empty($current_url)) {
+        $current_url = get_permalink();
+    }
+    
+    ob_start();
+    ?>
+    <div class="wrap notaires-container my-istymo my-istymo-notaires-container">
+        <!-- Filtres -->
+        <div class="my-istymo-filters-section">
+            <form method="GET" id="notaires-search-form" class="my-istymo-inline-filters search-form">
+                <?php
+                // Préserver les paramètres d'URL existants (comme les query vars de WordPress)
+                foreach ($_GET as $key => $value) {
+                    if (!in_array($key, ['ville', 'search', 'paged'])) {
+                        echo '<input type="hidden" name="' . esc_attr($key) . '" value="' . esc_attr($value) . '">';
+                    }
+                }
+                ?>
+                
+                <div class="my-istymo-filter-row form-row">
+                    <div class="my-istymo-filter-group form-field">
+                        <label for="ville"><i class="fas fa-map-marker-alt"></i> Ville :</label>
+                        <select name="ville" id="ville">
+                            <option value="">— Choisir une ville —</option>
+                            <?php foreach ($available_cities as $city): ?>
+                                <option value="<?php echo esc_attr($city); ?>" <?php selected($filters['ville'] ?? '', $city); ?>>
+                                    <?php echo esc_html($city); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    
+                    <div class="my-istymo-filter-group form-field">
+                        <label for="search"><i class="fas fa-search"></i> Recherche par adresse :</label>
+                        <input type="text" name="search" id="search" value="<?php echo esc_attr($filters['search'] ?? ''); ?>" placeholder="Ex: rue de la paix, avenue victor hugo...">
+                    </div>
+                    
+                    <div class="my-istymo-filter-actions">
+                        <button type="submit" id="search-btn" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Rechercher les notaires
+                        </button>
+                        <a href="<?php echo esc_url($current_url); ?>" class="button">Réinitialiser</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Tableau des notaires -->
+        <div class="my-istymo-table-section">
+            <?php if (empty($notaires)): ?>
+                <div class="my-istymo-empty-state">
+                    <h3>Aucun notaire trouvé</h3>
+                    <p>Il n'y a aucun notaire disponible dans votre zone géographique avec les filtres appliqués.</p>
+                    <a href="<?php echo esc_url($current_url); ?>" class="button button-primary">Voir tous les notaires</a>
+                </div>
+            <?php else: ?>
+                <div class="my-istymo-modern-table">
+                    <table class="wp-list-table widefat fixed striped" style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th width="5%"><i class="fas fa-heart"></i></th>
+                                <th width="25%"><i class="fas fa-building"></i> Office</th>
+                                <th width="20%"><i class="fas fa-user-tie"></i> Notaire</th>
+                                <th width="25%"><i class="fas fa-map-marker-alt"></i> Adresse</th>
+                                <th width="10%"><i class="fas fa-phone"></i> Téléphone</th>
+                                <th width="15%"><i class="fas fa-cogs"></i> Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($notaires as $notaire): ?>
+                                <tr data-notaire-id="<?php echo esc_attr($notaire->id); ?>">
+                                    <td class="favorite-cell">
+                                        <button type="button" class="favorite-toggle <?php echo $notaire->is_favorite ? 'favorited' : ''; ?>" 
+                                                data-notaire-id="<?php echo esc_attr($notaire->id); ?>"
+                                                title="<?php echo $notaire->is_favorite ? 'Supprimer des favoris' : 'Ajouter aux favoris'; ?>">
+                                            <span class="dashicons dashicons-star-<?php echo $notaire->is_favorite ? 'filled' : 'empty'; ?>"></span>
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <strong><?php echo esc_html($notaire->nom_office); ?></strong>
+                                        <?php if ($notaire->site_internet): ?>
+                                            <br><a href="<?php echo esc_url($notaire->site_internet); ?>" target="_blank" class="website-link">
+                                                <span class="dashicons dashicons-external"></span> Site web
+                                            </a>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td><?php echo esc_html($notaire->nom_notaire); ?></td>
+                                    <td>
+                                        <?php
+                                        // Construire l'adresse complète
+                                        $adresse_complete = [];
+                                        if (!empty($notaire->adresse)) {
+                                            $adresse_complete[] = trim($notaire->adresse);
+                                        }
+                                        if (!empty($notaire->code_postal) && !empty($notaire->ville)) {
+                                            $adresse_complete[] = trim($notaire->code_postal) . ' ' . trim($notaire->ville);
+                                        } elseif (!empty($notaire->code_postal)) {
+                                            $adresse_complete[] = trim($notaire->code_postal);
+                                        } elseif (!empty($notaire->ville)) {
+                                            $adresse_complete[] = trim($notaire->ville);
+                                        }
+                                        echo esc_html(implode(', ', $adresse_complete));
+                                        ?>
+                                    </td>
+                                    <td>
+                                        <?php if ($notaire->telephone_office): ?>
+                                            <a href="tel:<?php echo esc_attr($notaire->telephone_office); ?>" class="phone-link">
+                                                <?php echo esc_html($notaire->telephone_office); ?>
+                                            </a>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="button button-small view-details view-notaire-details button-primary" 
+                                                data-notaire-id="<?php echo esc_attr($notaire->id); ?>"
+                                                title="Voir les détails">
+                                            <i class="fas fa-eye" style="margin-right: 5px;"></i> Voir détails
+                                        </button>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <?php if ($total_pages > 1): ?>
+                    <div class="my-istymo-pagination">
+                        <?php
+                        $base_url = $current_url;
+                        $query_params = $_GET;
+                        unset($query_params['paged']);
+                        
+                        if (!empty($query_params)) {
+                            $base_url .= (strpos($base_url, '?') !== false ? '&' : '?') . http_build_query($query_params);
+                        }
+                        
+                        // Page précédente
+                        if ($page > 1): ?>
+                            <a href="<?php echo esc_url($base_url . (strpos($base_url, '?') !== false ? '&' : '?') . 'paged=' . ($page - 1)); ?>" class="button">
+                                <span class="dashicons dashicons-arrow-left-alt2"></span> Précédent
+                            </a>
+                        <?php endif; ?>
+                        
+                        <!-- Numéros de pages -->
+                        <?php
+                        $start_page = max(1, $page - 2);
+                        $end_page = min($total_pages, $page + 2);
+                        
+                        for ($i = $start_page; $i <= $end_page; $i++): ?>
+                            <a href="<?php echo esc_url($base_url . (strpos($base_url, '?') !== false ? '&' : '?') . 'paged=' . $i); ?>" 
+                               class="button <?php echo $i === $page ? 'button-primary' : ''; ?>">
+                                <?php echo esc_html($i); ?>
+                            </a>
+                        <?php endfor; ?>
+                        
+                        <!-- Page suivante -->
+                        <?php if ($page < $total_pages): ?>
+                            <a href="<?php echo esc_url($base_url . (strpos($base_url, '?') !== false ? '&' : '?') . 'paged=' . ($page + 1)); ?>" class="button">
+                                Suivant <span class="dashicons dashicons-arrow-right-alt2"></span>
+                            </a>
+                        <?php endif; ?>
+                        
+                        <div class="pagination-info">
+                            Page <?php echo esc_html($page); ?> sur <?php echo esc_html($total_pages); ?> 
+                            (<?php echo esc_html($total_notaires); ?> notaires au total)
+                        </div>
+                    </div>
+                <?php endif; ?>
+            <?php endif; ?>
+        </div>
+    </div>
+    
+    <!-- Modal pour les détails du notaire -->
+    <div id="notaire-detail-modal" class="my-istymo-modal" style="display: none;">
+        <div class="my-istymo-modal-content">
+            <div class="lead-details-modal-header">
+                <div class="lead-details-header-left">
+                    <div class="lead-details-icon">
+                        <i class="fas fa-gavel"></i>
+                    </div>
+                    <div class="lead-details-title-section">
+                        <h2 id="notaire-modal-title">Détails du notaire</h2>
+                        <p class="lead-details-subtitle">Informations complètes</p>
+                        <p class="lead-details-date" id="notaire-modal-date" style="display: none;"></p>
+                    </div>
+                </div>
+                <div class="lead-details-header-right">
+                    <span class="lead-details-modal-close">&times;</span>
+                </div>
+            </div>
+            <div class="my-istymo-modal-body" id="notaire-detail-content">
+                <!-- Contenu chargé dynamiquement -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scripts pour la gestion des favoris et détails -->
+    <script>
+    jQuery(document).ready(function($) {
+        var ajaxUrl = notairesAjax.ajaxurl;
+        var nonce = notairesAjax.nonce;
+        
+        // Gestionnaire pour les favoris
+        $('.favorite-toggle').on('click', function() {
+            var button = $(this);
+            var notaireId = button.data('notaire-id');
+            var isFavorited = button.hasClass('favorited');
+            
+            // Désactiver le bouton pendant la requête
+            button.prop('disabled', true);
+            
+            $.ajax({
+                url: ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'toggle_notaire_favorite',
+                    notaire_id: notaireId,
+                    nonce: nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        if (response.data.is_favorite) {
+                            button.addClass('favorited');
+                            button.find('.dashicons').removeClass('dashicons-star-empty').addClass('dashicons-star-filled');
+                            button.attr('title', 'Supprimer des favoris');
+                        } else {
+                            button.removeClass('favorited');
+                            button.find('.dashicons').removeClass('dashicons-star-filled').addClass('dashicons-star-empty');
+                            button.attr('title', 'Ajouter aux favoris');
+                        }
+                        
+                        // Mettre à jour le compteur de favoris
+                        updateFavoritesCount();
+                    } else {
+                        alert('Erreur : ' + (response.data.message || 'Erreur inconnue'));
+                    }
+                },
+                error: function() {
+                    alert('Erreur de communication avec le serveur');
+                },
+                complete: function() {
+                    button.prop('disabled', false);
+                }
+            });
+        });
+        
+        // Gestionnaire pour voir les détails
+        $('.view-notaire-details').on('click', function() {
+            var notaireId = $(this).data('notaire-id');
+            showNotaireDetails(notaireId);
+        });
+        
+        // Fermer le modal
+        $('.my-istymo-modal, .lead-details-modal-close').on('click', function(e) {
+            if (e.target === this || $(e.target).hasClass('lead-details-modal-close')) {
+                $('#notaire-detail-modal').hide();
+            }
+        });
+        
+        // Fonction pour afficher les détails d'un notaire
+        function showNotaireDetails(notaireId) {
+            $('#notaire-detail-content').html('<div class="loading"><span class="dashicons dashicons-update"></span> Chargement...</div>');
+            $('#notaire-detail-modal').show();
+            
+            $.ajax({
+                url: ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'get_notaire_details',
+                    notaire_id: notaireId,
+                    nonce: nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $('#notaire-detail-content').html(response.data.html);
+                        
+                        // Mettre à jour le titre du modal avec le nom du notaire si disponible
+                        if (response.data.notaire_nom) {
+                            $('#notaire-modal-title').text(response.data.notaire_nom);
+                        }
+                    } else {
+                        $('#notaire-detail-content').html('<p>Erreur lors du chargement des détails</p>');
+                    }
+                },
+                error: function() {
+                    $('#notaire-detail-content').html('<p>Erreur de communication avec le serveur</p>');
+                }
+            });
+        }
+        
+        // Fonction pour mettre à jour le compteur de favoris
+        function updateFavoritesCount() {
+            $.ajax({
+                url: ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'get_favorites_count',
+                    nonce: nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $('.favorites-count').text(response.data.count);
+                    }
+                }
+            });
+        }
+        
+        // Fonction pour exporter les favoris
+        window.exportFavorites = function() {
+            if (!confirm('Voulez-vous exporter vos favoris au format CSV ?')) {
+                return;
+            }
+            
+            $.ajax({
+                url: ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'export_notaires_favorites',
+                    nonce: nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Créer un lien de téléchargement
+                        var blob = new Blob([response.data.csv_content], { type: 'text/csv' });
+                        var url = window.URL.createObjectURL(blob);
+                        var a = document.createElement('a');
+                        a.href = url;
+                        a.download = response.data.filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(url);
+                    } else {
+                        alert('Erreur lors de l\'export : ' + (response.data.message || 'Erreur inconnue'));
+                    }
+                },
+                error: function() {
+                    alert('Erreur de communication avec le serveur');
+                }
+            });
+        };
+    });
+    </script>
+    <?php
+    
+    return ob_get_clean();
+}
+
 add_shortcode('unified_leads_admin', 'unified_leads_admin_shortcode');
 
 // Hook pour charger les styles sur toutes les pages où le shortcode est utilisé
 function my_istymo_enqueue_shortcode_styles() {
     global $post;
     
-    if (is_a($post, 'WP_Post') && (has_shortcode($post->post_content, 'my_istymo_leads') || has_shortcode($post->post_content, 'unified_leads_admin'))) {
+    if (is_a($post, 'WP_Post') && (has_shortcode($post->post_content, 'my_istymo_leads') || has_shortcode($post->post_content, 'unified_leads_admin') || has_shortcode($post->post_content, 'my_istymo_notaires'))) {
         // Charger Font Awesome pour les icônes
         wp_enqueue_style(
             'font-awesome',
@@ -4948,31 +5371,46 @@ function my_istymo_enqueue_shortcode_styles() {
             '6.4.0'
         );
         
-        // Charger les styles de manière globale
-        wp_enqueue_style('unified-leads-css', plugin_dir_url(__FILE__) . 'assets/css/unified-leads.css', array('font-awesome'), '1.0.2');
-        wp_enqueue_style('lead-edit-modal-css', plugin_dir_url(__FILE__) . 'assets/css/lead-edit-modal.css', array('font-awesome'), '1.0.0');
-        wp_enqueue_style('lead-vendeur-sections-style', plugin_dir_url(__FILE__) . 'assets/css/lead-vendeur-sections.css', array(), '1.0.0');
+        // Charger les styles pour les notaires si le shortcode est présent
+        if (has_shortcode($post->post_content, 'my_istymo_notaires')) {
+            wp_enqueue_style('notaires-admin-css', plugin_dir_url(__FILE__) . 'assets/css/notaires-admin.css', array('font-awesome'), '1.1');
+            wp_enqueue_style('lead-vendeur-popup-style', plugin_dir_url(__FILE__) . 'assets/css/lead-vendeur-popup.css', array(), '1.0.1');
+            wp_enqueue_script('notaires-admin-js', plugin_dir_url(__FILE__) . 'assets/js/notaires-admin.js', array('jquery'), '1.0', true);
+            
+            wp_localize_script('notaires-admin-js', 'notairesAjax', array(
+                'ajaxurl' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('my_istymo_notaires_nonce')
+            ));
+        }
         
-        // Charger les scripts
-        wp_enqueue_script('unified-leads-admin', plugin_dir_url(__FILE__) . 'assets/js/unified-leads-admin.js', array('jquery'), '1.0.3', true);
-        wp_enqueue_script('lead-actions', plugin_dir_url(__FILE__) . 'assets/js/lead-actions.js', array('jquery', 'jquery-ui-tooltip'), '1.0.0', true);
-        wp_enqueue_script('lead-workflow', plugin_dir_url(__FILE__) . 'assets/js/lead-workflow.js', array('jquery'), '1.0.0', true);
-        
-        // Localiser les scripts
-        wp_localize_script('unified-leads-admin', 'unifiedLeadsAjax', array(
-            'ajaxurl' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('my_istymo_nonce')
-        ));
-        
-        wp_localize_script('lead-actions', 'leadActionsAjax', array(
-            'ajaxurl' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('my_istymo_nonce')
-        ));
-        
-        wp_localize_script('lead-workflow', 'leadWorkflowAjax', array(
-            'ajaxurl' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('my_istymo_nonce')
-        ));
+        // Charger les styles pour les autres shortcodes (leads)
+        if (has_shortcode($post->post_content, 'my_istymo_leads') || has_shortcode($post->post_content, 'unified_leads_admin')) {
+            // Charger les styles de manière globale
+            wp_enqueue_style('unified-leads-css', plugin_dir_url(__FILE__) . 'assets/css/unified-leads.css', array('font-awesome'), '1.0.2');
+            wp_enqueue_style('lead-edit-modal-css', plugin_dir_url(__FILE__) . 'assets/css/lead-edit-modal.css', array('font-awesome'), '1.0.0');
+            wp_enqueue_style('lead-vendeur-sections-style', plugin_dir_url(__FILE__) . 'assets/css/lead-vendeur-sections.css', array(), '1.0.0');
+            
+            // Charger les scripts
+            wp_enqueue_script('unified-leads-admin', plugin_dir_url(__FILE__) . 'assets/js/unified-leads-admin.js', array('jquery'), '1.0.3', true);
+            wp_enqueue_script('lead-actions', plugin_dir_url(__FILE__) . 'assets/js/lead-actions.js', array('jquery', 'jquery-ui-tooltip'), '1.0.0', true);
+            wp_enqueue_script('lead-workflow', plugin_dir_url(__FILE__) . 'assets/js/lead-workflow.js', array('jquery'), '1.0.0', true);
+            
+            // Localiser les scripts
+            wp_localize_script('unified-leads-admin', 'unifiedLeadsAjax', array(
+                'ajaxurl' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('my_istymo_nonce')
+            ));
+            
+            wp_localize_script('lead-actions', 'leadActionsAjax', array(
+                'ajaxurl' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('my_istymo_nonce')
+            ));
+            
+            wp_localize_script('lead-workflow', 'leadWorkflowAjax', array(
+                'ajaxurl' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('my_istymo_nonce')
+            ));
+        }
     }
 }
 add_action('wp_enqueue_scripts', 'my_istymo_enqueue_shortcode_styles');
@@ -7023,8 +7461,8 @@ function my_istymo_ajax_filter_notaires() {
                     <th width="25%"><i class="fas fa-building"></i> Office</th>
                     <th width="20%"><i class="fas fa-user-tie"></i> Notaire</th>
                     <th width="25%"><i class="fas fa-map-marker-alt"></i> Adresse</th>
-                    <th width="15%"><i class="fas fa-phone"></i> Téléphone</th>
-                    <th width="10%"><i class="fas fa-cogs"></i> Actions</th>
+                    <th width="10%"><i class="fas fa-phone"></i> Téléphone</th>
+                    <th width="15%"><i class="fas fa-cogs"></i> Actions</th>
                 </tr>
             </thead>
             <tbody>
