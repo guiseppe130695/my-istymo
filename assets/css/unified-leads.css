@@ -287,7 +287,7 @@
 
 .my-istymo-leads-table th:nth-child(7),
 .my-istymo-leads-table td:nth-child(7) {
-    width: 12%; /* Actions */
+    width: 15%; /* Actions */
     min-width: 80px;
 }
 
